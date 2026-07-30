@@ -22,6 +22,7 @@ import {
   ComposedChart,
   Line,
   LineChart,
+  ReferenceArea,
   ResponsiveContainer,
   Scatter,
   Tooltip,
@@ -44,7 +45,15 @@ type TradePoint = {
   timestamp: number
   price: number
   side: 'BUY' | 'SELL'
-  returnPercent: number | null
+}
+
+type CompletedTrade = {
+  entryTimestamp: number
+  exitTimestamp: number
+  entryPrice: number
+  exitPrice: number
+  netPnl: number
+  returnPercent: number
 }
 
 function money(value: string | number | null, currency = 'USD') {
@@ -178,6 +187,7 @@ function Monitor({
   )
   const priceChart = useMemo(() => buildPriceChart(equity), [equity])
   const tradeMarkers = useMemo(() => buildTradeMarkers(accountFills), [accountFills])
+  const completedTrades = useMemo(() => buildCompletedTrades(accountFills), [accountFills])
   const equityChart = useMemo(
     () => equity.map((point) => ({ timestamp: point.timestamp_ms, equity: Number(point.equity) })),
     [equity],
@@ -256,6 +266,32 @@ function Monitor({
                     tickFormatter={(value) => Number(value).toFixed(2)}
                   />
                   <Tooltip content={<PriceTooltip currency={account.currency} />} />
+                  {completedTrades.map((trade) => {
+                    const profitable = trade.netPnl >= 0
+                    const color = profitable ? '#3fd6a1' : '#ff6f78'
+                    return (
+                      <ReferenceArea
+                        key={`${trade.entryTimestamp}-${trade.exitTimestamp}`}
+                        className={`trade-range ${profitable ? 'profit' : 'loss'}`}
+                        x1={trade.entryTimestamp}
+                        x2={trade.exitTimestamp}
+                        y1={trade.entryPrice}
+                        y2={trade.exitPrice}
+                        fill={color}
+                        fillOpacity={0.16}
+                        stroke={color}
+                        strokeOpacity={0.8}
+                        strokeDasharray="4 3"
+                        ifOverflow="extendDomain"
+                        label={{
+                          value: `${money(trade.netPnl, account.currency)} · ${percent(trade.returnPercent)}`,
+                          position: 'center',
+                          fill: color,
+                          fontSize: 11,
+                        }}
+                      />
+                    )
+                  })}
                   <Line dataKey="price" name="价格" type="monotone" stroke="#e7ecef" strokeWidth={2} dot={false} isAnimationActive={false} />
                   <Line dataKey="trailingStop" name="ATR 止损线" type="stepAfter" stroke="#e8bd58" strokeWidth={1.8} strokeDasharray="6 4" dot={false} connectNulls isAnimationActive={false} />
                   <Scatter
@@ -329,27 +365,44 @@ function buildPriceChart(equity: EquityPoint[]): PricePoint[] {
 }
 
 function buildTradeMarkers(fills: Fill[]): TradePoint[] {
+  return fills.map((fill) => ({
+    timestamp: fill.timestamp_ms,
+    price: Number(fill.price),
+    side: fill.side as 'BUY' | 'SELL',
+  }))
+}
+
+function buildCompletedTrades(fills: Fill[]): CompletedTrade[] {
   const ordered = [...fills].sort((left, right) => left.timestamp_ms - right.timestamp_ms)
-  let entryUnitCost: number | null = null
-  return ordered.map((fill) => {
+  const trades: CompletedTrade[] = []
+  let entry: Fill | null = null
+
+  for (const fill of ordered) {
     const quantity = Number(fill.quantity)
-    const notional = Number(fill.notional)
-    const fee = Number(fill.fee)
-    let returnPercent: number | null = null
     if (fill.side === 'BUY' && quantity > 0) {
-      entryUnitCost = (notional + fee) / quantity
-    } else if (fill.side === 'SELL' && quantity > 0 && entryUnitCost) {
-      const exitUnitProceeds = (notional - fee) / quantity
-      returnPercent = exitUnitProceeds / entryUnitCost - 1
-      entryUnitCost = null
+      entry = fill
+      continue
     }
-    return {
-      timestamp: fill.timestamp_ms,
-      price: Number(fill.price),
-      side: fill.side as 'BUY' | 'SELL',
-      returnPercent,
-    }
-  })
+    if (fill.side !== 'SELL' || quantity <= 0 || !entry) continue
+
+    const entryQuantity = Number(entry.quantity)
+    if (entryQuantity <= 0) continue
+    const matchedQuantity = Math.min(entryQuantity, quantity)
+    const entryUnitCost = (Number(entry.notional) + Number(entry.fee)) / entryQuantity
+    const exitUnitProceeds = (Number(fill.notional) - Number(fill.fee)) / quantity
+    const netPnl = (exitUnitProceeds - entryUnitCost) * matchedQuantity
+    trades.push({
+      entryTimestamp: entry.timestamp_ms,
+      exitTimestamp: fill.timestamp_ms,
+      entryPrice: Number(entry.price),
+      exitPrice: Number(fill.price),
+      netPnl,
+      returnPercent: exitUnitProceeds / entryUnitCost - 1,
+    })
+    entry = null
+  }
+
+  return trades
 }
 
 type TradeMarkerProps = {
@@ -363,11 +416,7 @@ function TradeMarker({ cx = 0, cy = 0, payload }: TradeMarkerProps) {
   const isBuy = payload.side === 'BUY'
   const Icon = isBuy ? CircleArrowUp : CircleArrowDown
   const color = isBuy ? '#3fd6a1' : '#ff6f78'
-  const label = isBuy
-    ? 'BUY'
-    : payload.returnPercent === null
-      ? 'SELL'
-      : percent(payload.returnPercent)
+  const label = isBuy ? 'BUY' : 'SELL'
   const labelY = isBuy ? cy + 30 : cy - 21
   return (
     <g data-testid={`trade-marker-${payload.side.toLowerCase()}`}>
