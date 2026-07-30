@@ -54,6 +54,7 @@ class BinanceFeed(MarketFeed):
                 low=Decimal(row[3]),
                 close=Decimal(row[4]),
                 volume=Decimal(row[5]),
+                trade_count=int(row[8]),
             )
             for row in payload
             if int(row[6]) < now_ms
@@ -81,6 +82,11 @@ class BinanceFeed(MarketFeed):
                     price=Decimal(payload["p"]),
                     quantity=Decimal(payload["q"]),
                     source=self.source_name,
+                    aggregate_trade_id=int(payload["a"]),
+                    first_trade_id=int(payload["f"]),
+                    last_trade_id=int(payload["l"]),
+                    buyer_is_maker=bool(payload["m"]),
+                    event_time_ms=int(payload["E"]),
                 )
 
 

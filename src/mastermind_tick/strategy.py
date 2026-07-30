@@ -41,6 +41,10 @@ class StrategyView:
     bar_start_ms: int | None
     bought_this_bar: bool
     flattened_this_bar: bool
+    last_cross: str | None
+    last_cross_at_ms: int | None
+    last_cross_result: str | None
+    last_cross_reason: str | None
 
 
 class ATRTickStrategy:
@@ -59,6 +63,10 @@ class ATRTickStrategy:
         self.last_atr: Decimal | None = None
         self.bought_this_bar = False
         self.flattened_this_bar = False
+        self.last_cross: str | None = None
+        self.last_cross_at_ms: int | None = None
+        self.last_cross_result: str | None = None
+        self.last_cross_reason: str | None = None
 
     def bootstrap(self, bars: list[Bar]) -> None:
         """Warm the indicator without creating historical paper orders."""
@@ -80,6 +88,10 @@ class ATRTickStrategy:
     def restore_runtime(self, value: dict[str, Any] | None) -> None:
         if not value:
             return
+        self.last_cross = value.get("last_cross")
+        self.last_cross_at_ms = value.get("last_cross_at_ms")
+        self.last_cross_result = value.get("last_cross_result")
+        self.last_cross_reason = value.get("last_cross_reason")
         current_value = value.get("current_bar")
         current = Bar.from_dict(current_value) if current_value else None
         latest_completed_start = (
@@ -105,6 +117,10 @@ class ATRTickStrategy:
             "last_atr": _string_or_none(self.last_atr),
             "bought_this_bar": self.bought_this_bar,
             "flattened_this_bar": self.flattened_this_bar,
+            "last_cross": self.last_cross,
+            "last_cross_at_ms": self.last_cross_at_ms,
+            "last_cross_result": self.last_cross_result,
+            "last_cross_reason": self.last_cross_reason,
             "current_bar": self.current_bar.as_dict() if self.current_bar else None,
         }
 
@@ -164,41 +180,48 @@ class ATRTickStrategy:
         self.previous_price = tick.price
         self.last_atr = atr
 
-        if (
-            emit_signals
-            and cross_up
-            and not has_position
-            and not has_pending_order
-            and not self.bought_this_bar
-            and not self.flattened_this_bar
-        ):
-            self.bought_this_bar = True
-            return StrategySignal(
-                side=Side.BUY,
-                reason="price_crossed_above_atr_stop",
-                signal_price=tick.price,
-                trailing_stop=self.trailing_stop,
-                atr=atr,
-                bar_start_ms=bar_start,
-                tick_id=tick.event_id,
+        if cross_up:
+            blocked_reason = _buy_block_reason(
+                emit_signals=emit_signals,
+                has_position=has_position,
+                has_pending_order=has_pending_order,
+                bought_this_bar=self.bought_this_bar,
+                flattened_this_bar=self.flattened_this_bar,
             )
-        if (
-            emit_signals
-            and cross_down
-            and has_position
-            and not has_pending_order
-            and not self.flattened_this_bar
-        ):
-            self.flattened_this_bar = True
-            return StrategySignal(
-                side=Side.SELL,
-                reason="price_crossed_below_atr_stop",
-                signal_price=tick.price,
-                trailing_stop=self.trailing_stop,
-                atr=atr,
-                bar_start_ms=bar_start,
-                tick_id=tick.event_id,
+            if blocked_reason is None:
+                self.bought_this_bar = True
+                self._record_cross("UP", tick.timestamp_ms, "BUY_SIGNAL", None)
+                return StrategySignal(
+                    side=Side.BUY,
+                    reason="price_crossed_above_atr_stop",
+                    signal_price=tick.price,
+                    trailing_stop=self.trailing_stop,
+                    atr=atr,
+                    bar_start_ms=bar_start,
+                    tick_id=tick.event_id,
+                )
+            self._record_cross("UP", tick.timestamp_ms, "BLOCKED", blocked_reason)
+
+        if cross_down:
+            blocked_reason = _sell_block_reason(
+                emit_signals=emit_signals,
+                has_position=has_position,
+                has_pending_order=has_pending_order,
+                flattened_this_bar=self.flattened_this_bar,
             )
+            if blocked_reason is None:
+                self.flattened_this_bar = True
+                self._record_cross("DOWN", tick.timestamp_ms, "SELL_SIGNAL", None)
+                return StrategySignal(
+                    side=Side.SELL,
+                    reason="price_crossed_below_atr_stop",
+                    signal_price=tick.price,
+                    trailing_stop=self.trailing_stop,
+                    atr=atr,
+                    bar_start_ms=bar_start,
+                    tick_id=tick.event_id,
+                )
+            self._record_cross("DOWN", tick.timestamp_ms, "BLOCKED", blocked_reason)
         return None
 
     def view(self) -> StrategyView:
@@ -215,7 +238,23 @@ class ATRTickStrategy:
             bar_start_ms=self.current_bar.start_ms if self.current_bar else None,
             bought_this_bar=self.bought_this_bar,
             flattened_this_bar=self.flattened_this_bar,
+            last_cross=self.last_cross,
+            last_cross_at_ms=self.last_cross_at_ms,
+            last_cross_result=self.last_cross_result,
+            last_cross_reason=self.last_cross_reason,
         )
+
+    def _record_cross(
+        self,
+        direction: str,
+        timestamp_ms: int,
+        result: str,
+        reason: str | None,
+    ) -> None:
+        self.last_cross = direction
+        self.last_cross_at_ms = timestamp_ms
+        self.last_cross_result = result
+        self.last_cross_reason = reason
 
     def _move_stop(self, price: Decimal, atr: Decimal) -> None:
         distance = atr * self.multiplier
@@ -239,3 +278,42 @@ def _decimal_or_none(value: Any) -> Decimal | None:
 
 def _string_or_none(value: Decimal | None) -> str | None:
     return None if value is None else str(value)
+
+
+def _buy_block_reason(
+    *,
+    emit_signals: bool,
+    has_position: bool,
+    has_pending_order: bool,
+    bought_this_bar: bool,
+    flattened_this_bar: bool,
+) -> str | None:
+    if not emit_signals:
+        return "TRADING_PAUSED"
+    if has_position:
+        return "ALREADY_LONG"
+    if has_pending_order:
+        return "ORDER_PENDING"
+    if bought_this_bar:
+        return "BUY_LOCKED_THIS_BAR"
+    if flattened_this_bar:
+        return "REENTRY_LOCKED_THIS_BAR"
+    return None
+
+
+def _sell_block_reason(
+    *,
+    emit_signals: bool,
+    has_position: bool,
+    has_pending_order: bool,
+    flattened_this_bar: bool,
+) -> str | None:
+    if not emit_signals:
+        return "TRADING_PAUSED"
+    if not has_position:
+        return "NO_POSITION"
+    if has_pending_order:
+        return "ORDER_PENDING"
+    if flattened_this_bar:
+        return "EXIT_LOCKED_THIS_BAR"
+    return None

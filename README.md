@@ -1,6 +1,6 @@
 # mastermind:tick
 
-Mastermind 旗下短线策略产品。当前版本把“小果量化 ATR Tick V1”运行在独立模拟账本上，实时记录 Binance SOXLB/USDT 的信号、订单、成交、持仓、费用、净值和回撤。
+Mastermind 旗下短线策略产品。当前版本把“小果量化 ATR Tick V1”运行在独立模拟账本上，实时记录 Binance SOXLB/USDT 的行情、信号、订单、成交、持仓、费用和绩效。
 
 ## 产品边界
 
@@ -29,6 +29,10 @@ ATR 使用 TradingView `ta.atr` 对应的 Wilder RMA。信号产生后在下一�
 - 实时 SOXLB：`wss://data-stream.binance.vision/ws/soxlbusdt@aggTrade`
 - SOXLB 预热：Binance market-data-only REST 的 15 分钟 K 线；
 - 模拟账本：`data/paper.db`，SQLite WAL 模式。
+- `agg_trades`：逐条持久化 Binance 聚合成交 ID、底层交易 ID、事件/成交时间、价格、数量、名义金额和 maker 方向。
+- `ohlcv_bars`：保存历史与实时形成中的 15 分钟 OHLCV、底层成交数及开闭状态。
+
+行情表采用事件 ID 和 K 线起始时间幂等写入，重连或重启不会重复累计相同成交。仓库页面显示主库、WAL、分表及索引占用；当前未配置自动清理策略，aggTrade 将持续累积。
 
 系统不再读取 SOXL 行情或 `~/mm` 数据。Alpha 的历史研究、真实基金账户与 `mastermind:tick` paper 绩效相互隔离。
 
@@ -45,9 +49,12 @@ Python 环境使用 `/home/spaceaic/env/.venv`。前端生产文件已构建到 
 页面提供：
 
 - SOXLB 实时价格、ATR 移动止损线和 K 线交易锁；
-- 价格图上的买入/卖出图标、净交易百分比和区间涨跌；
+- 实时交易决策状态、信号门控、最近穿越结果及下一触发条件；
+- 价格图上的买入/卖出图标、醒目的净交易百分比、区间滚动和缩放；
 - 现金、持仓、累计收益、费用和最大回撤；
+- 手续费后完整交易胜率和 15 分钟年化夏普率；
 - 净值曲线、订单、成交和运行事件；
+- 数据仓库的 OHLCV、aggTrade、覆盖时间、记录数和磁盘占用；
 - 暂停/恢复信号执行和成交 CSV 导出。
 
 ## 开发与验证
@@ -80,6 +87,9 @@ GET  /api/orders
 GET  /api/fills
 GET  /api/events
 GET  /api/fills.csv
+GET  /api/warehouse
+GET  /api/market/ohlcv
+GET  /api/market/agg-trades
 POST /api/control       {"action":"pause" | "resume"}
 ```
 

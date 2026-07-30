@@ -105,6 +105,33 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
             _require_account(store, account_id)
         return store.events(account_id, limit)
 
+    @app.get("/api/warehouse")
+    def warehouse() -> dict:
+        return store.warehouse_summary(
+            resolved.instruments,
+            resolved.strategy.bar_minutes,
+        )
+
+    @app.get("/api/market/agg-trades")
+    def agg_trades(
+        instrument_id: str = "soxlb",
+        limit: Annotated[int, Query(ge=1, le=1000)] = 100,
+    ) -> list[dict]:
+        _require_instrument(resolved, instrument_id)
+        return store.agg_trades(instrument_id, limit)
+
+    @app.get("/api/market/ohlcv")
+    def ohlcv(
+        instrument_id: str = "soxlb",
+        limit: Annotated[int, Query(ge=1, le=1000)] = 100,
+    ) -> list[dict]:
+        _require_instrument(resolved, instrument_id)
+        return store.ohlcv_bars(
+            instrument_id,
+            resolved.strategy.bar_minutes,
+            limit,
+        )
+
     @app.get("/api/fills.csv")
     def export_fills(account_id: str | None = None) -> Response:
         if account_id:
@@ -166,6 +193,11 @@ def _require_account(store: PaperStore, account_id: str) -> None:
         store.account(account_id)
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+def _require_instrument(settings: Settings, instrument_id: str) -> None:
+    if not any(item.id == instrument_id for item in settings.instruments):
+        raise HTTPException(status_code=404, detail=f"unknown instrument: {instrument_id}")
 
 
 app = create_app()

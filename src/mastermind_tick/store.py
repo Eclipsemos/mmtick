@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import time
 import uuid
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -12,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from mastermind_tick.config import ExecutionSettings, InstrumentSettings
-from mastermind_tick.models import Side, StrategySignal, Tick
+from mastermind_tick.models import Bar, Side, StrategySignal, Tick
 
 SCHEMA = """
 PRAGMA journal_mode=WAL;
@@ -100,11 +101,61 @@ CREATE TABLE IF NOT EXISTS strategy_states (
     updated_at_ms INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS agg_trades (
+    event_id TEXT PRIMARY KEY,
+    instrument_id TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    aggregate_trade_id INTEGER,
+    first_trade_id INTEGER,
+    last_trade_id INTEGER,
+    event_time_ms INTEGER,
+    timestamp_ms INTEGER NOT NULL,
+    price TEXT NOT NULL,
+    quantity TEXT NOT NULL,
+    notional TEXT NOT NULL,
+    buyer_is_maker INTEGER,
+    source TEXT NOT NULL,
+    received_at_ms INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ohlcv_bars (
+    instrument_id TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    interval_minutes INTEGER NOT NULL,
+    start_ms INTEGER NOT NULL,
+    end_ms INTEGER NOT NULL,
+    open TEXT NOT NULL,
+    high TEXT NOT NULL,
+    low TEXT NOT NULL,
+    close TEXT NOT NULL,
+    volume TEXT NOT NULL,
+    trade_count INTEGER NOT NULL DEFAULT 0,
+    is_closed INTEGER NOT NULL DEFAULT 0,
+    source TEXT NOT NULL,
+    updated_at_ms INTEGER NOT NULL,
+    PRIMARY KEY (instrument_id, interval_minutes, start_ms)
+);
+
 CREATE INDEX IF NOT EXISTS idx_orders_account_status ON orders(account_id, status);
 CREATE INDEX IF NOT EXISTS idx_fills_account_time ON fills(account_id, timestamp_ms DESC);
 CREATE INDEX IF NOT EXISTS idx_equity_account_time ON equity_snapshots(account_id, timestamp_ms);
 CREATE INDEX IF NOT EXISTS idx_events_account_time ON events(account_id, timestamp_ms DESC);
+CREATE INDEX IF NOT EXISTS idx_agg_trades_instrument_time
+    ON agg_trades(instrument_id, timestamp_ms DESC);
+CREATE INDEX IF NOT EXISTS idx_ohlcv_instrument_time
+    ON ohlcv_bars(instrument_id, interval_minutes, start_ms DESC);
 """
+
+WAREHOUSE_TABLES = (
+    "accounts",
+    "orders",
+    "fills",
+    "equity_snapshots",
+    "events",
+    "strategy_states",
+    "ohlcv_bars",
+    "agg_trades",
+)
 
 
 class PaperStore:
@@ -172,6 +223,165 @@ class PaperStore:
         with self.connection() as connection:
             rows = connection.execute("SELECT * FROM accounts ORDER BY id").fetchall()
         return [dict(row) for row in rows]
+
+    def upsert_history_bars(
+        self,
+        instrument: InstrumentSettings,
+        interval_minutes: int,
+        bars: list[Bar],
+        source: str,
+    ) -> None:
+        if not bars:
+            return
+        now_ms = int(time.time() * 1000)
+        values = [
+            (
+                instrument.id,
+                instrument.symbol,
+                interval_minutes,
+                bar.start_ms,
+                bar.end_ms,
+                str(bar.open),
+                str(bar.high),
+                str(bar.low),
+                str(bar.close),
+                str(bar.volume),
+                bar.trade_count,
+                source,
+                now_ms,
+            )
+            for bar in bars
+        ]
+        with self.connection() as connection:
+            connection.executemany(
+                """
+                INSERT INTO ohlcv_bars (
+                    instrument_id, symbol, interval_minutes, start_ms, end_ms,
+                    open, high, low, close, volume, trade_count, is_closed,
+                    source, updated_at_ms
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+                ON CONFLICT(instrument_id, interval_minutes, start_ms) DO UPDATE SET
+                    symbol = excluded.symbol,
+                    end_ms = excluded.end_ms,
+                    open = excluded.open,
+                    high = excluded.high,
+                    low = excluded.low,
+                    close = excluded.close,
+                    volume = excluded.volume,
+                    trade_count = excluded.trade_count,
+                    is_closed = 1,
+                    source = excluded.source,
+                    updated_at_ms = excluded.updated_at_ms
+                """,
+                values,
+            )
+
+    def record_market_tick(
+        self,
+        instrument: InstrumentSettings,
+        interval_minutes: int,
+        tick: Tick,
+    ) -> bool:
+        interval_ms = interval_minutes * 60_000
+        bar_start_ms = tick.timestamp_ms // interval_ms * interval_ms
+        bar_end_ms = bar_start_ms + interval_ms - 1
+        received_at_ms = int(time.time() * 1000)
+        raw_trade_count = (
+            tick.last_trade_id - tick.first_trade_id + 1
+            if tick.first_trade_id is not None and tick.last_trade_id is not None
+            else 1
+        )
+        with self.connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            inserted = connection.execute(
+                """
+                INSERT OR IGNORE INTO agg_trades (
+                    event_id, instrument_id, symbol, aggregate_trade_id,
+                    first_trade_id, last_trade_id, event_time_ms, timestamp_ms,
+                    price, quantity, notional, buyer_is_maker, source, received_at_ms
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    tick.event_id,
+                    instrument.id,
+                    instrument.symbol,
+                    tick.aggregate_trade_id,
+                    tick.first_trade_id,
+                    tick.last_trade_id,
+                    tick.event_time_ms,
+                    tick.timestamp_ms,
+                    str(tick.price),
+                    str(tick.quantity),
+                    str(tick.price * tick.quantity),
+                    None if tick.buyer_is_maker is None else int(tick.buyer_is_maker),
+                    tick.source,
+                    received_at_ms,
+                ),
+            ).rowcount
+            if not inserted:
+                return False
+
+            connection.execute(
+                """
+                UPDATE ohlcv_bars SET is_closed = 1, updated_at_ms = ?
+                WHERE instrument_id = ? AND interval_minutes = ?
+                  AND start_ms < ? AND is_closed = 0
+                """,
+                (received_at_ms, instrument.id, interval_minutes, bar_start_ms),
+            )
+            row = connection.execute(
+                """
+                SELECT high, low, volume, trade_count FROM ohlcv_bars
+                WHERE instrument_id = ? AND interval_minutes = ? AND start_ms = ?
+                """,
+                (instrument.id, interval_minutes, bar_start_ms),
+            ).fetchone()
+            if row is None:
+                connection.execute(
+                    """
+                    INSERT INTO ohlcv_bars (
+                        instrument_id, symbol, interval_minutes, start_ms, end_ms,
+                        open, high, low, close, volume, trade_count, is_closed,
+                        source, updated_at_ms
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+                    """,
+                    (
+                        instrument.id,
+                        instrument.symbol,
+                        interval_minutes,
+                        bar_start_ms,
+                        bar_end_ms,
+                        str(tick.price),
+                        str(tick.price),
+                        str(tick.price),
+                        str(tick.price),
+                        str(tick.quantity),
+                        raw_trade_count,
+                        tick.source,
+                        received_at_ms,
+                    ),
+                )
+            else:
+                connection.execute(
+                    """
+                    UPDATE ohlcv_bars SET high = ?, low = ?, close = ?, volume = ?,
+                        trade_count = ?, source = ?, updated_at_ms = ?
+                    WHERE instrument_id = ? AND interval_minutes = ? AND start_ms = ?
+                    """,
+                    (
+                        str(max(Decimal(row["high"]), tick.price)),
+                        str(min(Decimal(row["low"]), tick.price)),
+                        str(tick.price),
+                        str(Decimal(row["volume"]) + tick.quantity),
+                        int(row["trade_count"]) + raw_trade_count,
+                        tick.source,
+                        received_at_ms,
+                        instrument.id,
+                        interval_minutes,
+                        bar_start_ms,
+                    ),
+                )
+        return True
 
     def has_pending_order(self, account_id: str) -> bool:
         with self.connection() as connection:
@@ -442,6 +652,148 @@ class PaperStore:
             ).fetchall()
         return [dict(row) for row in rows]
 
+    def agg_trades(self, instrument_id: str, limit: int = 100) -> list[dict[str, Any]]:
+        with self.connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT event_id, instrument_id, symbol, aggregate_trade_id,
+                       first_trade_id, last_trade_id, event_time_ms, timestamp_ms,
+                       price, quantity, notional, buyer_is_maker, source, received_at_ms
+                FROM agg_trades WHERE instrument_id = ?
+                ORDER BY timestamp_ms DESC, event_id DESC LIMIT ?
+                """,
+                (instrument_id, limit),
+            ).fetchall()
+        result = [dict(row) for row in rows]
+        for item in result:
+            if item["buyer_is_maker"] is not None:
+                item["buyer_is_maker"] = bool(item["buyer_is_maker"])
+        return result
+
+    def ohlcv_bars(
+        self,
+        instrument_id: str,
+        interval_minutes: int,
+        limit: int = 100,
+    ) -> list[dict[str, Any]]:
+        with self.connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT instrument_id, symbol, interval_minutes, start_ms, end_ms,
+                       open, high, low, close, volume, trade_count, is_closed,
+                       source, updated_at_ms
+                FROM ohlcv_bars
+                WHERE instrument_id = ? AND interval_minutes = ?
+                ORDER BY start_ms DESC LIMIT ?
+                """,
+                (instrument_id, interval_minutes, limit),
+            ).fetchall()
+        result = [dict(row) for row in rows]
+        for item in result:
+            item["is_closed"] = bool(item["is_closed"])
+        return result
+
+    def warehouse_summary(
+        self,
+        instruments: tuple[InstrumentSettings, ...],
+        interval_minutes: int,
+    ) -> dict[str, Any]:
+        with self.connection() as connection:
+            page_size = int(connection.execute("PRAGMA page_size").fetchone()[0])
+            try:
+                object_sizes = {
+                    row["name"]: int(row["size_bytes"] or 0)
+                    for row in connection.execute(
+                        "SELECT name, SUM(pgsize) AS size_bytes FROM dbstat GROUP BY name"
+                    ).fetchall()
+                }
+            except sqlite3.OperationalError:
+                object_sizes = {}
+
+            tables = []
+            for table in WAREHOUSE_TABLES:
+                row_count = int(
+                    connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+                )
+                index_names = [
+                    row["name"]
+                    for row in connection.execute(f"PRAGMA index_list({table})").fetchall()
+                ]
+                size_bytes = object_sizes.get(table, 0) + sum(
+                    object_sizes.get(name, 0) for name in index_names
+                )
+                tables.append(
+                    {
+                        "name": table,
+                        "row_count": row_count,
+                        "size_bytes": size_bytes,
+                        "average_row_bytes": size_bytes / row_count if row_count else 0,
+                    }
+                )
+
+            ingestion = []
+            for instrument in instruments:
+                trades = connection.execute(
+                    """
+                    SELECT COUNT(*) AS row_count,
+                           MIN(timestamp_ms) AS first_timestamp_ms,
+                           MAX(timestamp_ms) AS last_timestamp_ms,
+                           COALESCE(SUM(CAST(quantity AS REAL)), 0) AS total_quantity,
+                           COALESCE(SUM(CAST(notional AS REAL)), 0) AS total_notional,
+                           COALESCE(SUM(
+                               CASE
+                                   WHEN first_trade_id IS NOT NULL AND last_trade_id IS NOT NULL
+                                   THEN last_trade_id - first_trade_id + 1
+                                   ELSE 1
+                               END
+                           ), 0) AS raw_trade_count
+                    FROM agg_trades WHERE instrument_id = ?
+                    """,
+                    (instrument.id,),
+                ).fetchone()
+                bars = connection.execute(
+                    """
+                    SELECT COUNT(*) AS row_count,
+                           COALESCE(SUM(is_closed), 0) AS closed_count,
+                           MIN(start_ms) AS first_start_ms,
+                           MAX(start_ms) AS last_start_ms,
+                           MAX(updated_at_ms) AS last_updated_at_ms
+                    FROM ohlcv_bars
+                    WHERE instrument_id = ? AND interval_minutes = ?
+                    """,
+                    (instrument.id, interval_minutes),
+                ).fetchone()
+                ingestion.append(
+                    {
+                        "instrument_id": instrument.id,
+                        "symbol": instrument.symbol,
+                        "agg_trades": dict(trades),
+                        "ohlcv": {
+                            **dict(bars),
+                            "interval_minutes": interval_minutes,
+                            "open_count": int(bars["row_count"] or 0)
+                            - int(bars["closed_count"] or 0),
+                        },
+                    }
+                )
+
+        main_bytes = _file_size(self.path)
+        wal_bytes = _file_size(Path(f"{self.path}-wal"))
+        shm_bytes = _file_size(Path(f"{self.path}-shm"))
+        return {
+            "generated_at_ms": int(time.time() * 1000),
+            "database": {
+                "path": str(self.path),
+                "main_bytes": main_bytes,
+                "wal_bytes": wal_bytes,
+                "shm_bytes": shm_bytes,
+                "total_bytes": main_bytes + wal_bytes + shm_bytes,
+                "page_size": page_size,
+            },
+            "tables": tables,
+            "instruments": ingestion,
+        }
+
     def fills(self, account_id: str | None = None, limit: int = 100) -> list[dict[str, Any]]:
         query = "SELECT * FROM fills"
         params: tuple[Any, ...]
@@ -538,3 +890,10 @@ def _floor_step(value: Decimal, step: Decimal) -> Decimal:
         return value
     units = (value / step).to_integral_value(rounding=ROUND_DOWN)
     return units * step
+
+
+def _file_size(path: Path) -> int:
+    try:
+        return path.stat().st_size
+    except FileNotFoundError:
+        return 0

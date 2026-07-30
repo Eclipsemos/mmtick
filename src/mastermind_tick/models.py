@@ -20,6 +20,11 @@ class Tick:
     price: Decimal
     quantity: Decimal
     source: str
+    aggregate_trade_id: int | None = None
+    first_trade_id: int | None = None
+    last_trade_id: int | None = None
+    buyer_is_maker: bool | None = None
+    event_time_ms: int | None = None
 
     def as_dict(self) -> dict[str, Any]:
         value = asdict(self)
@@ -37,12 +42,18 @@ class Bar:
     low: Decimal
     close: Decimal
     volume: Decimal = Decimal("0")
+    trade_count: int = 0
 
     def update(self, tick: Tick) -> None:
         self.high = max(self.high, tick.price)
         self.low = min(self.low, tick.price)
         self.close = tick.price
         self.volume += tick.quantity
+        self.trade_count += (
+            tick.last_trade_id - tick.first_trade_id + 1
+            if tick.first_trade_id is not None and tick.last_trade_id is not None
+            else 1
+        )
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -53,6 +64,7 @@ class Bar:
             "low": str(self.low),
             "close": str(self.close),
             "volume": str(self.volume),
+            "trade_count": self.trade_count,
         }
 
     @classmethod
@@ -65,6 +77,7 @@ class Bar:
             low=Decimal(str(value["low"])),
             close=Decimal(str(value["close"])),
             volume=Decimal(str(value.get("volume", "0"))),
+            trade_count=int(value.get("trade_count", 0)),
         )
 
 

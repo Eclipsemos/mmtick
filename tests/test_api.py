@@ -20,6 +20,7 @@ def test_health_and_empty_overview(tmp_path) -> None:
     with TestClient(app) as client:
         health = client.get("/api/health")
         overview = client.get("/api/overview")
+        warehouse = client.get("/api/warehouse")
 
     assert health.status_code == 200
     assert health.json()["service"] == "mastermind-tick"
@@ -27,3 +28,7 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert {item["id"] for item in overview.json()["accounts"]} == {"soxlb"}
     assert overview.json()["instruments"] == []
     assert overview.json()["environment"] == "paper"
+    assert overview.json()["accounts"][0]["sharpe_ratio"] is None
+    assert overview.json()["accounts"][0]["win_rate"] is None
+    assert warehouse.status_code == 200
+    assert warehouse.json()["instruments"][0]["symbol"] == "SOXLBUSDT"

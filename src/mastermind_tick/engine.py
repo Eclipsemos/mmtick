@@ -13,7 +13,7 @@ from mastermind_tick.config import InstrumentSettings, Settings
 from mastermind_tick.feeds import MarketFeed, build_feed
 from mastermind_tick.models import Tick
 from mastermind_tick.store import PaperStore
-from mastermind_tick.strategy import ATRTickStrategy
+from mastermind_tick.strategy import ATRTickStrategy, StrategyView
 
 
 @dataclass
@@ -54,6 +54,12 @@ class PaperEngine:
             self.runtimes[instrument.id] = runtime
             try:
                 history = await feed.history(self.settings.warmup_bars)
+                self.store.upsert_history_bars(
+                    instrument,
+                    self.settings.strategy.bar_minutes,
+                    history,
+                    feed.source_name,
+                )
                 strategy.bootstrap(history)
                 strategy.restore_runtime(self.store.strategy_state(instrument.id))
                 runtime.status_message = f"Warm-up ready: {len(history)} x 15m bars"
@@ -135,6 +141,11 @@ class PaperEngine:
 
     async def _process_tick(self, runtime: InstrumentRuntime, tick: Tick) -> None:
         async with runtime.lock:
+            self.store.record_market_tick(
+                runtime.instrument,
+                self.settings.strategy.bar_minutes,
+                tick,
+            )
             runtime.last_tick = tick
             account_id = runtime.instrument.id
             fill = None
@@ -173,6 +184,10 @@ class PaperEngine:
         values = []
         for runtime in self.runtimes.values():
             view = runtime.strategy.view()
+            account = self.store.account(runtime.instrument.id)
+            has_position = Decimal(account["quantity"]) > 0
+            has_pending = self.store.has_pending_order(runtime.instrument.id)
+            latest_orders = self.store.orders(runtime.instrument.id, 1)
             values.append(
                 {
                     "id": runtime.instrument.id,
@@ -188,6 +203,14 @@ class PaperEngine:
                     "reconnects": runtime.reconnects,
                     "last_tick": runtime.last_tick.as_dict() if runtime.last_tick else None,
                     "strategy": _strategy_view(asdict(view)),
+                    "decision": _decision_view(
+                        view,
+                        trading_enabled=self.trading_enabled,
+                        has_position=has_position,
+                        has_pending_order=has_pending,
+                        bar_ms=runtime.strategy.bar_ms,
+                        last_order=latest_orders[0] if latest_orders else None,
+                    ),
                 }
             )
         return {
@@ -204,6 +227,73 @@ def _strategy_view(value: dict[str, Any]) -> dict[str, Any]:
         if value[key] is not None:
             value[key] = str(value[key])
     return value
+
+
+def _decision_view(
+    view: StrategyView,
+    *,
+    trading_enabled: bool,
+    has_position: bool,
+    has_pending_order: bool,
+    bar_ms: int,
+    last_order: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    if not trading_enabled:
+        state = "PAUSED"
+        reason = "TRADING_DISABLED"
+        next_trigger = "RESUME_TRADING"
+    elif not view.ready:
+        state = "WARMING_UP"
+        reason = "ATR_NOT_READY"
+        next_trigger = "WAIT_FOR_ATR"
+    elif has_pending_order:
+        state = "ORDER_PENDING"
+        reason = "WAITING_NEXT_TICK_FILL"
+        next_trigger = "NEXT_TICK_FILL"
+    elif has_position:
+        state = "HOLDING_LONG"
+        reason = "PRICE_ABOVE_STOP" if view.relation == "above" else "NO_FRESH_DOWN_CROSS"
+        next_trigger = "PRICE_CROSS_BELOW"
+    elif view.flattened_this_bar:
+        state = "REENTRY_LOCKED"
+        reason = "SOLD_THIS_BAR"
+        next_trigger = "NEXT_BAR_AND_FRESH_UP_CROSS"
+    elif view.bought_this_bar:
+        state = "BUY_LOCKED"
+        reason = "BUY_SIGNAL_USED_THIS_BAR"
+        next_trigger = "NEXT_BAR"
+    elif view.relation == "below":
+        state = "ARMED_FOR_BUY"
+        reason = "PRICE_BELOW_STOP"
+        next_trigger = "PRICE_CROSS_ABOVE"
+    else:
+        state = "WAITING_FOR_RESET"
+        reason = "PRICE_ALREADY_ABOVE_WITHOUT_FRESH_CROSS"
+        next_trigger = "PRICE_BELOW_THEN_CROSS_ABOVE"
+
+    return {
+        "state": state,
+        "reason": reason,
+        "next_trigger": next_trigger,
+        "trading_enabled": trading_enabled,
+        "has_position": has_position,
+        "has_pending_order": has_pending_order,
+        "strategy_ready": view.ready,
+        "buy_lock_open": not view.bought_this_bar,
+        "reentry_lock_open": not view.flattened_this_bar,
+        "fresh_up_cross": view.last_cross == "UP" and view.last_cross_result == "BUY_SIGNAL",
+        "bar_end_ms": view.bar_start_ms + bar_ms if view.bar_start_ms is not None else None,
+        "last_signal": (
+            {
+                "side": last_order["side"],
+                "status": last_order["status"],
+                "timestamp_ms": last_order["submitted_at_ms"],
+                "reason": last_order["reason"],
+            }
+            if last_order
+            else None
+        ),
+    }
 
 
 def _now_ms() -> int:

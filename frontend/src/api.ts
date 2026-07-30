@@ -1,4 +1,4 @@
-import type { EquityPoint, EventItem, Fill, Order, Overview } from './types'
+import type { AggTrade, EquityPoint, EventItem, Fill, OhlcvBar, Order, Overview, WarehouseSummary } from './types'
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url)
@@ -13,6 +13,11 @@ export const api = {
   fills: (accountId = 'soxlb') => getJson<Fill[]>(`/api/fills?account_id=${accountId}&limit=200`),
   orders: (accountId = 'soxlb') => getJson<Order[]>(`/api/orders?account_id=${accountId}&limit=200`),
   events: (accountId = 'soxlb') => getJson<EventItem[]>(`/api/events?account_id=${accountId}&limit=200`),
+  warehouse: () => getJson<WarehouseSummary>('/api/warehouse'),
+  aggTrades: (instrumentId = 'soxlb') =>
+    getJson<AggTrade[]>(`/api/market/agg-trades?instrument_id=${instrumentId}&limit=100`),
+  ohlcv: (instrumentId = 'soxlb') =>
+    getJson<OhlcvBar[]>(`/api/market/ohlcv?instrument_id=${instrumentId}&limit=100`),
   control: async (action: 'pause' | 'resume') => {
     const response = await fetch('/api/control', {
       method: 'POST',

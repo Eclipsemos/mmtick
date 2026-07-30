@@ -61,6 +61,9 @@ def test_cross_down_then_cross_up_is_locked_for_same_bar() -> None:
     )
     assert blocked is None
     assert strategy.flattened_this_bar
+    assert strategy.last_cross == "UP"
+    assert strategy.last_cross_result == "BLOCKED"
+    assert strategy.last_cross_reason == "REENTRY_LOCKED_THIS_BAR"
 
 
 def test_buy_and_sell_are_each_limited_to_one_signal_per_bar() -> None:

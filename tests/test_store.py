@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from mastermind_tick.config import ExecutionSettings, InstrumentSettings
-from mastermind_tick.models import Side, StrategySignal, Tick
+from mastermind_tick.models import Bar, Side, StrategySignal, Tick
 from mastermind_tick.store import PaperStore
 
 
@@ -89,3 +89,67 @@ def test_equity_snapshot_persists_atr_chart_values(tmp_path) -> None:
     assert point["atr"] == "2.5"
     assert point["trailing_stop"] == "98.75"
     assert point["relation"] == "above"
+
+
+def test_market_warehouse_deduplicates_ticks_and_updates_ohlcv(tmp_path) -> None:
+    store = PaperStore(tmp_path / "paper.db")
+    item = instrument()
+    history = Bar(
+        start_ms=0,
+        end_ms=899_999,
+        open=Decimal("99"),
+        high=Decimal("101"),
+        low=Decimal("98"),
+        close=Decimal("100"),
+        volume=Decimal("12"),
+        trade_count=8,
+    )
+    store.upsert_history_bars(item, 15, [history], "test_history")
+    store.upsert_history_bars(item, 15, [history], "test_history")
+
+    first = Tick(
+        event_id="agg-1",
+        timestamp_ms=900_000,
+        price=Decimal("101"),
+        quantity=Decimal("2"),
+        source="test_live",
+        aggregate_trade_id=1,
+        first_trade_id=10,
+        last_trade_id=12,
+        buyer_is_maker=True,
+        event_time_ms=900_001,
+    )
+    second = Tick(
+        event_id="agg-2",
+        timestamp_ms=901_000,
+        price=Decimal("99"),
+        quantity=Decimal("3"),
+        source="test_live",
+        aggregate_trade_id=2,
+        first_trade_id=13,
+        last_trade_id=13,
+        buyer_is_maker=False,
+        event_time_ms=901_001,
+    )
+
+    assert store.record_market_tick(item, 15, first)
+    assert not store.record_market_tick(item, 15, first)
+    assert store.record_market_tick(item, 15, second)
+
+    trades = store.agg_trades("soxlb", 10)
+    assert len(trades) == 2
+    assert trades[-1]["buyer_is_maker"] is True
+    bars = store.ohlcv_bars("soxlb", 15, 10)
+    assert len(bars) == 2
+    assert bars[0]["open"] == "101"
+    assert bars[0]["high"] == "101"
+    assert bars[0]["low"] == "99"
+    assert bars[0]["close"] == "99"
+    assert bars[0]["volume"] == "5"
+    assert bars[0]["trade_count"] == 4
+    assert not bars[0]["is_closed"]
+    assert bars[1]["is_closed"]
+
+    summary = store.warehouse_summary((item,), 15)
+    assert summary["instruments"][0]["agg_trades"]["row_count"] == 2
+    assert summary["instruments"][0]["ohlcv"]["row_count"] == 2
