@@ -1,0 +1,48 @@
+[app]
+name = "mastermind:tick"
+environment = "paper"
+database_path = "data/paper.db"
+frontend_dist = "frontend/dist"
+initial_cash = 100000.0
+equity_snapshot_seconds = 10
+
+[strategy]
+name = "xiaoguo_atr_tick_v1"
+bar_minutes = 15
+atr_period = 7
+atr_multiplier = 1.0
+position_fraction = 1.0
+
+[execution]
+fee_bps = 10.0
+slippage_bps = 5.0
+minimum_notional = 5.0
+
+[history]
+mastermind_alpha_warehouse = "/home/spaceaic/mm/data/warehouse"
+warmup_bars = 200
+
+[[instruments]]
+id = "soxlb"
+symbol = "SOXLBUSDT"
+display_symbol = "SOXLB/USDT"
+name = "Semicon Bull 3X ETF Tokenized bStock"
+asset_type = "tokenized_equity"
+venue = "Binance"
+currency = "USDT"
+feed = "binance"
+quantity_step = 0.001
+reference_symbol = "SOXL"
+
+[[instruments]]
+id = "soxl"
+symbol = "SOXL"
+display_symbol = "SOXL"
+name = "Direxion Daily Semiconductor Bull 3X Shares"
+asset_type = "leveraged_etf"
+venue = "NYSE Arca"
+currency = "USD"
+feed = "yahoo"
+quantity_step = 0.001
+reference_symbol = "SOXL"
+
