@@ -12,9 +12,12 @@ from mastermind_tick.store import PaperStore
 def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
     runtime_status = engine.status()
     runtime_by_id = {item["id"]: item for item in runtime_status["instruments"]}
+    active_ids = set(runtime_by_id) or {item.id for item in engine.settings.instruments}
     accounts = []
     for account in store.accounts():
         account_id = account["id"]
+        if account_id not in active_ids:
+            continue
         points = store.equity(account_id, 2000)
         latest = points[-1] if points else None
         initial = Decimal(account["initial_cash"])
@@ -41,23 +44,9 @@ def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
             }
         )
 
-    soxl = next((item for item in accounts if item["id"] == "soxl"), None)
-    soxlb = next((item for item in accounts if item["id"] == "soxlb"), None)
-    tracking = None
-    if soxl and soxlb and soxl["last_price"] and soxlb["last_price"]:
-        base = Decimal(soxl["last_price"])
-        token = Decimal(soxlb["last_price"])
-        if base:
-            tracking = {
-                "soxl_price": str(base),
-                "soxlb_price": str(token),
-                "premium": float(token / base - Decimal("1")),
-            }
-
     return {
         **runtime_status,
         "accounts": accounts,
-        "tracking": tracking,
         "strategy_config": {
             "name": engine.settings.strategy.name,
             "bar_minutes": engine.settings.strategy.bar_minutes,

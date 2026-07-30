@@ -24,6 +24,6 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert health.status_code == 200
     assert health.json()["service"] == "mastermind-tick"
     assert overview.status_code == 200
-    assert {item["id"] for item in overview.json()["accounts"]} == {"soxl", "soxlb"}
+    assert {item["id"] for item in overview.json()["accounts"]} == {"soxlb"}
+    assert overview.json()["instruments"] == []
     assert overview.json()["environment"] == "paper"
-

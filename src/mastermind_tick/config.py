@@ -5,7 +5,6 @@ from __future__ import annotations
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
 
 
 @dataclass(frozen=True)
@@ -33,7 +32,7 @@ class InstrumentSettings:
     asset_type: str
     venue: str
     currency: str
-    feed: Literal["binance", "yahoo"]
+    feed: str
     quantity_step: float
     reference_symbol: str
 
@@ -49,7 +48,6 @@ class Settings:
     equity_snapshot_seconds: int
     strategy: StrategySettings
     execution: ExecutionSettings
-    alpha_warehouse: Path
     warmup_bars: int
     instruments: tuple[InstrumentSettings, ...]
 
@@ -90,7 +88,6 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         equity_snapshot_seconds=int(app["equity_snapshot_seconds"]),
         strategy=strategy,
         execution=execution,
-        alpha_warehouse=Path(raw["history"]["mastermind_alpha_warehouse"]),
         warmup_bars=int(raw["history"]["warmup_bars"]),
         instruments=instruments,
     )

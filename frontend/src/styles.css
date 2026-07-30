@@ -60,6 +60,8 @@ h1 { margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: 0; }
 .account-switch { display: flex; padding: 3px; border: 1px solid var(--line); border-radius: 6px; background: #0d1114; }
 .account-switch button { min-width: 104px; height: 34px; border: 0; border-radius: 4px; color: var(--muted); background: transparent; cursor: pointer; font: 11px 'DM Mono', monospace; }
 .account-switch button.active { color: #07110d; background: var(--green); font-weight: 700; }
+.scope-chips { display: flex; align-items: center; gap: 7px; }
+.scope-chips span { height: 30px; padding: 0 9px; display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 4px; color: #7f8a92; background: #0d1114; font: 9px 'DM Mono', monospace; }
 
 .instrument-band {
   min-height: 96px; padding: 18px 20px; display: grid; grid-template-columns: minmax(0, 1fr) auto 180px; align-items: center; gap: 30px;
@@ -97,7 +99,23 @@ h1 { margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: 0; }
 .panel-head h3 { margin: 5px 0 0; font-size: 14px; }
 .panel-head > strong { font: 500 14px 'DM Mono', monospace; }
 .chart-wrap { height: 300px; padding: 10px 12px 4px; }
+.price-chart-wrap { height: 360px; padding: 7px 10px 5px; }
+.compact-chart-wrap { height: 190px; padding: 10px 12px; }
 .empty-chart, .empty-table, .loading { height: 100%; min-height: 170px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #626e76; font-size: 11px; }
+.price-head { gap: 18px; }
+.chart-summary { display: flex; align-items: center; gap: 20px; }
+.chart-summary > strong { font: 500 14px 'DM Mono', monospace; }
+.chart-legend { display: flex; align-items: center; gap: 13px; }
+.chart-legend span { display: flex; align-items: center; gap: 6px; letter-spacing: 0; }
+.chart-legend i { width: 15px; height: 2px; display: inline-block; }
+.price-dot { background: #e7ecef; }
+.atr-dot { border-top: 2px dashed var(--yellow); }
+.trade-marker-label { font: 700 8px 'DM Mono', monospace; }
+.price-tooltip { min-width: 175px; padding: 11px 12px; border: 1px solid var(--line-strong); border-radius: 4px; background: #12171b; box-shadow: 0 12px 30px rgba(0, 0, 0, .32); }
+.price-tooltip time { display: block; margin-bottom: 8px; color: #748089; font: 8px 'DM Mono', monospace; }
+.price-tooltip div { min-height: 24px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.price-tooltip div span { color: var(--muted); font-size: 9px; }
+.price-tooltip div strong { font: 9px 'DM Mono', monospace; }
 .relation { padding: 5px 7px; border: 1px solid var(--line-strong); border-radius: 4px; }
 .relation.above { color: var(--green); border-color: #27624e; }
 .relation.below { color: var(--red); border-color: #67343a; }
@@ -151,6 +169,8 @@ footer { height: 44px; padding: 0 30px; display: flex; align-items: center; just
   .paper-badge, .feed-state { display: none; }
   main { padding: 23px 14px 34px; }
   .page-head { align-items: stretch; flex-direction: column; }
+  .scope-chips { overflow-x: auto; }
+  .scope-chips span { flex: 1; justify-content: center; white-space: nowrap; }
   .account-switch button { flex: 1; }
   .instrument-band { grid-template-columns: 1fr auto; gap: 12px; }
   .source-block { grid-column: 1 / -1; padding: 12px 0 0; border-left: 0; border-top: 1px solid var(--line); }
@@ -158,6 +178,10 @@ footer { height: 44px; padding: 0 30px; display: flex; align-items: center; just
   .metrics-grid { grid-template-columns: 1fr 1fr; }
   .metric { min-height: 112px; padding: 14px; }
   .metric > strong { font-size: 17px; }
+  .price-head { align-items: flex-start; }
+  .chart-summary { align-items: flex-end; flex-direction: column-reverse; gap: 7px; }
+  .chart-legend { gap: 8px; }
+  .price-chart-wrap { height: 330px; padding-left: 2px; padding-right: 5px; }
   .event-row { padding: 12px 0; grid-template-columns: 55px 1fr; gap: 7px; }
   .event-row p { grid-column: 1 / -1; margin: 0; }
 }

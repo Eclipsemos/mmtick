@@ -73,3 +73,19 @@ def test_round_trip_realized_pnl_includes_both_fees(tmp_path) -> None:
     assert Decimal(account["realized_pnl"]) > 0
     assert len(store.fills("soxlb")) == 2
 
+
+def test_equity_snapshot_persists_atr_chart_values(tmp_path) -> None:
+    store = PaperStore(tmp_path / "paper.db")
+    item = instrument()
+    store.ensure_account(item, 10_000, 1)
+
+    store.snapshot(
+        "soxlb",
+        market_tick("chart-tick", 2, "101.25"),
+        {"atr": "2.5", "trailing_stop": "98.75", "relation": "above"},
+    )
+
+    point = store.equity("soxlb")[-1]
+    assert point["atr"] == "2.5"
+    assert point["trailing_stop"] == "98.75"
+    assert point["relation"] == "above"

@@ -19,7 +19,6 @@ slippage_bps = 5.0
 minimum_notional = 5.0
 
 [history]
-mastermind_alpha_warehouse = "/home/spaceaic/mm/data/warehouse"
 warmup_bars = 200
 
 [[instruments]]
@@ -33,16 +32,3 @@ currency = "USDT"
 feed = "binance"
 quantity_step = 0.001
 reference_symbol = "SOXL"
-
-[[instruments]]
-id = "soxl"
-symbol = "SOXL"
-display_symbol = "SOXL"
-name = "Direxion Daily Semiconductor Bull 3X Shares"
-asset_type = "leveraged_etf"
-venue = "NYSE Arca"
-currency = "USD"
-feed = "yahoo"
-quantity_step = 0.001
-reference_symbol = "SOXL"
-

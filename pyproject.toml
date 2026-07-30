@@ -9,11 +9,8 @@ description = "mastermind:tick short-horizon paper trading and live strategy con
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-  "curl-cffi>=0.13",
   "fastapi>=0.115",
   "httpx>=0.28",
-  "pandas>=2.2",
-  "pyarrow>=15",
   "uvicorn[standard]>=0.34",
   "websockets>=14",
 ]

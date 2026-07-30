@@ -57,7 +57,6 @@ export type Overview = {
   started_at_ms: number | null
   instruments: Runtime[]
   accounts: Account[]
-  tracking: { soxl_price: string; soxlb_price: string; premium: number } | null
   strategy_config: {
     name: string
     bar_minutes: number
@@ -76,6 +75,9 @@ export type EquityPoint = {
   cash: string
   quantity: string
   unrealized_pnl: string
+  atr: string | null
+  trailing_stop: string | null
+  relation: string | null
 }
 
 export type Fill = {
@@ -113,4 +115,3 @@ export type EventItem = {
   event_type: string
   message: string
 }
-

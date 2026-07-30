@@ -44,7 +44,7 @@ class PaperEngine:
         self._stopping = False
         for instrument in self.settings.instruments:
             self.store.ensure_account(instrument, self.settings.initial_cash, self.started_at_ms)
-            feed = build_feed(instrument.feed, instrument.symbol, self.settings.alpha_warehouse)
+            feed = build_feed(instrument.feed, instrument.symbol)
             strategy = ATRTickStrategy(
                 period=self.settings.strategy.atr_period,
                 multiplier=self.settings.strategy.atr_multiplier,
@@ -162,7 +162,8 @@ class PaperEngine:
                 >= self.settings.equity_snapshot_seconds * 1000
             )
             if snapshot_due or fill or signal:
-                self.store.snapshot(account_id, tick)
+                strategy_view = _strategy_view(asdict(runtime.strategy.view()))
+                self.store.snapshot(account_id, tick, strategy_view)
                 runtime.last_snapshot_ms = tick.timestamp_ms
             self.store.save_strategy_state(
                 account_id, runtime.strategy.runtime_state(), tick.timestamp_ms

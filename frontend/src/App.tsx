@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Activity,
   ArrowDownToLine,
+  CircleArrowDown,
+  CircleArrowUp,
   CirclePause,
   CirclePlay,
   Clock3,
@@ -17,9 +19,11 @@ import {
 import { useMemo, useState } from 'react'
 import {
   CartesianGrid,
+  ComposedChart,
   Line,
   LineChart,
   ResponsiveContainer,
+  Scatter,
   Tooltip,
   XAxis,
   YAxis,
@@ -28,6 +32,20 @@ import { api } from './api'
 import type { Account, EquityPoint, EventItem, Fill, Order } from './types'
 
 type View = 'monitor' | 'orders' | 'events'
+
+type PricePoint = {
+  timestamp: number
+  price: number
+  trailingStop: number | null
+  change: number
+}
+
+type TradePoint = {
+  timestamp: number
+  price: number
+  side: 'BUY' | 'SELL'
+  returnPercent: number | null
+}
 
 function money(value: string | number | null, currency = 'USD') {
   if (value === null) return '--'
@@ -63,28 +81,27 @@ function time(value: number | null) {
 function App() {
   const client = useQueryClient()
   const [view, setView] = useState<View>('monitor')
-  const [accountId, setAccountId] = useState('soxlb')
   const overview = useQuery({ queryKey: ['overview'], queryFn: api.overview })
-  const equity = useQuery({
-    queryKey: ['equity', accountId],
-    queryFn: () => api.equity(accountId),
-  })
-  const fills = useQuery({ queryKey: ['fills'], queryFn: api.fills })
-  const orders = useQuery({ queryKey: ['orders'], queryFn: api.orders })
-  const events = useQuery({ queryKey: ['events'], queryFn: api.events })
+  const equity = useQuery({ queryKey: ['equity', 'soxlb'], queryFn: () => api.equity('soxlb') })
+  const fills = useQuery({ queryKey: ['fills', 'soxlb'], queryFn: () => api.fills('soxlb') })
+  const orders = useQuery({ queryKey: ['orders', 'soxlb'], queryFn: () => api.orders('soxlb') })
+  const events = useQuery({ queryKey: ['events', 'soxlb'], queryFn: () => api.events('soxlb') })
   const control = useMutation({
     mutationFn: api.control,
     onSuccess: () => client.invalidateQueries({ queryKey: ['overview'] }),
   })
 
-  const selected = overview.data?.accounts.find((item) => item.id === accountId)
+  const account = overview.data?.accounts[0]
   const liveCount = overview.data?.instruments.filter((item) => item.status === 'LIVE').length ?? 0
+  const instrumentCount = overview.data?.instruments.length ?? 1
 
   return (
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mastermind">mastermind</span><span className="brand-colon">:</span><span>tick</span>
+          <span className="brand-mastermind">mastermind</span>
+          <span className="brand-colon">:</span>
+          <span>tick</span>
         </div>
         <nav className="nav-tabs" aria-label="主视图">
           <button className={view === 'monitor' ? 'active' : ''} onClick={() => setView('monitor')}>
@@ -99,7 +116,9 @@ function App() {
         </nav>
         <div className="top-actions">
           <span className="paper-badge">PAPER</span>
-          <span className={`feed-state ${liveCount ? 'live' : ''}`}><i />{liveCount}/2 LIVE</span>
+          <span className={`feed-state ${liveCount ? 'live' : ''}`}>
+            <i />{liveCount}/{instrumentCount} LIVE
+          </span>
           <button
             className={overview.data?.trading_enabled ? 'control danger' : 'control resume'}
             disabled={control.isPending}
@@ -118,23 +137,18 @@ function App() {
             <div className="kicker">SHORT-HORIZON EXECUTION / ATR TICK V1</div>
             <h1>实时模拟盘</h1>
           </div>
-          <div className="account-switch" role="group" aria-label="选择模拟账户">
-            {overview.data?.accounts.map((account) => (
-              <button
-                key={account.id}
-                className={accountId === account.id ? 'active' : ''}
-                onClick={() => setAccountId(account.id)}
-              >
-                {account.display_symbol}
-              </button>
-            ))}
+          <div className="scope-chips">
+            <span>SOXLBUSDT</span><span>15m</span><span>LONG ONLY</span>
           </div>
         </section>
 
         {overview.isError ? (
-          <div className="error-state">API 无法连接 <button onClick={() => overview.refetch()}><RefreshCw size={15} />重试</button></div>
+          <div className="error-state">
+            API 无法连接
+            <button onClick={() => overview.refetch()}><RefreshCw size={15} />重试</button>
+          </div>
         ) : view === 'monitor' ? (
-          <Monitor account={selected} equity={equity.data ?? []} fills={fills.data ?? []} tracking={overview.data?.tracking ?? null} />
+          <Monitor account={account} equity={equity.data ?? []} fills={fills.data ?? []} />
         ) : view === 'orders' ? (
           <Orders rows={orders.data ?? []} />
         ) : (
@@ -153,28 +167,35 @@ function Monitor({
   account,
   equity,
   fills,
-  tracking,
 }: {
   account?: Account
   equity: EquityPoint[]
   fills: Fill[]
-  tracking: { soxl_price: string; soxlb_price: string; premium: number } | null
 }) {
-  const chart = useMemo(
-    () => equity.map((point) => ({ time: time(point.timestamp_ms), equity: Number(point.equity) })),
+  const accountFills = useMemo(
+    () => fills.filter((fill) => fill.account_id === 'soxlb'),
+    [fills],
+  )
+  const priceChart = useMemo(() => buildPriceChart(equity), [equity])
+  const tradeMarkers = useMemo(() => buildTradeMarkers(accountFills), [accountFills])
+  const equityChart = useMemo(
+    () => equity.map((point) => ({ timestamp: point.timestamp_ms, equity: Number(point.equity) })),
     [equity],
   )
   if (!account) return <div className="loading"><Activity size={20} />正在初始化账户</div>
   const runtime = account.runtime
   const strategy = runtime.strategy
   const positive = Number(account.total_pnl) >= 0
-  const accountFills = fills.filter((fill) => fill.account_id === account.id)
+  const periodReturn = priceChart.length > 1 ? priceChart.at(-1)!.change : 0
 
   return (
     <>
       <section className="instrument-band">
         <div className="symbol-block">
-          <div className="symbol-line"><h2>{account.display_symbol}</h2><span>{runtime.asset_type.replace('_', ' ')}</span></div>
+          <div className="symbol-line">
+            <h2>{account.display_symbol}</h2>
+            <span>{runtime.asset_type.replace('_', ' ')}</span>
+          </div>
           <p>{runtime.name}</p>
         </div>
         <div className="quote-block">
@@ -182,7 +203,9 @@ function Monitor({
           <span><Clock3 size={13} />{time(account.last_snapshot_ms)}</span>
         </div>
         <div className="source-block">
-          <span className={`runtime ${runtime.status.toLowerCase()}`}><Radio size={14} />{runtime.status}</span>
+          <span className={`runtime ${runtime.status.toLowerCase()}`}>
+            <Radio size={14} />{runtime.status}
+          </span>
           <strong>{runtime.feed}</strong>
           <small>{runtime.venue}</small>
         </div>
@@ -196,25 +219,63 @@ function Monitor({
       </section>
 
       <section className="workspace-grid">
-        <div className="panel equity-panel">
-          <div className="panel-head"><div><span>ACCOUNT EQUITY</span><h3>净值曲线</h3></div><strong>{money(account.equity, account.currency)}</strong></div>
-          <div className="chart-wrap">
-            {chart.length > 1 ? (
+        <div className="panel price-panel">
+          <div className="panel-head price-head">
+            <div><span>PRICE / ATR TRAILING STOP</span><h3>价格与交易信号</h3></div>
+            <div className="chart-summary">
+              <div className="chart-legend">
+                <span><i className="price-dot" />价格</span>
+                <span><i className="atr-dot" />ATR 止损线</span>
+              </div>
+              <strong className={periodReturn >= 0 ? 'good-text' : 'bad-text'}>{percent(periodReturn)}</strong>
+            </div>
+          </div>
+          <div className="price-chart-wrap">
+            {priceChart.length > 1 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chart} margin={{ top: 12, right: 10, bottom: 0, left: 0 }}>
+                <ComposedChart data={priceChart} margin={{ top: 24, right: 24, bottom: 2, left: 2 }}>
                   <CartesianGrid stroke="#20272d" vertical={false} />
-                  <XAxis dataKey="time" stroke="#66727d" tickLine={false} axisLine={false} minTickGap={70} fontSize={10} />
-                  <YAxis domain={['auto', 'auto']} stroke="#66727d" tickLine={false} axisLine={false} width={72} fontSize={10} tickFormatter={(v) => Number(v).toLocaleString()} />
-                  <Tooltip contentStyle={{ background: '#12171b', border: '1px solid #293139', borderRadius: 4 }} formatter={(v) => money(Number(v), account.currency)} />
-                  <Line dataKey="equity" type="monotone" stroke="#3fd6a1" strokeWidth={2} dot={false} isAnimationActive={false} />
-                </LineChart>
+                  <XAxis
+                    dataKey="timestamp"
+                    type="number"
+                    domain={['dataMin', 'dataMax']}
+                    stroke="#66727d"
+                    tickLine={false}
+                    axisLine={false}
+                    minTickGap={70}
+                    fontSize={10}
+                    tickFormatter={(value) => time(Number(value))}
+                  />
+                  <YAxis
+                    domain={['auto', 'auto']}
+                    stroke="#66727d"
+                    tickLine={false}
+                    axisLine={false}
+                    width={58}
+                    fontSize={10}
+                    tickFormatter={(value) => Number(value).toFixed(2)}
+                  />
+                  <Tooltip content={<PriceTooltip currency={account.currency} />} />
+                  <Line dataKey="price" name="价格" type="monotone" stroke="#e7ecef" strokeWidth={2} dot={false} isAnimationActive={false} />
+                  <Line dataKey="trailingStop" name="ATR 止损线" type="stepAfter" stroke="#e8bd58" strokeWidth={1.8} strokeDasharray="6 4" dot={false} connectNulls isAnimationActive={false} />
+                  <Scatter
+                    data={tradeMarkers}
+                    dataKey="price"
+                    name="成交"
+                    shape={(props: unknown) => <TradeMarker {...(props as TradeMarkerProps)} />}
+                    isAnimationActive={false}
+                  />
+                </ComposedChart>
               </ResponsiveContainer>
-            ) : <div className="empty-chart">等待下一条净值快照</div>}
+            ) : <div className="empty-chart">正在积累价格与 ATR 快照</div>}
           </div>
         </div>
 
         <div className="panel strategy-panel">
-          <div className="panel-head"><div><span>STRATEGY STATE</span><h3>ATR 移动线</h3></div><span className={`relation ${strategy.relation}`}>{strategy.relation.toUpperCase()}</span></div>
+          <div className="panel-head">
+            <div><span>STRATEGY STATE</span><h3>ATR 实时状态</h3></div>
+            <span className={`relation ${strategy.relation}`}>{strategy.relation.toUpperCase()}</span>
+          </div>
           <dl className="strategy-values">
             <div><dt>ATR(7)</dt><dd>{number(strategy.atr, 4)}</dd></div>
             <div><dt>ATR 止损线</dt><dd>{money(strategy.trailing_stop, account.currency)}</dd></div>
@@ -229,17 +290,113 @@ function Monitor({
 
       <section className="lower-grid">
         <div className="panel fills-panel">
-          <div className="panel-head"><div><span>EXECUTIONS</span><h3>最近成交</h3></div><a className="export" href={`/api/fills.csv?account_id=${account.id}`}><ArrowDownToLine size={15} />CSV</a></div>
+          <div className="panel-head">
+            <div><span>EXECUTIONS</span><h3>最近成交</h3></div>
+            <a className="export" href={`/api/fills.csv?account_id=${account.id}`}><ArrowDownToLine size={15} />CSV</a>
+          </div>
           <FillTable rows={accountFills.slice(0, 8)} />
         </div>
-        <div className="panel tracking-panel">
-          <div className="panel-head"><div><span>UNDERLYING LINK</span><h3>SOXLB / SOXL</h3></div></div>
-          <div className="tracking-prices"><div><span>Token</span><strong>{tracking ? money(tracking.soxlb_price) : '--'}</strong></div><div><span>ETF</span><strong>{tracking ? money(tracking.soxl_price) : '--'}</strong></div></div>
-          <div className="premium-row"><span>名义溢价 / 折价</span><strong className={tracking && tracking.premium >= 0 ? 'good-text' : 'bad-text'}>{tracking ? percent(tracking.premium) : '--'}</strong></div>
-          <div className="data-note">报价时间可能不同，偏离值仅用于监控。</div>
+        <div className="panel compact-equity-panel">
+          <div className="panel-head"><div><span>ACCOUNT EQUITY</span><h3>净值曲线</h3></div><strong>{money(account.equity, account.currency)}</strong></div>
+          <div className="compact-chart-wrap">
+            {equityChart.length > 1 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={equityChart} margin={{ top: 12, right: 12, bottom: 0, left: 0 }}>
+                  <CartesianGrid stroke="#20272d" vertical={false} />
+                  <XAxis dataKey="timestamp" hide />
+                  <YAxis domain={['auto', 'auto']} hide />
+                  <Tooltip labelFormatter={(value) => time(Number(value))} formatter={(value) => money(Number(value), account.currency)} />
+                  <Line dataKey="equity" type="monotone" stroke="#3fd6a1" strokeWidth={2} dot={false} isAnimationActive={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : <div className="empty-chart">等待净值快照</div>}
+          </div>
         </div>
       </section>
     </>
+  )
+}
+
+function buildPriceChart(equity: EquityPoint[]): PricePoint[] {
+  const valid = equity.filter((point) => Number.isFinite(Number(point.price)))
+  const firstPrice = valid.length ? Number(valid[0].price) : 0
+  return valid.map((point) => ({
+    timestamp: point.timestamp_ms,
+    price: Number(point.price),
+    trailingStop: point.trailing_stop === null ? null : Number(point.trailing_stop),
+    change: firstPrice ? Number(point.price) / firstPrice - 1 : 0,
+  }))
+}
+
+function buildTradeMarkers(fills: Fill[]): TradePoint[] {
+  const ordered = [...fills].sort((left, right) => left.timestamp_ms - right.timestamp_ms)
+  let entryUnitCost: number | null = null
+  return ordered.map((fill) => {
+    const quantity = Number(fill.quantity)
+    const notional = Number(fill.notional)
+    const fee = Number(fill.fee)
+    let returnPercent: number | null = null
+    if (fill.side === 'BUY' && quantity > 0) {
+      entryUnitCost = (notional + fee) / quantity
+    } else if (fill.side === 'SELL' && quantity > 0 && entryUnitCost) {
+      const exitUnitProceeds = (notional - fee) / quantity
+      returnPercent = exitUnitProceeds / entryUnitCost - 1
+      entryUnitCost = null
+    }
+    return {
+      timestamp: fill.timestamp_ms,
+      price: Number(fill.price),
+      side: fill.side as 'BUY' | 'SELL',
+      returnPercent,
+    }
+  })
+}
+
+type TradeMarkerProps = {
+  cx?: number
+  cy?: number
+  payload?: TradePoint
+}
+
+function TradeMarker({ cx = 0, cy = 0, payload }: TradeMarkerProps) {
+  if (!payload || (payload.side !== 'BUY' && payload.side !== 'SELL')) return null
+  const isBuy = payload.side === 'BUY'
+  const Icon = isBuy ? CircleArrowUp : CircleArrowDown
+  const color = isBuy ? '#3fd6a1' : '#ff6f78'
+  const label = isBuy
+    ? 'BUY'
+    : payload.returnPercent === null
+      ? 'SELL'
+      : percent(payload.returnPercent)
+  const labelY = isBuy ? cy + 30 : cy - 21
+  return (
+    <g data-testid={`trade-marker-${payload.side.toLowerCase()}`}>
+      <Icon x={cx - 10} y={cy - 10} width={20} height={20} color={color} fill="#10151a" strokeWidth={2.2} />
+      <text x={cx} y={labelY} textAnchor="middle" fill={color} className="trade-marker-label">{label}</text>
+    </g>
+  )
+}
+
+function PriceTooltip({
+  active,
+  payload,
+  label,
+  currency,
+}: {
+  active?: boolean
+  payload?: Array<{ payload: PricePoint }>
+  label?: number
+  currency: string
+}) {
+  const point = payload?.[0]?.payload
+  if (!active || !point) return null
+  return (
+    <div className="price-tooltip">
+      <time>{time(label ?? point.timestamp)}</time>
+      <div><span>价格</span><strong>{money(point.price, currency)}</strong></div>
+      <div><span>ATR 止损线</span><strong>{money(point.trailingStop, currency)}</strong></div>
+      <div><span>区间涨跌</span><strong className={point.change >= 0 ? 'good-text' : 'bad-text'}>{percent(point.change)}</strong></div>
+    </div>
   )
 }
 
@@ -261,4 +418,3 @@ function Events({ rows }: { rows: EventItem[] }) {
 }
 
 export default App
-

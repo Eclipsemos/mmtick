@@ -78,6 +78,9 @@ CREATE TABLE IF NOT EXISTS equity_snapshots (
     equity TEXT NOT NULL,
     unrealized_pnl TEXT NOT NULL,
     realized_pnl TEXT NOT NULL,
+    atr TEXT,
+    trailing_stop TEXT,
+    relation TEXT,
     source TEXT NOT NULL
 );
 
@@ -110,6 +113,17 @@ class PaperStore:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.connection() as connection:
             connection.executescript(SCHEMA)
+            self._migrate(connection)
+
+    @staticmethod
+    def _migrate(connection: sqlite3.Connection) -> None:
+        columns = {
+            row["name"]
+            for row in connection.execute("PRAGMA table_info(equity_snapshots)").fetchall()
+        }
+        for name in ("atr", "trailing_stop", "relation"):
+            if name not in columns:
+                connection.execute(f"ALTER TABLE equity_snapshots ADD COLUMN {name} TEXT")
 
     @contextmanager
     def connection(self) -> Iterator[sqlite3.Connection]:
@@ -360,7 +374,12 @@ class PaperStore:
         )
         return result
 
-    def snapshot(self, account_id: str, tick: Tick) -> dict[str, str | int]:
+    def snapshot(
+        self,
+        account_id: str,
+        tick: Tick,
+        strategy: dict[str, Any] | None = None,
+    ) -> dict[str, str | int]:
         account = self.account(account_id)
         cash = Decimal(account["cash"])
         quantity = Decimal(account["quantity"])
@@ -369,13 +388,17 @@ class PaperStore:
         market_value = quantity * tick.price
         equity = cash + market_value
         unrealized = quantity * (tick.price - average_price) if quantity else Decimal("0")
+        strategy = strategy or {}
+        atr = strategy.get("atr")
+        trailing_stop = strategy.get("trailing_stop")
+        relation = strategy.get("relation")
         with self.connection() as connection:
             connection.execute(
                 """
                 INSERT INTO equity_snapshots (
                     account_id, timestamp_ms, price, cash, quantity, market_value,
-                    equity, unrealized_pnl, realized_pnl, source
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    equity, unrealized_pnl, realized_pnl, atr, trailing_stop, relation, source
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     account_id,
@@ -387,6 +410,9 @@ class PaperStore:
                     str(equity),
                     str(unrealized),
                     str(realized_pnl),
+                    str(atr) if atr is not None else None,
+                    str(trailing_stop) if trailing_stop is not None else None,
+                    relation,
                     tick.source,
                 ),
             )
@@ -407,7 +433,7 @@ class PaperStore:
                 """
                 SELECT * FROM (
                     SELECT timestamp_ms, price, cash, quantity, market_value, equity,
-                           unrealized_pnl, realized_pnl, source
+                           unrealized_pnl, realized_pnl, atr, trailing_stop, relation, source
                     FROM equity_snapshots WHERE account_id = ?
                     ORDER BY timestamp_ms DESC, id DESC LIMIT ?
                 ) ORDER BY timestamp_ms

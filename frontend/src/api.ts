@@ -10,9 +10,9 @@ export const api = {
   overview: () => getJson<Overview>('/api/overview'),
   equity: (accountId: string) =>
     getJson<EquityPoint[]>(`/api/accounts/${accountId}/equity?limit=2000`),
-  fills: () => getJson<Fill[]>('/api/fills?limit=200'),
-  orders: () => getJson<Order[]>('/api/orders?limit=200'),
-  events: () => getJson<EventItem[]>('/api/events?limit=200'),
+  fills: (accountId = 'soxlb') => getJson<Fill[]>(`/api/fills?account_id=${accountId}&limit=200`),
+  orders: (accountId = 'soxlb') => getJson<Order[]>(`/api/orders?account_id=${accountId}&limit=200`),
+  events: (accountId = 'soxlb') => getJson<EventItem[]>(`/api/events?account_id=${accountId}&limit=200`),
   control: async (action: 'pause' | 'resume') => {
     const response = await fetch('/api/control', {
       method: 'POST',
@@ -23,4 +23,3 @@ export const api = {
     return response.json() as Promise<{ ok: boolean; trading_enabled: boolean }>
   },
 }
-
