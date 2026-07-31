@@ -402,7 +402,7 @@ function Monitor({
                     )
                   })}
                   <Line dataKey="price" name="价格" type="monotone" stroke="#e7ecef" strokeWidth={2} dot={false} isAnimationActive={false} />
-                  <Line dataKey="trailingStop" name="ATR 止损线" type="stepAfter" stroke="#e8bd58" strokeWidth={1.8} strokeDasharray="6 4" dot={false} connectNulls isAnimationActive={false} />
+                  <Line dataKey="trailingStop" name="ATR 止损线" type="stepAfter" stroke="#e8bd58" strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
                   <Scatter
                     data={visibleTradeMarkers}
                     dataKey="price"

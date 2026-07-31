@@ -143,7 +143,7 @@ h1 { margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: 0; }
 .chart-legend span { display: flex; align-items: center; gap: 6px; letter-spacing: 0; }
 .chart-legend i { width: 15px; height: 2px; display: inline-block; }
 .price-dot { background: #e7ecef; }
-.atr-dot { border-top: 2px dashed var(--yellow); }
+.atr-dot { background: var(--yellow); }
 .trade-marker-label { font: 700 8px 'DM Mono', monospace; }
 .trade-range text { font-family: 'DM Mono', monospace; font-weight: 800; paint-order: stroke; stroke: #080b0d; stroke-width: 5px; stroke-linejoin: round; filter: drop-shadow(0 1px 2px #000); }
 .recharts-brush-slide { fill: #273139; fill-opacity: .68; }
