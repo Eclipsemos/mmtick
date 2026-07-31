@@ -41,7 +41,7 @@ def warmed_strategy() -> ATRTickStrategy:
     return strategy
 
 
-def form_up_cross_bar(strategy: ATRTickStrategy) -> int:
+def form_up_cross_bar(strategy: ATRTickStrategy) -> Bar:
     start = 3 * BAR_MS
     assert strategy.on_tick(
         tick("open", start, 10), has_position=False, has_pending_order=False
@@ -56,7 +56,8 @@ def form_up_cross_bar(strategy: ATRTickStrategy) -> int:
         has_position=False,
         has_pending_order=False,
     ) is None
-    return start
+    assert strategy.current_bar is not None
+    return Bar.from_dict(strategy.current_bar.as_dict())
 
 
 def test_wilder_atr_matches_known_pine_values() -> None:
@@ -70,19 +71,19 @@ def test_wilder_atr_matches_known_pine_values() -> None:
 
 def test_intrabar_crosses_never_emit_a_signal() -> None:
     strategy = warmed_strategy()
-    start = form_up_cross_bar(strategy)
+    official_bar = form_up_cross_bar(strategy)
 
     assert strategy.current_bar is not None
-    assert strategy.current_bar.start_ms == start
+    assert strategy.current_bar.start_ms == official_bar.start_ms
     assert strategy.last_cross is None
 
 
-def test_close_confirmed_up_cross_is_reported_on_next_bar_first_tick() -> None:
+def test_official_close_confirms_up_cross_without_waiting_for_a_trade_tick() -> None:
     strategy = warmed_strategy()
-    closed_start = form_up_cross_bar(strategy)
+    official_bar = form_up_cross_bar(strategy)
 
-    signal = strategy.on_tick(
-        tick("next-open", closed_start + BAR_MS, 11),
+    signal = strategy.on_bar_close(
+        official_bar,
         has_position=False,
         has_pending_order=False,
     )
@@ -93,9 +94,9 @@ def test_close_confirmed_up_cross_is_reported_on_next_bar_first_tick() -> None:
     assert signal.signal_price == Decimal("10")
     assert signal.trailing_stop == Decimal("8.359375")
     assert signal.atr == Decimal("2.1875")
-    assert signal.bar_start_ms == closed_start
-    assert signal.signal_at_ms == closed_start + BAR_MS - 1
-    assert signal.tick_id == f"bar-close:{closed_start + BAR_MS - 1}"
+    assert signal.bar_start_ms == official_bar.start_ms
+    assert signal.signal_at_ms == official_bar.end_ms
+    assert signal.tick_id == f"bar-close:{official_bar.end_ms}"
     assert strategy.last_cross == "UP"
     assert strategy.last_cross_result == "BUY_SIGNAL"
 
@@ -124,21 +125,28 @@ def test_realtime_atr_and_stop_continue_to_update_on_every_tick() -> None:
 
 def test_close_confirmed_down_cross_sells_on_following_bar() -> None:
     strategy = warmed_strategy()
-    up_start = form_up_cross_bar(strategy)
-    buy = strategy.on_tick(
-        tick("buy-open", up_start + BAR_MS, 11),
+    up_bar = form_up_cross_bar(strategy)
+    buy = strategy.on_bar_close(
+        up_bar,
         has_position=False,
         has_pending_order=False,
     )
     assert buy is not None and buy.side is Side.BUY
 
     assert strategy.on_tick(
-        tick("down-close", up_start + BAR_MS + 600_000, 7),
+        tick("down-open", up_bar.start_ms + BAR_MS, 11),
         has_position=True,
         has_pending_order=False,
     ) is None
-    sell = strategy.on_tick(
-        tick("sell-open", up_start + 2 * BAR_MS, 6),
+    assert strategy.on_tick(
+        tick("down-close", up_bar.start_ms + BAR_MS + 600_000, 7),
+        has_position=True,
+        has_pending_order=False,
+    ) is None
+    assert strategy.current_bar is not None
+    official_down_bar = Bar.from_dict(strategy.current_bar.as_dict())
+    sell = strategy.on_bar_close(
+        official_down_bar,
         has_position=True,
         has_pending_order=False,
     )
@@ -147,17 +155,17 @@ def test_close_confirmed_down_cross_sells_on_following_bar() -> None:
     assert sell.side is Side.SELL
     assert sell.signal_price == Decimal("7")
     assert sell.trailing_stop == Decimal("9.3203125")
-    assert sell.signal_at_ms == up_start + 2 * BAR_MS - 1
+    assert sell.signal_at_ms == official_down_bar.end_ms
     assert strategy.last_cross == "DOWN"
     assert strategy.last_cross_result == "SELL_SIGNAL"
 
 
 def test_position_rules_block_close_confirmed_crosses() -> None:
     strategy = warmed_strategy()
-    start = form_up_cross_bar(strategy)
+    official_bar = form_up_cross_bar(strategy)
 
-    signal = strategy.on_tick(
-        tick("next-open", start + BAR_MS, 11),
+    signal = strategy.on_bar_close(
+        official_bar,
         has_position=True,
         has_pending_order=False,
     )
@@ -170,10 +178,10 @@ def test_position_rules_block_close_confirmed_crosses() -> None:
 
 def test_paused_strategy_records_but_does_not_emit_confirmed_cross() -> None:
     strategy = warmed_strategy()
-    start = form_up_cross_bar(strategy)
+    official_bar = form_up_cross_bar(strategy)
 
-    signal = strategy.on_tick(
-        tick("next-open", start + BAR_MS, 11),
+    signal = strategy.on_bar_close(
+        official_bar,
         has_position=False,
         has_pending_order=False,
         emit_signals=False,
@@ -204,23 +212,51 @@ def test_current_binance_bar_seeds_realtime_state_without_signal() -> None:
 
 def test_open_bar_survives_restart_and_confirms_only_at_next_open() -> None:
     original = warmed_strategy()
-    closed_start = form_up_cross_bar(original)
+    official_bar = form_up_cross_bar(original)
     state = original.runtime_state()
 
     restored = warmed_strategy()
     restored.restore_runtime(state)
-    assert restored.runtime_state()["pine_state_version"] == 4
+    assert restored.runtime_state()["pine_state_version"] == 5
     assert restored.last_cross is None
 
-    signal = restored.on_tick(
-        tick("next-open", closed_start + BAR_MS, 11),
+    signal = restored.on_bar_close(
+        official_bar,
         has_position=False,
         has_pending_order=False,
     )
 
     assert signal is not None
     assert signal.side is Side.BUY
-    assert signal.signal_at_ms == closed_start + BAR_MS - 1
+    assert signal.signal_at_ms == official_bar.end_ms
+
+
+def test_official_bar_replaces_local_tick_ohlc_for_atr_and_signal() -> None:
+    strategy = warmed_strategy()
+    start = 3 * BAR_MS
+    strategy.on_tick(
+        tick("local-high", start, 20),
+        has_position=False,
+        has_pending_order=False,
+    )
+    official_bar = Bar(
+        start,
+        start + BAR_MS - 1,
+        Decimal("10"),
+        Decimal("10"),
+        Decimal("7"),
+        Decimal("10"),
+    )
+
+    signal = strategy.on_bar_close(
+        official_bar,
+        has_position=False,
+        has_pending_order=False,
+    )
+
+    assert signal is not None
+    assert signal.atr == Decimal("2.1875")
+    assert signal.trailing_stop == Decimal("8.359375")
 
 
 def test_legacy_tick_cross_metadata_is_not_restored() -> None:

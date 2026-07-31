@@ -27,6 +27,10 @@ class MarketFeed(ABC):
     source_name: str
 
     @property
+    def kline_source_name(self) -> str:
+        return f"{self.source_name}_kline_rest"
+
+    @property
     def warmup_current_bar(self) -> Bar | None:
         return None
 
@@ -36,6 +40,13 @@ class MarketFeed(ABC):
 
     async def funding_rates(self, start_ms: int, end_ms: int) -> list[FundingRate]:
         return []
+
+    async def closed_bars(self) -> AsyncIterator[Bar]:
+        if False:
+            yield Bar(0, 0, Decimal("0"), Decimal("0"), Decimal("0"), Decimal("0"))
+
+    async def official_bars(self, start_ms: int, end_ms: int) -> list[Bar]:
+        raise NotImplementedError
 
     @abstractmethod
     async def history(self, limit: int) -> list[Bar]:
@@ -53,6 +64,7 @@ class BinanceFeed(MarketFeed):
         self.symbol = symbol.upper()
         self._last_event_id: str | None = None
         self._warmup_current_bar: Bar | None = None
+        self._last_closed_kline_start: int | None = None
 
     @property
     def warmup_current_bar(self) -> Bar | None:
@@ -115,6 +127,36 @@ class BinanceFeed(MarketFeed):
                     event_time_ms=int(payload["E"]),
                 )
 
+    async def closed_bars(self) -> AsyncIterator[Bar]:
+        uri = f"{BINANCE_WS}/{self.symbol.lower()}@kline_15m"
+        async with websockets.connect(
+            uri,
+            proxy=None,
+            open_timeout=15,
+            ping_interval=20,
+            ping_timeout=20,
+            close_timeout=5,
+        ) as websocket:
+            async for message in websocket:
+                payload = json.loads(message)
+                kline = payload.get("k", {})
+                if not kline.get("x"):
+                    continue
+                bar = _bar_from_stream_kline(kline)
+                if bar.start_ms == self._last_closed_kline_start:
+                    continue
+                self._last_closed_kline_start = bar.start_ms
+                yield bar
+
+    async def official_bars(self, start_ms: int, end_ms: int) -> list[Bar]:
+        return await _fetch_klines(
+            f"{BINANCE_REST}/klines",
+            self.symbol,
+            start_ms,
+            end_ms,
+            trust_env=False,
+        )
+
 
 class BinanceFuturesFeed(MarketFeed):
     source_name = "binance_futures"
@@ -123,6 +165,7 @@ class BinanceFuturesFeed(MarketFeed):
         self.symbol = symbol.upper()
         self._last_event_id: str | None = None
         self._warmup_current_bar: Bar | None = None
+        self._last_closed_kline_start: int | None = None
         self._market_state: dict[str, str | int | None] = {
             "mark_price": None,
             "index_price": None,
@@ -206,6 +249,36 @@ class BinanceFuturesFeed(MarketFeed):
             premium_task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await premium_task
+
+    async def closed_bars(self) -> AsyncIterator[Bar]:
+        uri = f"{BINANCE_FUTURES_WS}/{self.symbol.lower()}@kline_15m"
+        async with websockets.connect(
+            uri,
+            proxy=_websocket_proxy(),
+            open_timeout=15,
+            ping_interval=20,
+            ping_timeout=20,
+            close_timeout=5,
+        ) as websocket:
+            async for message in websocket:
+                payload = json.loads(message)
+                kline = payload.get("k", {})
+                if not kline.get("x"):
+                    continue
+                bar = _bar_from_stream_kline(kline)
+                if bar.start_ms == self._last_closed_kline_start:
+                    continue
+                self._last_closed_kline_start = bar.start_ms
+                yield bar
+
+    async def official_bars(self, start_ms: int, end_ms: int) -> list[Bar]:
+        return await _fetch_klines(
+            f"{BINANCE_FUTURES_REST}/klines",
+            self.symbol,
+            start_ms,
+            end_ms,
+            trust_env=True,
+        )
 
     async def funding_rates(self, start_ms: int, end_ms: int) -> list[FundingRate]:
         if end_ms <= start_ms:
@@ -337,3 +410,55 @@ def _append_trade(
     if bucket["buyer_is_maker"] != maker:
         bucket["buyer_is_maker"] = None
     return bucket
+
+
+def _bar_from_stream_kline(value: dict) -> Bar:
+    return Bar(
+        start_ms=int(value["t"]),
+        end_ms=int(value["T"]),
+        open=Decimal(value["o"]),
+        high=Decimal(value["h"]),
+        low=Decimal(value["l"]),
+        close=Decimal(value["c"]),
+        volume=Decimal(value["v"]),
+        trade_count=int(value["n"]),
+    )
+
+
+async def _fetch_klines(
+    url: str,
+    symbol: str,
+    start_ms: int,
+    end_ms: int,
+    *,
+    trust_env: bool,
+) -> list[Bar]:
+    if end_ms < start_ms:
+        return []
+    params = {
+        "symbol": symbol,
+        "interval": "15m",
+        "startTime": start_ms,
+        "endTime": end_ms + 15 * 60_000 - 1,
+        "limit": 1000,
+    }
+    async with httpx.AsyncClient(timeout=20, trust_env=trust_env) as client:
+        response = await client.get(url, params=params)
+        response.raise_for_status()
+        payload = response.json()
+    if not isinstance(payload, list):
+        raise RuntimeError(f"Binance kline verification error: {payload}")
+    return [
+        Bar(
+            start_ms=int(row[0]),
+            end_ms=int(row[6]),
+            open=Decimal(row[1]),
+            high=Decimal(row[2]),
+            low=Decimal(row[3]),
+            close=Decimal(row[4]),
+            volume=Decimal(row[5]),
+            trade_count=int(row[8]),
+        )
+        for row in payload
+        if start_ms <= int(row[0]) <= end_ms
+    ]

@@ -402,17 +402,9 @@ class PaperStore:
             if not inserted:
                 return False
 
-            connection.execute(
-                """
-                UPDATE ohlcv_bars SET is_closed = 1, updated_at_ms = ?
-                WHERE instrument_id = ? AND interval_minutes = ?
-                  AND start_ms < ? AND is_closed = 0
-                """,
-                (received_at_ms, instrument.id, interval_minutes, bar_start_ms),
-            )
             row = connection.execute(
                 """
-                SELECT high, low, volume, trade_count FROM ohlcv_bars
+                SELECT high, low, volume, trade_count, is_closed FROM ohlcv_bars
                 WHERE instrument_id = ? AND interval_minutes = ? AND start_ms = ?
                 """,
                 (instrument.id, interval_minutes, bar_start_ms),
@@ -442,7 +434,7 @@ class PaperStore:
                         received_at_ms,
                     ),
                 )
-            else:
+            elif not row["is_closed"]:
                 connection.execute(
                     """
                     UPDATE ohlcv_bars SET high = ?, low = ?, close = ?, volume = ?,

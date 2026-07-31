@@ -11,7 +11,7 @@ from typing import Any
 
 from mastermind_tick.config import InstrumentSettings, Settings
 from mastermind_tick.feeds import MarketFeed, build_feed
-from mastermind_tick.models import Tick
+from mastermind_tick.models import Bar, Tick
 from mastermind_tick.store import PaperStore
 from mastermind_tick.strategy import ATRTickStrategy, StrategyView
 
@@ -28,7 +28,14 @@ class InstrumentRuntime:
     reconnects: int = 0
     funding_cursor_ms: int = 0
     last_funding_poll_ms: int = 0
+    last_official_bar_start_ms: int | None = None
+    last_kline_verified_at_ms: int | None = None
+    kline_validation: str = "PENDING"
+    kline_mismatches: int = 0
+    last_kline_retry_ms: int = 0
+    first_ticks: dict[int, Tick] = field(default_factory=dict, repr=False)
     task: asyncio.Task | None = field(default=None, repr=False)
+    kline_task: asyncio.Task | None = field(default=None, repr=False)
     lock: asyncio.Lock = field(default_factory=asyncio.Lock, repr=False)
 
 
@@ -66,9 +73,13 @@ class PaperEngine:
                     instrument,
                     self.settings.strategy.bar_minutes,
                     history,
-                    feed.source_name,
+                    feed.kline_source_name,
                 )
                 strategy.bootstrap(history)
+                if history:
+                    runtime.last_official_bar_start_ms = history[-1].start_ms
+                    runtime.last_kline_verified_at_ms = self.started_at_ms
+                    runtime.kline_validation = "REST_VERIFIED"
                 strategy.restore_runtime(self.store.strategy_state(instrument.id))
                 if feed.warmup_current_bar is not None:
                     strategy.seed_current_bar(feed.warmup_current_bar)
@@ -86,10 +97,18 @@ class PaperEngine:
             runtime.task = asyncio.create_task(
                 self._run_instrument(runtime), name=f"feed-{instrument.id}"
             )
+            runtime.kline_task = asyncio.create_task(
+                self._run_klines(runtime), name=f"klines-{instrument.id}"
+            )
 
     async def stop(self) -> None:
         self._stopping = True
-        tasks = [runtime.task for runtime in self.runtimes.values() if runtime.task]
+        tasks = [
+            task
+            for runtime in self.runtimes.values()
+            for task in (runtime.task, runtime.kline_task)
+            if task
+        ]
         for task in tasks:
             task.cancel()
         for task in tasks:
@@ -149,6 +168,28 @@ class PaperEngine:
                 )
                 await asyncio.sleep(min(30, 2 ** min(runtime.reconnects, 4)))
 
+    async def _run_klines(self, runtime: InstrumentRuntime) -> None:
+        reconnects = 0
+        while not self._stopping:
+            try:
+                async for bar in runtime.feed.closed_bars():
+                    reconnects = 0
+                    await self._process_official_close(runtime, bar)
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                reconnects += 1
+                runtime.kline_validation = "STREAM_ERROR"
+                self.store.add_event(
+                    runtime.instrument.id,
+                    _now_ms(),
+                    "ERROR",
+                    "KLINE_STREAM_DISCONNECTED",
+                    f"{type(exc).__name__}: {exc}",
+                    {"reconnects": reconnects},
+                )
+                await asyncio.sleep(min(30, 2 ** min(reconnects, 4)))
+
     async def _process_tick(self, runtime: InstrumentRuntime, tick: Tick) -> None:
         async with runtime.lock:
             self.store.record_market_tick(
@@ -157,6 +198,13 @@ class PaperEngine:
                 tick,
             )
             runtime.last_tick = tick
+            tick_bar_start = tick.timestamp_ms // runtime.strategy.bar_ms * runtime.strategy.bar_ms
+            runtime.first_ticks.setdefault(tick_bar_start, tick)
+            runtime.first_ticks = {
+                start: value
+                for start, value in runtime.first_ticks.items()
+                if start >= tick_bar_start - 2 * runtime.strategy.bar_ms
+            }
             funding_applied = await self._apply_due_funding(runtime, tick)
             account_id = runtime.instrument.id
             fill = None
@@ -168,42 +216,179 @@ class PaperEngine:
                     self.settings.execution,
                     _position_fraction(runtime.instrument, self.settings),
                 )
+            signal_emitted = False
+            next_uncommitted = runtime.strategy.next_uncommitted_bar_start_ms
+            last_closed_start = tick_bar_start - runtime.strategy.bar_ms
+            should_retry_kline = (
+                next_uncommitted is not None
+                and next_uncommitted <= last_closed_start
+                and tick.timestamp_ms - runtime.last_kline_retry_ms >= 5_000
+            )
+            if should_retry_kline:
+                runtime.last_kline_retry_ms = tick.timestamp_ms
+                synced, verified_fill = await self._sync_official_bars_locked(
+                    runtime,
+                    next_uncommitted,
+                    last_closed_start,
+                    fill_tick=tick,
+                )
+                signal_emitted = synced
+                fill = verified_fill or fill
             account = self.store.account(account_id)
             has_position = Decimal(account["quantity"]) > 0
             has_pending = self.store.has_pending_order(account_id)
-            signal = runtime.strategy.on_tick(
+            runtime.strategy.on_tick(
                 tick,
                 has_position=has_position,
                 has_pending_order=has_pending,
                 emit_signals=self.trading_enabled,
             )
-            if signal:
-                submitted_at_ms = (
-                    signal.signal_at_ms
-                    if signal.signal_at_ms is not None
-                    else tick.timestamp_ms
-                )
-                self.store.submit_order(account_id, signal, submitted_at_ms)
-                immediate_fill = self.store.fill_pending(
-                    account_id,
-                    tick,
-                    runtime.instrument,
-                    self.settings.execution,
-                    _position_fraction(runtime.instrument, self.settings),
-                    allow_same_tick=True,
-                )
-                fill = immediate_fill or fill
             snapshot_due = (
                 tick.timestamp_ms - runtime.last_snapshot_ms
                 >= self.settings.equity_snapshot_seconds * 1000
             )
-            if snapshot_due or fill or signal or funding_applied:
+            if snapshot_due or fill or signal_emitted or funding_applied:
                 strategy_view = _strategy_view(asdict(runtime.strategy.view()))
                 self.store.snapshot(account_id, tick, strategy_view)
                 runtime.last_snapshot_ms = tick.timestamp_ms
             self.store.save_strategy_state(
                 account_id, runtime.strategy.runtime_state(), tick.timestamp_ms
             )
+
+    async def _process_official_close(self, runtime: InstrumentRuntime, stream_bar: Bar) -> None:
+        async with runtime.lock:
+            synced, fill = await self._sync_official_bars_locked(
+                runtime,
+                stream_bar.start_ms,
+                stream_bar.start_ms,
+                stream_bar=stream_bar,
+            )
+            if fill:
+                fill_tick = runtime.first_ticks.get(stream_bar.start_ms + runtime.strategy.bar_ms)
+                if fill_tick is not None:
+                    strategy_view = _strategy_view(asdict(runtime.strategy.view()))
+                    self.store.snapshot(runtime.instrument.id, fill_tick, strategy_view)
+                    runtime.last_snapshot_ms = fill_tick.timestamp_ms
+            if synced:
+                self.store.save_strategy_state(
+                    runtime.instrument.id,
+                    runtime.strategy.runtime_state(),
+                    stream_bar.end_ms,
+                )
+
+    async def _sync_official_bars_locked(
+        self,
+        runtime: InstrumentRuntime,
+        start_ms: int,
+        end_ms: int,
+        *,
+        stream_bar: Bar | None = None,
+        fill_tick: Tick | None = None,
+    ) -> tuple[bool, dict[str, Any] | None]:
+        account_id = runtime.instrument.id
+        try:
+            official_bars = await runtime.feed.official_bars(start_ms, end_ms)
+        except Exception as exc:
+            runtime.kline_validation = "REST_ERROR"
+            self.store.add_event(
+                account_id,
+                _now_ms(),
+                "ERROR",
+                "KLINE_REST_FAILED",
+                f"{type(exc).__name__}: {exc}",
+                {"start_ms": start_ms, "end_ms": end_ms},
+            )
+            return False, None
+
+        if not official_bars:
+            runtime.kline_validation = "REST_MISSING"
+            self.store.add_event(
+                account_id,
+                _now_ms(),
+                "ERROR",
+                "KLINE_REST_MISSING",
+                "REST did not return the expected closed kline",
+                {"start_ms": start_ms, "end_ms": end_ms},
+            )
+            return False, None
+
+        synced = False
+        latest_fill: dict[str, Any] | None = None
+        for official_bar in sorted(official_bars, key=lambda value: value.start_ms):
+            if runtime.strategy.is_bar_committed(official_bar.start_ms):
+                continue
+            expected_start = runtime.strategy.next_uncommitted_bar_start_ms
+            if expected_start is not None and official_bar.start_ms != expected_start:
+                runtime.kline_validation = "GAP"
+                self.store.add_event(
+                    account_id,
+                    official_bar.end_ms,
+                    "ERROR",
+                    "KLINE_SEQUENCE_GAP",
+                    "Official kline sequence is incomplete; signal confirmation paused",
+                    {
+                        "expected_start_ms": expected_start,
+                        "received_start_ms": official_bar.start_ms,
+                    },
+                )
+                break
+            validation = "REST_VERIFIED"
+            if (
+                stream_bar is not None
+                and official_bar.start_ms == stream_bar.start_ms
+            ):
+                differences = _bar_differences(stream_bar, official_bar)
+                validation = "RECONCILED" if differences else "MATCHED"
+                if differences:
+                    runtime.kline_mismatches += 1
+                    self.store.add_event(
+                        account_id,
+                        official_bar.end_ms,
+                        "WARN",
+                        "KLINE_RECONCILED",
+                        "WebSocket kline differed from REST; REST values applied",
+                        differences,
+                    )
+            runtime.kline_validation = validation
+            runtime.last_official_bar_start_ms = official_bar.start_ms
+            runtime.last_kline_verified_at_ms = _now_ms()
+            self.store.upsert_history_bars(
+                runtime.instrument,
+                self.settings.strategy.bar_minutes,
+                [official_bar],
+                runtime.feed.kline_source_name,
+            )
+            account = self.store.account(account_id)
+            signal = runtime.strategy.on_bar_close(
+                official_bar,
+                has_position=Decimal(account["quantity"]) > 0,
+                has_pending_order=self.store.has_pending_order(account_id),
+                emit_signals=self.trading_enabled,
+            )
+            synced = True
+            if signal is None:
+                continue
+            submitted_at_ms = signal.signal_at_ms or official_bar.end_ms
+            self.store.submit_order(account_id, signal, submitted_at_ms)
+            candidate_tick = runtime.first_ticks.get(
+                official_bar.start_ms + runtime.strategy.bar_ms
+            )
+            if candidate_tick is None and fill_tick is not None:
+                candidate_start = (
+                    fill_tick.timestamp_ms // runtime.strategy.bar_ms * runtime.strategy.bar_ms
+                )
+                if candidate_start == official_bar.start_ms + runtime.strategy.bar_ms:
+                    candidate_tick = fill_tick
+            if candidate_tick is not None and self.trading_enabled:
+                latest_fill = self.store.fill_pending(
+                    account_id,
+                    candidate_tick,
+                    runtime.instrument,
+                    self.settings.execution,
+                    _position_fraction(runtime.instrument, self.settings),
+                    allow_same_tick=True,
+                )
+        return synced, latest_fill
 
     async def _apply_due_funding(self, runtime: InstrumentRuntime, tick: Tick) -> bool:
         if runtime.instrument.paper_model != "futures":
@@ -266,6 +451,13 @@ class PaperEngine:
                     ),
                     "feed": runtime.feed.source_name,
                     "market_state": runtime.feed.market_state,
+                    "kline_state": {
+                        "source": runtime.feed.kline_source_name,
+                        "validation": runtime.kline_validation,
+                        "last_official_bar_start_ms": runtime.last_official_bar_start_ms,
+                        "last_verified_at_ms": runtime.last_kline_verified_at_ms,
+                        "mismatches": runtime.kline_mismatches,
+                    },
                     "status": runtime.status,
                     "status_message": runtime.status_message,
                     "reconnects": runtime.reconnects,
@@ -303,6 +495,28 @@ def _position_fraction(instrument: InstrumentSettings, settings: Settings) -> fl
         if instrument.position_fraction is not None
         else settings.strategy.position_fraction
     )
+
+
+def _bar_differences(stream_bar: Bar, rest_bar: Bar) -> dict[str, Any]:
+    differences: dict[str, Any] = {}
+    for field_name in (
+        "start_ms",
+        "end_ms",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "trade_count",
+    ):
+        stream_value = getattr(stream_bar, field_name)
+        rest_value = getattr(rest_bar, field_name)
+        if stream_value != rest_value:
+            differences[field_name] = {
+                "websocket": str(stream_value),
+                "rest": str(rest_value),
+            }
+    return differences
 
 
 def _decision_view(

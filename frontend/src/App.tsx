@@ -82,6 +82,7 @@ type ChartRange = {
 }
 
 const DEFAULT_VISIBLE_POINTS = 500
+const DEFAULT_VISIBLE_KLINES = 60
 const MIN_VISIBLE_POINTS = 20
 
 function money(value: string | number | null, currency = 'USD') {
@@ -154,7 +155,7 @@ function App() {
   const ohlcv = useQuery({
     queryKey: ['ohlcv', accountId],
     queryFn: () => api.ohlcv(accountId),
-    enabled: view === 'warehouse',
+    refetchInterval: 5000,
   })
   const control = useMutation({
     mutationFn: api.control,
@@ -236,7 +237,7 @@ function App() {
             <button onClick={() => overview.refetch()}><RefreshCw size={15} />重试</button>
           </div>
         ) : view === 'monitor' ? (
-          <Monitor account={account} equity={equity.data ?? []} fills={fills.data ?? []} funding={funding.data ?? []} />
+          <Monitor account={account} equity={equity.data ?? []} fills={fills.data ?? []} funding={funding.data ?? []} bars={ohlcv.data ?? []} />
         ) : view === 'orders' ? (
           <Orders rows={orders.data ?? []} />
         ) : view === 'events' ? (
@@ -263,23 +264,30 @@ function Monitor({
   equity,
   fills,
   funding,
+  bars,
 }: {
   account?: Account
   equity: EquityPoint[]
   fills: Fill[]
   funding: FundingPayment[]
+  bars: OhlcvBar[]
 }) {
   const accountFills = useMemo(
     () => fills.filter((fill) => fill.account_id === account?.id),
     [fills, account?.id],
   )
   const priceChart = useMemo(() => buildPriceChart(equity), [equity])
+  const klineChart = useMemo(() => buildKlineChart(bars), [bars])
   const tradeMarkers = useMemo(() => buildTradeMarkers(accountFills), [accountFills])
   const completedTrades = useMemo(
     () => buildCompletedTrades(accountFills, funding),
     [accountFills, funding],
   )
   const [priceRange, setPriceRange] = useChartRange(priceChart.length)
+  const [klineRange, setKlineRange] = useChartRange(
+    klineChart.length,
+    DEFAULT_VISIBLE_KLINES,
+  )
   const visibleStart = priceChart[priceRange.startIndex]
   const visibleEnd = priceChart[priceRange.endIndex]
   const visibleTradeMarkers = useMemo(
@@ -297,6 +305,17 @@ function Monitor({
         : true
     )),
     [completedTrades, visibleStart, visibleEnd],
+  )
+  const visibleKlines = klineChart.slice(klineRange.startIndex, klineRange.endIndex + 1)
+  const visibleKlineStart = visibleKlines[0]
+  const visibleKlineEnd = visibleKlines[visibleKlines.length - 1]
+  const visibleKlineTrades = useMemo(
+    () => accountFills.filter((fill) => (
+      visibleKlineStart && visibleKlineEnd
+        ? fill.timestamp_ms >= visibleKlineStart.timestamp && fill.timestamp_ms <= visibleKlineEnd.endTimestamp
+        : true
+    )),
+    [accountFills, visibleKlineStart, visibleKlineEnd],
   )
   const equityChart = useMemo(
     () => equity.map((point) => ({ timestamp: point.timestamp_ms, equity: Number(point.equity) })),
@@ -498,6 +517,14 @@ function Monitor({
         </div>
       </section>
 
+      <OfficialKlinePanel
+        account={account}
+        bars={visibleKlines}
+        fills={visibleKlineTrades}
+        pointCount={klineChart.length}
+        onRangeChange={setKlineRange}
+      />
+
       <section className="lower-grid">
         <div className="panel fills-panel">
           <div className="panel-head">
@@ -527,8 +554,10 @@ function Monitor({
   )
 }
 
-function useChartRange(pointCount: number) {
-  const [range, setRange] = useState<ChartRange>(() => latestRange(pointCount))
+function useChartRange(pointCount: number, defaultVisiblePoints = DEFAULT_VISIBLE_POINTS) {
+  const [range, setRange] = useState<ChartRange>(() => (
+    latestRange(pointCount, defaultVisiblePoints)
+  ))
   const previousCount = useRef(pointCount)
 
   useEffect(() => {
@@ -536,14 +565,14 @@ function useChartRange(pointCount: number) {
     previousCount.current = pointCount
     setRange((current) => {
       if (pointCount <= 0) return fullRange(pointCount)
-      if (previous <= 0) return latestRange(pointCount)
+      if (previous <= 0) return latestRange(pointCount, defaultVisiblePoints)
       const followedLatest = current.endIndex >= previous - 2
       if (!followedLatest) return clampRange(current, pointCount)
       const currentSize = current.endIndex - current.startIndex + 1
       const nextSize = currentSize >= previous ? pointCount : currentSize
       return rangeEndingAt(pointCount - 1, nextSize, pointCount)
     })
-  }, [pointCount])
+  }, [defaultVisiblePoints, pointCount])
 
   return [range, setRange] as const
 }
@@ -552,11 +581,11 @@ function fullRange(pointCount: number): ChartRange {
   return { startIndex: 0, endIndex: Math.max(0, pointCount - 1) }
 }
 
-function latestRange(pointCount: number): ChartRange {
+function latestRange(pointCount: number, defaultVisiblePoints = DEFAULT_VISIBLE_POINTS): ChartRange {
   if (pointCount <= 0) return fullRange(pointCount)
   return rangeEndingAt(
     pointCount - 1,
-    Math.min(DEFAULT_VISIBLE_POINTS, pointCount),
+    Math.min(defaultVisiblePoints, pointCount),
     pointCount,
   )
 }
@@ -603,6 +632,146 @@ function buildPriceChart(equity: EquityPoint[]): PricePoint[] {
     price: Number(point.price),
     trailingStop: point.trailing_stop === null ? null : Number(point.trailing_stop),
   }))
+}
+
+type KlinePoint = {
+  timestamp: number
+  endTimestamp: number
+  open: number
+  high: number
+  low: number
+  close: number
+  isClosed: boolean
+  source: string
+}
+
+function buildKlineChart(bars: OhlcvBar[]): KlinePoint[] {
+  return [...bars]
+    .sort((left, right) => left.start_ms - right.start_ms)
+    .map((bar) => ({
+      timestamp: bar.start_ms,
+      endTimestamp: bar.end_ms,
+      open: Number(bar.open),
+      high: Number(bar.high),
+      low: Number(bar.low),
+      close: Number(bar.close),
+      isClosed: bar.is_closed,
+      source: bar.source,
+    }))
+}
+
+function OfficialKlinePanel({
+  account,
+  bars,
+  fills,
+  pointCount,
+  onRangeChange,
+}: {
+  account: Account
+  bars: KlinePoint[]
+  fills: Fill[]
+  pointCount: number
+  onRangeChange: React.Dispatch<React.SetStateAction<ChartRange>>
+}) {
+  const pan = (direction: -1 | 1) => {
+    onRangeChange((current) => panRange(current, pointCount, direction))
+  }
+  const zoom = (factor: number) => {
+    onRangeChange((current) => zoomRange(current, pointCount, factor))
+  }
+  const validation = account.runtime.kline_state.validation
+
+  return (
+    <section className="panel kline-panel" data-testid="official-kline-panel">
+      <div className="panel-head price-head">
+        <div><span>BINANCE OFFICIAL 15M OHLCV</span><h3>官方 15 分钟 K线</h3></div>
+        <div className="chart-summary">
+          <div className="chart-controls" aria-label="K线时间窗口">
+            <button type="button" onClick={() => pan(-1)} title="向左滚动K线" aria-label="向左滚动K线"><ChevronLeft size={15} /></button>
+            <button type="button" onClick={() => pan(1)} title="向右滚动K线" aria-label="向右滚动K线"><ChevronRight size={15} /></button>
+            <button type="button" onClick={() => zoom(0.65)} title="放大K线" aria-label="放大K线"><ZoomIn size={15} /></button>
+            <button type="button" onClick={() => zoom(1.55)} title="缩小K线" aria-label="缩小K线"><ZoomOut size={15} /></button>
+            <button type="button" onClick={() => onRangeChange(fullRange(pointCount))} title="显示全部K线" aria-label="显示全部K线"><Maximize2 size={14} /></button>
+          </div>
+          <div className="chart-legend kline-legend">
+            <span><i className="candle-up" />上涨</span>
+            <span><i className="candle-down" />下跌</span>
+            <span className={`kline-validation ${validation.toLowerCase()}`}>{validation}</span>
+          </div>
+        </div>
+      </div>
+      <div className="kline-chart-wrap">
+        {bars.length > 0 ? (
+          <KlineSvg bars={bars} fills={fills} />
+        ) : <div className="empty-chart">等待官方 15m K线</div>}
+      </div>
+    </section>
+  )
+}
+
+function KlineSvg({ bars, fills }: { bars: KlinePoint[]; fills: Fill[] }) {
+  const width = 1200
+  const height = 360
+  const left = 58
+  const right = 18
+  const top = 18
+  const bottom = 32
+  const chartWidth = width - left - right
+  const chartHeight = height - top - bottom
+  const minimum = Math.min(...bars.map((bar) => bar.low))
+  const maximum = Math.max(...bars.map((bar) => bar.high))
+  const padding = Math.max((maximum - minimum) * 0.08, 0.01)
+  const domainLow = minimum - padding
+  const domainHigh = maximum + padding
+  const y = (value: number) => top + (domainHigh - value) / (domainHigh - domainLow) * chartHeight
+  const x = (index: number) => left + (bars.length <= 1 ? chartWidth / 2 : index / (bars.length - 1) * chartWidth)
+  const candleWidth = Math.max(3, Math.min(14, chartWidth / Math.max(bars.length, 1) * 0.62))
+  const fillMarkers = fills.flatMap((fill) => {
+    const index = bars.findIndex((bar) => fill.timestamp_ms >= bar.timestamp && fill.timestamp_ms <= bar.endTimestamp)
+    if (index < 0) return []
+    return [{ fill, index }]
+  })
+  const gridValues = [0, 0.25, 0.5, 0.75, 1].map((ratio) => domainHigh - ratio * (domainHigh - domainLow))
+
+  return (
+    <svg className="kline-svg" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Binance官方15分钟K线图" data-testid="official-kline-chart">
+      {gridValues.map((value) => (
+        <g key={value}>
+          <line x1={left} x2={width - right} y1={y(value)} y2={y(value)} className="kline-grid" />
+          <text x={left - 8} y={y(value) + 4} textAnchor="end" className="kline-axis-label">{value.toFixed(2)}</text>
+        </g>
+      ))}
+      {bars.map((bar, index) => {
+        const center = x(index)
+        const up = bar.close >= bar.open
+        const color = up ? '#3fd6a1' : '#ff6f78'
+        const bodyTop = y(Math.max(bar.open, bar.close))
+        const bodyHeight = Math.max(2, Math.abs(y(bar.open) - y(bar.close)))
+        return (
+          <g key={bar.timestamp} className="kline-candle">
+            <title>{`${time(bar.timestamp)} O ${bar.open.toFixed(4)} H ${bar.high.toFixed(4)} L ${bar.low.toFixed(4)} C ${bar.close.toFixed(4)}${bar.isClosed ? '' : ' · 形成中'}`}</title>
+            <line x1={center} x2={center} y1={y(bar.high)} y2={y(bar.low)} stroke={color} strokeWidth={1.5} />
+            <rect x={center - candleWidth / 2} y={bodyTop} width={candleWidth} height={bodyHeight} fill={color} fillOpacity={bar.isClosed ? 0.88 : 0.45} />
+          </g>
+        )
+      })}
+      {fillMarkers.map(({ fill, index }) => {
+        const center = x(index)
+        const markerY = y(Number(fill.price))
+        const buy = fill.side === 'BUY'
+        const color = buy ? '#3fd6a1' : '#ff6f78'
+        return (
+          <g key={fill.id} className="kline-trade-marker" data-testid={`kline-marker-${fill.side.toLowerCase()}`}>
+            <circle cx={center} cy={markerY} r={7} fill="#10151a" stroke={color} strokeWidth={2} />
+            <path d={buy ? `M ${center - 3} ${markerY + 2} L ${center} ${markerY - 3} L ${center + 3} ${markerY + 2}` : `M ${center - 3} ${markerY - 2} L ${center} ${markerY + 3} L ${center + 3} ${markerY - 2}`} fill="none" stroke={color} strokeWidth={1.5} />
+            <text x={center} y={buy ? markerY + 21 : markerY - 12} textAnchor="middle" fill={color} className="kline-trade-label">{fill.side}</text>
+          </g>
+        )
+      })}
+      {bars.length > 0 && <text x={left} y={height - 8} className="kline-axis-label">{time(bars[0].timestamp)}</text>}
+      {bars.length > 1 && <text x={width - right} y={height - 8} textAnchor="end" className="kline-axis-label">{time(bars[bars.length - 1].timestamp)}</text>}
+    </svg>
+  )
 }
 
 function buildTradeMarkers(fills: Fill[]): TradePoint[] {

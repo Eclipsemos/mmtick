@@ -52,6 +52,13 @@ export type Runtime = {
     next_funding_time_ms?: number | null
     updated_at_ms?: number | null
   }
+  kline_state: {
+    source: string
+    validation: string
+    last_official_bar_start_ms: number | null
+    last_verified_at_ms: number | null
+    mismatches: number
+  }
   status: string
   status_message: string
   reconnects: number

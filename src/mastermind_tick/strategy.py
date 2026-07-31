@@ -105,7 +105,7 @@ class ATRTickStrategy:
         if not value:
             return
         state_version = int(value.get("pine_state_version", 1))
-        if state_version >= 4:
+        if state_version >= 5:
             self.last_cross = value.get("last_cross")
             self.last_cross_at_ms = value.get("last_cross_at_ms")
             self.last_cross_result = value.get("last_cross_result")
@@ -130,7 +130,7 @@ class ATRTickStrategy:
 
     def runtime_state(self) -> dict[str, Any]:
         return {
-            "pine_state_version": 4,
+            "pine_state_version": 5,
             "previous_price": _string_or_none(self.previous_price),
             "trailing_stop": _string_or_none(self.trailing_stop),
             "last_atr": _string_or_none(self.last_atr),
@@ -172,21 +172,49 @@ class ATRTickStrategy:
         if self.current_bar is not None and bar_start < self.current_bar.start_ms:
             return None
 
-        signal: StrategySignal | None = None
         if self.current_bar is None:
             self.current_bar = self._new_bar(bar_start, tick)
         elif bar_start > self.current_bar.start_ms:
-            signal = self._confirm_and_commit_current_bar(
-                has_position=has_position,
-                has_pending_order=has_pending_order,
-                emit_signals=emit_signals,
-            )
             self.current_bar = self._new_bar(bar_start, tick)
         else:
             self.current_bar.update(tick)
 
         self._refresh_realtime()
+        return None
+
+    def on_bar_close(
+        self,
+        bar: Bar,
+        *,
+        has_position: bool,
+        has_pending_order: bool,
+        emit_signals: bool = True,
+    ) -> StrategySignal | None:
+        """Confirm a signal from an authoritative, closed Binance kline."""
+        if self.is_bar_committed(bar.start_ms):
+            return None
+        signal = self._confirm_and_commit_bar(
+            bar,
+            has_position=has_position,
+            has_pending_order=has_pending_order,
+            emit_signals=emit_signals,
+        )
+        if self.current_bar is not None and self.current_bar.start_ms == bar.start_ms:
+            self.current_bar = None
+        self._refresh_realtime()
         return signal
+
+    def is_bar_committed(self, bar_start_ms: int) -> bool:
+        return bool(
+            self.completed_bars
+            and bar_start_ms <= self.completed_bars[-1].start_ms
+        )
+
+    @property
+    def next_uncommitted_bar_start_ms(self) -> int | None:
+        if not self.completed_bars:
+            return None
+        return self.completed_bars[-1].start_ms + self.bar_ms
 
     def view(self) -> StrategyView:
         relation = "warming"
@@ -223,20 +251,17 @@ class ATRTickStrategy:
             trade_count=trade_count,
         )
 
-    def _confirm_and_commit_current_bar(
+    def _confirm_and_commit_bar(
         self,
+        closed_bar: Bar,
         *,
         has_position: bool,
         has_pending_order: bool,
         emit_signals: bool,
     ) -> StrategySignal | None:
-        if self.current_bar is None:
-            return None
-
-        closed_bar = self.current_bar
         previous_close = self.committed_price
         previous_stop = self.committed_stop
-        confirmed_atr = self._current_atr()
+        confirmed_atr = self._atr_for_bar(closed_bar)
         confirmed_stop = (
             pine_trailing_stop(
                 source=closed_bar.close,
@@ -340,6 +365,14 @@ class ATRTickStrategy:
                 self.committed_atr * Decimal(self.period - 1) + current_range
             ) / Decimal(self.period)
         return wilder_atr([*self.completed_bars, self.current_bar], self.period)
+
+    def _atr_for_bar(self, bar: Bar) -> Decimal | None:
+        if self.committed_atr is not None:
+            current_range = true_range(bar, self.committed_price)
+            return (
+                self.committed_atr * Decimal(self.period - 1) + current_range
+            ) / Decimal(self.period)
+        return wilder_atr([*self.completed_bars, bar], self.period)
 
 
 def _decimal_or_none(value: Any) -> Decimal | None:

@@ -25,19 +25,18 @@ ATR Multiplier = 1.0
 
 ATR 使用 TradingView `ta.atr` 对应的 Wilder RMA。实时 K 线内，每个 Tick 都从上一根已收盘 K 线的 `source[1]` 和 `tsl_price[1]` 重算实时 ATR 与止损线，但盘中穿越不交易。启动时会用 Binance REST 当前形成中的 K 线补齐 WebSocket 连接前的 OHLC。
 
-只有正式收盘后的 `ta.crossover(close, tsl_price)` 或 `ta.crossunder(close, tsl_price)` 才生成信号。信号价是已收盘 K 线的 close；模拟成交价取下一根 15 分钟 K 线内收到的第一笔实际行情，并应用既有滑点和手续费。SOXLB 默认单边手续费 10 bps、滑点 5 bps。SOXL Perpetual 使用 1x 逐仓模型、95% 名义敞口、5 bps taker 手续费和 2 bps 模拟滑点，始终只做多。参数位于 [config/settings.toml](config/settings.toml)。
+只有 Binance 官方 15 分钟 K 线正式收盘后的 `ta.crossover(close, tsl_price)` 或 `ta.crossunder(close, tsl_price)` 才生成信号。每根收盘 K 线同时通过 Binance REST `/klines` 校验，REST 值作为最终 OHLCV 和 ATR 输入；若 WebSocket K 线与 REST 不一致，系统记录差异并采用 REST 值。REST 暂时失败或尚未返回该根 K 线时，系统暂停提交该根收盘线和信号，并由后续成交流重试。信号价是已校验 K 线的 close；模拟成交价取下一根 15 分钟 K 线内收到的第一笔实际行情，并应用既有滑点和手续费。SOXLB 默认单边手续费 10 bps、滑点 5 bps。SOXL Perpetual 使用 1x 逐仓模型、95% 名义敞口、5 bps taker 手续费和 2 bps 模拟滑点，始终只做多。参数位于 [config/settings.toml](config/settings.toml)。
 
 永续账户按标记价格计算未实现盈亏、初始保证金与可用余额。每 8 小时从 Binance 公共资金费历史同步实际费率，多头资金费以 `-名义价值 × 费率` 计入现金、净值、交易胜率和收益区间。
 
 ## 数据
 
-- 实时 SOXLB：`wss://data-stream.binance.vision/ws/soxlbusdt@aggTrade`
-- SOXLB 预热：Binance market-data-only REST 的 15 分钟 K 线；
-- 实时 SOXL Perpetual：`wss://fstream.binance.com/ws/soxlusdt@trade`；原始成交在 feed 内按 250 ms 聚合，保留数量、名义金额、最高/最低价和底层 Trade ID 范围。
-- SOXL Perpetual 预热：`https://fapi.binance.com/fapi/v1/klines` 的 15 分钟 K 线；标记价、指数价和资金费来自 Futures 公共 REST。
+- 实时 SOXLB 成交：`wss://data-stream.binance.vision/ws/soxlbusdt@aggTrade`；官方收盘 K 线：`@kline_15m`，每根收盘后用 market-data-only REST 校验。
+- 实时 SOXL Perpetual 成交：`wss://fstream.binance.com/ws/soxlusdt@trade`；原始成交在 feed 内按 250 ms 聚合，保留数量、名义金额、最高/最低价和底层 Trade ID 范围。
+- SOXL Perpetual 官方收盘 K 线：`@kline_15m` + `https://fapi.binance.com/fapi/v1/klines` REST 校验；标记价、指数价和资金费来自 Futures 公共 REST。
 - 模拟账本：`data/paper.db`，SQLite WAL 模式。
 - `agg_trades`：持久化 Spot aggTrade 或 Futures 250 ms 成交批次、底层交易 ID、事件/成交时间、价格、数量、名义金额和 maker 方向。
-- `ohlcv_bars`：保存历史与实时形成中的 15 分钟 OHLCV、底层成交数及开闭状态。
+- `ohlcv_bars`：保存 Binance 官方历史/收盘 15 分钟 OHLCV，以及由成交流临时形成中的当前 OHLCV；官方收盘值会覆盖临时值。
 - `funding_payments`：保存永续账户每次资金费率、标记价格、持仓名义价值和收付金额。
 
 行情表采用事件 ID 和 K 线起始时间幂等写入，重连或重启不会重复累计相同成交。仓库页面显示主库、WAL、分表及索引占用；当前未配置自动清理策略，aggTrade 将持续累积。
@@ -57,6 +56,7 @@ Python 环境使用 `/home/spaceaic/env/.venv`。前端生产文件已构建到 
 页面提供：
 
 - SOXLB 与 SOXL Perpetual 账户切换、实时价格、ATR 移动止损线和 K 线收盘状态；
+- 独立的 Binance 官方 15 分钟 K 线图，显示 OHLC、买卖成交标记、滚动、缩放和 REST 校验状态；
 - Futures 标记价、指数价、资金费率、初始保证金、可用余额和累计资金费；
 - 实时交易决策状态、收盘信号门控、最近确认结果及下一触发条件；
 - 价格图上的买入/卖出图标、醒目的净交易百分比、区间滚动和缩放；

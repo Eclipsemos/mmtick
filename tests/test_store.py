@@ -227,6 +227,45 @@ def test_aggregated_tick_preserves_new_bar_ohlc(tmp_path) -> None:
     assert bar["close"] == "101"
 
 
+def test_late_tick_is_archived_without_overwriting_official_closed_bar(tmp_path) -> None:
+    store = PaperStore(tmp_path / "paper.db")
+    item = instrument()
+    official = Bar(
+        start_ms=900_000,
+        end_ms=1_799_999,
+        open=Decimal("100"),
+        high=Decimal("104"),
+        low=Decimal("98"),
+        close=Decimal("103"),
+        volume=Decimal("50"),
+        trade_count=25,
+    )
+    store.upsert_history_bars(item, 15, [official], "binance_public_kline_rest")
+    late_tick = Tick(
+        event_id="late-trade",
+        timestamp_ms=1_799_000,
+        price=Decimal("110"),
+        quantity=Decimal("2"),
+        source="binance_public",
+        aggregate_trade_id=100,
+        first_trade_id=200,
+        last_trade_id=200,
+    )
+
+    assert store.record_market_tick(item, 15, late_tick)
+
+    bar = store.ohlcv_bars(item.id, 15, 1)[0]
+    assert bar["open"] == "100"
+    assert bar["high"] == "104"
+    assert bar["low"] == "98"
+    assert bar["close"] == "103"
+    assert bar["volume"] == "50"
+    assert bar["trade_count"] == 25
+    assert bar["is_closed"] is True
+    assert bar["source"] == "binance_public_kline_rest"
+    assert store.agg_trades(item.id, 1)[0]["event_id"] == "late-trade"
+
+
 def test_futures_round_trip_uses_margin_accounting(tmp_path) -> None:
     store = PaperStore(tmp_path / "paper.db")
     item = futures_instrument()

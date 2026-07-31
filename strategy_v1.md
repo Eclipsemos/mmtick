@@ -34,7 +34,7 @@ source > tsl[1]
     → source + sl_value
 ```
 
-实时 K 线内，`source` 是不断更新的 close；`source[1]` 与 `tsl[1]` 始终来自上一根已收盘 K 线。因此实时 ATR 线会随 Tick 变化，但不会在盘中触发交易。
+实时 K 线内，`source` 是不断更新的 close；`source[1]` 与 `tsl[1]` 始终来自上一根已收盘 K 线。因此实时 ATR 线会随成交 Tick 变化，但不会在盘中触发交易。交易确认使用 Binance 官方 `@kline_15m` 收盘事件，并通过 REST `/klines` 校验最终 OHLCV。
 
 ## 交易规则
 

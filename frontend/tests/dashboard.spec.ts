@@ -26,6 +26,11 @@ test('paper console renders live state and operational views', async ({ page }) 
   await expect(page.getByRole('button', { name: '放大价格图' })).toBeVisible()
   await expect(page.getByRole('button', { name: '缩小价格图' })).toBeVisible()
   await expect(page.locator('.recharts-brush')).toBeVisible()
+  await expect(page.getByRole('heading', { name: '官方 15 分钟 K线' })).toBeVisible()
+  await expect(page.getByTestId('official-kline-chart')).toBeVisible()
+  await expect(page.locator('.kline-candle').first()).toBeVisible()
+  await expect(page.getByRole('button', { name: '放大K线' })).toBeVisible()
+  await expect(page.getByRole('button', { name: '缩小K线' })).toBeVisible()
 
   await page.getByRole('button', { name: /订单/ }).click()
   await expect(page.getByRole('heading', { name: '全部订单' })).toBeVisible()
@@ -74,6 +79,28 @@ test('price chart renders ATR line and trade percentage markers', async ({ page 
       ]),
     })
   })
+  await page.route('**/api/market/ohlcv?*', async (route) => {
+    const starts = [now - 60_000, now - 50_000, now - 40_000, now - 30_000, now - 20_000]
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify(starts.map((start, index) => ({
+        instrument_id: 'soxlb',
+        symbol: 'SOXLBUSDT',
+        interval_minutes: 15,
+        start_ms: start,
+        end_ms: start + 10_000,
+        open: String([99, 100, 103, 110, 108][index]),
+        high: String([101, 104, 112, 111, 109][index]),
+        low: String([98, 99, 102, 107, 97][index]),
+        close: String([100, 103, 110, 108, 99][index]),
+        volume: String(100 + index),
+        trade_count: 10 + index,
+        is_closed: true,
+        source: 'binance_public_kline_rest',
+        updated_at_ms: now,
+      }))),
+    })
+  })
 
   await page.goto('/')
   await page.getByRole('button', { name: 'SOXLB/USDT', exact: true }).click()
@@ -101,4 +128,11 @@ test('price chart renders ATR line and trade percentage markers', async ({ page 
   await page.getByRole('button', { name: '向右滚动价格图' }).click()
   await page.getByRole('button', { name: '显示全部价格数据' }).click()
   await expect(page.locator('.recharts-brush')).toBeVisible()
+  await expect(page.getByTestId('official-kline-chart')).toBeVisible()
+  await expect(page.locator('.kline-candle')).toHaveCount(5)
+  await expect(page.getByTestId('kline-marker-buy')).toHaveCount(2)
+  await expect(page.getByTestId('kline-marker-sell')).toHaveCount(2)
+  await page.getByRole('button', { name: '放大K线' }).click()
+  await page.getByRole('button', { name: '向右滚动K线' }).click()
+  await page.getByRole('button', { name: '显示全部K线' }).click()
 })
