@@ -25,7 +25,7 @@ ATR Multiplier = 1.0
 
 ATR 使用 TradingView `ta.atr` 对应的 Wilder RMA。实时 K 线内，每个 Tick 都从上一根已收盘 K 线的 `source[1]` 和 `tsl_price[1]` 重算止损线，并用 Pine `varip` 语义检测相对 ATR 线的状态变化。启动时会用 Binance REST 当前形成中的 K 线补齐 WebSocket 连接前的 OHLC。
 
-BUY 信号在下一条行情模拟成交；SELL 对齐 Pine `immediately=true`，在信号 Tick 立即模拟平仓。SOXLB 默认单边手续费 10 bps、滑点 5 bps。SOXL Perpetual 使用 1x 逐仓模型、95% 名义敞口、5 bps taker 手续费和 2 bps 模拟滑点，始终只做多。参数位于 [config/settings.toml](config/settings.toml)。
+BUY 和 SELL 都在产生信号的 Tick 立即模拟成交，避免低流动性行情中旧 BUY 订单延迟到下一笔 Tick 后又被立即反向平仓。SOXLB 默认单边手续费 10 bps、滑点 5 bps。SOXL Perpetual 使用 1x 逐仓模型、95% 名义敞口、5 bps taker 手续费和 2 bps 模拟滑点，始终只做多。参数位于 [config/settings.toml](config/settings.toml)。
 
 永续账户按标记价格计算未实现盈亏、初始保证金与可用余额。每 8 小时从 Binance 公共资金费历史同步实际费率，多头资金费以 `-名义价值 × 费率` 计入现金、净值、交易胜率和收益区间。
 

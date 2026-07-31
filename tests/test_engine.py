@@ -1,6 +1,11 @@
+import asyncio
+from dataclasses import replace
 from decimal import Decimal
 
-from mastermind_tick.engine import _decision_view
+from mastermind_tick.config import load_settings
+from mastermind_tick.engine import InstrumentRuntime, PaperEngine, _decision_view
+from mastermind_tick.models import Side, StrategySignal, Tick
+from mastermind_tick.store import PaperStore
 from mastermind_tick.strategy import StrategyView
 
 
@@ -74,3 +79,53 @@ def test_latest_order_is_exposed_as_cross_history_fallback() -> None:
         "timestamp_ms": 2_000_000,
         "reason": "price_crossed_below_atr_stop",
     }
+
+
+class SignalSequenceStrategy:
+    def __init__(self) -> None:
+        self.side = Side.BUY
+
+    def on_tick(self, tick: Tick, **_kwargs) -> StrategySignal:
+        signal = StrategySignal(
+            side=self.side,
+            reason=f"test_{self.side.value.lower()}",
+            signal_price=tick.price,
+            trailing_stop=Decimal("100"),
+            atr=Decimal("2"),
+            bar_start_ms=900_000,
+            tick_id=tick.event_id,
+        )
+        self.side = Side.SELL
+        return signal
+
+    def view(self) -> StrategyView:
+        return strategy_view(bought_this_bar=True)
+
+    def runtime_state(self) -> dict:
+        return {}
+
+
+def test_buy_and_sell_fill_on_their_own_signal_ticks(tmp_path) -> None:
+    settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
+    instrument = settings.instruments[0]
+    store = PaperStore(settings.database_path)
+    store.ensure_account(instrument, settings.initial_cash, 1)
+    engine = PaperEngine(settings, store)
+    runtime = InstrumentRuntime(
+        instrument=instrument,
+        feed=object(),  # type: ignore[arg-type]
+        strategy=SignalSequenceStrategy(),  # type: ignore[arg-type]
+    )
+    buy_tick = Tick("buy-tick", 1_000_000, Decimal("100"), Decimal("1"), "test")
+    sell_tick = Tick("sell-tick", 1_001_000, Decimal("99"), Decimal("1"), "test")
+
+    asyncio.run(engine._process_tick(runtime, buy_tick))
+    assert Decimal(store.account(instrument.id)["quantity"]) > 0
+    asyncio.run(engine._process_tick(runtime, sell_tick))
+
+    fills = sorted(store.fills(instrument.id), key=lambda item: item["timestamp_ms"])
+    assert [(item["side"], item["timestamp_ms"]) for item in fills] == [
+        ("BUY", buy_tick.timestamp_ms),
+        ("SELL", sell_tick.timestamp_ms),
+    ]
+    assert [item["source"] for item in fills] == ["test", "test"]

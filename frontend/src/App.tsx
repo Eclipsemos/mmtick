@@ -59,7 +59,6 @@ type PricePoint = {
   timestamp: number
   price: number
   trailingStop: number | null
-  change: number
 }
 
 type TradePoint = {
@@ -396,7 +395,16 @@ function Monitor({
                     fontSize={10}
                     tickFormatter={(value) => Number(value).toFixed(2)}
                   />
-                  <Tooltip content={<PriceTooltip currency={account.currency} />} />
+                  <Tooltip
+                    content={(
+                      <PriceTooltip
+                        currency={account.currency}
+                        pricePoints={priceChart}
+                        tradePoints={tradeMarkers}
+                        referencePrice={visibleStart?.price ?? null}
+                      />
+                    )}
+                  />
                   {visibleCompletedTrades.map((trade) => {
                     const profitable = trade.netPnl >= 0
                     const color = profitable ? '#3fd6a1' : '#ff6f78'
@@ -588,12 +596,10 @@ function zoomRange(current: ChartRange, pointCount: number, factor: number): Cha
 
 function buildPriceChart(equity: EquityPoint[]): PricePoint[] {
   const valid = equity.filter((point) => Number.isFinite(Number(point.price)))
-  const firstPrice = valid.length ? Number(valid[0].price) : 0
   return valid.map((point) => ({
     timestamp: point.timestamp_ms,
     price: Number(point.price),
     trailingStop: point.trailing_stop === null ? null : Number(point.trailing_stop),
-    change: firstPrice ? Number(point.price) / firstPrice - 1 : 0,
   }))
 }
 
@@ -667,22 +673,55 @@ function PriceTooltip({
   payload,
   label,
   currency,
+  pricePoints,
+  tradePoints,
+  referencePrice,
 }: {
   active?: boolean
-  payload?: Array<{ payload: PricePoint }>
-  label?: number
+  payload?: Array<{ payload?: PricePoint | TradePoint }>
+  label?: number | string
   currency: string
+  pricePoints: PricePoint[]
+  tradePoints: TradePoint[]
+  referencePrice: number | null
 }) {
-  const point = payload?.[0]?.payload
-  if (!active || !point) return null
+  const values = (payload ?? []).flatMap((item) => item.payload ? [item.payload] : [])
+  const payloadPrice = values.find(isPricePoint)
+  const payloadTrade = values.find(isTradePoint)
+  const timestamp = Number(label ?? payloadPrice?.timestamp ?? payloadTrade?.timestamp)
+  if (!active || !Number.isFinite(timestamp)) return null
+
+  const point = payloadPrice ?? pricePoints.find((item) => item.timestamp === timestamp)
+  const trade = payloadTrade ?? tradePoints.find((item) => item.timestamp === timestamp)
+  if (!point && !trade) return null
+  const change = point && referencePrice ? point.price / referencePrice - 1 : null
+
   return (
     <div className="price-tooltip">
-      <time>{time(label ?? point.timestamp)}</time>
-      <div><span>价格</span><strong>{money(point.price, currency)}</strong></div>
-      <div><span>ATR 止损线</span><strong>{money(point.trailingStop, currency)}</strong></div>
-      <div><span>区间涨跌</span><strong className={point.change >= 0 ? 'good-text' : 'bad-text'}>{percent(point.change)}</strong></div>
+      <time>{time(timestamp)}</time>
+      {point && <div><span>市场价格</span><strong>{money(point.price, currency)}</strong></div>}
+      {point && <div><span>ATR 止损线</span><strong>{money(point.trailingStop, currency)}</strong></div>}
+      {change !== null && (
+        <div><span>可视区间涨跌</span><strong className={change >= 0 ? 'good-text' : 'bad-text'}>{percent(change)}</strong></div>
+      )}
+      {trade && (
+        <div>
+          <span>成交信号</span>
+          <strong className={trade.side === 'BUY' ? 'good-text' : 'bad-text'}>
+            {trade.side} · {money(trade.price, currency)}
+          </strong>
+        </div>
+      )}
     </div>
   )
+}
+
+function isPricePoint(value: PricePoint | TradePoint): value is PricePoint {
+  return 'trailingStop' in value
+}
+
+function isTradePoint(value: PricePoint | TradePoint): value is TradePoint {
+  return 'side' in value
 }
 
 function Metric({ label, value, sub, tone = '', icon }: { label: string; value: string; sub: string; tone?: string; icon: React.ReactNode }) {
@@ -692,7 +731,7 @@ function Metric({ label, value, sub, tone = '', icon }: { label: string; value: 
 const decisionText = {
   PAUSED: ['策略已暂停', '行情和 ATR 继续更新，但不会发出交易信号'],
   WARMING_UP: ['ATR 预热中', '历史 K 线不足，暂时不能判断穿越'],
-  ORDER_PENDING: ['订单待成交', '信号已提交，等待下一 Tick 模拟成交'],
+  ORDER_PENDING: ['订单待成交', '信号已提交，正在等待当前 Tick 模拟撮合'],
   HOLDING_LONG: ['持仓监控中', '已持有多头，等待价格向下穿越 ATR 止损线'],
   REENTRY_LOCKED: ['本 K 线禁止重入', '本根 15 分钟 K 线已经卖出，即使重新上穿也不会买入'],
   BUY_LOCKED: ['本 K 线买入锁定', '本根 15 分钟 K 线已经使用过买入信号'],
@@ -703,7 +742,7 @@ const decisionText = {
 const triggerText: Record<string, string> = {
   RESUME_TRADING: '恢复策略执行',
   WAIT_FOR_ATR: '等待 ATR 计算完成',
-  NEXT_TICK_FILL: '等待下一 Tick 成交',
+  NEXT_TICK_FILL: '等待模拟撮合完成',
   PRICE_CROSS_BELOW: '价格向下穿越 ATR 线',
   NEXT_BAR_AND_FRESH_UP_CROSS: '进入下一根 K 线，并出现新的向上穿越',
   NEXT_BAR: '等待下一根 15 分钟 K 线',
