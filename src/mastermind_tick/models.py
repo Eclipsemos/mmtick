@@ -116,3 +116,4 @@ class StrategySignal:
     atr: Decimal
     bar_start_ms: int
     tick_id: str
+    signal_at_ms: int | None = None

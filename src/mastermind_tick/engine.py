@@ -51,7 +51,6 @@ class PaperEngine:
                 period=self.settings.strategy.atr_period,
                 multiplier=self.settings.strategy.atr_multiplier,
                 bar_minutes=self.settings.strategy.bar_minutes,
-                debounce_seconds=self.settings.strategy.signal_debounce_seconds,
             )
             runtime = InstrumentRuntime(instrument=instrument, feed=feed, strategy=strategy)
             account = self.store.account(instrument.id)
@@ -179,7 +178,12 @@ class PaperEngine:
                 emit_signals=self.trading_enabled,
             )
             if signal:
-                self.store.submit_order(account_id, signal, tick.timestamp_ms)
+                submitted_at_ms = (
+                    signal.signal_at_ms
+                    if signal.signal_at_ms is not None
+                    else tick.timestamp_ms
+                )
+                self.store.submit_order(account_id, signal, submitted_at_ms)
                 immediate_fill = self.store.fill_pending(
                     account_id,
                     tick,
@@ -318,34 +322,18 @@ def _decision_view(
         state = "WARMING_UP"
         reason = "ATR_NOT_READY"
         next_trigger = "WAIT_FOR_ATR"
-    elif view.pending_cross:
-        state = "DEBOUNCING"
-        reason = f"CONFIRMING_{view.pending_cross}_CROSS"
-        next_trigger = "DEBOUNCE_CONFIRM_OR_RESET"
     elif has_pending_order:
         state = "ORDER_PENDING"
-        reason = "WAITING_NEXT_TICK_FILL"
-        next_trigger = "NEXT_TICK_FILL"
+        reason = "WAITING_NEXT_BAR_FIRST_TICK_FILL"
+        next_trigger = "NEXT_BAR_FIRST_TICK"
     elif has_position:
         state = "HOLDING_LONG"
-        reason = "PRICE_ABOVE_STOP" if view.relation == "above" else "NO_FRESH_DOWN_CROSS"
-        next_trigger = "PRICE_CROSS_BELOW"
-    elif view.flattened_this_bar:
-        state = "REENTRY_LOCKED"
-        reason = "SOLD_THIS_BAR"
-        next_trigger = "NEXT_BAR_AND_FRESH_UP_CROSS"
-    elif view.bought_this_bar:
-        state = "BUY_LOCKED"
-        reason = "BUY_SIGNAL_USED_THIS_BAR"
-        next_trigger = "NEXT_BAR"
-    elif view.relation == "below":
-        state = "ARMED_FOR_BUY"
-        reason = "PRICE_BELOW_STOP"
-        next_trigger = "PRICE_CROSS_ABOVE"
+        reason = "WAITING_CLOSE_CONFIRMED_DOWN_CROSS"
+        next_trigger = "CLOSE_CROSS_BELOW"
     else:
-        state = "WAITING_FOR_RESET"
-        reason = "PRICE_ALREADY_ABOVE_WITHOUT_FRESH_CROSS"
-        next_trigger = "PRICE_BELOW_THEN_CROSS_ABOVE"
+        state = "WAITING_BAR_CLOSE"
+        reason = "WAITING_CLOSE_CONFIRMED_UP_CROSS"
+        next_trigger = "CLOSE_CROSS_ABOVE"
 
     return {
         "state": state,
@@ -355,10 +343,9 @@ def _decision_view(
         "has_position": has_position,
         "has_pending_order": has_pending_order,
         "strategy_ready": view.ready,
-        "buy_lock_open": not view.bought_this_bar,
-        "reentry_lock_open": not view.flattened_this_bar,
-        "fresh_up_cross": view.last_cross == "UP" and view.last_cross_result == "BUY_SIGNAL",
         "bar_end_ms": view.bar_start_ms + bar_ms if view.bar_start_ms is not None else None,
+        "signal_confirmation": "BAR_CLOSE",
+        "fill_timing": "NEXT_BAR_FIRST_TICK",
         "last_signal": (
             {
                 "side": last_order["side"],

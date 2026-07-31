@@ -1,4 +1,4 @@
-"""Tick-driven Pine-compatible ATR trailing-stop strategy."""
+"""Pine-compatible ATR trailing stop with close-confirmed signals."""
 
 from __future__ import annotations
 
@@ -39,33 +39,26 @@ class StrategyView:
     price: Decimal | None
     relation: str
     bar_start_ms: int | None
-    bought_this_bar: bool
-    flattened_this_bar: bool
     last_cross: str | None
     last_cross_at_ms: int | None
     last_cross_result: str | None
     last_cross_reason: str | None
-    pending_cross: str | None
-    pending_cross_since_ms: int | None
-    debounce_ms: int
 
 
 class ATRTickStrategy:
-    """Apply the supplied 15-minute ATR rules on every received market tick."""
+    """Update ATR on ticks and trade only after a 15-minute bar closes."""
 
     def __init__(
         self,
         period: int = 7,
         multiplier: float = 1.0,
         bar_minutes: int = 15,
-        debounce_seconds: float = 0,
     ):
-        if period < 1 or multiplier <= 0 or bar_minutes <= 0 or debounce_seconds < 0:
+        if period < 1 or multiplier <= 0 or bar_minutes <= 0:
             raise ValueError("invalid ATR strategy parameters")
         self.period = period
         self.multiplier = Decimal(str(multiplier))
         self.bar_ms = bar_minutes * 60_000
-        self.debounce_ms = round(debounce_seconds * 1000)
         self.completed_bars: list[Bar] = []
         self.current_bar: Bar | None = None
         self.previous_price: Decimal | None = None
@@ -74,15 +67,10 @@ class ATRTickStrategy:
         self.committed_price: Decimal | None = None
         self.committed_stop: Decimal | None = None
         self.committed_atr: Decimal | None = None
-        self.previous_tick_above: bool | None = None
-        self.bought_this_bar = False
-        self.flattened_this_bar = False
         self.last_cross: str | None = None
         self.last_cross_at_ms: int | None = None
         self.last_cross_result: str | None = None
         self.last_cross_reason: str | None = None
-        self.pending_cross: str | None = None
-        self.pending_cross_since_ms: int | None = None
 
     def bootstrap(self, bars: list[Bar]) -> None:
         """Warm the indicator without creating historical paper orders."""
@@ -94,9 +82,6 @@ class ATRTickStrategy:
         self.committed_price = None
         self.committed_stop = None
         self.committed_atr = None
-        self.previous_tick_above = None
-        self.pending_cross = None
-        self.pending_cross_since_ms = None
         for bar in sorted(bars, key=lambda value: value.start_ms):
             candidate = [*self.completed_bars, bar]
             atr = wilder_atr(candidate, self.period)
@@ -115,16 +100,16 @@ class ATRTickStrategy:
         self.previous_price = self.committed_price
         self.trailing_stop = self.committed_stop
         self.last_atr = self.committed_atr
-        self.previous_tick_above = _is_above(self.committed_price, self.committed_stop)
 
     def restore_runtime(self, value: dict[str, Any] | None) -> None:
         if not value:
             return
-        self.last_cross = value.get("last_cross")
-        self.last_cross_at_ms = value.get("last_cross_at_ms")
-        self.last_cross_result = value.get("last_cross_result")
-        self.last_cross_reason = value.get("last_cross_reason")
         state_version = int(value.get("pine_state_version", 1))
+        if state_version >= 4:
+            self.last_cross = value.get("last_cross")
+            self.last_cross_at_ms = value.get("last_cross_at_ms")
+            self.last_cross_result = value.get("last_cross_result")
+            self.last_cross_reason = value.get("last_cross_reason")
         if self.committed_price is None and state_version >= 2:
             self.committed_price = _decimal_or_none(value.get("committed_price"))
             self.committed_stop = _decimal_or_none(value.get("committed_stop"))
@@ -140,83 +125,34 @@ class ATRTickStrategy:
             and current.start_ms <= latest_completed_start
         ):
             return
-        self.bought_this_bar = bool(value.get("bought_this_bar", False))
-        self.flattened_this_bar = bool(value.get("flattened_this_bar", False))
         self.current_bar = current
-        self.previous_price = current.close
-        self.last_atr = self._current_atr()
-        if self.last_atr is not None:
-            self.trailing_stop = pine_trailing_stop(
-                source=current.close,
-                atr=self.last_atr,
-                multiplier=self.multiplier,
-                previous_stop=self.committed_stop,
-                previous_source=self.committed_price,
-            )
-        restored_relation = value.get("previous_tick_above") if state_version >= 2 else None
-        self.previous_tick_above = (
-            bool(restored_relation)
-            if restored_relation is not None
-            else _is_above(self.previous_price, self.trailing_stop)
-        )
-        if state_version >= 3:
-            pending_cross = value.get("pending_cross")
-            self.pending_cross = pending_cross if pending_cross in {"UP", "DOWN"} else None
-            pending_since = value.get("pending_cross_since_ms")
-            self.pending_cross_since_ms = (
-                int(pending_since)
-                if self.pending_cross is not None and pending_since is not None
-                else None
-            )
+        self._refresh_realtime()
 
     def runtime_state(self) -> dict[str, Any]:
         return {
-            "pine_state_version": 3,
+            "pine_state_version": 4,
             "previous_price": _string_or_none(self.previous_price),
             "trailing_stop": _string_or_none(self.trailing_stop),
             "last_atr": _string_or_none(self.last_atr),
             "committed_price": _string_or_none(self.committed_price),
             "committed_stop": _string_or_none(self.committed_stop),
             "committed_atr": _string_or_none(self.committed_atr),
-            "previous_tick_above": self.previous_tick_above,
-            "bought_this_bar": self.bought_this_bar,
-            "flattened_this_bar": self.flattened_this_bar,
             "last_cross": self.last_cross,
             "last_cross_at_ms": self.last_cross_at_ms,
             "last_cross_result": self.last_cross_result,
             "last_cross_reason": self.last_cross_reason,
-            "pending_cross": self.pending_cross,
-            "pending_cross_since_ms": self.pending_cross_since_ms,
             "current_bar": self.current_bar.as_dict() if self.current_bar else None,
         }
 
     def seed_current_bar(self, bar: Bar) -> None:
-        """Seed the open Binance bar without emitting retrospective signals."""
+        """Seed the open Binance bar without emitting a retrospective signal."""
         latest_completed_start = (
             self.completed_bars[-1].start_ms if self.completed_bars else None
         )
         if latest_completed_start is not None and bar.start_ms <= latest_completed_start:
             return
-        preserve_locks = self.current_bar is not None and self.current_bar.start_ms == bar.start_ms
         self.current_bar = Bar.from_dict(bar.as_dict())
-        if not preserve_locks:
-            self.bought_this_bar = False
-            self.flattened_this_bar = False
-            self._clear_pending_cross()
-        self.previous_price = self.current_bar.close
-        self.last_atr = self._current_atr()
-        self.trailing_stop = (
-            pine_trailing_stop(
-                source=self.current_bar.close,
-                atr=self.last_atr,
-                multiplier=self.multiplier,
-                previous_stop=self.committed_stop,
-                previous_source=self.committed_price,
-            )
-            if self.last_atr is not None
-            else None
-        )
-        self.previous_tick_above = _is_above(self.previous_price, self.trailing_stop)
+        self._refresh_realtime()
 
     def on_tick(
         self,
@@ -233,112 +169,24 @@ class ATRTickStrategy:
             and bar_start <= self.completed_bars[-1].start_ms
         ):
             return None
-        is_new_bar = self.current_bar is None or bar_start > self.current_bar.start_ms
-        if is_new_bar:
-            if self.current_bar is not None:
-                self._commit_current_bar()
-            self.current_bar = Bar(
-                start_ms=bar_start,
-                end_ms=bar_start + self.bar_ms - 1,
-                open=tick.open_price or tick.price,
-                high=tick.high_price or tick.price,
-                low=tick.low_price or tick.price,
-                close=tick.price,
-                volume=tick.quantity,
+        if self.current_bar is not None and bar_start < self.current_bar.start_ms:
+            return None
+
+        signal: StrategySignal | None = None
+        if self.current_bar is None:
+            self.current_bar = self._new_bar(bar_start, tick)
+        elif bar_start > self.current_bar.start_ms:
+            signal = self._confirm_and_commit_current_bar(
+                has_position=has_position,
+                has_pending_order=has_pending_order,
+                emit_signals=emit_signals,
             )
-            self.bought_this_bar = False
-            self.flattened_this_bar = False
-            self._clear_pending_cross()
-            self.previous_tick_above = _is_above(
-                self.committed_price,
-                self.committed_stop,
-            )
+            self.current_bar = self._new_bar(bar_start, tick)
         else:
             self.current_bar.update(tick)
 
-        atr = self._current_atr()
-        if atr is None:
-            self.previous_price = tick.price
-            return None
-
-        self.trailing_stop = pine_trailing_stop(
-            source=tick.price,
-            atr=atr,
-            multiplier=self.multiplier,
-            previous_stop=self.committed_stop,
-            previous_source=self.committed_price,
-        )
-        self.previous_price = tick.price
-        self.last_atr = atr
-        current_tick_above = tick.price >= self.trailing_stop
-        if self.previous_tick_above is None:
-            self.previous_tick_above = current_tick_above
-        cross_up = current_tick_above and not self.previous_tick_above
-        cross_down = not current_tick_above and self.previous_tick_above
-        self.previous_tick_above = current_tick_above
-
-        if cross_up or cross_down:
-            self.pending_cross = "UP" if cross_up else "DOWN"
-            self.pending_cross_since_ms = tick.timestamp_ms
-
-        direction = self.pending_cross
-        pending_since = self.pending_cross_since_ms
-        pending_relation_holds = (
-            direction == "UP" and current_tick_above
-            or direction == "DOWN" and not current_tick_above
-        )
-        if direction is None or pending_since is None:
-            return None
-        if not pending_relation_holds:
-            self._clear_pending_cross()
-            return None
-        if tick.timestamp_ms - pending_since < self.debounce_ms:
-            return None
-
-        self._clear_pending_cross()
-        if direction == "UP":
-            blocked_reason = _buy_block_reason(
-                emit_signals=emit_signals,
-                has_position=has_position,
-                has_pending_order=has_pending_order,
-                bought_this_bar=self.bought_this_bar,
-                flattened_this_bar=self.flattened_this_bar,
-            )
-            if blocked_reason is None:
-                self.bought_this_bar = True
-                self._record_cross("UP", tick.timestamp_ms, "BUY_SIGNAL", None)
-                return StrategySignal(
-                    side=Side.BUY,
-                    reason="price_crossed_above_atr_stop",
-                    signal_price=tick.price,
-                    trailing_stop=self.trailing_stop,
-                    atr=atr,
-                    bar_start_ms=bar_start,
-                    tick_id=tick.event_id,
-                )
-            self._record_cross("UP", tick.timestamp_ms, "BLOCKED", blocked_reason)
-
-        if direction == "DOWN":
-            blocked_reason = _sell_block_reason(
-                emit_signals=emit_signals,
-                has_position=has_position,
-                has_pending_order=has_pending_order,
-                flattened_this_bar=self.flattened_this_bar,
-            )
-            if blocked_reason is None:
-                self.flattened_this_bar = True
-                self._record_cross("DOWN", tick.timestamp_ms, "SELL_SIGNAL", None)
-                return StrategySignal(
-                    side=Side.SELL,
-                    reason="price_crossed_below_atr_stop",
-                    signal_price=tick.price,
-                    trailing_stop=self.trailing_stop,
-                    atr=atr,
-                    bar_start_ms=bar_start,
-                    tick_id=tick.event_id,
-                )
-            self._record_cross("DOWN", tick.timestamp_ms, "BLOCKED", blocked_reason)
-        return None
+        self._refresh_realtime()
+        return signal
 
     def view(self) -> StrategyView:
         relation = "warming"
@@ -352,20 +200,104 @@ class ATRTickStrategy:
             price=price,
             relation=relation,
             bar_start_ms=self.current_bar.start_ms if self.current_bar else None,
-            bought_this_bar=self.bought_this_bar,
-            flattened_this_bar=self.flattened_this_bar,
             last_cross=self.last_cross,
             last_cross_at_ms=self.last_cross_at_ms,
             last_cross_result=self.last_cross_result,
             last_cross_reason=self.last_cross_reason,
-            pending_cross=self.pending_cross,
-            pending_cross_since_ms=self.pending_cross_since_ms,
-            debounce_ms=self.debounce_ms,
         )
 
-    def _clear_pending_cross(self) -> None:
-        self.pending_cross = None
-        self.pending_cross_since_ms = None
+    def _new_bar(self, bar_start: int, tick: Tick) -> Bar:
+        trade_count = (
+            tick.last_trade_id - tick.first_trade_id + 1
+            if tick.first_trade_id is not None and tick.last_trade_id is not None
+            else 1
+        )
+        return Bar(
+            start_ms=bar_start,
+            end_ms=bar_start + self.bar_ms - 1,
+            open=tick.open_price or tick.price,
+            high=tick.high_price or tick.price,
+            low=tick.low_price or tick.price,
+            close=tick.price,
+            volume=tick.quantity,
+            trade_count=trade_count,
+        )
+
+    def _confirm_and_commit_current_bar(
+        self,
+        *,
+        has_position: bool,
+        has_pending_order: bool,
+        emit_signals: bool,
+    ) -> StrategySignal | None:
+        if self.current_bar is None:
+            return None
+
+        closed_bar = self.current_bar
+        previous_close = self.committed_price
+        previous_stop = self.committed_stop
+        confirmed_atr = self._current_atr()
+        confirmed_stop = (
+            pine_trailing_stop(
+                source=closed_bar.close,
+                atr=confirmed_atr,
+                multiplier=self.multiplier,
+                previous_stop=previous_stop,
+                previous_source=previous_close,
+            )
+            if confirmed_atr is not None
+            else None
+        )
+
+        signal: StrategySignal | None = None
+        if confirmed_stop is not None and previous_close is not None and previous_stop is not None:
+            cross_up = closed_bar.close > confirmed_stop and previous_close <= previous_stop
+            cross_down = closed_bar.close < confirmed_stop and previous_close >= previous_stop
+            if cross_up:
+                blocked_reason = _buy_block_reason(
+                    emit_signals=emit_signals,
+                    has_position=has_position,
+                    has_pending_order=has_pending_order,
+                )
+                result = "BUY_SIGNAL" if blocked_reason is None else "BLOCKED"
+                self._record_cross("UP", closed_bar.end_ms, result, blocked_reason)
+                if blocked_reason is None:
+                    signal = StrategySignal(
+                        side=Side.BUY,
+                        reason="close_crossed_above_atr_stop",
+                        signal_price=closed_bar.close,
+                        trailing_stop=confirmed_stop,
+                        atr=confirmed_atr,
+                        bar_start_ms=closed_bar.start_ms,
+                        tick_id=f"bar-close:{closed_bar.end_ms}",
+                        signal_at_ms=closed_bar.end_ms,
+                    )
+            elif cross_down:
+                blocked_reason = _sell_block_reason(
+                    emit_signals=emit_signals,
+                    has_position=has_position,
+                    has_pending_order=has_pending_order,
+                )
+                result = "SELL_SIGNAL" if blocked_reason is None else "BLOCKED"
+                self._record_cross("DOWN", closed_bar.end_ms, result, blocked_reason)
+                if blocked_reason is None:
+                    signal = StrategySignal(
+                        side=Side.SELL,
+                        reason="close_crossed_below_atr_stop",
+                        signal_price=closed_bar.close,
+                        trailing_stop=confirmed_stop,
+                        atr=confirmed_atr,
+                        bar_start_ms=closed_bar.start_ms,
+                        tick_id=f"bar-close:{closed_bar.end_ms}",
+                        signal_at_ms=closed_bar.end_ms,
+                    )
+
+        self.committed_price = closed_bar.close
+        self.committed_stop = confirmed_stop
+        self.committed_atr = confirmed_atr
+        self.completed_bars.append(closed_bar)
+        self.completed_bars = self.completed_bars[-500:]
+        return signal
 
     def _record_cross(
         self,
@@ -379,6 +311,26 @@ class ATRTickStrategy:
         self.last_cross_result = result
         self.last_cross_reason = reason
 
+    def _refresh_realtime(self) -> None:
+        if self.current_bar is None:
+            self.previous_price = self.committed_price
+            self.trailing_stop = self.committed_stop
+            self.last_atr = self.committed_atr
+            return
+        self.previous_price = self.current_bar.close
+        self.last_atr = self._current_atr()
+        self.trailing_stop = (
+            pine_trailing_stop(
+                source=self.current_bar.close,
+                atr=self.last_atr,
+                multiplier=self.multiplier,
+                previous_stop=self.committed_stop,
+                previous_source=self.committed_price,
+            )
+            if self.last_atr is not None
+            else None
+        )
+
     def _current_atr(self) -> Decimal | None:
         if self.current_bar is None:
             return self.committed_atr
@@ -389,15 +341,6 @@ class ATRTickStrategy:
             ) / Decimal(self.period)
         return wilder_atr([*self.completed_bars, self.current_bar], self.period)
 
-    def _commit_current_bar(self) -> None:
-        if self.current_bar is None:
-            return
-        self.committed_price = self.current_bar.close
-        self.committed_stop = self.trailing_stop
-        self.committed_atr = self.last_atr
-        self.completed_bars.append(self.current_bar)
-        self.completed_bars = self.completed_bars[-500:]
-
 
 def _decimal_or_none(value: Any) -> Decimal | None:
     return None if value is None else Decimal(str(value))
@@ -405,12 +348,6 @@ def _decimal_or_none(value: Any) -> Decimal | None:
 
 def _string_or_none(value: Decimal | None) -> str | None:
     return None if value is None else str(value)
-
-
-def _is_above(source: Decimal | None, stop: Decimal | None) -> bool | None:
-    if source is None or stop is None:
-        return None
-    return source >= stop
 
 
 def pine_trailing_stop(
@@ -439,8 +376,6 @@ def _buy_block_reason(
     emit_signals: bool,
     has_position: bool,
     has_pending_order: bool,
-    bought_this_bar: bool,
-    flattened_this_bar: bool,
 ) -> str | None:
     if not emit_signals:
         return "TRADING_PAUSED"
@@ -448,10 +383,6 @@ def _buy_block_reason(
         return "ALREADY_LONG"
     if has_pending_order:
         return "ORDER_PENDING"
-    if bought_this_bar:
-        return "BUY_LOCKED_THIS_BAR"
-    if flattened_this_bar:
-        return "REENTRY_LOCKED_THIS_BAR"
     return None
 
 
@@ -460,7 +391,6 @@ def _sell_block_reason(
     emit_signals: bool,
     has_position: bool,
     has_pending_order: bool,
-    flattened_this_bar: bool,
 ) -> str | None:
     if not emit_signals:
         return "TRADING_PAUSED"
@@ -468,6 +398,4 @@ def _sell_block_reason(
         return "NO_POSITION"
     if has_pending_order:
         return "ORDER_PENDING"
-    if flattened_this_bar:
-        return "EXIT_LOCKED_THIS_BAR"
     return None

@@ -4,9 +4,9 @@ from decimal import Decimal
 
 from mastermind_tick.config import load_settings
 from mastermind_tick.engine import InstrumentRuntime, PaperEngine, _decision_view
-from mastermind_tick.models import Side, StrategySignal, Tick
+from mastermind_tick.models import Bar, Tick
 from mastermind_tick.store import PaperStore
-from mastermind_tick.strategy import StrategyView
+from mastermind_tick.strategy import ATRTickStrategy, StrategyView
 
 
 def strategy_view(**overrides) -> StrategyView:
@@ -17,21 +17,16 @@ def strategy_view(**overrides) -> StrategyView:
         "price": Decimal("101"),
         "relation": "above",
         "bar_start_ms": 1_800_000,
-        "bought_this_bar": False,
-        "flattened_this_bar": False,
         "last_cross": None,
         "last_cross_at_ms": None,
         "last_cross_result": None,
         "last_cross_reason": None,
-        "pending_cross": None,
-        "pending_cross_since_ms": None,
-        "debounce_ms": 2_000,
     }
     values.update(overrides)
     return StrategyView(**values)
 
 
-def test_flat_account_above_stop_waits_for_a_fresh_cross() -> None:
+def test_flat_account_waits_for_close_confirmed_up_cross() -> None:
     decision = _decision_view(
         strategy_view(),
         trading_enabled=True,
@@ -40,42 +35,29 @@ def test_flat_account_above_stop_waits_for_a_fresh_cross() -> None:
         bar_ms=900_000,
     )
 
-    assert decision["state"] == "WAITING_FOR_RESET"
-    assert decision["reason"] == "PRICE_ALREADY_ABOVE_WITHOUT_FRESH_CROSS"
-    assert decision["next_trigger"] == "PRICE_BELOW_THEN_CROSS_ABOVE"
+    assert decision["state"] == "WAITING_BAR_CLOSE"
+    assert decision["reason"] == "WAITING_CLOSE_CONFIRMED_UP_CROSS"
+    assert decision["next_trigger"] == "CLOSE_CROSS_ABOVE"
     assert decision["bar_end_ms"] == 2_700_000
-    assert decision["last_signal"] is None
+    assert decision["signal_confirmation"] == "BAR_CLOSE"
+    assert decision["fill_timing"] == "NEXT_BAR_FIRST_TICK"
 
 
-def test_same_bar_sell_lock_is_reported_before_price_relation() -> None:
+def test_long_account_waits_for_close_confirmed_down_cross() -> None:
     decision = _decision_view(
-        strategy_view(flattened_this_bar=True),
-        trading_enabled=True,
-        has_position=False,
-        has_pending_order=False,
-        bar_ms=900_000,
-    )
-
-    assert decision["state"] == "REENTRY_LOCKED"
-    assert decision["reason"] == "SOLD_THIS_BAR"
-    assert not decision["reentry_lock_open"]
-
-
-def test_pending_cross_is_reported_as_debouncing() -> None:
-    decision = _decision_view(
-        strategy_view(pending_cross="DOWN", pending_cross_since_ms=2_000_000),
+        strategy_view(relation="below", price=Decimal("99")),
         trading_enabled=True,
         has_position=True,
         has_pending_order=False,
         bar_ms=900_000,
     )
 
-    assert decision["state"] == "DEBOUNCING"
-    assert decision["reason"] == "CONFIRMING_DOWN_CROSS"
-    assert decision["next_trigger"] == "DEBOUNCE_CONFIRM_OR_RESET"
+    assert decision["state"] == "HOLDING_LONG"
+    assert decision["reason"] == "WAITING_CLOSE_CONFIRMED_DOWN_CROSS"
+    assert decision["next_trigger"] == "CLOSE_CROSS_BELOW"
 
 
-def test_latest_order_is_exposed_as_cross_history_fallback() -> None:
+def test_latest_order_is_exposed_as_confirmed_signal_history() -> None:
     decision = _decision_view(
         strategy_view(),
         trading_enabled=True,
@@ -86,7 +68,7 @@ def test_latest_order_is_exposed_as_cross_history_fallback() -> None:
             "side": "SELL",
             "status": "FILLED",
             "submitted_at_ms": 2_000_000,
-            "reason": "price_crossed_below_atr_stop",
+            "reason": "close_crossed_below_atr_stop",
         },
     )
 
@@ -94,55 +76,56 @@ def test_latest_order_is_exposed_as_cross_history_fallback() -> None:
         "side": "SELL",
         "status": "FILLED",
         "timestamp_ms": 2_000_000,
-        "reason": "price_crossed_below_atr_stop",
+        "reason": "close_crossed_below_atr_stop",
     }
 
 
-class SignalSequenceStrategy:
-    def __init__(self) -> None:
-        self.side = Side.BUY
-
-    def on_tick(self, tick: Tick, **_kwargs) -> StrategySignal:
-        signal = StrategySignal(
-            side=self.side,
-            reason=f"test_{self.side.value.lower()}",
-            signal_price=tick.price,
-            trailing_stop=Decimal("100"),
-            atr=Decimal("2"),
-            bar_start_ms=900_000,
-            tick_id=tick.event_id,
-        )
-        self.side = Side.SELL
-        return signal
-
-    def view(self) -> StrategyView:
-        return strategy_view(bought_this_bar=True)
-
-    def runtime_state(self) -> dict:
-        return {}
-
-
-def test_buy_and_sell_fill_on_their_own_signal_ticks(tmp_path) -> None:
+def test_confirmed_signal_submits_at_close_and_fills_at_next_open(tmp_path) -> None:
     settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
     instrument = settings.instruments[0]
     store = PaperStore(settings.database_path)
     store.ensure_account(instrument, settings.initial_cash, 1)
     engine = PaperEngine(settings, store)
+    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
+    strategy.bootstrap(
+        [
+            Bar(0, 899_999, Decimal("10"), Decimal("10.5"), Decimal("9.5"), Decimal("10")),
+            Bar(900_000, 1_799_999, Decimal("9"), Decimal("9.5"), Decimal("8.5"), Decimal("9")),
+            Bar(1_800_000, 2_699_999, Decimal("8"), Decimal("8.5"), Decimal("7.5"), Decimal("8")),
+        ]
+    )
+    strategy.seed_current_bar(
+        Bar(
+            2_700_000,
+            3_599_999,
+            Decimal("10"),
+            Decimal("10"),
+            Decimal("7"),
+            Decimal("10"),
+        )
+    )
     runtime = InstrumentRuntime(
         instrument=instrument,
         feed=object(),  # type: ignore[arg-type]
-        strategy=SignalSequenceStrategy(),  # type: ignore[arg-type]
+        strategy=strategy,
     )
-    buy_tick = Tick("buy-tick", 1_000_000, Decimal("100"), Decimal("1"), "test")
-    sell_tick = Tick("sell-tick", 1_001_000, Decimal("99"), Decimal("1"), "test")
+    next_open = Tick(
+        "next-open",
+        3_600_000,
+        Decimal("11"),
+        Decimal("1"),
+        "test",
+    )
 
-    asyncio.run(engine._process_tick(runtime, buy_tick))
-    assert Decimal(store.account(instrument.id)["quantity"]) > 0
-    asyncio.run(engine._process_tick(runtime, sell_tick))
+    asyncio.run(engine._process_tick(runtime, next_open))
 
-    fills = sorted(store.fills(instrument.id), key=lambda item: item["timestamp_ms"])
-    assert [(item["side"], item["timestamp_ms"]) for item in fills] == [
-        ("BUY", buy_tick.timestamp_ms),
-        ("SELL", sell_tick.timestamp_ms),
-    ]
-    assert [item["source"] for item in fills] == ["test", "test"]
+    order = store.orders(instrument.id, 1)[0]
+    fill = store.fills(instrument.id)[0]
+    assert order["submitted_at_ms"] == 3_599_999
+    assert order["bar_start_ms"] == 2_700_000
+    assert order["signal_price"] == "10"
+    assert order["submitted_tick_id"] == "bar-close:3599999"
+    assert order["filled_at_ms"] == next_open.timestamp_ms
+    assert fill["timestamp_ms"] == next_open.timestamp_ms
+    assert Decimal(fill["price"]) == Decimal("11.0055")
+    assert fill["source"] == "test"

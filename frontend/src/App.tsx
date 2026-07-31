@@ -473,9 +473,9 @@ function Monitor({
             <div><dt>ATR 止损线</dt><dd>{money(strategy.trailing_stop, account.currency)}</dd></div>
             <div><dt>价格距离</dt><dd>{strategy.price && strategy.trailing_stop ? money(Number(strategy.price) - Number(strategy.trailing_stop), account.currency) : '--'}</dd></div>
             <div><dt>K 线开始</dt><dd>{time(strategy.bar_start_ms)}</dd></div>
-            <div><dt>信号防抖</dt><dd>{(strategy.debounce_ms / 1000).toFixed(1)}s</dd></div>
-            <div><dt>买入锁</dt><dd>{strategy.bought_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
-            <div><dt>空仓锁</dt><dd>{strategy.flattened_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
+            <div><dt>K 线状态</dt><dd>形成中，不交易</dd></div>
+            <div><dt>信号确认</dt><dd>15m 收盘</dd></div>
+            <div><dt>成交时点</dt><dd>下一根首笔</dd></div>
           </dl>
           {runtime.paper_model === 'futures' && (
             <dl className="strategy-values futures-values">
@@ -492,8 +492,8 @@ function Monitor({
             <span>15m</span>
             <span>{(runtime.position_fraction * 100).toFixed(0)}% exposure</span>
             <span>{runtime.paper_model === 'futures' ? `${runtime.leverage}x ${runtime.margin_mode}` : 'SPOT'}</span>
-            <span>{(strategy.debounce_ms / 1000).toFixed(0)}s debounce</span>
-            <span>SIGNAL-TICK fills</span>
+            <span>BAR-CLOSE signals</span>
+            <span>NEXT-BAR fills</span>
           </div>
         </div>
       </section>
@@ -733,44 +733,33 @@ function Metric({ label, value, sub, tone = '', icon }: { label: string; value: 
 const decisionText = {
   PAUSED: ['策略已暂停', '行情和 ATR 继续更新，但不会发出交易信号'],
   WARMING_UP: ['ATR 预热中', '历史 K 线不足，暂时不能判断穿越'],
-  DEBOUNCING: ['穿越确认中', '价格需要持续位于 ATR 线另一侧，期间回撤将取消候选信号'],
-  ORDER_PENDING: ['订单待成交', '信号已提交，正在等待当前 Tick 模拟撮合'],
-  HOLDING_LONG: ['持仓监控中', '已持有多头，等待价格向下穿越 ATR 止损线'],
-  REENTRY_LOCKED: ['本 K 线禁止重入', '本根 15 分钟 K 线已经卖出，即使重新上穿也不会买入'],
-  BUY_LOCKED: ['本 K 线买入锁定', '本根 15 分钟 K 线已经使用过买入信号'],
-  ARMED_FOR_BUY: ['等待向上穿越', '当前价格在 ATR 线下方，下一次向上穿越可触发买入'],
-  WAITING_FOR_RESET: ['等待重新武装', '当前价格虽高于 ATR，但没有新的下方到上方穿越'],
+  ORDER_PENDING: ['订单待成交', '收盘信号已提交，等待下一根 K 线的首笔行情模拟成交'],
+  HOLDING_LONG: ['持仓监控中', '等待 15 分钟 K 线收盘确认向下穿越 ATR 止损线'],
+  WAITING_BAR_CLOSE: ['等待收盘确认上穿', '当前 K 线内价格和 ATR 实时更新，正式收盘前不会交易'],
 } as const
 
 const triggerText: Record<string, string> = {
   RESUME_TRADING: '恢复策略执行',
   WAIT_FOR_ATR: '等待 ATR 计算完成',
-  DEBOUNCE_CONFIRM_OR_RESET: '持续满防抖时间后确认，或回撤后取消',
-  NEXT_TICK_FILL: '等待模拟撮合完成',
-  PRICE_CROSS_BELOW: '价格向下穿越 ATR 线',
-  NEXT_BAR_AND_FRESH_UP_CROSS: '进入下一根 K 线，并出现新的向上穿越',
-  NEXT_BAR: '等待下一根 15 分钟 K 线',
-  PRICE_CROSS_ABOVE: '价格向上穿越 ATR 线',
-  PRICE_BELOW_THEN_CROSS_ABOVE: '价格先回到 ATR 线下方，再重新向上穿越',
+  NEXT_BAR_FIRST_TICK: '等待下一根 K 线首笔行情',
+  CLOSE_CROSS_BELOW: '收盘价确认向下穿越 ATR 线',
+  CLOSE_CROSS_ABOVE: '收盘价确认向上穿越 ATR 线',
 }
 
 const crossReasonText: Record<string, string> = {
   TRADING_PAUSED: '策略暂停',
   ALREADY_LONG: '已有持仓',
   ORDER_PENDING: '已有待成交订单',
-  BUY_LOCKED_THIS_BAR: '本 K 线买入锁',
-  REENTRY_LOCKED_THIS_BAR: '卖出后本 K 线禁止重入',
   NO_POSITION: '没有可卖持仓',
-  EXIT_LOCKED_THIS_BAR: '本 K 线卖出锁',
 }
 
 function DecisionStatus({ runtime }: { runtime: Account['runtime'] }) {
   const decision = runtime.decision
   const strategy = runtime.strategy
   const copy = decisionText[decision.state]
-  const tone = decision.state === 'ARMED_FOR_BUY' || decision.state === 'HOLDING_LONG'
+  const tone = decision.state === 'WAITING_BAR_CLOSE' || decision.state === 'HOLDING_LONG'
     ? 'ready'
-    : decision.state === 'PAUSED' || decision.state === 'REENTRY_LOCKED'
+    : decision.state === 'PAUSED'
       ? 'blocked'
       : 'waiting'
   const lastCross = strategy.last_cross
@@ -795,16 +784,15 @@ function DecisionStatus({ runtime }: { runtime: Account['runtime'] }) {
       <dl className="decision-facts">
         <div><dt>仓位</dt><dd>{decision.has_position ? '多头持仓' : '空仓'}</dd></div>
         <div><dt>订单</dt><dd>{decision.has_pending_order ? '待成交' : '无待成交'}</dd></div>
-        <div><dt>最近穿越</dt><dd>{lastCross}</dd></div>
+        <div><dt>最近收盘确认</dt><dd>{lastCross}</dd></div>
         <div><dt>下一触发条件</dt><dd>{triggerText[decision.next_trigger] ?? decision.next_trigger}</dd></div>
       </dl>
       <div className="decision-gates" aria-label="买入门控">
         <Gate open={decision.trading_enabled} label="策略运行" />
         <Gate open={decision.strategy_ready} label="ATR 就绪" />
-        <Gate open={!decision.has_position} label="当前空仓" />
         <Gate open={!decision.has_pending_order} label="无待成交单" />
-        <Gate open={decision.buy_lock_open} label="买入锁开放" />
-        <Gate open={decision.reentry_lock_open} label="重入锁开放" />
+        <Gate open={decision.signal_confirmation === 'BAR_CLOSE'} label="收盘确认" />
+        <Gate open={decision.fill_timing === 'NEXT_BAR_FIRST_TICK'} label="下根首笔成交" />
       </div>
     </section>
   )

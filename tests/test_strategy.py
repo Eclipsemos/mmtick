@@ -5,15 +5,17 @@ import pytest
 from mastermind_tick.models import Bar, Side, Tick
 from mastermind_tick.strategy import ATRTickStrategy, wilder_atr
 
+BAR_MS = 900_000
+
 
 def bars(closes: list[float], spread: float = 0.5) -> list[Bar]:
     result = []
     for index, close in enumerate(closes):
-        start = index * 900_000
+        start = index * BAR_MS
         result.append(
             Bar(
                 start_ms=start,
-                end_ms=start + 899_999,
+                end_ms=start + BAR_MS - 1,
                 open=Decimal(str(close)),
                 high=Decimal(str(close + spread)),
                 low=Decimal(str(close - spread)),
@@ -33,6 +35,30 @@ def tick(event_id: str, timestamp_ms: int, price: float) -> Tick:
     )
 
 
+def warmed_strategy() -> ATRTickStrategy:
+    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
+    strategy.bootstrap(bars([10, 9, 8]))
+    return strategy
+
+
+def form_up_cross_bar(strategy: ATRTickStrategy) -> int:
+    start = 3 * BAR_MS
+    assert strategy.on_tick(
+        tick("open", start, 10), has_position=False, has_pending_order=False
+    ) is None
+    assert strategy.on_tick(
+        tick("intrabar-down", start + 300_000, 7),
+        has_position=False,
+        has_pending_order=False,
+    ) is None
+    assert strategy.on_tick(
+        tick("close", start + BAR_MS - 2, 10),
+        has_position=False,
+        has_pending_order=False,
+    ) is None
+    return start
+
+
 def test_wilder_atr_matches_known_pine_values() -> None:
     values = bars([10, 9, 8, 9, 12])
 
@@ -42,104 +68,127 @@ def test_wilder_atr_matches_known_pine_values() -> None:
     assert float(wilder_atr(values, 2)) == pytest.approx(2.46875)
 
 
-def test_cross_down_then_cross_up_is_locked_for_same_bar() -> None:
-    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
-    strategy.bootstrap(bars([10, 9, 8, 9, 12]))
-    next_bar = 5 * 900_000
+def test_intrabar_crosses_never_emit_a_signal() -> None:
+    strategy = warmed_strategy()
+    start = form_up_cross_bar(strategy)
 
-    sell = strategy.on_tick(
-        tick("sell", next_bar, 10), has_position=True, has_pending_order=False
-    )
-    assert sell is not None
-    assert sell.side is Side.SELL
-    assert strategy.flattened_this_bar
-
-    blocked = strategy.on_tick(
-        tick("blocked-buy", next_bar + 1_000, 13),
-        has_position=False,
-        has_pending_order=False,
-    )
-    assert blocked is None
-    assert strategy.flattened_this_bar
-    assert strategy.last_cross == "UP"
-    assert strategy.last_cross_result == "BLOCKED"
-    assert strategy.last_cross_reason == "REENTRY_LOCKED_THIS_BAR"
+    assert strategy.current_bar is not None
+    assert strategy.current_bar.start_ms == start
+    assert strategy.last_cross is None
 
 
-def test_buy_and_sell_are_each_limited_to_one_signal_per_bar() -> None:
-    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
-    strategy.bootstrap(bars([10, 9, 8]))
-    next_bar = 3 * 900_000
-
-    buy = strategy.on_tick(
-        tick("buy", next_bar, 10), has_position=False, has_pending_order=False
-    )
-    assert buy is not None
-    assert buy.side is Side.BUY
-
-    sell = strategy.on_tick(
-        tick("sell", next_bar + 1_000, 7), has_position=True, has_pending_order=False
-    )
-    assert sell is not None
-    assert sell.side is Side.SELL
-
-    assert (
-        strategy.on_tick(
-            tick("second-buy", next_bar + 2_000, 11),
-            has_position=False,
-            has_pending_order=False,
-        )
-        is None
-    )
-
-
-def test_paused_strategy_updates_line_without_consuming_trade_lock() -> None:
-    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
-    strategy.bootstrap(bars([10, 9, 8]))
-    next_bar = 3 * 900_000
+def test_close_confirmed_up_cross_is_reported_on_next_bar_first_tick() -> None:
+    strategy = warmed_strategy()
+    closed_start = form_up_cross_bar(strategy)
 
     signal = strategy.on_tick(
-        tick("paused-cross", next_bar, 10),
+        tick("next-open", closed_start + BAR_MS, 11),
         has_position=False,
         has_pending_order=False,
-        emit_signals=False,
     )
 
-    assert signal is None
-    assert not strategy.bought_this_bar
-    assert not strategy.flattened_this_bar
+    assert signal is not None
+    assert signal.side is Side.BUY
+    assert signal.reason == "close_crossed_above_atr_stop"
+    assert signal.signal_price == Decimal("10")
+    assert signal.trailing_stop == Decimal("8.359375")
+    assert signal.atr == Decimal("2.1875")
+    assert signal.bar_start_ms == closed_start
+    assert signal.signal_at_ms == closed_start + BAR_MS - 1
+    assert signal.tick_id == f"bar-close:{closed_start + BAR_MS - 1}"
+    assert strategy.last_cross == "UP"
+    assert strategy.last_cross_result == "BUY_SIGNAL"
 
 
-def test_realtime_stop_rolls_back_to_previous_closed_bar_on_every_tick() -> None:
-    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
-    strategy.bootstrap(bars([10, 9, 8]))
-    next_bar = 3 * 900_000
+def test_realtime_atr_and_stop_continue_to_update_on_every_tick() -> None:
+    strategy = warmed_strategy()
+    start = 3 * BAR_MS
 
     strategy.on_tick(
-        tick("bar-high", next_bar, 12),
+        tick("bar-high", start, 12),
         has_position=False,
         has_pending_order=False,
     )
     assert strategy.trailing_stop == Decimal("9.984375")
 
     strategy.on_tick(
-        tick("pullback", next_bar + 1_000, 10),
+        tick("pullback", start + 1_000, 10),
+        has_position=False,
+        has_pending_order=False,
+    )
+
+    assert strategy.last_atr == Decimal("2.6875")
+    assert strategy.trailing_stop == Decimal("7.984375")
+    assert strategy.last_cross is None
+
+
+def test_close_confirmed_down_cross_sells_on_following_bar() -> None:
+    strategy = warmed_strategy()
+    up_start = form_up_cross_bar(strategy)
+    buy = strategy.on_tick(
+        tick("buy-open", up_start + BAR_MS, 11),
+        has_position=False,
+        has_pending_order=False,
+    )
+    assert buy is not None and buy.side is Side.BUY
+
+    assert strategy.on_tick(
+        tick("down-close", up_start + BAR_MS + 600_000, 7),
+        has_position=True,
+        has_pending_order=False,
+    ) is None
+    sell = strategy.on_tick(
+        tick("sell-open", up_start + 2 * BAR_MS, 6),
         has_position=True,
         has_pending_order=False,
     )
 
-    # Pine recalculates from tsl_price[1]=9.03125, not the prior Tick's 9.984375.
-    assert strategy.last_atr == Decimal("2.6875")
-    assert strategy.trailing_stop == Decimal("7.984375")
-    assert strategy.previous_tick_above
+    assert sell is not None
+    assert sell.side is Side.SELL
+    assert sell.signal_price == Decimal("7")
+    assert sell.trailing_stop == Decimal("9.3203125")
+    assert sell.signal_at_ms == up_start + 2 * BAR_MS - 1
+    assert strategy.last_cross == "DOWN"
+    assert strategy.last_cross_result == "SELL_SIGNAL"
 
 
-def test_current_binance_bar_seeds_realtime_atr_without_emitting_signal() -> None:
-    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
-    strategy.bootstrap(bars([10, 9, 8]))
+def test_position_rules_block_close_confirmed_crosses() -> None:
+    strategy = warmed_strategy()
+    start = form_up_cross_bar(strategy)
+
+    signal = strategy.on_tick(
+        tick("next-open", start + BAR_MS, 11),
+        has_position=True,
+        has_pending_order=False,
+    )
+
+    assert signal is None
+    assert strategy.last_cross == "UP"
+    assert strategy.last_cross_result == "BLOCKED"
+    assert strategy.last_cross_reason == "ALREADY_LONG"
+
+
+def test_paused_strategy_records_but_does_not_emit_confirmed_cross() -> None:
+    strategy = warmed_strategy()
+    start = form_up_cross_bar(strategy)
+
+    signal = strategy.on_tick(
+        tick("next-open", start + BAR_MS, 11),
+        has_position=False,
+        has_pending_order=False,
+        emit_signals=False,
+    )
+
+    assert signal is None
+    assert strategy.last_cross_result == "BLOCKED"
+    assert strategy.last_cross_reason == "TRADING_PAUSED"
+
+
+def test_current_binance_bar_seeds_realtime_state_without_signal() -> None:
+    strategy = warmed_strategy()
     current = Bar(
-        start_ms=3 * 900_000,
-        end_ms=4 * 900_000 - 1,
+        start_ms=3 * BAR_MS,
+        end_ms=4 * BAR_MS - 1,
         open=Decimal("8"),
         high=Decimal("12"),
         low=Decimal("7"),
@@ -150,158 +199,39 @@ def test_current_binance_bar_seeds_realtime_atr_without_emitting_signal() -> Non
 
     assert strategy.last_atr == Decimal("3.1875")
     assert strategy.trailing_stop == Decimal("7.609375")
-    assert strategy.previous_tick_above
     assert strategy.last_cross is None
 
 
-def test_runtime_state_persists_pine_varip_relation() -> None:
-    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
-    strategy.bootstrap(bars([10, 9, 8]))
-    next_bar = 3 * 900_000
-    strategy.on_tick(
-        tick("cross", next_bar, 12),
-        has_position=False,
-        has_pending_order=False,
-    )
+def test_open_bar_survives_restart_and_confirms_only_at_next_open() -> None:
+    original = warmed_strategy()
+    closed_start = form_up_cross_bar(original)
+    state = original.runtime_state()
 
-    state = strategy.runtime_state()
+    restored = warmed_strategy()
+    restored.restore_runtime(state)
+    assert restored.runtime_state()["pine_state_version"] == 4
+    assert restored.last_cross is None
 
-    assert state["pine_state_version"] == 3
-    assert state["previous_tick_above"] is True
-    assert state["committed_stop"] == "9.03125"
-
-
-def test_cross_must_hold_for_configured_debounce_time() -> None:
-    strategy = ATRTickStrategy(
-        period=2,
-        multiplier=0.75,
-        bar_minutes=15,
-        debounce_seconds=2,
-    )
-    strategy.bootstrap(bars([10, 9, 8]))
-    next_bar = 3 * 900_000
-
-    assert (
-        strategy.on_tick(
-            tick("candidate", next_bar, 10),
-            has_position=False,
-            has_pending_order=False,
-        )
-        is None
-    )
-    assert strategy.pending_cross == "UP"
-    assert strategy.pending_cross_since_ms == next_bar
-    assert (
-        strategy.on_tick(
-            tick("not-yet", next_bar + 1_999, 10),
-            has_position=False,
-            has_pending_order=False,
-        )
-        is None
-    )
-
-    signal = strategy.on_tick(
-        tick("confirmed", next_bar + 2_000, 10),
+    signal = restored.on_tick(
+        tick("next-open", closed_start + BAR_MS, 11),
         has_position=False,
         has_pending_order=False,
     )
 
     assert signal is not None
     assert signal.side is Side.BUY
-    assert signal.tick_id == "confirmed"
-    assert strategy.pending_cross is None
-    assert strategy.bought_this_bar
+    assert signal.signal_at_ms == closed_start + BAR_MS - 1
 
 
-def test_debounce_restarts_when_price_crosses_back() -> None:
-    strategy = ATRTickStrategy(
-        period=2,
-        multiplier=0.75,
-        bar_minutes=15,
-        debounce_seconds=2,
-    )
-    strategy.bootstrap(bars([10, 9, 8]))
-    next_bar = 3 * 900_000
-
-    strategy.on_tick(
-        tick("up-candidate", next_bar, 10),
-        has_position=False,
-        has_pending_order=False,
-    )
-    strategy.on_tick(
-        tick("back-below", next_bar + 1_000, 7),
-        has_position=False,
-        has_pending_order=False,
-    )
-
-    assert strategy.pending_cross == "DOWN"
-    assert strategy.pending_cross_since_ms == next_bar + 1_000
-    assert not strategy.bought_this_bar
-
-
-def test_debounce_candidate_is_persisted_across_restart() -> None:
-    original = ATRTickStrategy(
-        period=2,
-        multiplier=0.75,
-        bar_minutes=15,
-        debounce_seconds=2,
-    )
-    history = bars([10, 9, 8])
-    original.bootstrap(history)
-    next_bar = 3 * 900_000
-    original.on_tick(
-        tick("candidate", next_bar, 10),
-        has_position=False,
-        has_pending_order=False,
-    )
-
-    restored = ATRTickStrategy(
-        period=2,
-        multiplier=0.75,
-        bar_minutes=15,
-        debounce_seconds=2,
-    )
-    restored.bootstrap(history)
-    restored.restore_runtime(original.runtime_state())
-
-    assert restored.pending_cross == "UP"
-    assert restored.pending_cross_since_ms == next_bar
-
-
-def test_tick_for_last_completed_bar_is_not_aggregated_twice() -> None:
-    history = bars([10, 9, 8, 9, 12])
-    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
-    strategy.bootstrap(history)
-    previous_stop = strategy.trailing_stop
-
-    result = strategy.on_tick(
-        tick("stale-close", history[-1].start_ms, 12),
-        has_position=False,
-        has_pending_order=False,
-    )
-
-    assert result is None
-    assert strategy.current_bar is None
-    assert strategy.trailing_stop == previous_stop
-
-
-def test_stale_runtime_bar_does_not_override_fresher_warmup() -> None:
-    history = bars([10, 9, 8, 9, 12])
-    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
-    strategy.bootstrap(history)
-    previous_stop = strategy.trailing_stop
-
+def test_legacy_tick_cross_metadata_is_not_restored() -> None:
+    strategy = warmed_strategy()
     strategy.restore_runtime(
         {
-            "previous_price": "1",
-            "trailing_stop": "2",
-            "last_atr": "3",
-            "bought_this_bar": True,
-            "flattened_this_bar": True,
-            "current_bar": history[-1].as_dict(),
+            "pine_state_version": 3,
+            "last_cross": "UP",
+            "last_cross_at_ms": 123,
+            "last_cross_result": "BUY_SIGNAL",
         }
     )
 
-    assert strategy.trailing_stop == previous_stop
-    assert strategy.current_bar is None
-    assert not strategy.bought_this_bar
+    assert strategy.last_cross is None

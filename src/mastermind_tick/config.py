@@ -13,7 +13,6 @@ class StrategySettings:
     bar_minutes: int
     atr_period: int
     atr_multiplier: float
-    signal_debounce_seconds: float
     position_fraction: float
 
 
@@ -77,8 +76,6 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         raise ValueError("strategy.atr_period must be positive")
     if strategy.atr_multiplier <= 0:
         raise ValueError("strategy.atr_multiplier must be positive")
-    if strategy.signal_debounce_seconds < 0:
-        raise ValueError("strategy.signal_debounce_seconds cannot be negative")
     if not 0 < strategy.position_fraction <= 1:
         raise ValueError("strategy.position_fraction must be in (0, 1]")
     if execution.fee_bps < 0 or execution.slippage_bps < 0:
