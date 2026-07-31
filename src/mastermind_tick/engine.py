@@ -33,7 +33,6 @@ class InstrumentRuntime:
     kline_validation: str = "PENDING"
     kline_mismatches: int = 0
     last_kline_retry_ms: int = 0
-    first_ticks: dict[int, Tick] = field(default_factory=dict, repr=False)
     task: asyncio.Task | None = field(default=None, repr=False)
     kline_task: asyncio.Task | None = field(default=None, repr=False)
     lock: asyncio.Lock = field(default_factory=asyncio.Lock, repr=False)
@@ -199,12 +198,6 @@ class PaperEngine:
             )
             runtime.last_tick = tick
             tick_bar_start = tick.timestamp_ms // runtime.strategy.bar_ms * runtime.strategy.bar_ms
-            runtime.first_ticks.setdefault(tick_bar_start, tick)
-            runtime.first_ticks = {
-                start: value
-                for start, value in runtime.first_ticks.items()
-                if start >= tick_bar_start - 2 * runtime.strategy.bar_ms
-            }
             funding_applied = await self._apply_due_funding(runtime, tick)
             account_id = runtime.instrument.id
             fill = None
@@ -216,7 +209,7 @@ class PaperEngine:
                     self.settings.execution,
                     _position_fraction(runtime.instrument, self.settings),
                 )
-            signal_emitted = False
+            baseline_synced = False
             next_uncommitted = runtime.strategy.next_uncommitted_bar_start_ms
             last_closed_start = tick_bar_start - runtime.strategy.bar_ms
             should_retry_kline = (
@@ -226,28 +219,41 @@ class PaperEngine:
             )
             if should_retry_kline:
                 runtime.last_kline_retry_ms = tick.timestamp_ms
-                synced, verified_fill = await self._sync_official_bars_locked(
+                baseline_synced = await self._sync_official_bars_locked(
                     runtime,
                     next_uncommitted,
                     last_closed_start,
-                    fill_tick=tick,
                 )
-                signal_emitted = synced
-                fill = verified_fill or fill
+            next_uncommitted = runtime.strategy.next_uncommitted_bar_start_ms
+            official_baseline_ready = (
+                next_uncommitted is None or next_uncommitted > last_closed_start
+            )
             account = self.store.account(account_id)
             has_position = Decimal(account["quantity"]) > 0
             has_pending = self.store.has_pending_order(account_id)
-            runtime.strategy.on_tick(
+            signal = runtime.strategy.on_tick(
                 tick,
                 has_position=has_position,
                 has_pending_order=has_pending,
-                emit_signals=self.trading_enabled,
+                emit_signals=self.trading_enabled and official_baseline_ready,
             )
+            if signal:
+                submitted_at_ms = signal.signal_at_ms or tick.timestamp_ms
+                self.store.submit_order(account_id, signal, submitted_at_ms)
+                immediate_fill = self.store.fill_pending(
+                    account_id,
+                    tick,
+                    runtime.instrument,
+                    self.settings.execution,
+                    _position_fraction(runtime.instrument, self.settings),
+                    allow_same_tick=True,
+                )
+                fill = immediate_fill or fill
             snapshot_due = (
                 tick.timestamp_ms - runtime.last_snapshot_ms
                 >= self.settings.equity_snapshot_seconds * 1000
             )
-            if snapshot_due or fill or signal_emitted or funding_applied:
+            if snapshot_due or fill or signal or baseline_synced or funding_applied:
                 strategy_view = _strategy_view(asdict(runtime.strategy.view()))
                 self.store.snapshot(account_id, tick, strategy_view)
                 runtime.last_snapshot_ms = tick.timestamp_ms
@@ -257,18 +263,12 @@ class PaperEngine:
 
     async def _process_official_close(self, runtime: InstrumentRuntime, stream_bar: Bar) -> None:
         async with runtime.lock:
-            synced, fill = await self._sync_official_bars_locked(
+            synced = await self._sync_official_bars_locked(
                 runtime,
                 stream_bar.start_ms,
                 stream_bar.start_ms,
                 stream_bar=stream_bar,
             )
-            if fill:
-                fill_tick = runtime.first_ticks.get(stream_bar.start_ms + runtime.strategy.bar_ms)
-                if fill_tick is not None:
-                    strategy_view = _strategy_view(asdict(runtime.strategy.view()))
-                    self.store.snapshot(runtime.instrument.id, fill_tick, strategy_view)
-                    runtime.last_snapshot_ms = fill_tick.timestamp_ms
             if synced:
                 self.store.save_strategy_state(
                     runtime.instrument.id,
@@ -283,8 +283,7 @@ class PaperEngine:
         end_ms: int,
         *,
         stream_bar: Bar | None = None,
-        fill_tick: Tick | None = None,
-    ) -> tuple[bool, dict[str, Any] | None]:
+    ) -> bool:
         account_id = runtime.instrument.id
         try:
             official_bars = await runtime.feed.official_bars(start_ms, end_ms)
@@ -298,7 +297,7 @@ class PaperEngine:
                 f"{type(exc).__name__}: {exc}",
                 {"start_ms": start_ms, "end_ms": end_ms},
             )
-            return False, None
+            return False
 
         if not official_bars:
             runtime.kline_validation = "REST_MISSING"
@@ -310,10 +309,9 @@ class PaperEngine:
                 "REST did not return the expected closed kline",
                 {"start_ms": start_ms, "end_ms": end_ms},
             )
-            return False, None
+            return False
 
         synced = False
-        latest_fill: dict[str, Any] | None = None
         for official_bar in sorted(official_bars, key=lambda value: value.start_ms):
             if runtime.strategy.is_bar_committed(official_bar.start_ms):
                 continue
@@ -325,7 +323,7 @@ class PaperEngine:
                     official_bar.end_ms,
                     "ERROR",
                     "KLINE_SEQUENCE_GAP",
-                    "Official kline sequence is incomplete; signal confirmation paused",
+                    "Official kline sequence is incomplete; tick signals paused",
                     {
                         "expected_start_ms": expected_start,
                         "received_start_ms": official_bar.start_ms,
@@ -359,36 +357,14 @@ class PaperEngine:
                 runtime.feed.kline_source_name,
             )
             account = self.store.account(account_id)
-            signal = runtime.strategy.on_bar_close(
+            runtime.strategy.on_bar_close(
                 official_bar,
                 has_position=Decimal(account["quantity"]) > 0,
                 has_pending_order=self.store.has_pending_order(account_id),
                 emit_signals=self.trading_enabled,
             )
             synced = True
-            if signal is None:
-                continue
-            submitted_at_ms = signal.signal_at_ms or official_bar.end_ms
-            self.store.submit_order(account_id, signal, submitted_at_ms)
-            candidate_tick = runtime.first_ticks.get(
-                official_bar.start_ms + runtime.strategy.bar_ms
-            )
-            if candidate_tick is None and fill_tick is not None:
-                candidate_start = (
-                    fill_tick.timestamp_ms // runtime.strategy.bar_ms * runtime.strategy.bar_ms
-                )
-                if candidate_start == official_bar.start_ms + runtime.strategy.bar_ms:
-                    candidate_tick = fill_tick
-            if candidate_tick is not None and self.trading_enabled:
-                latest_fill = self.store.fill_pending(
-                    account_id,
-                    candidate_tick,
-                    runtime.instrument,
-                    self.settings.execution,
-                    _position_fraction(runtime.instrument, self.settings),
-                    allow_same_tick=True,
-                )
-        return synced, latest_fill
+        return synced
 
     async def _apply_due_funding(self, runtime: InstrumentRuntime, tick: Tick) -> bool:
         if runtime.instrument.paper_model != "futures":
@@ -538,16 +514,28 @@ def _decision_view(
         next_trigger = "WAIT_FOR_ATR"
     elif has_pending_order:
         state = "ORDER_PENDING"
-        reason = "WAITING_NEXT_BAR_FIRST_TICK_FILL"
-        next_trigger = "NEXT_BAR_FIRST_TICK"
+        reason = "WAITING_NEXT_TICK_FILL"
+        next_trigger = "NEXT_TICK_FILL"
     elif has_position:
         state = "HOLDING_LONG"
-        reason = "WAITING_CLOSE_CONFIRMED_DOWN_CROSS"
-        next_trigger = "CLOSE_CROSS_BELOW"
+        reason = "PRICE_ABOVE_STOP" if view.relation == "above" else "NO_FRESH_DOWN_CROSS"
+        next_trigger = "PRICE_CROSS_BELOW"
+    elif view.flattened_this_bar:
+        state = "REENTRY_LOCKED"
+        reason = "SOLD_THIS_BAR"
+        next_trigger = "NEXT_BAR_AND_FRESH_UP_CROSS"
+    elif view.bought_this_bar:
+        state = "BUY_LOCKED"
+        reason = "BUY_SIGNAL_USED_THIS_BAR"
+        next_trigger = "NEXT_BAR"
+    elif view.relation == "below":
+        state = "ARMED_FOR_BUY"
+        reason = "PRICE_BELOW_STOP"
+        next_trigger = "PRICE_CROSS_ABOVE"
     else:
-        state = "WAITING_BAR_CLOSE"
-        reason = "WAITING_CLOSE_CONFIRMED_UP_CROSS"
-        next_trigger = "CLOSE_CROSS_ABOVE"
+        state = "WAITING_FOR_RESET"
+        reason = "PRICE_ALREADY_ABOVE_WITHOUT_FRESH_CROSS"
+        next_trigger = "PRICE_BELOW_THEN_CROSS_ABOVE"
 
     return {
         "state": state,
@@ -557,9 +545,12 @@ def _decision_view(
         "has_position": has_position,
         "has_pending_order": has_pending_order,
         "strategy_ready": view.ready,
+        "buy_lock_open": not view.bought_this_bar,
+        "reentry_lock_open": not view.flattened_this_bar,
+        "fresh_up_cross": view.last_cross == "UP" and view.last_cross_result == "BUY_SIGNAL",
         "bar_end_ms": view.bar_start_ms + bar_ms if view.bar_start_ms is not None else None,
-        "signal_confirmation": "BAR_CLOSE",
-        "fill_timing": "NEXT_BAR_FIRST_TICK",
+        "signal_confirmation": "TICK",
+        "fill_timing": "SIGNAL_TICK",
         "last_signal": (
             {
                 "side": last_order["side"],

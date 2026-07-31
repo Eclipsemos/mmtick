@@ -1,6 +1,6 @@
 # mastermind:tick
 
-Mastermind 旗下短线策略产品。当前版本把“小果量化 ATR 收盘确认 Pine v6”并行运行在两个独立模拟账户上，实时记录 Binance SOXLB Spot 与 SOXL TradFi Perpetual 的行情、信号、成交和绩效。
+Mastermind 旗下短线策略产品。当前版本把“小果量化 ATR Tick 实时 Pine v6”并行运行在两个独立模拟账户上，实时记录 Binance SOXLB Spot 与 SOXL TradFi Perpetual 的行情、信号、成交和绩效。
 
 ## 产品边界
 
@@ -19,13 +19,13 @@ Mastermind 旗下短线策略产品。当前版本把“小果量化 ATR 收盘�
 ATR Period = 7
 ATR Multiplier = 1.0
 仅做多，100% 账户权益
-收盘价确认上穿 ATR 线后买入，确认下穿后平仓
-当前 K 线收盘生成信号，下一根 K 线首笔行情成交
+成交 Tick 实时上穿 ATR 线后买入，实时下穿后平仓
+信号在当前 Tick 生成并按当前 Tick 模拟成交
 ```
 
-ATR 使用 TradingView `ta.atr` 对应的 Wilder RMA。实时 K 线内，每个 Tick 都从上一根已收盘 K 线的 `source[1]` 和 `tsl_price[1]` 重算实时 ATR 与止损线，但盘中穿越不交易。启动时会用 Binance REST 当前形成中的 K 线补齐 WebSocket 连接前的 OHLC。
+ATR 使用 TradingView `ta.atr` 对应的 Wilder RMA。实时 K 线内，每个 Tick 都从上一根已收盘 K 线的 `source[1]` 和 `tsl_price[1]` 重算实时 ATR 与止损线，并立即检测穿越。启动时会用 Binance REST 当前形成中的 K 线补齐 WebSocket 连接前的 OHLC。
 
-只有 Binance 官方 15 分钟 K 线正式收盘后的 `ta.crossover(close, tsl_price)` 或 `ta.crossunder(close, tsl_price)` 才生成信号。每根收盘 K 线同时通过 Binance REST `/klines` 校验，REST 值作为最终 OHLCV 和 ATR 输入；若 WebSocket K 线与 REST 不一致，系统记录差异并采用 REST 值。REST 暂时失败或尚未返回该根 K 线时，系统暂停提交该根收盘线和信号，并由后续成交流重试。信号价是已校验 K 线的 close；模拟成交价取下一根 15 分钟 K 线内收到的第一笔实际行情，并应用既有滑点和手续费。SOXLB 默认单边手续费 10 bps、滑点 5 bps。SOXL Perpetual 使用 1x 逐仓模型、95% 名义敞口、5 bps taker 手续费和 2 bps 模拟滑点，始终只做多。参数位于 [config/settings.toml](config/settings.toml)。
+价格从 ATR 线下方实时穿到上方时买入，从上方实时穿到下方时平仓。系统不使用时间防抖；同一根 K 线的买入、卖出及卖出后重入仍受原策略锁控制。Binance 官方 15 分钟 K 线通过 REST `/klines` 校验后作为下一根 K 线的 ATR 基线，REST 校验失败期间不允许使用不完整基线产生新信号。模拟成交使用信号 Tick 的行情，并应用既有滑点和手续费。SOXLB 默认单边手续费 10 bps、滑点 5 bps。SOXL Perpetual 使用 1x 逐仓模型、95% 名义敞口、5 bps taker 手续费和 2 bps 模拟滑点，始终只做多。参数位于 [config/settings.toml](config/settings.toml)。
 
 永续账户按标记价格计算未实现盈亏、初始保证金与可用余额。每 8 小时从 Binance 公共资金费历史同步实际费率，多头资金费以 `-名义价值 × 费率` 计入现金、净值、交易胜率和收益区间。
 
@@ -58,7 +58,7 @@ Python 环境使用 `/home/spaceaic/env/.venv`。前端生产文件已构建到 
 - SOXLB 与 SOXL Perpetual 账户切换、实时价格、ATR 移动止损线和 K 线收盘状态；
 - 独立的 Binance 官方 15 分钟 K 线图，显示 OHLC、买卖成交标记、滚动、缩放和 REST 校验状态；
 - Futures 标记价、指数价、资金费率、初始保证金、可用余额和累计资金费；
-- 实时交易决策状态、收盘信号门控、最近确认结果及下一触发条件；
+- 实时交易决策状态、Tick 信号门控、最近穿越结果及下一触发条件；
 - 价格图上的买入/卖出图标、醒目的净交易百分比、区间滚动和缩放；
 - 现金、持仓、累计收益、费用和最大回撤；
 - 手续费后完整交易胜率和 15 分钟年化夏普率；

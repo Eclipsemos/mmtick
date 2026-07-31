@@ -5,6 +5,8 @@ export type StrategyView = {
   price: string | null
   relation: 'above' | 'below' | 'warming'
   bar_start_ms: number | null
+  bought_this_bar: boolean
+  flattened_this_bar: boolean
   last_cross: 'UP' | 'DOWN' | null
   last_cross_at_ms: number | null
   last_cross_result: 'BUY_SIGNAL' | 'SELL_SIGNAL' | 'BLOCKED' | null
@@ -12,16 +14,19 @@ export type StrategyView = {
 }
 
 export type DecisionView = {
-  state: 'PAUSED' | 'WARMING_UP' | 'ORDER_PENDING' | 'HOLDING_LONG' | 'WAITING_BAR_CLOSE'
+  state: 'PAUSED' | 'WARMING_UP' | 'ORDER_PENDING' | 'HOLDING_LONG' | 'REENTRY_LOCKED' | 'BUY_LOCKED' | 'ARMED_FOR_BUY' | 'WAITING_FOR_RESET'
   reason: string
   next_trigger: string
   trading_enabled: boolean
   has_position: boolean
   has_pending_order: boolean
   strategy_ready: boolean
+  buy_lock_open: boolean
+  reentry_lock_open: boolean
+  fresh_up_cross: boolean
   bar_end_ms: number | null
-  signal_confirmation: 'BAR_CLOSE'
-  fill_timing: 'NEXT_BAR_FIRST_TICK'
+  signal_confirmation: 'TICK'
+  fill_timing: 'SIGNAL_TICK'
   last_signal: {
     side: 'BUY' | 'SELL'
     status: string
@@ -115,8 +120,8 @@ export type Overview = {
     bar_minutes: number
     atr_period: number
     atr_multiplier: number
-    signal_confirmation: 'bar_close'
-    fill_timing: 'next_bar_first_tick'
+    signal_confirmation: 'tick'
+    fill_timing: 'signal_tick'
     position_fraction: number
     fee_bps: number
     slippage_bps: number

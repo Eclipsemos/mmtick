@@ -14,9 +14,11 @@ def strategy_view(**overrides) -> StrategyView:
         "ready": True,
         "atr": Decimal("2"),
         "trailing_stop": Decimal("100"),
-        "price": Decimal("101"),
-        "relation": "above",
+        "price": Decimal("99"),
+        "relation": "below",
         "bar_start_ms": 1_800_000,
+        "bought_this_bar": False,
+        "flattened_this_bar": False,
         "last_cross": None,
         "last_cross_at_ms": None,
         "last_cross_result": None,
@@ -42,7 +44,7 @@ class FailingOfficialBarFeed(OfficialBarFeed):
         raise ConnectionError("REST unavailable")
 
 
-def test_flat_account_waits_for_close_confirmed_up_cross() -> None:
+def test_flat_account_below_stop_is_armed_for_tick_cross() -> None:
     decision = _decision_view(
         strategy_view(),
         trading_enabled=True,
@@ -51,17 +53,15 @@ def test_flat_account_waits_for_close_confirmed_up_cross() -> None:
         bar_ms=900_000,
     )
 
-    assert decision["state"] == "WAITING_BAR_CLOSE"
-    assert decision["reason"] == "WAITING_CLOSE_CONFIRMED_UP_CROSS"
-    assert decision["next_trigger"] == "CLOSE_CROSS_ABOVE"
-    assert decision["bar_end_ms"] == 2_700_000
-    assert decision["signal_confirmation"] == "BAR_CLOSE"
-    assert decision["fill_timing"] == "NEXT_BAR_FIRST_TICK"
+    assert decision["state"] == "ARMED_FOR_BUY"
+    assert decision["next_trigger"] == "PRICE_CROSS_ABOVE"
+    assert decision["signal_confirmation"] == "TICK"
+    assert decision["fill_timing"] == "SIGNAL_TICK"
 
 
-def test_long_account_waits_for_close_confirmed_down_cross() -> None:
+def test_long_account_waits_for_realtime_down_cross() -> None:
     decision = _decision_view(
-        strategy_view(relation="below", price=Decimal("99")),
+        strategy_view(relation="above", price=Decimal("101")),
         trading_enabled=True,
         has_position=True,
         has_pending_order=False,
@@ -69,34 +69,24 @@ def test_long_account_waits_for_close_confirmed_down_cross() -> None:
     )
 
     assert decision["state"] == "HOLDING_LONG"
-    assert decision["reason"] == "WAITING_CLOSE_CONFIRMED_DOWN_CROSS"
-    assert decision["next_trigger"] == "CLOSE_CROSS_BELOW"
+    assert decision["reason"] == "PRICE_ABOVE_STOP"
+    assert decision["next_trigger"] == "PRICE_CROSS_BELOW"
 
 
-def test_latest_order_is_exposed_as_confirmed_signal_history() -> None:
+def test_sell_lock_is_exposed_as_reentry_locked() -> None:
     decision = _decision_view(
-        strategy_view(),
+        strategy_view(flattened_this_bar=True),
         trading_enabled=True,
         has_position=False,
         has_pending_order=False,
         bar_ms=900_000,
-        last_order={
-            "side": "SELL",
-            "status": "FILLED",
-            "submitted_at_ms": 2_000_000,
-            "reason": "close_crossed_below_atr_stop",
-        },
     )
 
-    assert decision["last_signal"] == {
-        "side": "SELL",
-        "status": "FILLED",
-        "timestamp_ms": 2_000_000,
-        "reason": "close_crossed_below_atr_stop",
-    }
+    assert decision["state"] == "REENTRY_LOCKED"
+    assert not decision["reentry_lock_open"]
 
 
-def test_confirmed_signal_submits_at_close_and_fills_at_next_open(tmp_path) -> None:
+def test_tick_signal_is_submitted_and_filled_on_same_tick_after_official_sync(tmp_path) -> None:
     settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
     instrument = settings.instruments[0]
     store = PaperStore(settings.database_path)
@@ -110,53 +100,40 @@ def test_confirmed_signal_submits_at_close_and_fills_at_next_open(tmp_path) -> N
             Bar(1_800_000, 2_699_999, Decimal("8"), Decimal("8.5"), Decimal("7.5"), Decimal("8")),
         ]
     )
-    strategy.seed_current_bar(
-        Bar(2_700_000, 3_599_999, Decimal("20"), Decimal("20"), Decimal("7"), Decimal("20"))
-    )
-    official_bar = Bar(
+    official = Bar(
         2_700_000,
         3_599_999,
-        Decimal("10"),
-        Decimal("10"),
-        Decimal("7"),
-        Decimal("10"),
+        Decimal("8"),
+        Decimal("8.5"),
+        Decimal("7.5"),
+        Decimal("8"),
     )
     runtime = InstrumentRuntime(
         instrument=instrument,
-        feed=OfficialBarFeed([official_bar]),  # type: ignore[arg-type]
+        feed=OfficialBarFeed([official]),  # type: ignore[arg-type]
         strategy=strategy,
     )
-    next_open = Tick(
-        "next-open",
-        3_600_000,
-        Decimal("11"),
-        Decimal("1"),
-        "test",
-    )
+    crossing_tick = Tick("tick-cross", 3_600_000, Decimal("11"), Decimal("1"), "test")
 
-    asyncio.run(engine._process_tick(runtime, next_open))
+    asyncio.run(engine._process_tick(runtime, crossing_tick))
 
     order = store.orders(instrument.id, 1)[0]
     fill = store.fills(instrument.id)[0]
-    assert order["submitted_at_ms"] == 3_599_999
-    assert order["bar_start_ms"] == 2_700_000
-    assert order["signal_price"] == "10"
-    assert order["submitted_tick_id"] == "bar-close:3599999"
-    assert order["filled_at_ms"] == next_open.timestamp_ms
-    assert fill["timestamp_ms"] == next_open.timestamp_ms
+    assert order["reason"] == "price_crossed_above_atr_stop"
+    assert order["submitted_tick_id"] == crossing_tick.event_id
+    assert order["submitted_at_ms"] == crossing_tick.timestamp_ms
+    assert order["filled_at_ms"] == crossing_tick.timestamp_ms
+    assert fill["timestamp_ms"] == crossing_tick.timestamp_ms
     assert Decimal(fill["price"]) == Decimal("11.0055")
-    assert fill["source"] == "test"
-    assert order["atr"] == "2.1875"
-    stored_bar = next(
+    stored = next(
         bar
         for bar in store.ohlcv_bars(instrument.id, 15, 2)
-        if bar["start_ms"] == official_bar.start_ms
+        if bar["start_ms"] == official.start_ms
     )
-    assert stored_bar["close"] == "10"
-    assert stored_bar["source"] == "test_kline_rest"
+    assert stored["source"] == "test_kline_rest"
 
 
-def test_rest_failure_does_not_commit_stream_bar_or_emit_signal(tmp_path) -> None:
+def test_rest_failure_blocks_tick_signal_until_official_baseline_is_ready(tmp_path) -> None:
     settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
     instrument = settings.instruments[0]
     store = PaperStore(settings.database_path)
@@ -170,26 +147,27 @@ def test_rest_failure_does_not_commit_stream_bar_or_emit_signal(tmp_path) -> Non
             Bar(1_800_000, 2_699_999, Decimal("8"), Decimal("8.5"), Decimal("7.5"), Decimal("8")),
         ]
     )
-    stream_bar = Bar(
+    missing = Bar(
         2_700_000,
         3_599_999,
-        Decimal("10"),
-        Decimal("10"),
-        Decimal("7"),
-        Decimal("10"),
+        Decimal("8"),
+        Decimal("8.5"),
+        Decimal("7.5"),
+        Decimal("8"),
     )
     runtime = InstrumentRuntime(
         instrument=instrument,
-        feed=FailingOfficialBarFeed([stream_bar]),  # type: ignore[arg-type]
+        feed=FailingOfficialBarFeed([missing]),  # type: ignore[arg-type]
         strategy=strategy,
     )
 
-    asyncio.run(engine._process_official_close(runtime, stream_bar))
+    asyncio.run(
+        engine._process_tick(
+            runtime,
+            Tick("blocked-cross", 3_600_000, Decimal("11"), Decimal("1"), "test"),
+        )
+    )
 
     assert runtime.kline_validation == "REST_ERROR"
-    assert strategy.next_uncommitted_bar_start_ms == stream_bar.start_ms
+    assert strategy.next_uncommitted_bar_start_ms == missing.start_ms
     assert store.orders(instrument.id) == []
-    assert not any(
-        bar["start_ms"] == stream_bar.start_ms
-        for bar in store.ohlcv_bars(instrument.id, 15)
-    )
