@@ -20,6 +20,10 @@ BINANCE_WS = "wss://data-stream.binance.vision/ws"
 class MarketFeed(ABC):
     source_name: str
 
+    @property
+    def warmup_current_bar(self) -> Bar | None:
+        return None
+
     @abstractmethod
     async def history(self, limit: int) -> list[Bar]:
         raise NotImplementedError
@@ -35,6 +39,11 @@ class BinanceFeed(MarketFeed):
     def __init__(self, symbol: str):
         self.symbol = symbol.upper()
         self._last_event_id: str | None = None
+        self._warmup_current_bar: Bar | None = None
+
+    @property
+    def warmup_current_bar(self) -> Bar | None:
+        return self._warmup_current_bar
 
     async def history(self, limit: int) -> list[Bar]:
         params = {"symbol": self.symbol, "interval": "15m", "limit": min(limit, 1000)}
@@ -44,8 +53,7 @@ class BinanceFeed(MarketFeed):
             payload = response.json()
         if not isinstance(payload, list):
             raise RuntimeError(f"Binance history error: {payload}")
-        now_ms = int(time.time() * 1000)
-        return [
+        bars = [
             Bar(
                 start_ms=int(row[0]),
                 end_ms=int(row[6]),
@@ -57,8 +65,13 @@ class BinanceFeed(MarketFeed):
                 trade_count=int(row[8]),
             )
             for row in payload
-            if int(row[6]) < now_ms
         ]
+        now_ms = int(time.time() * 1000)
+        self._warmup_current_bar = next(
+            (bar for bar in reversed(bars) if bar.start_ms <= now_ms <= bar.end_ms),
+            None,
+        )
+        return [bar for bar in bars if bar.end_ms < now_ms]
 
     async def ticks(self) -> AsyncIterator[Tick]:
         uri = f"{BINANCE_WS}/{self.symbol.lower()}@aggTrade"

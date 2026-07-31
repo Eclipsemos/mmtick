@@ -444,7 +444,7 @@ function Monitor({
             <div><dt>买入锁</dt><dd>{strategy.bought_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
             <div><dt>空仓锁</dt><dd>{strategy.flattened_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
           </dl>
-          <div className="strategy-foot"><span>15m</span><span>100% equity</span><span>next tick fill</span></div>
+          <div className="strategy-foot"><span>15m</span><span>100% equity</span><span>BUY next tick</span><span>SELL immediate</span></div>
         </div>
       </section>
 

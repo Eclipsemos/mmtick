@@ -110,6 +110,67 @@ def test_paused_strategy_updates_line_without_consuming_trade_lock() -> None:
     assert not strategy.flattened_this_bar
 
 
+def test_realtime_stop_rolls_back_to_previous_closed_bar_on_every_tick() -> None:
+    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
+    strategy.bootstrap(bars([10, 9, 8]))
+    next_bar = 3 * 900_000
+
+    strategy.on_tick(
+        tick("bar-high", next_bar, 12),
+        has_position=False,
+        has_pending_order=False,
+    )
+    assert strategy.trailing_stop == Decimal("9.984375")
+
+    strategy.on_tick(
+        tick("pullback", next_bar + 1_000, 10),
+        has_position=True,
+        has_pending_order=False,
+    )
+
+    # Pine recalculates from tsl_price[1]=9.03125, not the prior Tick's 9.984375.
+    assert strategy.last_atr == Decimal("2.6875")
+    assert strategy.trailing_stop == Decimal("7.984375")
+    assert strategy.previous_tick_above
+
+
+def test_current_binance_bar_seeds_realtime_atr_without_emitting_signal() -> None:
+    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
+    strategy.bootstrap(bars([10, 9, 8]))
+    current = Bar(
+        start_ms=3 * 900_000,
+        end_ms=4 * 900_000 - 1,
+        open=Decimal("8"),
+        high=Decimal("12"),
+        low=Decimal("7"),
+        close=Decimal("10"),
+    )
+
+    strategy.seed_current_bar(current)
+
+    assert strategy.last_atr == Decimal("3.1875")
+    assert strategy.trailing_stop == Decimal("7.609375")
+    assert strategy.previous_tick_above
+    assert strategy.last_cross is None
+
+
+def test_runtime_state_persists_pine_varip_relation() -> None:
+    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
+    strategy.bootstrap(bars([10, 9, 8]))
+    next_bar = 3 * 900_000
+    strategy.on_tick(
+        tick("cross", next_bar, 12),
+        has_position=False,
+        has_pending_order=False,
+    )
+
+    state = strategy.runtime_state()
+
+    assert state["pine_state_version"] == 2
+    assert state["previous_tick_above"] is True
+    assert state["committed_stop"] == "9.03125"
+
+
 def test_tick_for_last_completed_bar_is_not_aggregated_twice() -> None:
     history = bars([10, 9, 8, 9, 12])
     strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)

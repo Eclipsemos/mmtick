@@ -451,16 +451,19 @@ class PaperStore:
         instrument: InstrumentSettings,
         execution: ExecutionSettings,
         position_fraction: float,
+        *,
+        allow_same_tick: bool = False,
     ) -> dict[str, Any] | None:
         with self.connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
             order = connection.execute(
                 """
                 SELECT * FROM orders
-                WHERE account_id = ? AND status = 'PENDING' AND submitted_tick_id <> ?
+                WHERE account_id = ? AND status = 'PENDING'
+                    AND (? = 1 OR submitted_tick_id <> ?)
                 ORDER BY submitted_at_ms, id LIMIT 1
                 """,
-                (account_id, tick.event_id),
+                (account_id, int(allow_same_tick), tick.event_id),
             ).fetchone()
             if order is None:
                 return None

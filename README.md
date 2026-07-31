@@ -1,6 +1,6 @@
 # mastermind:tick
 
-Mastermind 旗下短线策略产品。当前版本把“小果量化 ATR Tick V1”运行在独立模拟账本上，实时记录 Binance SOXLB/USDT 的行情、信号、订单、成交、持仓、费用和绩效。
+Mastermind 旗下短线策略产品。当前版本把“小果量化 ATR Tick Pine v6”运行在独立模拟账本上，实时记录 Binance SOXLB/USDT 的行情、信号、订单、成交、持仓、费用和绩效。
 
 ## 产品边界
 
@@ -22,7 +22,9 @@ ATR Multiplier = 1.0
 同一根 K 线平仓后禁止再次买入
 ```
 
-ATR 使用 TradingView `ta.atr` 对应的 Wilder RMA。信号产生后在下一条行情模拟市价成交，默认单边手续费 10 bps、滑点 5 bps，SOXLB 数量步进为 0.001。参数位于 [config/settings.toml](config/settings.toml)。
+ATR 使用 TradingView `ta.atr` 对应的 Wilder RMA。实时 K 线内，每个 Tick 都从上一根已收盘 K 线的 `source[1]` 和 `tsl_price[1]` 重算止损线，并用 Pine `varip` 语义检测相对 ATR 线的状态变化。启动时会用 Binance REST 当前形成中的 K 线补齐 WebSocket 连接前的 OHLC。
+
+BUY 信号在下一条行情模拟成交；SELL 对齐 Pine `immediately=true`，在信号 Tick 立即模拟平仓。默认单边手续费 10 bps、滑点 5 bps，SOXLB 数量步进为 0.001。参数位于 [config/settings.toml](config/settings.toml)。
 
 ## 数据
 

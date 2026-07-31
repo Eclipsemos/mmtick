@@ -74,6 +74,31 @@ def test_round_trip_realized_pnl_includes_both_fees(tmp_path) -> None:
     assert len(store.fills("soxlb")) == 2
 
 
+def test_pending_sell_can_fill_on_signal_tick_for_pine_immediately(tmp_path) -> None:
+    store = PaperStore(tmp_path / "paper.db")
+    item = instrument()
+    execution = ExecutionSettings(fee_bps=10, slippage_bps=0, minimum_notional=5)
+    store.ensure_account(item, 10_000, 1)
+    store.submit_order("soxlb", signal(Side.BUY, "buy-signal"), 1)
+    store.fill_pending("soxlb", market_tick("buy-fill", 2, "100"), item, execution, 1)
+    store.submit_order("soxlb", signal(Side.SELL, "sell-signal", "101"), 3)
+    sell_tick = market_tick("sell-signal", 3, "101")
+
+    assert store.fill_pending("soxlb", sell_tick, item, execution, 1) is None
+    result = store.fill_pending(
+        "soxlb",
+        sell_tick,
+        item,
+        execution,
+        1,
+        allow_same_tick=True,
+    )
+
+    assert result is not None
+    assert result["side"] == "SELL"
+    assert Decimal(store.account("soxlb")["quantity"]) == 0
+
+
 def test_equity_snapshot_persists_atr_chart_values(tmp_path) -> None:
     store = PaperStore(tmp_path / "paper.db")
     item = instrument()

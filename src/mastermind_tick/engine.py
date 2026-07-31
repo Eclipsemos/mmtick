@@ -11,7 +11,7 @@ from typing import Any
 
 from mastermind_tick.config import InstrumentSettings, Settings
 from mastermind_tick.feeds import MarketFeed, build_feed
-from mastermind_tick.models import Tick
+from mastermind_tick.models import Side, Tick
 from mastermind_tick.store import PaperStore
 from mastermind_tick.strategy import ATRTickStrategy, StrategyView
 
@@ -62,6 +62,8 @@ class PaperEngine:
                 )
                 strategy.bootstrap(history)
                 strategy.restore_runtime(self.store.strategy_state(instrument.id))
+                if feed.warmup_current_bar is not None:
+                    strategy.seed_current_bar(feed.warmup_current_bar)
                 runtime.status_message = f"Warm-up ready: {len(history)} x 15m bars"
             except Exception as exc:
                 runtime.status = "DEGRADED"
@@ -168,6 +170,16 @@ class PaperEngine:
             )
             if signal:
                 self.store.submit_order(account_id, signal, tick.timestamp_ms)
+                if signal.side is Side.SELL:
+                    immediate_fill = self.store.fill_pending(
+                        account_id,
+                        tick,
+                        runtime.instrument,
+                        self.settings.execution,
+                        self.settings.strategy.position_fraction,
+                        allow_same_tick=True,
+                    )
+                    fill = immediate_fill or fill
             snapshot_due = (
                 tick.timestamp_ms - runtime.last_snapshot_ms
                 >= self.settings.equity_snapshot_seconds * 1000
