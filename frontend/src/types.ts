@@ -11,10 +11,13 @@ export type StrategyView = {
   last_cross_at_ms: number | null
   last_cross_result: 'BUY_SIGNAL' | 'SELL_SIGNAL' | 'BLOCKED' | null
   last_cross_reason: string | null
+  pending_cross: 'UP' | 'DOWN' | null
+  pending_cross_since_ms: number | null
+  debounce_ms: number
 }
 
 export type DecisionView = {
-  state: 'PAUSED' | 'WARMING_UP' | 'ORDER_PENDING' | 'HOLDING_LONG' | 'REENTRY_LOCKED' | 'BUY_LOCKED' | 'ARMED_FOR_BUY' | 'WAITING_FOR_RESET'
+  state: 'PAUSED' | 'WARMING_UP' | 'DEBOUNCING' | 'ORDER_PENDING' | 'HOLDING_LONG' | 'REENTRY_LOCKED' | 'BUY_LOCKED' | 'ARMED_FOR_BUY' | 'WAITING_FOR_RESET'
   reason: string
   next_trigger: string
   trading_enabled: boolean
@@ -111,6 +114,7 @@ export type Overview = {
     bar_minutes: number
     atr_period: number
     atr_multiplier: number
+    signal_debounce_seconds: number
     position_fraction: number
     fee_bps: number
     slippage_bps: number

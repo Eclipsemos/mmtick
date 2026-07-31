@@ -166,9 +166,106 @@ def test_runtime_state_persists_pine_varip_relation() -> None:
 
     state = strategy.runtime_state()
 
-    assert state["pine_state_version"] == 2
+    assert state["pine_state_version"] == 3
     assert state["previous_tick_above"] is True
     assert state["committed_stop"] == "9.03125"
+
+
+def test_cross_must_hold_for_configured_debounce_time() -> None:
+    strategy = ATRTickStrategy(
+        period=2,
+        multiplier=0.75,
+        bar_minutes=15,
+        debounce_seconds=2,
+    )
+    strategy.bootstrap(bars([10, 9, 8]))
+    next_bar = 3 * 900_000
+
+    assert (
+        strategy.on_tick(
+            tick("candidate", next_bar, 10),
+            has_position=False,
+            has_pending_order=False,
+        )
+        is None
+    )
+    assert strategy.pending_cross == "UP"
+    assert strategy.pending_cross_since_ms == next_bar
+    assert (
+        strategy.on_tick(
+            tick("not-yet", next_bar + 1_999, 10),
+            has_position=False,
+            has_pending_order=False,
+        )
+        is None
+    )
+
+    signal = strategy.on_tick(
+        tick("confirmed", next_bar + 2_000, 10),
+        has_position=False,
+        has_pending_order=False,
+    )
+
+    assert signal is not None
+    assert signal.side is Side.BUY
+    assert signal.tick_id == "confirmed"
+    assert strategy.pending_cross is None
+    assert strategy.bought_this_bar
+
+
+def test_debounce_restarts_when_price_crosses_back() -> None:
+    strategy = ATRTickStrategy(
+        period=2,
+        multiplier=0.75,
+        bar_minutes=15,
+        debounce_seconds=2,
+    )
+    strategy.bootstrap(bars([10, 9, 8]))
+    next_bar = 3 * 900_000
+
+    strategy.on_tick(
+        tick("up-candidate", next_bar, 10),
+        has_position=False,
+        has_pending_order=False,
+    )
+    strategy.on_tick(
+        tick("back-below", next_bar + 1_000, 7),
+        has_position=False,
+        has_pending_order=False,
+    )
+
+    assert strategy.pending_cross == "DOWN"
+    assert strategy.pending_cross_since_ms == next_bar + 1_000
+    assert not strategy.bought_this_bar
+
+
+def test_debounce_candidate_is_persisted_across_restart() -> None:
+    original = ATRTickStrategy(
+        period=2,
+        multiplier=0.75,
+        bar_minutes=15,
+        debounce_seconds=2,
+    )
+    history = bars([10, 9, 8])
+    original.bootstrap(history)
+    next_bar = 3 * 900_000
+    original.on_tick(
+        tick("candidate", next_bar, 10),
+        has_position=False,
+        has_pending_order=False,
+    )
+
+    restored = ATRTickStrategy(
+        period=2,
+        multiplier=0.75,
+        bar_minutes=15,
+        debounce_seconds=2,
+    )
+    restored.bootstrap(history)
+    restored.restore_runtime(original.runtime_state())
+
+    assert restored.pending_cross == "UP"
+    assert restored.pending_cross_since_ms == next_bar
 
 
 def test_tick_for_last_completed_bar_is_not_aggregated_twice() -> None:

@@ -45,17 +45,27 @@ class StrategyView:
     last_cross_at_ms: int | None
     last_cross_result: str | None
     last_cross_reason: str | None
+    pending_cross: str | None
+    pending_cross_since_ms: int | None
+    debounce_ms: int
 
 
 class ATRTickStrategy:
     """Apply the supplied 15-minute ATR rules on every received market tick."""
 
-    def __init__(self, period: int = 7, multiplier: float = 1.0, bar_minutes: int = 15):
-        if period < 1 or multiplier <= 0 or bar_minutes <= 0:
+    def __init__(
+        self,
+        period: int = 7,
+        multiplier: float = 1.0,
+        bar_minutes: int = 15,
+        debounce_seconds: float = 0,
+    ):
+        if period < 1 or multiplier <= 0 or bar_minutes <= 0 or debounce_seconds < 0:
             raise ValueError("invalid ATR strategy parameters")
         self.period = period
         self.multiplier = Decimal(str(multiplier))
         self.bar_ms = bar_minutes * 60_000
+        self.debounce_ms = round(debounce_seconds * 1000)
         self.completed_bars: list[Bar] = []
         self.current_bar: Bar | None = None
         self.previous_price: Decimal | None = None
@@ -71,6 +81,8 @@ class ATRTickStrategy:
         self.last_cross_at_ms: int | None = None
         self.last_cross_result: str | None = None
         self.last_cross_reason: str | None = None
+        self.pending_cross: str | None = None
+        self.pending_cross_since_ms: int | None = None
 
     def bootstrap(self, bars: list[Bar]) -> None:
         """Warm the indicator without creating historical paper orders."""
@@ -83,6 +95,8 @@ class ATRTickStrategy:
         self.committed_stop = None
         self.committed_atr = None
         self.previous_tick_above = None
+        self.pending_cross = None
+        self.pending_cross_since_ms = None
         for bar in sorted(bars, key=lambda value: value.start_ms):
             candidate = [*self.completed_bars, bar]
             atr = wilder_atr(candidate, self.period)
@@ -145,10 +159,19 @@ class ATRTickStrategy:
             if restored_relation is not None
             else _is_above(self.previous_price, self.trailing_stop)
         )
+        if state_version >= 3:
+            pending_cross = value.get("pending_cross")
+            self.pending_cross = pending_cross if pending_cross in {"UP", "DOWN"} else None
+            pending_since = value.get("pending_cross_since_ms")
+            self.pending_cross_since_ms = (
+                int(pending_since)
+                if self.pending_cross is not None and pending_since is not None
+                else None
+            )
 
     def runtime_state(self) -> dict[str, Any]:
         return {
-            "pine_state_version": 2,
+            "pine_state_version": 3,
             "previous_price": _string_or_none(self.previous_price),
             "trailing_stop": _string_or_none(self.trailing_stop),
             "last_atr": _string_or_none(self.last_atr),
@@ -162,6 +185,8 @@ class ATRTickStrategy:
             "last_cross_at_ms": self.last_cross_at_ms,
             "last_cross_result": self.last_cross_result,
             "last_cross_reason": self.last_cross_reason,
+            "pending_cross": self.pending_cross,
+            "pending_cross_since_ms": self.pending_cross_since_ms,
             "current_bar": self.current_bar.as_dict() if self.current_bar else None,
         }
 
@@ -177,6 +202,7 @@ class ATRTickStrategy:
         if not preserve_locks:
             self.bought_this_bar = False
             self.flattened_this_bar = False
+            self._clear_pending_cross()
         self.previous_price = self.current_bar.close
         self.last_atr = self._current_atr()
         self.trailing_stop = (
@@ -222,6 +248,7 @@ class ATRTickStrategy:
             )
             self.bought_this_bar = False
             self.flattened_this_bar = False
+            self._clear_pending_cross()
             self.previous_tick_above = _is_above(
                 self.committed_price,
                 self.committed_stop,
@@ -250,7 +277,26 @@ class ATRTickStrategy:
         cross_down = not current_tick_above and self.previous_tick_above
         self.previous_tick_above = current_tick_above
 
-        if cross_up:
+        if cross_up or cross_down:
+            self.pending_cross = "UP" if cross_up else "DOWN"
+            self.pending_cross_since_ms = tick.timestamp_ms
+
+        direction = self.pending_cross
+        pending_since = self.pending_cross_since_ms
+        pending_relation_holds = (
+            direction == "UP" and current_tick_above
+            or direction == "DOWN" and not current_tick_above
+        )
+        if direction is None or pending_since is None:
+            return None
+        if not pending_relation_holds:
+            self._clear_pending_cross()
+            return None
+        if tick.timestamp_ms - pending_since < self.debounce_ms:
+            return None
+
+        self._clear_pending_cross()
+        if direction == "UP":
             blocked_reason = _buy_block_reason(
                 emit_signals=emit_signals,
                 has_position=has_position,
@@ -272,7 +318,7 @@ class ATRTickStrategy:
                 )
             self._record_cross("UP", tick.timestamp_ms, "BLOCKED", blocked_reason)
 
-        if cross_down:
+        if direction == "DOWN":
             blocked_reason = _sell_block_reason(
                 emit_signals=emit_signals,
                 has_position=has_position,
@@ -312,7 +358,14 @@ class ATRTickStrategy:
             last_cross_at_ms=self.last_cross_at_ms,
             last_cross_result=self.last_cross_result,
             last_cross_reason=self.last_cross_reason,
+            pending_cross=self.pending_cross,
+            pending_cross_since_ms=self.pending_cross_since_ms,
+            debounce_ms=self.debounce_ms,
         )
+
+    def _clear_pending_cross(self) -> None:
+        self.pending_cross = None
+        self.pending_cross_since_ms = None
 
     def _record_cross(
         self,

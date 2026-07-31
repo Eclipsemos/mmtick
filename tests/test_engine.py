@@ -23,6 +23,9 @@ def strategy_view(**overrides) -> StrategyView:
         "last_cross_at_ms": None,
         "last_cross_result": None,
         "last_cross_reason": None,
+        "pending_cross": None,
+        "pending_cross_since_ms": None,
+        "debounce_ms": 2_000,
     }
     values.update(overrides)
     return StrategyView(**values)
@@ -56,6 +59,20 @@ def test_same_bar_sell_lock_is_reported_before_price_relation() -> None:
     assert decision["state"] == "REENTRY_LOCKED"
     assert decision["reason"] == "SOLD_THIS_BAR"
     assert not decision["reentry_lock_open"]
+
+
+def test_pending_cross_is_reported_as_debouncing() -> None:
+    decision = _decision_view(
+        strategy_view(pending_cross="DOWN", pending_cross_since_ms=2_000_000),
+        trading_enabled=True,
+        has_position=True,
+        has_pending_order=False,
+        bar_ms=900_000,
+    )
+
+    assert decision["state"] == "DEBOUNCING"
+    assert decision["reason"] == "CONFIRMING_DOWN_CROSS"
+    assert decision["next_trigger"] == "DEBOUNCE_CONFIRM_OR_RESET"
 
 
 def test_latest_order_is_exposed_as_cross_history_fallback() -> None:

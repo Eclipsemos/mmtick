@@ -11,6 +11,7 @@ name = "xiaoguo_atr_tick_pine_v6"
 bar_minutes = 15
 atr_period = 7
 atr_multiplier = 1.0
+signal_debounce_seconds = 2.0
 position_fraction = 1.0
 
 [execution]

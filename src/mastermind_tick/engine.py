@@ -51,6 +51,7 @@ class PaperEngine:
                 period=self.settings.strategy.atr_period,
                 multiplier=self.settings.strategy.atr_multiplier,
                 bar_minutes=self.settings.strategy.bar_minutes,
+                debounce_seconds=self.settings.strategy.signal_debounce_seconds,
             )
             runtime = InstrumentRuntime(instrument=instrument, feed=feed, strategy=strategy)
             account = self.store.account(instrument.id)
@@ -317,6 +318,10 @@ def _decision_view(
         state = "WARMING_UP"
         reason = "ATR_NOT_READY"
         next_trigger = "WAIT_FOR_ATR"
+    elif view.pending_cross:
+        state = "DEBOUNCING"
+        reason = f"CONFIRMING_{view.pending_cross}_CROSS"
+        next_trigger = "DEBOUNCE_CONFIRM_OR_RESET"
     elif has_pending_order:
         state = "ORDER_PENDING"
         reason = "WAITING_NEXT_TICK_FILL"

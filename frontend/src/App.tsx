@@ -473,6 +473,7 @@ function Monitor({
             <div><dt>ATR 止损线</dt><dd>{money(strategy.trailing_stop, account.currency)}</dd></div>
             <div><dt>价格距离</dt><dd>{strategy.price && strategy.trailing_stop ? money(Number(strategy.price) - Number(strategy.trailing_stop), account.currency) : '--'}</dd></div>
             <div><dt>K 线开始</dt><dd>{time(strategy.bar_start_ms)}</dd></div>
+            <div><dt>信号防抖</dt><dd>{(strategy.debounce_ms / 1000).toFixed(1)}s</dd></div>
             <div><dt>买入锁</dt><dd>{strategy.bought_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
             <div><dt>空仓锁</dt><dd>{strategy.flattened_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
           </dl>
@@ -491,7 +492,8 @@ function Monitor({
             <span>15m</span>
             <span>{(runtime.position_fraction * 100).toFixed(0)}% exposure</span>
             <span>{runtime.paper_model === 'futures' ? `${runtime.leverage}x ${runtime.margin_mode}` : 'SPOT'}</span>
-            <span>SELL immediate</span>
+            <span>{(strategy.debounce_ms / 1000).toFixed(0)}s debounce</span>
+            <span>SIGNAL-TICK fills</span>
           </div>
         </div>
       </section>
@@ -731,6 +733,7 @@ function Metric({ label, value, sub, tone = '', icon }: { label: string; value: 
 const decisionText = {
   PAUSED: ['策略已暂停', '行情和 ATR 继续更新，但不会发出交易信号'],
   WARMING_UP: ['ATR 预热中', '历史 K 线不足，暂时不能判断穿越'],
+  DEBOUNCING: ['穿越确认中', '价格需要持续位于 ATR 线另一侧，期间回撤将取消候选信号'],
   ORDER_PENDING: ['订单待成交', '信号已提交，正在等待当前 Tick 模拟撮合'],
   HOLDING_LONG: ['持仓监控中', '已持有多头，等待价格向下穿越 ATR 止损线'],
   REENTRY_LOCKED: ['本 K 线禁止重入', '本根 15 分钟 K 线已经卖出，即使重新上穿也不会买入'],
@@ -742,6 +745,7 @@ const decisionText = {
 const triggerText: Record<string, string> = {
   RESUME_TRADING: '恢复策略执行',
   WAIT_FOR_ATR: '等待 ATR 计算完成',
+  DEBOUNCE_CONFIRM_OR_RESET: '持续满防抖时间后确认，或回撤后取消',
   NEXT_TICK_FILL: '等待模拟撮合完成',
   PRICE_CROSS_BELOW: '价格向下穿越 ATR 线',
   NEXT_BAR_AND_FRESH_UP_CROSS: '进入下一根 K 线，并出现新的向上穿越',
