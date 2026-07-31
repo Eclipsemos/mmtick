@@ -47,3 +47,13 @@ def test_trade_stats_pair_round_trips_after_fees() -> None:
         "losing_trades": 1,
         "win_rate": 0.5,
     }
+
+
+def test_trade_stats_include_funding_during_round_trip() -> None:
+    fills = [
+        {"side": "SELL", "timestamp_ms": 3, "quantity": "1", "notional": "101", "fee": "0"},
+        {"side": "BUY", "timestamp_ms": 1, "quantity": "1", "notional": "100", "fee": "0"},
+    ]
+    funding = [{"timestamp_ms": 2, "amount": "-2"}]
+
+    assert _trade_stats(fills, funding)["win_rate"] == 0

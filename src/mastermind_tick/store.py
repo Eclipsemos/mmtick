@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from mastermind_tick.config import ExecutionSettings, InstrumentSettings
-from mastermind_tick.models import Bar, Side, StrategySignal, Tick
+from mastermind_tick.models import Bar, FundingRate, Side, StrategySignal, Tick
 
 SCHEMA = """
 PRAGMA journal_mode=WAL;
@@ -31,6 +31,11 @@ CREATE TABLE IF NOT EXISTS accounts (
     average_price TEXT NOT NULL DEFAULT '0',
     realized_pnl TEXT NOT NULL DEFAULT '0',
     total_fees TEXT NOT NULL DEFAULT '0',
+    total_funding TEXT NOT NULL DEFAULT '0',
+    paper_model TEXT NOT NULL DEFAULT 'spot',
+    leverage INTEGER NOT NULL DEFAULT 1,
+    margin_mode TEXT NOT NULL DEFAULT 'cash',
+    position_fraction TEXT NOT NULL DEFAULT '1',
     created_at_ms INTEGER NOT NULL,
     updated_at_ms INTEGER NOT NULL
 );
@@ -82,6 +87,12 @@ CREATE TABLE IF NOT EXISTS equity_snapshots (
     atr TEXT,
     trailing_stop TEXT,
     relation TEXT,
+    mark_price TEXT,
+    index_price TEXT,
+    funding_rate TEXT,
+    initial_margin TEXT NOT NULL DEFAULT '0',
+    available_balance TEXT NOT NULL DEFAULT '0',
+    total_funding TEXT NOT NULL DEFAULT '0',
     source TEXT NOT NULL
 );
 
@@ -99,6 +110,21 @@ CREATE TABLE IF NOT EXISTS strategy_states (
     account_id TEXT PRIMARY KEY REFERENCES accounts(id),
     state_json TEXT NOT NULL,
     updated_at_ms INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS funding_payments (
+    id TEXT PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES accounts(id),
+    symbol TEXT NOT NULL,
+    timestamp_ms INTEGER NOT NULL,
+    rate TEXT NOT NULL,
+    mark_price TEXT NOT NULL,
+    quantity TEXT NOT NULL,
+    notional TEXT NOT NULL,
+    amount TEXT NOT NULL,
+    source TEXT NOT NULL,
+    created_at_ms INTEGER NOT NULL,
+    UNIQUE(account_id, timestamp_ms)
 );
 
 CREATE TABLE IF NOT EXISTS agg_trades (
@@ -140,6 +166,8 @@ CREATE INDEX IF NOT EXISTS idx_orders_account_status ON orders(account_id, statu
 CREATE INDEX IF NOT EXISTS idx_fills_account_time ON fills(account_id, timestamp_ms DESC);
 CREATE INDEX IF NOT EXISTS idx_equity_account_time ON equity_snapshots(account_id, timestamp_ms);
 CREATE INDEX IF NOT EXISTS idx_events_account_time ON events(account_id, timestamp_ms DESC);
+CREATE INDEX IF NOT EXISTS idx_funding_account_time
+    ON funding_payments(account_id, timestamp_ms DESC);
 CREATE INDEX IF NOT EXISTS idx_agg_trades_instrument_time
     ON agg_trades(instrument_id, timestamp_ms DESC);
 CREATE INDEX IF NOT EXISTS idx_ohlcv_instrument_time
@@ -153,6 +181,7 @@ WAREHOUSE_TABLES = (
     "equity_snapshots",
     "events",
     "strategy_states",
+    "funding_payments",
     "ohlcv_bars",
     "agg_trades",
 )
@@ -168,13 +197,41 @@ class PaperStore:
 
     @staticmethod
     def _migrate(connection: sqlite3.Connection) -> None:
-        columns = {
+        snapshot_columns = {
             row["name"]
             for row in connection.execute("PRAGMA table_info(equity_snapshots)").fetchall()
         }
-        for name in ("atr", "trailing_stop", "relation"):
-            if name not in columns:
+        snapshot_text_columns = (
+            "atr",
+            "trailing_stop",
+            "relation",
+            "mark_price",
+            "index_price",
+            "funding_rate",
+        )
+        for name in snapshot_text_columns:
+            if name not in snapshot_columns:
                 connection.execute(f"ALTER TABLE equity_snapshots ADD COLUMN {name} TEXT")
+        for name in ("initial_margin", "available_balance", "total_funding"):
+            if name not in snapshot_columns:
+                connection.execute(
+                    f"ALTER TABLE equity_snapshots ADD COLUMN {name} TEXT NOT NULL DEFAULT '0'"
+                )
+
+        account_columns = {
+            row["name"]
+            for row in connection.execute("PRAGMA table_info(accounts)").fetchall()
+        }
+        account_migrations = {
+            "total_funding": "TEXT NOT NULL DEFAULT '0'",
+            "paper_model": "TEXT NOT NULL DEFAULT 'spot'",
+            "leverage": "INTEGER NOT NULL DEFAULT 1",
+            "margin_mode": "TEXT NOT NULL DEFAULT 'cash'",
+            "position_fraction": "TEXT NOT NULL DEFAULT '1'",
+        }
+        for name, definition in account_migrations.items():
+            if name not in account_columns:
+                connection.execute(f"ALTER TABLE accounts ADD COLUMN {name} {definition}")
 
     @contextmanager
     def connection(self) -> Iterator[sqlite3.Connection]:
@@ -194,8 +251,10 @@ class PaperStore:
                 """
                 INSERT OR IGNORE INTO accounts (
                     id, symbol, display_symbol, venue, currency, initial_cash, cash,
-                    quantity, average_price, realized_pnl, total_fees, created_at_ms, updated_at_ms
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, '0', '0', '0', '0', ?, ?)
+                    quantity, average_price, realized_pnl, total_fees, total_funding,
+                    paper_model, leverage, margin_mode, position_fraction,
+                    created_at_ms, updated_at_ms
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, '0', '0', '0', '0', '0', ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     instrument.id,
@@ -205,8 +264,30 @@ class PaperStore:
                     instrument.currency,
                     str(initial_cash),
                     str(initial_cash),
+                    instrument.paper_model,
+                    instrument.leverage,
+                    instrument.margin_mode,
+                    str(instrument.position_fraction or 1),
                     now_ms,
                     now_ms,
+                ),
+            )
+            connection.execute(
+                """
+                UPDATE accounts SET symbol = ?, display_symbol = ?, venue = ?, currency = ?,
+                    paper_model = ?, leverage = ?, margin_mode = ?, position_fraction = ?
+                WHERE id = ?
+                """,
+                (
+                    instrument.symbol,
+                    instrument.display_symbol,
+                    instrument.venue,
+                    instrument.currency,
+                    instrument.paper_model,
+                    instrument.leverage,
+                    instrument.margin_mode,
+                    str(instrument.position_fraction or 1),
+                    instrument.id,
                 ),
             )
 
@@ -312,7 +393,7 @@ class PaperStore:
                     tick.timestamp_ms,
                     str(tick.price),
                     str(tick.quantity),
-                    str(tick.price * tick.quantity),
+                    str(tick.notional if tick.notional is not None else tick.price * tick.quantity),
                     None if tick.buyer_is_maker is None else int(tick.buyer_is_maker),
                     tick.source,
                     received_at_ms,
@@ -351,9 +432,9 @@ class PaperStore:
                         interval_minutes,
                         bar_start_ms,
                         bar_end_ms,
-                        str(tick.price),
-                        str(tick.price),
-                        str(tick.price),
+                        str(tick.open_price or tick.price),
+                        str(tick.high_price or tick.price),
+                        str(tick.low_price or tick.price),
                         str(tick.price),
                         str(tick.quantity),
                         raw_trade_count,
@@ -369,8 +450,8 @@ class PaperStore:
                     WHERE instrument_id = ? AND interval_minutes = ? AND start_ms = ?
                     """,
                     (
-                        str(max(Decimal(row["high"]), tick.price)),
-                        str(min(Decimal(row["low"]), tick.price)),
+                        str(max(Decimal(row["high"]), tick.high_price or tick.price)),
+                        str(min(Decimal(row["low"]), tick.low_price or tick.price)),
                         str(tick.price),
                         str(Decimal(row["volume"]) + tick.quantity),
                         int(row["trade_count"]) + raw_trade_count,
@@ -475,28 +556,50 @@ class PaperStore:
 
             side = Side(order["side"])
             market_price = tick.price
-            fee_rate = Decimal(str(execution.fee_bps)) / Decimal("10000")
-            slip_rate = Decimal(str(execution.slippage_bps)) / Decimal("10000")
+            fee_bps = instrument.fee_bps if instrument.fee_bps is not None else execution.fee_bps
+            slippage_bps = (
+                instrument.slippage_bps
+                if instrument.slippage_bps is not None
+                else execution.slippage_bps
+            )
+            minimum_notional = (
+                instrument.minimum_notional
+                if instrument.minimum_notional is not None
+                else execution.minimum_notional
+            )
+            fee_rate = Decimal(str(fee_bps)) / Decimal("10000")
+            slip_rate = Decimal(str(slippage_bps)) / Decimal("10000")
             cash = Decimal(account["cash"])
             quantity = Decimal(account["quantity"])
             average_price = Decimal(account["average_price"])
             realized_pnl = Decimal(account["realized_pnl"])
             total_fees = Decimal(account["total_fees"])
             step = Decimal(str(instrument.quantity_step))
+            is_futures = account["paper_model"] == "futures"
+            leverage = Decimal(int(account["leverage"]))
 
             if side is Side.BUY:
                 fill_price = market_price * (Decimal("1") + slip_rate)
                 budget = cash * Decimal(str(position_fraction))
-                raw_quantity = budget / (fill_price * (Decimal("1") + fee_rate))
+                raw_quantity = (
+                    budget / fill_price
+                    if is_futures
+                    else budget / (fill_price * (Decimal("1") + fee_rate))
+                )
                 fill_quantity = _floor_step(raw_quantity, step)
                 notional = fill_price * fill_quantity
                 fee = notional * fee_rate
-                if notional < Decimal(str(execution.minimum_notional)) or fill_quantity <= 0:
+                required_balance = notional / leverage + fee if is_futures else notional + fee
+                if (
+                    notional < Decimal(str(minimum_notional))
+                    or fill_quantity <= 0
+                    or required_balance > cash
+                ):
                     connection.execute(
                         "UPDATE orders SET status = 'REJECTED' WHERE id = ?", (order["id"],)
                     )
-                    return {"status": "REJECTED", "reason": "minimum_notional"}
-                cash -= notional + fee
+                    return {"status": "REJECTED", "reason": "insufficient_margin"}
+                cash -= fee if is_futures else notional + fee
                 quantity += fill_quantity
                 average_price = fill_price
                 realized_pnl -= fee
@@ -510,7 +613,11 @@ class PaperStore:
                         "UPDATE orders SET status = 'REJECTED' WHERE id = ?", (order["id"],)
                     )
                     return {"status": "REJECTED", "reason": "no_position"}
-                cash += notional - fee
+                cash += (
+                    (fill_price - average_price) * fill_quantity - fee
+                    if is_futures
+                    else notional - fee
+                )
                 realized_pnl += (fill_price - average_price) * fill_quantity - fee
                 quantity = Decimal("0")
                 average_price = Decimal("0")
@@ -587,6 +694,116 @@ class PaperStore:
         )
         return result
 
+    def apply_funding(
+        self,
+        account_id: str,
+        funding: FundingRate,
+        *,
+        source: str = "binance_futures_funding",
+    ) -> dict[str, str | int] | None:
+        with self.connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            account = connection.execute(
+                "SELECT * FROM accounts WHERE id = ?", (account_id,)
+            ).fetchone()
+            if account is None:
+                raise LookupError(account_id)
+            if account["paper_model"] != "futures":
+                return None
+
+            quantity = Decimal(account["quantity"])
+            if quantity <= 0:
+                return None
+            notional = quantity * funding.mark_price
+            amount = -(notional * funding.rate)
+            payment_id = f"{account_id}:{funding.timestamp_ms}"
+            inserted = connection.execute(
+                """
+                INSERT OR IGNORE INTO funding_payments (
+                    id, account_id, symbol, timestamp_ms, rate, mark_price,
+                    quantity, notional, amount, source, created_at_ms
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    payment_id,
+                    account_id,
+                    account["symbol"],
+                    funding.timestamp_ms,
+                    str(funding.rate),
+                    str(funding.mark_price),
+                    str(quantity),
+                    str(notional),
+                    str(amount),
+                    source,
+                    int(time.time() * 1000),
+                ),
+            ).rowcount
+            if not inserted:
+                return None
+
+            connection.execute(
+                """
+                UPDATE accounts SET cash = ?, realized_pnl = ?, total_funding = ?,
+                    updated_at_ms = ? WHERE id = ?
+                """,
+                (
+                    str(Decimal(account["cash"]) + amount),
+                    str(Decimal(account["realized_pnl"]) + amount),
+                    str(Decimal(account["total_funding"]) + amount),
+                    funding.timestamp_ms,
+                    account_id,
+                ),
+            )
+
+        result: dict[str, str | int] = {
+            "timestamp_ms": funding.timestamp_ms,
+            "rate": str(funding.rate),
+            "mark_price": str(funding.mark_price),
+            "quantity": str(quantity),
+            "notional": str(notional),
+            "amount": str(amount),
+        }
+        direction = "received" if amount >= 0 else "paid"
+        self.add_event(
+            account_id,
+            funding.timestamp_ms,
+            "INFO",
+            "FUNDING",
+            f"Funding {direction}: {amount:.4f} USDT at {funding.rate}",
+            result,
+        )
+        return result
+
+    def latest_funding_time(self, account_id: str) -> int | None:
+        with self.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT MAX(timestamp_ms) AS timestamp_ms
+                FROM funding_payments WHERE account_id = ?
+                """,
+                (account_id,),
+            ).fetchone()
+        return int(row["timestamp_ms"]) if row and row["timestamp_ms"] is not None else None
+
+    def funding_payments(
+        self, account_id: str | None = None, limit: int = 1000
+    ) -> list[dict[str, Any]]:
+        query = """
+            SELECT id, account_id, symbol, timestamp_ms, rate, mark_price,
+                   quantity, notional, amount, source, created_at_ms
+            FROM funding_payments
+        """
+        params: tuple[Any, ...]
+        if account_id:
+            query += " WHERE account_id = ?"
+            params = (account_id, limit)
+        else:
+            params = (limit,)
+        query += " ORDER BY timestamp_ms DESC, id DESC LIMIT ?"
+        with self.connection() as connection:
+            rows = connection.execute(query, params).fetchall()
+        return [dict(row) for row in rows]
+
     def snapshot(
         self,
         account_id: str,
@@ -598,9 +815,19 @@ class PaperStore:
         quantity = Decimal(account["quantity"])
         average_price = Decimal(account["average_price"])
         realized_pnl = Decimal(account["realized_pnl"])
-        market_value = quantity * tick.price
-        equity = cash + market_value
-        unrealized = quantity * (tick.price - average_price) if quantity else Decimal("0")
+        total_funding = Decimal(account["total_funding"])
+        is_futures = account["paper_model"] == "futures"
+        mark_price = tick.mark_price or tick.price
+        market_value = quantity * (mark_price if is_futures else tick.price)
+        unrealized = quantity * (mark_price - average_price) if quantity else Decimal("0")
+        if is_futures:
+            equity = cash + unrealized
+            initial_margin = market_value / Decimal(int(account["leverage"]))
+            available_balance = equity - initial_margin
+        else:
+            equity = cash + market_value
+            initial_margin = Decimal("0")
+            available_balance = cash
         strategy = strategy or {}
         atr = strategy.get("atr")
         trailing_stop = strategy.get("trailing_stop")
@@ -610,8 +837,10 @@ class PaperStore:
                 """
                 INSERT INTO equity_snapshots (
                     account_id, timestamp_ms, price, cash, quantity, market_value,
-                    equity, unrealized_pnl, realized_pnl, atr, trailing_stop, relation, source
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    equity, unrealized_pnl, realized_pnl, atr, trailing_stop, relation,
+                    mark_price, index_price, funding_rate, initial_margin,
+                    available_balance, total_funding, source
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     account_id,
@@ -626,6 +855,12 @@ class PaperStore:
                     str(atr) if atr is not None else None,
                     str(trailing_stop) if trailing_stop is not None else None,
                     relation,
+                    str(mark_price) if is_futures else None,
+                    str(tick.index_price) if tick.index_price is not None else None,
+                    str(tick.funding_rate) if tick.funding_rate is not None else None,
+                    str(initial_margin),
+                    str(available_balance),
+                    str(total_funding),
                     tick.source,
                 ),
             )
@@ -638,6 +873,12 @@ class PaperStore:
             "equity": str(equity),
             "unrealized_pnl": str(unrealized),
             "realized_pnl": str(realized_pnl),
+            "mark_price": str(mark_price) if is_futures else None,
+            "index_price": str(tick.index_price) if tick.index_price is not None else None,
+            "funding_rate": str(tick.funding_rate) if tick.funding_rate is not None else None,
+            "initial_margin": str(initial_margin),
+            "available_balance": str(available_balance),
+            "total_funding": str(total_funding),
         }
 
     def equity(self, account_id: str, limit: int = 1000) -> list[dict[str, Any]]:
@@ -646,7 +887,9 @@ class PaperStore:
                 """
                 SELECT * FROM (
                     SELECT timestamp_ms, price, cash, quantity, market_value, equity,
-                           unrealized_pnl, realized_pnl, atr, trailing_stop, relation, source
+                           unrealized_pnl, realized_pnl, atr, trailing_stop, relation,
+                           mark_price, index_price, funding_rate, initial_margin,
+                           available_balance, total_funding, source
                     FROM equity_snapshots WHERE account_id = ?
                     ORDER BY timestamp_ms DESC, id DESC LIMIT ?
                 ) ORDER BY timestamp_ms

@@ -41,7 +41,20 @@ export type Runtime = {
   venue: string
   asset_type: string
   reference_symbol: string
+  paper_model: 'spot' | 'futures'
+  leverage: number
+  margin_mode: string
+  position_fraction: number
+  fee_bps: number
+  slippage_bps: number
   feed: string
+  market_state: {
+    mark_price?: string | null
+    index_price?: string | null
+    funding_rate?: string | null
+    next_funding_time_ms?: number | null
+    updated_at_ms?: number | null
+  }
   status: string
   status_message: string
   reconnects: number
@@ -62,6 +75,7 @@ export type Account = {
   average_price: string
   realized_pnl: string
   total_fees: string
+  total_funding: string
   equity: string
   total_pnl: string
   total_return: number
@@ -74,6 +88,12 @@ export type Account = {
   last_snapshot_ms: number | null
   unrealized_pnl: string
   market_value: string
+  mark_price: string | null
+  index_price: string | null
+  funding_rate: string | null
+  initial_margin: string
+  available_balance: string
+  funding_count: number
   fill_count: number
   round_trips: number
   runtime: Runtime
@@ -104,6 +124,12 @@ export type EquityPoint = {
   cash: string
   quantity: string
   unrealized_pnl: string
+  mark_price: string | null
+  index_price: string | null
+  funding_rate: string | null
+  initial_margin: string
+  available_balance: string
+  total_funding: string
   atr: string | null
   trailing_stop: string | null
   relation: string | null
@@ -119,6 +145,19 @@ export type Fill = {
   notional: string
   fee: string
   reason: string
+  source: string
+}
+
+export type FundingPayment = {
+  id: string
+  account_id: string
+  symbol: string
+  timestamp_ms: number
+  rate: string
+  mark_price: string
+  quantity: string
+  notional: string
+  amount: string
   source: string
 }
 

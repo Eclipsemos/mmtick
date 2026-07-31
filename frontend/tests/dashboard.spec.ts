@@ -8,7 +8,11 @@ test('paper console renders live state and operational views', async ({ page }) 
 
   await page.goto('/')
   await expect(page.getByRole('heading', { name: '实时模拟盘' })).toBeVisible()
-  await expect(page.getByText('SOXLB/USDT', { exact: true }).first()).toBeVisible()
+  await expect(page.getByText('SOXL/USDT PERP', { exact: true }).first()).toBeVisible()
+  await expect(page.getByText('当前资金费')).toBeVisible()
+  await page.getByRole('button', { name: 'SOXLB/USDT', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'SOXLB/USDT' })).toBeVisible()
+  await page.getByRole('button', { name: 'SOXL/USDT PERP', exact: true }).click()
   await expect(page.getByText('账户净值')).toBeVisible()
   await expect(page.getByText('夏普率')).toBeVisible()
   await expect(page.getByText('交易胜率')).toBeVisible()
@@ -68,6 +72,7 @@ test('price chart renders ATR line and trade percentage markers', async ({ page 
   })
 
   await page.goto('/')
+  await page.getByRole('button', { name: 'SOXLB/USDT', exact: true }).click()
   await page.waitForTimeout(100)
 
   expect(pageErrors).toEqual([])

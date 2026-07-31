@@ -32,3 +32,22 @@ currency = "USDT"
 feed = "binance"
 quantity_step = 0.001
 reference_symbol = "SOXL"
+
+[[instruments]]
+id = "soxl_perp"
+symbol = "SOXLUSDT"
+display_symbol = "SOXL/USDT PERP"
+name = "Direxion Semiconductor Bull 3X TradFi Perpetual"
+asset_type = "tradifi_perpetual"
+venue = "Binance USD-M Futures"
+currency = "USDT"
+feed = "binance_futures"
+quantity_step = 0.01
+reference_symbol = "SOXL"
+paper_model = "futures"
+leverage = 1
+margin_mode = "isolated"
+position_fraction = 0.95
+fee_bps = 5.0
+slippage_bps = 2.0
+minimum_notional = 5.0

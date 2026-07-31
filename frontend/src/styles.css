@@ -60,6 +60,7 @@ h1 { margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: 0; }
 .account-switch { display: flex; padding: 3px; border: 1px solid var(--line); border-radius: 6px; background: #0d1114; }
 .account-switch button { min-width: 104px; height: 34px; border: 0; border-radius: 4px; color: var(--muted); background: transparent; cursor: pointer; font: 11px 'DM Mono', monospace; }
 .account-switch button.active { color: #07110d; background: var(--green); font-weight: 700; }
+.page-actions { display: flex; align-items: center; gap: 10px; }
 .scope-chips { display: flex; align-items: center; gap: 7px; }
 .scope-chips span { height: 30px; padding: 0 9px; display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 4px; color: #7f8a92; background: #0d1114; font: 9px 'DM Mono', monospace; }
 
@@ -162,6 +163,7 @@ h1 { margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: 0; }
 .strategy-values div:last-child { border-bottom: 0; }
 .strategy-values dt { color: var(--muted); font-size: 10px; }
 .strategy-values dd { margin: 0; font: 10px 'DM Mono', monospace; }
+.futures-values { border-top: 1px solid var(--line); }
 .strategy-foot { min-height: 42px; padding: 0 18px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line); }
 .strategy-foot span { padding: 3px 6px; border: 1px solid var(--line); border-radius: 3px; color: #75818a; font: 8px 'DM Mono', monospace; }
 .export { display: flex; align-items: center; gap: 6px; color: #9da7ae; font-size: 10px; text-decoration: none; }
@@ -228,6 +230,7 @@ footer { height: 44px; padding: 0 30px; display: flex; align-items: center; just
   main { padding: 23px 14px 34px; }
   .page-head { align-items: stretch; flex-direction: column; }
   .scope-chips { overflow-x: auto; }
+  .page-actions { align-items: stretch; flex-direction: column; }
   .scope-chips span { flex: 1; justify-content: center; white-space: nowrap; }
   .account-switch button { flex: 1; }
   .instrument-band { grid-template-columns: 1fr auto; gap: 12px; }

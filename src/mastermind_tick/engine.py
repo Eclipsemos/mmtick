@@ -26,6 +26,8 @@ class InstrumentRuntime:
     last_tick: Tick | None = None
     last_snapshot_ms: int = 0
     reconnects: int = 0
+    funding_cursor_ms: int = 0
+    last_funding_poll_ms: int = 0
     task: asyncio.Task | None = field(default=None, repr=False)
     lock: asyncio.Lock = field(default_factory=asyncio.Lock, repr=False)
 
@@ -51,6 +53,12 @@ class PaperEngine:
                 bar_minutes=self.settings.strategy.bar_minutes,
             )
             runtime = InstrumentRuntime(instrument=instrument, feed=feed, strategy=strategy)
+            account = self.store.account(instrument.id)
+            latest_funding = self.store.latest_funding_time(instrument.id)
+            runtime.funding_cursor_ms = max(
+                int(account["updated_at_ms"]),
+                latest_funding or 0,
+            )
             self.runtimes[instrument.id] = runtime
             try:
                 history = await feed.history(self.settings.warmup_bars)
@@ -149,6 +157,7 @@ class PaperEngine:
                 tick,
             )
             runtime.last_tick = tick
+            funding_applied = await self._apply_due_funding(runtime, tick)
             account_id = runtime.instrument.id
             fill = None
             if self.trading_enabled:
@@ -157,7 +166,7 @@ class PaperEngine:
                     tick,
                     runtime.instrument,
                     self.settings.execution,
-                    self.settings.strategy.position_fraction,
+                    _position_fraction(runtime.instrument, self.settings),
                 )
             account = self.store.account(account_id)
             has_position = Decimal(account["quantity"]) > 0
@@ -176,7 +185,7 @@ class PaperEngine:
                         tick,
                         runtime.instrument,
                         self.settings.execution,
-                        self.settings.strategy.position_fraction,
+                        _position_fraction(runtime.instrument, self.settings),
                         allow_same_tick=True,
                     )
                     fill = immediate_fill or fill
@@ -184,13 +193,41 @@ class PaperEngine:
                 tick.timestamp_ms - runtime.last_snapshot_ms
                 >= self.settings.equity_snapshot_seconds * 1000
             )
-            if snapshot_due or fill or signal:
+            if snapshot_due or fill or signal or funding_applied:
                 strategy_view = _strategy_view(asdict(runtime.strategy.view()))
                 self.store.snapshot(account_id, tick, strategy_view)
                 runtime.last_snapshot_ms = tick.timestamp_ms
             self.store.save_strategy_state(
                 account_id, runtime.strategy.runtime_state(), tick.timestamp_ms
             )
+
+    async def _apply_due_funding(self, runtime: InstrumentRuntime, tick: Tick) -> bool:
+        if runtime.instrument.paper_model != "futures":
+            return False
+        if tick.timestamp_ms - runtime.last_funding_poll_ms < 60_000:
+            return False
+        runtime.last_funding_poll_ms = tick.timestamp_ms
+        try:
+            rates = await runtime.feed.funding_rates(
+                runtime.funding_cursor_ms,
+                tick.timestamp_ms,
+            )
+        except Exception as exc:
+            self.store.add_event(
+                runtime.instrument.id,
+                tick.timestamp_ms,
+                "WARN",
+                "FUNDING_SYNC_FAILED",
+                f"{type(exc).__name__}: {exc}",
+            )
+            return False
+
+        applied = False
+        for funding in rates:
+            payment = self.store.apply_funding(runtime.instrument.id, funding)
+            applied = payment is not None or applied
+        runtime.funding_cursor_ms = tick.timestamp_ms
+        return applied
 
     def status(self) -> dict[str, Any]:
         values = []
@@ -209,7 +246,22 @@ class PaperEngine:
                     "venue": runtime.instrument.venue,
                     "asset_type": runtime.instrument.asset_type,
                     "reference_symbol": runtime.instrument.reference_symbol,
+                    "paper_model": runtime.instrument.paper_model,
+                    "leverage": runtime.instrument.leverage,
+                    "margin_mode": runtime.instrument.margin_mode,
+                    "position_fraction": _position_fraction(runtime.instrument, self.settings),
+                    "fee_bps": (
+                        runtime.instrument.fee_bps
+                        if runtime.instrument.fee_bps is not None
+                        else self.settings.execution.fee_bps
+                    ),
+                    "slippage_bps": (
+                        runtime.instrument.slippage_bps
+                        if runtime.instrument.slippage_bps is not None
+                        else self.settings.execution.slippage_bps
+                    ),
                     "feed": runtime.feed.source_name,
+                    "market_state": runtime.feed.market_state,
                     "status": runtime.status,
                     "status_message": runtime.status_message,
                     "reconnects": runtime.reconnects,
@@ -239,6 +291,14 @@ def _strategy_view(value: dict[str, Any]) -> dict[str, Any]:
         if value[key] is not None:
             value[key] = str(value[key])
     return value
+
+
+def _position_fraction(instrument: InstrumentSettings, settings: Settings) -> float:
+    return (
+        instrument.position_fraction
+        if instrument.position_fraction is not None
+        else settings.strategy.position_fraction
+    )
 
 
 def _decision_view(

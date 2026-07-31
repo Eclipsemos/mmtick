@@ -47,6 +47,7 @@ import type {
   EquityPoint,
   EventItem,
   Fill,
+  FundingPayment,
   OhlcvBar,
   Order,
   WarehouseSummary,
@@ -133,11 +134,13 @@ function time(value: number | null) {
 function App() {
   const client = useQueryClient()
   const [view, setView] = useState<View>('monitor')
+  const [accountId, setAccountId] = useState('soxl_perp')
   const overview = useQuery({ queryKey: ['overview'], queryFn: api.overview, refetchInterval: 1000 })
-  const equity = useQuery({ queryKey: ['equity', 'soxlb'], queryFn: () => api.equity('soxlb'), refetchInterval: 5000 })
-  const fills = useQuery({ queryKey: ['fills', 'soxlb'], queryFn: () => api.fills('soxlb'), refetchInterval: 5000 })
-  const orders = useQuery({ queryKey: ['orders', 'soxlb'], queryFn: () => api.orders('soxlb'), refetchInterval: 5000 })
-  const events = useQuery({ queryKey: ['events', 'soxlb'], queryFn: () => api.events('soxlb'), refetchInterval: 5000 })
+  const equity = useQuery({ queryKey: ['equity', accountId], queryFn: () => api.equity(accountId), refetchInterval: 5000 })
+  const fills = useQuery({ queryKey: ['fills', accountId], queryFn: () => api.fills(accountId), refetchInterval: 5000 })
+  const funding = useQuery({ queryKey: ['funding', accountId], queryFn: () => api.funding(accountId), refetchInterval: 5000 })
+  const orders = useQuery({ queryKey: ['orders', accountId], queryFn: () => api.orders(accountId), refetchInterval: 5000 })
+  const events = useQuery({ queryKey: ['events', accountId], queryFn: () => api.events(accountId), refetchInterval: 5000 })
   const warehouse = useQuery({
     queryKey: ['warehouse'],
     queryFn: api.warehouse,
@@ -145,13 +148,13 @@ function App() {
     refetchInterval: 5000,
   })
   const aggTrades = useQuery({
-    queryKey: ['agg-trades', 'soxlb'],
-    queryFn: () => api.aggTrades('soxlb'),
+    queryKey: ['agg-trades', accountId],
+    queryFn: () => api.aggTrades(accountId),
     enabled: view === 'warehouse',
   })
   const ohlcv = useQuery({
-    queryKey: ['ohlcv', 'soxlb'],
-    queryFn: () => api.ohlcv('soxlb'),
+    queryKey: ['ohlcv', accountId],
+    queryFn: () => api.ohlcv(accountId),
     enabled: view === 'warehouse',
   })
   const control = useMutation({
@@ -159,7 +162,8 @@ function App() {
     onSuccess: () => client.invalidateQueries({ queryKey: ['overview'] }),
   })
 
-  const account = overview.data?.accounts[0]
+  const accounts = overview.data?.accounts ?? []
+  const account = accounts.find((item) => item.id === accountId) ?? accounts[0]
   const liveCount = overview.data?.instruments.filter((item) => item.status === 'LIVE').length ?? 0
   const instrumentCount = overview.data?.instruments.length ?? 1
 
@@ -208,8 +212,22 @@ function App() {
             <div className="kicker">{view === 'warehouse' ? 'MARKET DATA / SQLITE WAL' : 'SHORT-HORIZON EXECUTION / ATR TICK V1'}</div>
             <h1>{view === 'warehouse' ? '数据仓库' : '实时模拟盘'}</h1>
           </div>
-          <div className="scope-chips">
-            <span>SOXLBUSDT</span><span>15m</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : 'LONG ONLY'}</span>
+          <div className="page-actions">
+            <div className="account-switch" aria-label="模拟账户">
+              {accounts.map((item) => (
+                <button
+                  type="button"
+                  key={item.id}
+                  className={item.id === account?.id ? 'active' : ''}
+                  onClick={() => setAccountId(item.id)}
+                >
+                  {item.display_symbol}
+                </button>
+              ))}
+            </div>
+            <div className="scope-chips">
+              <span>{account?.symbol ?? 'INITIALIZING'}</span><span>15m</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : 'LONG ONLY'}</span>
+            </div>
           </div>
         </section>
 
@@ -219,7 +237,7 @@ function App() {
             <button onClick={() => overview.refetch()}><RefreshCw size={15} />重试</button>
           </div>
         ) : view === 'monitor' ? (
-          <Monitor account={account} equity={equity.data ?? []} fills={fills.data ?? []} />
+          <Monitor account={account} equity={equity.data ?? []} fills={fills.data ?? []} funding={funding.data ?? []} />
         ) : view === 'orders' ? (
           <Orders rows={orders.data ?? []} />
         ) : view === 'events' ? (
@@ -229,6 +247,7 @@ function App() {
             summary={warehouse.data}
             bars={ohlcv.data ?? []}
             trades={aggTrades.data ?? []}
+            instrumentId={account?.id}
           />
         )}
       </main>
@@ -244,18 +263,23 @@ function Monitor({
   account,
   equity,
   fills,
+  funding,
 }: {
   account?: Account
   equity: EquityPoint[]
   fills: Fill[]
+  funding: FundingPayment[]
 }) {
   const accountFills = useMemo(
-    () => fills.filter((fill) => fill.account_id === 'soxlb'),
-    [fills],
+    () => fills.filter((fill) => fill.account_id === account?.id),
+    [fills, account?.id],
   )
   const priceChart = useMemo(() => buildPriceChart(equity), [equity])
   const tradeMarkers = useMemo(() => buildTradeMarkers(accountFills), [accountFills])
-  const completedTrades = useMemo(() => buildCompletedTrades(accountFills), [accountFills])
+  const completedTrades = useMemo(
+    () => buildCompletedTrades(accountFills, funding),
+    [accountFills, funding],
+  )
   const [priceRange, setPriceRange] = useChartRange(priceChart.length)
   const visibleStart = priceChart[priceRange.startIndex]
   const visibleEnd = priceChart[priceRange.endIndex]
@@ -444,7 +468,23 @@ function Monitor({
             <div><dt>买入锁</dt><dd>{strategy.bought_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
             <div><dt>空仓锁</dt><dd>{strategy.flattened_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
           </dl>
-          <div className="strategy-foot"><span>15m</span><span>100% equity</span><span>BUY next tick</span><span>SELL immediate</span></div>
+          {runtime.paper_model === 'futures' && (
+            <dl className="strategy-values futures-values">
+              <div><dt>标记价格</dt><dd>{money(account.mark_price, account.currency)}</dd></div>
+              <div><dt>指数价格</dt><dd>{money(account.index_price, account.currency)}</dd></div>
+              <div><dt>当前资金费</dt><dd>{account.funding_rate === null ? '--' : percent(Number(account.funding_rate))}</dd></div>
+              <div><dt>下次资金费</dt><dd>{time(runtime.market_state.next_funding_time_ms ?? null)}</dd></div>
+              <div><dt>初始保证金</dt><dd>{money(account.initial_margin, account.currency)}</dd></div>
+              <div><dt>可用余额</dt><dd>{money(account.available_balance, account.currency)}</dd></div>
+              <div><dt>累计资金费</dt><dd className={Number(account.total_funding) >= 0 ? 'good-text' : 'bad-text'}>{money(account.total_funding, account.currency)}</dd></div>
+            </dl>
+          )}
+          <div className="strategy-foot">
+            <span>15m</span>
+            <span>{(runtime.position_fraction * 100).toFixed(0)}% exposure</span>
+            <span>{runtime.paper_model === 'futures' ? `${runtime.leverage}x ${runtime.margin_mode}` : 'SPOT'}</span>
+            <span>SELL immediate</span>
+          </div>
         </div>
       </section>
 
@@ -565,7 +605,7 @@ function buildTradeMarkers(fills: Fill[]): TradePoint[] {
   }))
 }
 
-function buildCompletedTrades(fills: Fill[]): CompletedTrade[] {
+function buildCompletedTrades(fills: Fill[], funding: FundingPayment[] = []): CompletedTrade[] {
   const ordered = [...fills].sort((left, right) => left.timestamp_ms - right.timestamp_ms)
   const trades: CompletedTrade[] = []
   let entry: Fill | null = null
@@ -583,14 +623,17 @@ function buildCompletedTrades(fills: Fill[]): CompletedTrade[] {
     const matchedQuantity = Math.min(entryQuantity, quantity)
     const entryUnitCost = (Number(entry.notional) + Number(entry.fee)) / entryQuantity
     const exitUnitProceeds = (Number(fill.notional) - Number(fill.fee)) / quantity
-    const netPnl = (exitUnitProceeds - entryUnitCost) * matchedQuantity
+    const fundingPnl = funding
+      .filter((payment) => payment.timestamp_ms >= entry!.timestamp_ms && payment.timestamp_ms <= fill.timestamp_ms)
+      .reduce((total, payment) => total + Number(payment.amount), 0)
+    const netPnl = (exitUnitProceeds - entryUnitCost) * matchedQuantity + fundingPnl
     trades.push({
       entryTimestamp: entry.timestamp_ms,
       exitTimestamp: fill.timestamp_ms,
       entryPrice: Number(entry.price),
       exitPrice: Number(fill.price),
       netPnl,
-      returnPercent: exitUnitProceeds / entryUnitCost - 1,
+      returnPercent: netPnl / (entryUnitCost * matchedQuantity),
     })
     entry = null
   }
@@ -737,13 +780,15 @@ function Warehouse({
   summary,
   bars,
   trades,
+  instrumentId,
 }: {
   summary?: WarehouseSummary
   bars: OhlcvBar[]
   trades: AggTrade[]
+  instrumentId?: string
 }) {
   if (!summary) return <div className="loading"><Database size={20} />正在读取仓库</div>
-  const instrument = summary.instruments[0]
+  const instrument = summary.instruments.find((item) => item.instrument_id === instrumentId)
   const tableRows = [...summary.tables].sort((left, right) => right.size_bytes - left.size_bytes)
   return (
     <>

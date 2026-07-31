@@ -27,7 +27,8 @@ def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
         max_drawdown = _max_drawdown(points)
         sharpe_ratio = _sharpe_ratio(points, engine.settings.strategy.bar_minutes)
         fills = store.fills(account_id, 100_000)
-        trade_stats = _trade_stats(fills)
+        funding_payments = store.funding_payments(account_id, 100_000)
+        trade_stats = _trade_stats(fills, funding_payments)
         runtime = runtime_by_id.get(account_id, {})
         accounts.append(
             {
@@ -41,6 +42,18 @@ def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
                 "last_snapshot_ms": latest["timestamp_ms"] if latest else None,
                 "unrealized_pnl": latest["unrealized_pnl"] if latest else "0",
                 "market_value": latest["market_value"] if latest else "0",
+                "mark_price": latest["mark_price"] if latest else None,
+                "index_price": latest["index_price"] if latest else None,
+                "funding_rate": latest["funding_rate"] if latest else None,
+                "initial_margin": latest["initial_margin"] if latest else "0",
+                "available_balance": (
+                    account["cash"]
+                    if account["paper_model"] == "spot"
+                    else latest["available_balance"]
+                    if latest
+                    else account["cash"]
+                ),
+                "funding_count": len(funding_payments),
                 "fill_count": len(fills),
                 "round_trips": trade_stats["round_trips"],
                 "winning_trades": trade_stats["winning_trades"],
@@ -102,8 +115,15 @@ def _sharpe_ratio(points: list[dict[str, Any]], bar_minutes: int) -> float | Non
     return float(mean / variance.sqrt() * periods_per_year.sqrt())
 
 
-def _trade_stats(fills: list[dict[str, Any]]) -> dict[str, int | float | None]:
+def _trade_stats(
+    fills: list[dict[str, Any]],
+    funding_payments: list[dict[str, Any]] | None = None,
+) -> dict[str, int | float | None]:
     ordered = sorted(fills, key=lambda fill: int(fill["timestamp_ms"]))
+    funding = sorted(
+        funding_payments or [],
+        key=lambda payment: int(payment["timestamp_ms"]),
+    )
     entry: dict[str, Any] | None = None
     wins = 0
     completed = 0
@@ -122,6 +142,16 @@ def _trade_stats(fills: list[dict[str, Any]]) -> dict[str, int | float | None]:
         entry_unit_cost = (Decimal(entry["notional"]) + Decimal(entry["fee"])) / entry_quantity
         exit_unit_proceeds = (Decimal(fill["notional"]) - Decimal(fill["fee"])) / quantity
         net_pnl = (exit_unit_proceeds - entry_unit_cost) * matched_quantity
+        net_pnl += sum(
+            (
+                Decimal(payment["amount"])
+                for payment in funding
+                if int(entry["timestamp_ms"])
+                <= int(payment["timestamp_ms"])
+                <= int(fill["timestamp_ms"])
+            ),
+            Decimal("0"),
+        )
         completed += 1
         if net_pnl > 0:
             wins += 1

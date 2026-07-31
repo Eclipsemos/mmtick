@@ -105,6 +105,15 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
             _require_account(store, account_id)
         return store.events(account_id, limit)
 
+    @app.get("/api/funding")
+    def funding(
+        account_id: str | None = None,
+        limit: Annotated[int, Query(ge=1, le=1000)] = 100,
+    ) -> list[dict]:
+        if account_id:
+            _require_account(store, account_id)
+        return store.funding_payments(account_id, limit)
+
     @app.get("/api/warehouse")
     def warehouse() -> dict:
         return store.warehouse_summary(

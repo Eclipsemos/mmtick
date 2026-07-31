@@ -25,12 +25,38 @@ class Tick:
     last_trade_id: int | None = None
     buyer_is_maker: bool | None = None
     event_time_ms: int | None = None
+    mark_price: Decimal | None = None
+    index_price: Decimal | None = None
+    funding_rate: Decimal | None = None
+    next_funding_time_ms: int | None = None
+    open_price: Decimal | None = None
+    high_price: Decimal | None = None
+    low_price: Decimal | None = None
+    notional: Decimal | None = None
 
     def as_dict(self) -> dict[str, Any]:
         value = asdict(self)
         value["price"] = str(self.price)
         value["quantity"] = str(self.quantity)
+        for key in (
+            "mark_price",
+            "index_price",
+            "funding_rate",
+            "open_price",
+            "high_price",
+            "low_price",
+            "notional",
+        ):
+            if value[key] is not None:
+                value[key] = str(value[key])
         return value
+
+
+@dataclass(frozen=True)
+class FundingRate:
+    timestamp_ms: int
+    rate: Decimal
+    mark_price: Decimal
 
 
 @dataclass
@@ -45,8 +71,8 @@ class Bar:
     trade_count: int = 0
 
     def update(self, tick: Tick) -> None:
-        self.high = max(self.high, tick.price)
-        self.low = min(self.low, tick.price)
+        self.high = max(self.high, tick.high_price or tick.price)
+        self.low = min(self.low, tick.low_price or tick.price)
         self.close = tick.price
         self.volume += tick.quantity
         self.trade_count += (

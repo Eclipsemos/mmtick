@@ -214,9 +214,9 @@ class ATRTickStrategy:
             self.current_bar = Bar(
                 start_ms=bar_start,
                 end_ms=bar_start + self.bar_ms - 1,
-                open=tick.price,
-                high=tick.price,
-                low=tick.price,
+                open=tick.open_price or tick.price,
+                high=tick.high_price or tick.price,
+                low=tick.low_price or tick.price,
                 close=tick.price,
                 volume=tick.quantity,
             )

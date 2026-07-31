@@ -35,6 +35,13 @@ class InstrumentSettings:
     feed: str
     quantity_step: float
     reference_symbol: str
+    paper_model: str = "spot"
+    leverage: int = 1
+    margin_mode: str = "cash"
+    position_fraction: float | None = None
+    fee_bps: float | None = None
+    slippage_bps: float | None = None
+    minimum_notional: float | None = None
 
 
 @dataclass(frozen=True)
@@ -75,6 +82,17 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         raise ValueError("execution costs cannot be negative")
     if not instruments:
         raise ValueError("at least one instrument is required")
+    for instrument in instruments:
+        if instrument.paper_model not in {"spot", "futures"}:
+            raise ValueError(f"invalid paper_model for {instrument.id}")
+        if instrument.leverage < 1:
+            raise ValueError(f"invalid leverage for {instrument.id}")
+        if instrument.position_fraction is not None and not 0 < instrument.position_fraction <= 1:
+            raise ValueError(f"invalid position_fraction for {instrument.id}")
+        if instrument.fee_bps is not None and instrument.fee_bps < 0:
+            raise ValueError(f"invalid fee_bps for {instrument.id}")
+        if instrument.slippage_bps is not None and instrument.slippage_bps < 0:
+            raise ValueError(f"invalid slippage_bps for {instrument.id}")
 
     database_path = project_root / app["database_path"]
     frontend_dist = project_root / app["frontend_dist"]

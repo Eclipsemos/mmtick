@@ -25,10 +25,15 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert health.status_code == 200
     assert health.json()["service"] == "mastermind-tick"
     assert overview.status_code == 200
-    assert {item["id"] for item in overview.json()["accounts"]} == {"soxlb"}
+    assert {item["id"] for item in overview.json()["accounts"]} == {"soxlb", "soxl_perp"}
     assert overview.json()["instruments"] == []
     assert overview.json()["environment"] == "paper"
     assert overview.json()["accounts"][0]["sharpe_ratio"] is None
     assert overview.json()["accounts"][0]["win_rate"] is None
     assert warehouse.status_code == 200
     assert warehouse.json()["instruments"][0]["symbol"] == "SOXLBUSDT"
+    assert warehouse.json()["instruments"][1]["symbol"] == "SOXLUSDT"
+
+    funding = client.get("/api/funding?account_id=soxl_perp")
+    assert funding.status_code == 200
+    assert funding.json() == []
