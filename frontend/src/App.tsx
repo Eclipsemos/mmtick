@@ -74,6 +74,9 @@ type CompletedTrade = {
   exitTimestamp: number
   entryPrice: number
   exitPrice: number
+  quantity: number
+  fees: number
+  fundingPnl: number
   netPnl: number
   returnPercent: number
 }
@@ -560,10 +563,10 @@ function Monitor({
       <section className="lower-grid">
         <div className="panel fills-panel">
           <div className="panel-head">
-            <div><span>EXECUTIONS</span><h3>最近成交</h3></div>
-            <a className="export" href={`/api/fills.csv?account_id=${account.id}`}><ArrowDownToLine size={15} />CSV</a>
+            <div><span>ROUND TRIPS</span><h3>最近成交</h3></div>
+            <a className="export" href={`/api/fills.csv?account_id=${account.id}`}><ArrowDownToLine size={15} />成交 CSV</a>
           </div>
-          <FillTable rows={accountFills.slice(0, 8)} />
+          <CompletedTradeTable rows={[...completedTrades].reverse().slice(0, 8)} currency={account.currency} />
         </div>
         <div className="panel compact-equity-panel">
           <div className="panel-head"><div><span>ACCOUNT EQUITY</span><h3>净值曲线</h3></div><strong>{money(account.equity, account.currency)}</strong></div>
@@ -841,6 +844,9 @@ function buildCompletedTrades(fills: Fill[], funding: FundingPayment[] = []): Co
           exitTimestamp: fill.timestamp_ms,
           entryPrice: Number(entry.price),
           exitPrice: Number(fill.price),
+          quantity,
+          fees: Number(entry.fee) + Number(fill.fee),
+          fundingPnl,
           netPnl,
           returnPercent: entryNotional ? netPnl / entryNotional : 0,
         })
@@ -860,6 +866,10 @@ function buildCompletedTrades(fills: Fill[], funding: FundingPayment[] = []): Co
     const matchedQuantity = Math.min(entryQuantity, quantity)
     const entryUnitCost = (Number(entry.notional) + Number(entry.fee)) / entryQuantity
     const exitUnitProceeds = (Number(fill.notional) - Number(fill.fee)) / quantity
+    const fees = (
+      Number(entry.fee) / entryQuantity
+      + Number(fill.fee) / quantity
+    ) * matchedQuantity
     const fundingPnl = funding
       .filter((payment) => payment.timestamp_ms >= entry!.timestamp_ms && payment.timestamp_ms <= fill.timestamp_ms)
       .reduce((total, payment) => total + Number(payment.amount), 0)
@@ -870,6 +880,9 @@ function buildCompletedTrades(fills: Fill[], funding: FundingPayment[] = []): Co
       exitTimestamp: fill.timestamp_ms,
       entryPrice: Number(entry.price),
       exitPrice: Number(fill.price),
+      quantity: matchedQuantity,
+      fees,
+      fundingPnl,
       netPnl,
       returnPercent: netPnl / (entryUnitCost * matchedQuantity),
     })
@@ -1051,9 +1064,35 @@ function Gate({ open, label }: { open: boolean; label: string }) {
   return <span className={open ? 'open' : 'closed'}>{open ? <CircleCheck size={13} /> : <CircleX size={13} />}{label}</span>
 }
 
-function FillTable({ rows }: { rows: Fill[] }) {
-  if (!rows.length) return <div className="empty-table">暂无成交</div>
-  return <div className="table-scroll"><table><thead><tr><th>时间</th><th>账户</th><th>方向</th><th>动作</th><th>价格</th><th>数量</th><th>手续费</th><th>数据源</th></tr></thead><tbody>{rows.map((row) => <tr key={row.id}><td>{time(row.timestamp_ms)}</td><td>{row.account_id.toUpperCase()}</td><td><span className={`side ${row.side.toLowerCase()}`}>{row.side}</span></td><td>{row.position_effect ?? '--'}</td><td>{number(row.price, 4)}</td><td>{number(row.quantity, 3)}</td><td>{number(row.fee, 4)}</td><td>{row.source}</td></tr>)}</tbody></table></div>
+function CompletedTradeTable({ rows, currency }: { rows: CompletedTrade[]; currency: string }) {
+  if (!rows.length) return <div className="empty-table">暂无完整交易</div>
+  return (
+    <div className="table-scroll">
+      <table>
+        <thead><tr><th>方向</th><th>买卖顺序</th><th>开仓时间</th><th>平仓时间</th><th>开仓价</th><th>平仓价</th><th>数量</th><th>总手续费</th><th>资金费</th><th>净盈亏（含费）</th><th>收益率</th></tr></thead>
+        <tbody>{rows.map((row) => {
+          const profitable = row.netPnl >= 0
+          const direction = row.direction === 'LONG' ? '做多' : '做空'
+          const execution = row.direction === 'LONG' ? 'BUY -> SELL' : 'SELL -> BUY'
+          return (
+            <tr key={`${row.entryTimestamp}-${row.exitTimestamp}-${row.direction}`} data-testid="completed-trade-row">
+              <td><span className={`position-side ${row.direction.toLowerCase()}`}>{direction}</span></td>
+              <td>{execution}</td>
+              <td>{time(row.entryTimestamp)}</td>
+              <td>{time(row.exitTimestamp)}</td>
+              <td>{number(row.entryPrice, 4)}</td>
+              <td>{number(row.exitPrice, 4)}</td>
+              <td>{number(row.quantity, 3)}</td>
+              <td>{money(row.fees, currency)}</td>
+              <td className={row.fundingPnl >= 0 ? 'good-text' : 'bad-text'}>{money(row.fundingPnl, currency)}</td>
+              <td className={profitable ? 'good-text' : 'bad-text'}><strong>{money(row.netPnl, currency)}</strong></td>
+              <td className={profitable ? 'good-text' : 'bad-text'}><strong>{percent(row.returnPercent)}</strong></td>
+            </tr>
+          )
+        })}</tbody>
+      </table>
+    </div>
+  )
 }
 
 function Warehouse({

@@ -189,6 +189,10 @@ td { height: 43px; padding: 0 14px; border-top: 1px solid #e8edf0; color: #3e4e5
 .side { padding: 3px 6px; border-radius: 3px; }
 .side.buy { color: var(--green); background: rgba(7, 138, 97, .09); }
 .side.sell { color: var(--red); background: rgba(215, 71, 80, .09); }
+.position-side { display: inline-flex; min-width: 42px; padding: 3px 6px; justify-content: center; border-radius: 3px; font-weight: 700; }
+.position-side.long { color: var(--green); background: rgba(7, 138, 97, .09); }
+.position-side.short { color: var(--red); background: rgba(215, 71, 80, .09); }
+.fills-panel td strong { font-weight: 750; }
 .tracking-prices { padding: 20px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .tracking-prices div + div { border-left: 1px solid var(--line); padding-left: 20px; }
 .tracking-prices span { display: block; color: var(--muted); font-size: 10px; }
