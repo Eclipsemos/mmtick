@@ -420,7 +420,7 @@ function Monitor({
                     tickLine={false}
                     axisLine={false}
                     minTickGap={70}
-                    fontSize={10}
+                    fontSize={11}
                     tickFormatter={(value) => time(Number(value))}
                   />
                   <YAxis
@@ -429,7 +429,7 @@ function Monitor({
                     tickLine={false}
                     axisLine={false}
                     width={58}
-                    fontSize={10}
+                    fontSize={11}
                     tickFormatter={(value) => Number(value).toFixed(2)}
                   />
                   <Tooltip
