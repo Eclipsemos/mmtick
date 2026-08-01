@@ -20,7 +20,7 @@ def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
         account_id = account["id"]
         if account_id not in active_ids:
             continue
-        points = store.equity(account_id, 2000)
+        points = store.equity(account_id, 100_000)
         latest = points[-1] if points else None
         initial = Decimal(account["initial_cash"])
         equity = Decimal(latest["equity"]) if latest else Decimal(account["cash"])

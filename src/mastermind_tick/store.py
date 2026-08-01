@@ -131,6 +131,17 @@ CREATE TABLE IF NOT EXISTS funding_payments (
     UNIQUE(account_id, timestamp_ms)
 );
 
+CREATE TABLE IF NOT EXISTS funding_rates (
+    instrument_id TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    timestamp_ms INTEGER NOT NULL,
+    rate TEXT NOT NULL,
+    mark_price TEXT NOT NULL,
+    source TEXT NOT NULL,
+    created_at_ms INTEGER NOT NULL,
+    PRIMARY KEY (instrument_id, timestamp_ms)
+);
+
 CREATE TABLE IF NOT EXISTS agg_trades (
     event_id TEXT PRIMARY KEY,
     instrument_id TEXT NOT NULL,
@@ -172,6 +183,8 @@ CREATE INDEX IF NOT EXISTS idx_equity_account_time ON equity_snapshots(account_i
 CREATE INDEX IF NOT EXISTS idx_events_account_time ON events(account_id, timestamp_ms DESC);
 CREATE INDEX IF NOT EXISTS idx_funding_account_time
     ON funding_payments(account_id, timestamp_ms DESC);
+CREATE INDEX IF NOT EXISTS idx_funding_rates_instrument_time
+    ON funding_rates(instrument_id, timestamp_ms DESC);
 CREATE INDEX IF NOT EXISTS idx_agg_trades_instrument_time
     ON agg_trades(instrument_id, timestamp_ms DESC);
 CREATE INDEX IF NOT EXISTS idx_ohlcv_instrument_time
@@ -186,6 +199,7 @@ WAREHOUSE_TABLES = (
     "events",
     "strategy_states",
     "funding_payments",
+    "funding_rates",
     "ohlcv_bars",
     "agg_trades",
 )
@@ -248,6 +262,16 @@ class PaperStore:
         ):
             if name not in fill_columns:
                 connection.execute(f"ALTER TABLE fills ADD COLUMN {name} TEXT")
+
+        connection.execute(
+            """
+            INSERT OR IGNORE INTO funding_rates (
+                instrument_id, symbol, timestamp_ms, rate, mark_price, source, created_at_ms
+            )
+            SELECT account_id, symbol, timestamp_ms, rate, mark_price, source, created_at_ms
+            FROM funding_payments
+            """
+        )
 
     @contextmanager
     def connection(self) -> Iterator[sqlite3.Connection]:
@@ -811,6 +835,10 @@ class PaperStore:
             if account["paper_model"] != "futures":
                 return None
 
+            self._record_funding_rate(
+                connection, account_id, account["symbol"], funding, source
+            )
+
             quantity = Decimal(account["quantity"])
             if quantity == 0:
                 return None
@@ -873,6 +901,69 @@ class PaperStore:
             result,
         )
         return result
+
+    def record_funding_rate(
+        self,
+        instrument_id: str,
+        symbol: str,
+        funding: FundingRate,
+        *,
+        source: str = "binance_futures_funding",
+    ) -> bool:
+        with self.connection() as connection:
+            return bool(
+                self._record_funding_rate(
+                    connection, instrument_id, symbol, funding, source
+                )
+            )
+
+    @staticmethod
+    def _record_funding_rate(
+        connection: sqlite3.Connection,
+        instrument_id: str,
+        symbol: str,
+        funding: FundingRate,
+        source: str,
+    ) -> int:
+        return connection.execute(
+            """
+            INSERT OR IGNORE INTO funding_rates (
+                instrument_id, symbol, timestamp_ms, rate, mark_price, source, created_at_ms
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                instrument_id,
+                symbol,
+                funding.timestamp_ms,
+                str(funding.rate),
+                str(funding.mark_price),
+                source,
+                int(time.time() * 1000),
+            ),
+        ).rowcount
+
+    def funding_rates(
+        self, instrument_id: str, start_ms: int | None = None, end_ms: int | None = None
+    ) -> list[dict[str, Any]]:
+        clauses = ["instrument_id = ?"]
+        params: list[Any] = [instrument_id]
+        if start_ms is not None:
+            clauses.append("timestamp_ms >= ?")
+            params.append(start_ms)
+        if end_ms is not None:
+            clauses.append("timestamp_ms <= ?")
+            params.append(end_ms)
+        with self.connection() as connection:
+            rows = connection.execute(
+                f"""
+                SELECT instrument_id, symbol, timestamp_ms, rate, mark_price,
+                       source, created_at_ms
+                FROM funding_rates WHERE {" AND ".join(clauses)}
+                ORDER BY timestamp_ms
+                """,
+                params,
+            ).fetchall()
+        return [dict(row) for row in rows]
 
     def latest_funding_time(self, account_id: str) -> int | None:
         with self.connection() as connection:

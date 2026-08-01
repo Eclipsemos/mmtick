@@ -541,8 +541,8 @@ def _load_funding_rates(
 ) -> list[FundingRate]:
     rows = connection.execute(
         """
-        SELECT timestamp_ms, rate, mark_price FROM funding_payments
-        WHERE account_id = ? AND timestamp_ms BETWEEN ? AND ?
+        SELECT timestamp_ms, rate, mark_price FROM funding_rates
+        WHERE instrument_id = ? AND timestamp_ms BETWEEN ? AND ?
         ORDER BY timestamp_ms
         """,
         (account_id, start_ms, end_ms),

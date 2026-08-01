@@ -350,6 +350,21 @@ def test_short_futures_receives_positive_funding(tmp_path) -> None:
     assert Decimal(str(payment["notional"])) == Decimal("19000")
 
 
+def test_flat_futures_persists_market_funding_rate(tmp_path) -> None:
+    store = PaperStore(tmp_path / "paper.db")
+    item = futures_instrument()
+    store.ensure_account(item, 10_000, 1)
+    funding = FundingRate(28_800_000, Decimal("0.001"), Decimal("100"))
+
+    assert store.apply_funding(item.id, funding) is None
+
+    rates = store.funding_rates(item.id)
+    assert len(rates) == 1
+    assert rates[0]["timestamp_ms"] == 28_800_000
+    assert Decimal(rates[0]["rate"]) == Decimal("0.001")
+    assert store.funding_payments(item.id) == []
+
+
 def test_futures_funding_is_idempotent_and_updates_equity(tmp_path) -> None:
     store = PaperStore(tmp_path / "paper.db")
     item = futures_instrument()

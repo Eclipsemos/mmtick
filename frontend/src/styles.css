@@ -271,7 +271,8 @@ footer { height: 44px; padding: 0 30px; display: flex; align-items: center; just
 
 @media (max-width: 1050px) {
   .topbar { grid-template-columns: auto 1fr; backdrop-filter: none; }
-  .nav-tabs { order: 3; position: fixed; left: 0; right: 0; bottom: 0; height: 54px; justify-content: center; border-top: 1px solid var(--line); background: #fff; }
+  .nav-tabs { z-index: 30; order: 3; position: fixed; left: 0; right: 0; bottom: 0; height: 54px; justify-content: center; border-top: 1px solid var(--line); background: #fff; }
+  main { padding-bottom: 72px; }
   .top-actions { grid-column: 2; }
   .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .decision-panel { grid-template-columns: 180px 1fr; grid-template-rows: auto auto auto; }
@@ -289,7 +290,7 @@ footer { height: 44px; padding: 0 30px; display: flex; align-items: center; just
   .topbar { height: 58px; padding: 0 15px; }
   .paper-badge, .feed-state { display: none; }
   .nav-tabs button { padding: 0 8px; font-size: 12px; }
-  main { padding: 23px 14px 34px; }
+  main { padding: 23px 14px 72px; }
   .page-head { align-items: stretch; flex-direction: column; }
   .scope-chips { overflow-x: auto; }
   .page-actions { align-items: stretch; flex-direction: column; }

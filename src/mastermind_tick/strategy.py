@@ -105,6 +105,9 @@ class ATRTickStrategy:
         self.last_cross_at_ms = value.get("last_cross_at_ms")
         self.last_cross_result = value.get("last_cross_result")
         self.last_cross_reason = value.get("last_cross_reason")
+        self.previous_price = _decimal_or_none(value.get("previous_price"))
+        self.trailing_stop = _decimal_or_none(value.get("trailing_stop"))
+        self.last_atr = _decimal_or_none(value.get("last_atr"))
         current_value = value.get("current_bar")
         current = Bar.from_dict(current_value) if current_value else None
         latest_completed_start = (
@@ -116,9 +119,6 @@ class ATRTickStrategy:
             and current.start_ms <= latest_completed_start
         ):
             return
-        self.previous_price = _decimal_or_none(value.get("previous_price"))
-        self.trailing_stop = _decimal_or_none(value.get("trailing_stop"))
-        self.last_atr = _decimal_or_none(value.get("last_atr"))
         self.bought_this_bar = bool(value.get("bought_this_bar", False))
         self.flattened_this_bar = bool(value.get("flattened_this_bar", False))
         self.current_bar = current

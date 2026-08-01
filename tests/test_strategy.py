@@ -269,6 +269,26 @@ def test_runtime_state_from_different_parameters_is_not_restored() -> None:
     assert changed.multiplier == Decimal("1.25")
 
 
+def test_stale_runtime_bar_keeps_last_tick_stop_for_next_bar() -> None:
+    original = warmed_strategy()
+    original.on_tick(
+        tick("cross", 3 * BAR_MS, 12),
+        has_position=False,
+        has_pending_order=False,
+    )
+    state = original.runtime_state()
+    restored = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
+    restored.bootstrap([*bars([10, 9, 8]), Bar.from_dict(state["current_bar"])])
+
+    restored.restore_runtime(state)
+
+    assert restored.current_bar is None
+    assert restored.previous_price == original.previous_price
+    assert restored.trailing_stop == original.trailing_stop
+    assert restored.last_atr == original.last_atr
+    assert restored.bought_this_bar is False
+
+
 def test_other_algorithm_state_is_not_restored_into_original_strategy() -> None:
     strategy = warmed_strategy()
     strategy.restore_runtime(

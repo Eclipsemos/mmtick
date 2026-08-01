@@ -1,0 +1,389 @@
+"""Rebuild paper account ledgers from the persisted market warehouse."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sqlite3
+import time
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
+from decimal import Decimal
+from pathlib import Path
+from typing import Any
+
+from mastermind_tick.backtest import ReplayATRTickStrategy, _load_funding_rates, _load_warmup_bars
+from mastermind_tick.config import InstrumentSettings, Settings, load_settings
+from mastermind_tick.models import Tick
+from mastermind_tick.store import PaperStore
+
+DERIVED_TABLES = (
+    "fills",
+    "orders",
+    "equity_snapshots",
+    "events",
+    "funding_payments",
+    "strategy_states",
+)
+
+
+@dataclass(frozen=True)
+class AccountRebuildResult:
+    account_id: str
+    first_tick_ms: int
+    last_tick_ms: int
+    tick_count: int
+    warmup_bars: int
+    funding_rates: int
+    orders: int
+    fills: int
+    snapshots: int
+    pending_orders: int
+    ending_position: str
+    final_equity: str
+    net_return: str
+    total_fees: str
+    total_funding: str
+
+
+def backup_database(source: Path, destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if destination.exists():
+        destination.unlink()
+    with (
+        sqlite3.connect(source) as source_connection,
+        sqlite3.connect(destination) as destination_connection,
+    ):
+        source_connection.backup(destination_connection)
+
+
+def rebuild_candidate(settings: Settings, candidate_path: Path) -> dict[str, Any]:
+    """Create and fully replay a candidate DB without modifying the source DB."""
+    backup_database(settings.database_path, candidate_path)
+    store = PaperStore(candidate_path)
+    before_market = _market_counts(candidate_path)
+    results = [_rebuild_account(settings, store, instrument) for instrument in settings.instruments]
+    after_market = _market_counts(candidate_path)
+    if after_market != before_market:
+        raise RuntimeError("market warehouse changed while rebuilding candidate")
+    return {
+        "candidate_path": str(candidate_path),
+        "strategy": {
+            "algorithm_version": ReplayATRTickStrategy.ALGORITHM_VERSION,
+            "period": settings.strategy.atr_period,
+            "multiplier": settings.strategy.atr_multiplier,
+            "bar_ms": settings.strategy.bar_minutes * 60_000,
+        },
+        "market_counts": after_market,
+        "accounts": [asdict(result) for result in results],
+    }
+
+
+def _rebuild_account(
+    settings: Settings, store: PaperStore, instrument: InstrumentSettings
+) -> AccountRebuildResult:
+    with store.connection() as connection:
+        bounds = connection.execute(
+            """
+            SELECT MIN(timestamp_ms) AS first_ms, MAX(timestamp_ms) AS last_ms,
+                   COUNT(*) AS tick_count
+            FROM agg_trades WHERE instrument_id = ?
+            """,
+            (instrument.id,),
+        ).fetchone()
+        if bounds is None or bounds["first_ms"] is None:
+            raise ValueError(f"no persisted aggTrade data for {instrument.id}")
+        first_ms = int(bounds["first_ms"])
+        last_ms = int(bounds["last_ms"])
+        tick_count = int(bounds["tick_count"])
+        warmup = _load_warmup_bars(connection, instrument.id, first_ms, settings.warmup_bars)
+        funding_rates = _load_funding_rates(connection, instrument.id, first_ms, last_ms)
+
+    if len(warmup) < settings.strategy.atr_period:
+        raise ValueError(
+            f"insufficient warmup for {instrument.id}: "
+            f"{len(warmup)} < {settings.strategy.atr_period}"
+        )
+
+    _clear_account_ledger(store, instrument, settings.initial_cash, first_ms)
+    strategy = ReplayATRTickStrategy(
+        settings.strategy.atr_period,
+        settings.strategy.atr_multiplier,
+        settings.strategy.bar_minutes,
+    )
+    strategy.bootstrap(warmup)
+    position_fraction = (
+        instrument.position_fraction
+        if instrument.position_fraction is not None
+        else settings.strategy.position_fraction
+    )
+    funding_index = 0
+    last_snapshot_ms = 0
+    last_tick: Tick | None = None
+    position_quantity = Decimal("0")
+    has_pending = False
+
+    with store.connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT event_id, timestamp_ms, price, quantity, source,
+                   aggregate_trade_id, first_trade_id, last_trade_id,
+                   buyer_is_maker, event_time_ms, notional
+            FROM agg_trades WHERE instrument_id = ?
+            ORDER BY timestamp_ms, received_at_ms, event_id
+            """,
+            (instrument.id,),
+        )
+        for row in rows:
+            tick = Tick(
+                event_id=row["event_id"],
+                timestamp_ms=int(row["timestamp_ms"]),
+                price=Decimal(row["price"]),
+                quantity=Decimal(row["quantity"]),
+                source=row["source"],
+                aggregate_trade_id=row["aggregate_trade_id"],
+                first_trade_id=row["first_trade_id"],
+                last_trade_id=row["last_trade_id"],
+                buyer_is_maker=(
+                    bool(row["buyer_is_maker"]) if row["buyer_is_maker"] is not None else None
+                ),
+                event_time_ms=row["event_time_ms"],
+                notional=Decimal(row["notional"]),
+            )
+            funding_applied = False
+            while (
+                funding_index < len(funding_rates)
+                and funding_rates[funding_index].timestamp_ms <= tick.timestamp_ms
+            ):
+                payment = store.apply_funding(instrument.id, funding_rates[funding_index])
+                funding_applied = payment is not None or funding_applied
+                funding_index += 1
+
+            fill = None
+            if has_pending:
+                fill = store.fill_pending(
+                    instrument.id,
+                    tick,
+                    instrument,
+                    settings.execution,
+                    position_fraction,
+                )
+                has_pending = False
+                position_quantity = Decimal(store.account(instrument.id)["quantity"])
+            signal = strategy.on_tick(
+                tick,
+                has_position=position_quantity != 0,
+                has_pending_order=has_pending,
+                allow_short=instrument.paper_model == "futures",
+                is_short=position_quantity < 0,
+            )
+            if signal is not None:
+                store.submit_order(instrument.id, signal, tick.timestamp_ms)
+                has_pending = True
+
+            snapshot_due = (
+                tick.timestamp_ms - last_snapshot_ms >= settings.equity_snapshot_seconds * 1000
+            )
+            if snapshot_due or fill or signal or funding_applied:
+                store.snapshot(instrument.id, tick, _strategy_view(strategy))
+                last_snapshot_ms = tick.timestamp_ms
+            last_tick = tick
+
+    if last_tick is None:
+        raise RuntimeError(f"replay unexpectedly produced no ticks for {instrument.id}")
+    store.save_strategy_state(instrument.id, strategy.runtime_state(), last_tick.timestamp_ms)
+    account = store.account(instrument.id)
+    final_snapshot = store.snapshot(instrument.id, last_tick, _strategy_view(strategy))
+    initial_cash = Decimal(account["initial_cash"])
+    final_equity = Decimal(str(final_snapshot["equity"]))
+    counts = _ledger_counts(store, instrument.id)
+    quantity = Decimal(account["quantity"])
+    ending_position = "SHORT" if quantity < 0 else "LONG" if quantity > 0 else "FLAT"
+    return AccountRebuildResult(
+        account_id=instrument.id,
+        first_tick_ms=first_ms,
+        last_tick_ms=last_ms,
+        tick_count=tick_count,
+        warmup_bars=len(warmup),
+        funding_rates=len(funding_rates),
+        orders=counts["orders"],
+        fills=counts["fills"],
+        snapshots=counts["equity_snapshots"],
+        pending_orders=counts["pending_orders"],
+        ending_position=ending_position,
+        final_equity=str(final_equity),
+        net_return=str(final_equity / initial_cash - Decimal("1")),
+        total_fees=account["total_fees"],
+        total_funding=account["total_funding"],
+    )
+
+
+def _clear_account_ledger(
+    store: PaperStore,
+    instrument: InstrumentSettings,
+    initial_cash: float,
+    first_tick_ms: int,
+) -> None:
+    store.ensure_account(instrument, initial_cash, first_tick_ms)
+    with store.connection() as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        for table in DERIVED_TABLES:
+            connection.execute(f"DELETE FROM {table} WHERE account_id = ?", (instrument.id,))
+        connection.execute(
+            """
+            UPDATE accounts SET initial_cash = ?, cash = ?, quantity = '0',
+                average_price = '0', realized_pnl = '0', total_fees = '0',
+                total_funding = '0', created_at_ms = ?, updated_at_ms = ?
+            WHERE id = ?
+            """,
+            (str(initial_cash), str(initial_cash), first_tick_ms, first_tick_ms, instrument.id),
+        )
+
+
+def apply_candidate(
+    production_path: Path,
+    candidate_path: Path,
+    account_ids: tuple[str, ...],
+) -> None:
+    """Atomically replace account-derived rows; caller must stop the live service first."""
+    with sqlite3.connect(production_path, timeout=30) as connection:
+        connection.row_factory = sqlite3.Row
+        connection.execute("PRAGMA foreign_keys=ON")
+        connection.execute("ATTACH DATABASE ? AS candidate", (str(candidate_path),))
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            for table in ("agg_trades", "ohlcv_bars", "funding_rates"):
+                production_count = int(
+                    connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+                )
+                candidate_count = int(
+                    connection.execute(
+                        f"SELECT COUNT(*) FROM candidate.{table}"
+                    ).fetchone()[0]
+                )
+                if production_count != candidate_count:
+                    raise RuntimeError(
+                        f"production {table} changed during replay: "
+                        f"{production_count} != {candidate_count}; stop the service and retry"
+                    )
+            for account_id in account_ids:
+                for table in DERIVED_TABLES:
+                    connection.execute(f"DELETE FROM {table} WHERE account_id = ?", (account_id,))
+                account = connection.execute(
+                    "SELECT * FROM candidate.accounts WHERE id = ?", (account_id,)
+                ).fetchone()
+                if account is None:
+                    raise LookupError(f"candidate is missing account {account_id}")
+                connection.execute(
+                    """
+                    UPDATE accounts SET initial_cash = ?, cash = ?, quantity = ?,
+                        average_price = ?, realized_pnl = ?, total_fees = ?, total_funding = ?,
+                        paper_model = ?, leverage = ?, margin_mode = ?, position_fraction = ?,
+                        created_at_ms = ?, updated_at_ms = ? WHERE id = ?
+                    """,
+                    (
+                        account["initial_cash"],
+                        account["cash"],
+                        account["quantity"],
+                        account["average_price"],
+                        account["realized_pnl"],
+                        account["total_fees"],
+                        account["total_funding"],
+                        account["paper_model"],
+                        account["leverage"],
+                        account["margin_mode"],
+                        account["position_fraction"],
+                        account["created_at_ms"],
+                        account["updated_at_ms"],
+                        account_id,
+                    ),
+                )
+                for table in (
+                    "orders",
+                    "fills",
+                    "equity_snapshots",
+                    "events",
+                    "funding_payments",
+                    "strategy_states",
+                ):
+                    connection.execute(
+                        f"INSERT INTO {table} SELECT * FROM candidate.{table} WHERE account_id = ?",
+                        (account_id,),
+                    )
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.execute("DETACH DATABASE candidate")
+
+
+def _strategy_view(strategy: ReplayATRTickStrategy) -> dict[str, Any]:
+    view = asdict(strategy.view())
+    return {key: str(value) if isinstance(value, Decimal) else value for key, value in view.items()}
+
+
+def _ledger_counts(store: PaperStore, account_id: str) -> dict[str, int]:
+    with store.connection() as connection:
+        result = {
+            table: int(
+                connection.execute(
+                    f"SELECT COUNT(*) FROM {table} WHERE account_id = ?", (account_id,)
+                ).fetchone()[0]
+            )
+            for table in ("orders", "fills", "equity_snapshots", "events")
+        }
+        result["pending_orders"] = int(
+            connection.execute(
+                "SELECT COUNT(*) FROM orders WHERE account_id = ? AND status = 'PENDING'",
+                (account_id,),
+            ).fetchone()[0]
+        )
+    return result
+
+
+def _market_counts(path: Path) -> dict[str, int]:
+    with sqlite3.connect(path) as connection:
+        return {
+            table: int(connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])
+            for table in ("agg_trades", "ohlcv_bars", "funding_rates")
+        }
+
+
+def _timestamp_slug() -> str:
+    return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", default="config/settings.toml")
+    parser.add_argument("--candidate", type=Path)
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="replace production derived ledgers after creating a recoverable backup",
+    )
+    args = parser.parse_args()
+    settings = load_settings(args.config)
+    slug = _timestamp_slug()
+    candidate = args.candidate or settings.project_root / "data" / f"rebuild-{slug}.db"
+    report = rebuild_candidate(settings, candidate)
+    if args.apply:
+        PaperStore(settings.database_path)
+        backup_path = settings.project_root / "data" / "backups" / f"paper-{slug}.db"
+        backup_database(settings.database_path, backup_path)
+        apply_candidate(
+            settings.database_path,
+            candidate,
+            tuple(instrument.id for instrument in settings.instruments),
+        )
+        report["applied"] = True
+        report["backup_path"] = str(backup_path)
+    else:
+        report["applied"] = False
+    report["completed_at_ms"] = int(time.time() * 1000)
+    print(json.dumps(report, indent=2, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    main()
