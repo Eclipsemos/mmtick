@@ -14,6 +14,8 @@ import {
   Clock3,
   Crosshair,
   Database,
+  Eye,
+  EyeOff,
   Gauge,
   ListOrdered,
   Maximize2,
@@ -319,6 +321,8 @@ function Monitor({
     klineChart.length,
     DEFAULT_VISIBLE_KLINES,
   )
+  const [showStrategyParameters, setShowStrategyParameters] = useState(false)
+  useEffect(() => setShowStrategyParameters(false), [account?.id])
   const visibleStart = priceChart[priceRange.startIndex]
   const visibleEnd = priceChart[priceRange.endIndex]
   const visibleTradeMarkers = useMemo(
@@ -518,10 +522,35 @@ function Monitor({
         <div className="panel strategy-panel">
           <div className="panel-head">
             <div><span>STRATEGY STATE</span><h3>ATR 实时状态</h3></div>
-            <span className={`relation ${strategy.relation}`}>{strategy.relation.toUpperCase()}</span>
+            <div className="strategy-head-actions">
+              <button
+                type="button"
+                className="strategy-parameter-toggle"
+                aria-label={showStrategyParameters ? '隐藏策略参数' : '显示策略参数'}
+                aria-expanded={showStrategyParameters}
+                aria-controls="strategy-parameters"
+                title={showStrategyParameters ? '隐藏策略参数' : '显示策略参数'}
+                onClick={() => setShowStrategyParameters((current) => !current)}
+              >
+                {showStrategyParameters ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+              <span className={`relation ${strategy.relation}`}>{strategy.relation.toUpperCase()}</span>
+            </div>
           </div>
+          {showStrategyParameters && (
+            <dl id="strategy-parameters" className="strategy-parameters" role="group" aria-label="当前策略参数">
+              <div><dt>算法版本</dt><dd>{runtime.strategy_config.algorithm_version}</dd></div>
+              <div><dt>K 线周期</dt><dd>{runtime.strategy_config.bar_minutes}m</dd></div>
+              <div><dt>ATR 周期</dt><dd>{runtime.strategy_config.atr_period}</dd></div>
+              <div><dt>ATR 倍数</dt><dd>{number(runtime.strategy_config.atr_multiplier, 2)}</dd></div>
+              <div><dt>仓位比例</dt><dd>{(runtime.position_fraction * 100).toFixed(0)}%</dd></div>
+              <div><dt>杠杆 / 模式</dt><dd>{runtime.paper_model === 'futures' ? `${runtime.leverage}x ${runtime.margin_mode}` : '1x SPOT'}</dd></div>
+              <div><dt>Taker 手续费</dt><dd>{number(runtime.fee_bps, 2)} bps</dd></div>
+              <div><dt>模拟滑点</dt><dd>{number(runtime.slippage_bps, 2)} bps</dd></div>
+            </dl>
+          )}
           <dl className="strategy-values">
-            <div><dt>ATR(7)</dt><dd>{number(strategy.atr, 4)}</dd></div>
+            <div><dt>实时 ATR</dt><dd>{number(strategy.atr, 4)}</dd></div>
             <div><dt>ATR 止损线</dt><dd>{money(strategy.trailing_stop, account.currency)}</dd></div>
             <div><dt>价格距离</dt><dd>{strategy.price && strategy.trailing_stop ? money(Number(strategy.price) - Number(strategy.trailing_stop), account.currency) : '--'}</dd></div>
             <div><dt>K 线开始</dt><dd>{time(strategy.bar_start_ms)}</dd></div>
@@ -542,13 +571,6 @@ function Monitor({
               <div><dt>累计资金费</dt><dd className={Number(account.total_funding) >= 0 ? 'good-text' : 'bad-text'}>{money(account.total_funding, account.currency)}</dd></div>
             </dl>
           )}
-          <div className="strategy-foot">
-            <span>15m</span>
-            <span>{(runtime.position_fraction * 100).toFixed(0)}% {runtime.paper_model === 'futures' ? 'margin' : 'exposure'}</span>
-            <span>{runtime.paper_model === 'futures' ? `${runtime.leverage}x ${runtime.margin_mode}` : 'SPOT'}</span>
-            <span>TICK signals</span>
-            <span>NEXT-TICK fills</span>
-          </div>
         </div>
       </section>
 

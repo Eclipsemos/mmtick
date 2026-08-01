@@ -16,8 +16,8 @@ Mastermind 旗下短线策略产品。当前版本使用提交 `25784e3` 的原�
 
 ```text
 15 分钟 K 线
-ATR Period = 7
-ATR Multiplier = 1.0
+ATR Period = 28
+ATR Multiplier = 1.25
 SOXLB 现货仅做多；SOXL 永续以 2x 多空反手
 成交 Tick 实时上穿后目标多头，实时下穿后目标空头/现货平仓
 信号在当前 Tick 生成，并在下一成交 Tick 模拟成交

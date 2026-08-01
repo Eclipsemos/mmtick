@@ -93,7 +93,13 @@ class ATRTickStrategy:
         self.completed_bars = self.completed_bars[-500:]
 
     def restore_runtime(self, value: dict[str, Any] | None) -> None:
-        if not value or value.get("algorithm_version") != self.ALGORITHM_VERSION:
+        if (
+            not value
+            or value.get("algorithm_version") != self.ALGORITHM_VERSION
+            or value.get("period") != self.period
+            or Decimal(str(value.get("multiplier", "0"))) != self.multiplier
+            or value.get("bar_ms") != self.bar_ms
+        ):
             return
         self.last_cross = value.get("last_cross")
         self.last_cross_at_ms = value.get("last_cross_at_ms")
@@ -120,6 +126,9 @@ class ATRTickStrategy:
     def runtime_state(self) -> dict[str, Any]:
         return {
             "algorithm_version": self.ALGORITHM_VERSION,
+            "period": self.period,
+            "multiplier": str(self.multiplier),
+            "bar_ms": self.bar_ms,
             "previous_price": _string_or_none(self.previous_price),
             "trailing_stop": _string_or_none(self.trailing_stop),
             "last_atr": _string_or_none(self.last_atr),

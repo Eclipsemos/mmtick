@@ -51,6 +51,14 @@ export type Runtime = {
   position_fraction: number
   fee_bps: number
   slippage_bps: number
+  strategy_config: {
+    algorithm_version: string
+    bar_minutes: number
+    atr_period: number
+    atr_multiplier: number
+    signal_confirmation: 'tick'
+    fill_timing: 'next_tick'
+  }
   feed: string
   market_state: {
     mark_price?: string | null

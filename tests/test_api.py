@@ -42,6 +42,13 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert funding.json() == []
 
 
+def test_active_strategy_uses_recommended_atr_parameters() -> None:
+    settings = load_settings("config/settings.toml")
+
+    assert settings.strategy.atr_period == 28
+    assert settings.strategy.atr_multiplier == 1.25
+
+
 def test_return_summary_uses_period_boundary_equity(tmp_path) -> None:
     settings = replace(
         load_settings("config/settings.toml"),

@@ -172,14 +172,28 @@ h1 { margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: 0; }
 .relation { padding: 5px 7px; border: 1px solid var(--line-strong); border-radius: 4px; }
 .relation.above { color: var(--green); border-color: #83bea9; background: #eff9f5; }
 .relation.below { color: var(--red); border-color: #e1a1a5; background: #fff3f3; }
+.strategy-head-actions { display: flex; align-items: center; gap: 8px; }
+.strategy-parameter-toggle {
+  width: 30px; height: 30px; padding: 0; display: grid; place-items: center;
+  border: 1px solid var(--line-strong); border-radius: 4px; color: var(--muted); background: #fff; cursor: pointer;
+}
+.strategy-parameter-toggle:hover { color: var(--text); background: #f2f6f8; }
+.strategy-parameters {
+  margin: 0; padding: 8px 18px; display: grid; grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--line); background: #f8fafb;
+}
+.strategy-parameters div { min-width: 0; min-height: 48px; padding: 7px 0; display: flex; flex-direction: column; justify-content: center; border-bottom: 1px solid #e8edf0; }
+.strategy-parameters div:nth-child(odd) { padding-right: 12px; }
+.strategy-parameters div:nth-child(even) { padding-left: 12px; border-left: 1px solid #e8edf0; }
+.strategy-parameters div:nth-last-child(-n + 2) { border-bottom: 0; }
+.strategy-parameters dt { color: var(--muted); font-size: 10px; }
+.strategy-parameters dd { margin: 6px 0 0; color: var(--text); font: 700 11px 'DM Mono', monospace; overflow-wrap: anywhere; }
 .strategy-values { margin: 0; padding: 7px 18px; }
 .strategy-values div { min-height: 42px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e8edf0; }
 .strategy-values div:last-child { border-bottom: 0; }
 .strategy-values dt { color: var(--muted); font-size: 11px; }
 .strategy-values dd { margin: 0; font: 11px 'DM Mono', monospace; }
 .futures-values { border-top: 1px solid var(--line); }
-.strategy-foot { min-height: 42px; padding: 0 18px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line); }
-.strategy-foot span { padding: 3px 6px; border: 1px solid var(--line); border-radius: 3px; color: #687984; background: #f7f9fa; font: 9px 'DM Mono', monospace; }
 .export { display: flex; align-items: center; gap: 6px; color: #9da7ae; font-size: 11px; text-decoration: none; }
 .export:hover { color: var(--green); }
 .table-scroll { overflow-x: auto; }

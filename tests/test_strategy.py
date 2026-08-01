@@ -240,8 +240,33 @@ def test_runtime_state_persists_tick_relation_and_locks() -> None:
     state = strategy.runtime_state()
 
     assert state["algorithm_version"] == "25784e3"
+    assert state["period"] == 2
+    assert state["multiplier"] == "0.75"
+    assert state["bar_ms"] == BAR_MS
     assert state["bought_this_bar"] is True
     assert state["trailing_stop"] == "9.984375"
+
+    restored = warmed_strategy()
+    restored.restore_runtime(state)
+    assert restored.current_bar is not None
+    assert restored.trailing_stop == strategy.trailing_stop
+
+
+def test_runtime_state_from_different_parameters_is_not_restored() -> None:
+    original = warmed_strategy()
+    original.on_tick(
+        tick("cross", 3 * BAR_MS, 12),
+        has_position=False,
+        has_pending_order=False,
+    )
+    changed = ATRTickStrategy(period=3, multiplier=1.25, bar_minutes=15)
+    changed.bootstrap(bars([10, 9, 8, 9]))
+
+    changed.restore_runtime(original.runtime_state())
+
+    assert changed.current_bar is None
+    assert changed.period == 3
+    assert changed.multiplier == Decimal("1.25")
 
 
 def test_other_algorithm_state_is_not_restored_into_original_strategy() -> None:

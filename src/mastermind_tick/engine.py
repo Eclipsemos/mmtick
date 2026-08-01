@@ -394,6 +394,14 @@ class PaperEngine:
                         if runtime.instrument.slippage_bps is not None
                         else self.settings.execution.slippage_bps
                     ),
+                    "strategy_config": {
+                        "algorithm_version": runtime.strategy.ALGORITHM_VERSION,
+                        "bar_minutes": runtime.strategy.bar_ms // 60_000,
+                        "atr_period": runtime.strategy.period,
+                        "atr_multiplier": float(runtime.strategy.multiplier),
+                        "signal_confirmation": "tick",
+                        "fill_timing": "next_tick",
+                    },
                     "feed": runtime.feed.source_name,
                     "market_state": runtime.feed.market_state,
                     "kline_state": {
