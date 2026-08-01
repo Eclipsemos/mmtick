@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from calendar import monthrange
+from datetime import UTC, date, datetime, time, timedelta, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -78,6 +80,167 @@ def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
             "slippage_bps": engine.settings.execution.slippage_bps,
         },
     }
+
+
+def build_return_summary(
+    store: PaperStore,
+    account_id: str,
+    timezone_offset_minutes: int = 0,
+) -> dict[str, Any]:
+    account = store.account(account_id)
+    latest_points = store.equity(account_id, 1)
+    latest = latest_points[-1] if latest_points else None
+    initial = Decimal(account["initial_cash"])
+    created_at_ms = int(account["created_at_ms"])
+    as_of_ms = int(latest["timestamp_ms"]) if latest else created_at_ms
+    current_equity = Decimal(latest["equity"]) if latest else initial
+    local_timezone = timezone(timedelta(minutes=timezone_offset_minutes))
+    as_of_date = datetime.fromtimestamp(as_of_ms / 1000, local_timezone).date()
+
+    daily_dates = [as_of_date - timedelta(days=offset) for offset in range(29, -1, -1)]
+    current_week = as_of_date - timedelta(days=as_of_date.weekday())
+    weekly_dates = [current_week - timedelta(weeks=offset) for offset in range(11, -1, -1)]
+    current_month = as_of_date.replace(day=1)
+    monthly_dates = [_shift_month(current_month, -offset) for offset in range(11, -1, -1)]
+
+    daily_ranges = [(value, value + timedelta(days=1)) for value in daily_dates]
+    weekly_ranges = [(value, value + timedelta(days=7)) for value in weekly_dates]
+    monthly_ranges = [
+        (value, _shift_month(value, 1))
+        for value in monthly_dates
+    ]
+    all_ranges = [*daily_ranges, *weekly_ranges, *monthly_ranges]
+    boundaries = {
+        _date_start_ms(value, local_timezone)
+        for period_range in all_ranges
+        for value in period_range
+    }
+    boundaries.add(as_of_ms + 1)
+    closing_points = store.equity_at_boundaries(account_id, list(boundaries))
+
+    daily = [
+        _return_period(
+            start,
+            end,
+            local_timezone,
+            created_at_ms,
+            as_of_ms,
+            initial,
+            closing_points,
+            label=start.isoformat(),
+        )
+        for start, end in daily_ranges
+    ]
+    weekly = [
+        _return_period(
+            start,
+            end,
+            local_timezone,
+            created_at_ms,
+            as_of_ms,
+            initial,
+            closing_points,
+            label=f"{start.isocalendar().year} W{start.isocalendar().week:02d}",
+        )
+        for start, end in weekly_ranges
+    ]
+    monthly = [
+        _return_period(
+            start,
+            end,
+            local_timezone,
+            created_at_ms,
+            as_of_ms,
+            initial,
+            closing_points,
+            label=start.strftime("%Y-%m"),
+        )
+        for start, end in monthly_ranges
+    ]
+
+    elapsed_days = max(0.0, (as_of_ms - created_at_ms) / 86_400_000)
+    total_return = current_equity / initial - Decimal("1") if initial else Decimal("0")
+    first_daily_start_ms = _date_start_ms(daily_dates[0], local_timezone)
+    first_daily_point = closing_points.get(first_daily_start_ms)
+    thirty_day_start_equity = (
+        Decimal(first_daily_point["equity"]) if first_daily_point else initial
+    )
+    return_30d = (
+        float(current_equity / thirty_day_start_equity - Decimal("1"))
+        if thirty_day_start_equity
+        else None
+    )
+    annualized_return = None
+    if elapsed_days >= 1 and initial > 0 and current_equity > 0:
+        annualized_return = float(
+            (current_equity / initial)
+            ** (Decimal("365.2425") / Decimal(str(elapsed_days)))
+            - Decimal("1")
+        )
+
+    return {
+        "account_id": account_id,
+        "generated_at_ms": int(datetime.now(UTC).timestamp() * 1000),
+        "as_of_ms": as_of_ms,
+        "timezone_offset_minutes": timezone_offset_minutes,
+        "initial_equity": str(initial),
+        "current_equity": str(current_equity),
+        "total_return": float(total_return),
+        "annualized_return": annualized_return,
+        "elapsed_days": elapsed_days,
+        "return_30d": return_30d,
+        "current_week_return": weekly[-1]["return"],
+        "current_month_return": monthly[-1]["return"],
+        "daily": daily,
+        "weekly": [period for period in weekly if period["return"] is not None],
+        "monthly": [period for period in monthly if period["return"] is not None],
+    }
+
+
+def _return_period(
+    start: date,
+    end: date,
+    local_timezone: timezone,
+    created_at_ms: int,
+    as_of_ms: int,
+    initial: Decimal,
+    closing_points: dict[int, dict[str, Any] | None],
+    *,
+    label: str,
+) -> dict[str, Any]:
+    start_ms = _date_start_ms(start, local_timezone)
+    end_ms = _date_start_ms(end, local_timezone)
+    effective_end_ms = min(end_ms, as_of_ms + 1)
+    if created_at_ms >= effective_end_ms:
+        period_return = None
+        closing_equity = None
+    else:
+        start_point = closing_points.get(start_ms)
+        end_point = closing_points.get(effective_end_ms)
+        start_equity = Decimal(start_point["equity"]) if start_point else initial
+        closing_equity = Decimal(end_point["equity"]) if end_point else initial
+        period_return = (
+            float(closing_equity / start_equity - Decimal("1")) if start_equity else None
+        )
+    return {
+        "key": label,
+        "label": label,
+        "start_ms": start_ms,
+        "end_ms": end_ms,
+        "equity": str(closing_equity) if closing_equity is not None else None,
+        "return": period_return,
+    }
+
+
+def _date_start_ms(value: date, local_timezone: timezone) -> int:
+    return int(datetime.combine(value, time.min, local_timezone).timestamp() * 1000)
+
+
+def _shift_month(value: date, months: int) -> date:
+    month_index = value.year * 12 + value.month - 1 + months
+    year, month_zero = divmod(month_index, 12)
+    month = month_zero + 1
+    return date(year, month, min(value.day, monthrange(year, month)[1]))
 
 
 def _max_drawdown(points: list[dict[str, Any]]) -> float:

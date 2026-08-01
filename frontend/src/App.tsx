@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Activity,
   ArrowDownToLine,
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   CircleCheck,
@@ -18,7 +19,6 @@ import {
   Maximize2,
   Radio,
   RefreshCw,
-  ScrollText,
   Target,
   TrendingDown,
   TrendingUp,
@@ -45,15 +45,16 @@ import type {
   Account,
   AggTrade,
   EquityPoint,
-  EventItem,
   Fill,
   FundingPayment,
   OhlcvBar,
   Order,
+  ReturnPeriod,
+  ReturnSummary,
   WarehouseSummary,
 } from './types'
 
-type View = 'monitor' | 'orders' | 'events' | 'warehouse'
+type View = 'monitor' | 'orders' | 'returns' | 'warehouse'
 
 type PricePoint = {
   timestamp: number
@@ -103,6 +104,10 @@ function rate(value: number) {
   return `${(value * 100).toFixed(2)}%`
 }
 
+function returnValue(value: number | null) {
+  return value === null ? '--' : percent(value)
+}
+
 function number(value: string | number | null, digits = 3) {
   if (value === null) return '--'
   return Number(value).toLocaleString('en-US', { maximumFractionDigits: digits })
@@ -140,7 +145,12 @@ function App() {
   const fills = useQuery({ queryKey: ['fills', accountId], queryFn: () => api.fills(accountId), refetchInterval: 5000 })
   const funding = useQuery({ queryKey: ['funding', accountId], queryFn: () => api.funding(accountId), refetchInterval: 5000 })
   const orders = useQuery({ queryKey: ['orders', accountId], queryFn: () => api.orders(accountId), refetchInterval: 5000 })
-  const events = useQuery({ queryKey: ['events', accountId], queryFn: () => api.events(accountId), refetchInterval: 5000 })
+  const returns = useQuery({
+    queryKey: ['returns', accountId],
+    queryFn: () => api.returns(accountId),
+    enabled: view === 'returns',
+    refetchInterval: 60_000,
+  })
   const warehouse = useQuery({
     queryKey: ['warehouse'],
     queryFn: api.warehouse,
@@ -166,6 +176,12 @@ function App() {
   const account = accounts.find((item) => item.id === accountId) ?? accounts[0]
   const liveCount = overview.data?.instruments.filter((item) => item.status === 'LIVE').length ?? 0
   const instrumentCount = overview.data?.instruments.length ?? 1
+  const pageTitle = view === 'warehouse' ? '数据仓库' : view === 'returns' ? '收益明细' : '实时模拟盘'
+  const pageKicker = view === 'warehouse'
+    ? 'MARKET DATA / SQLITE WAL'
+    : view === 'returns'
+      ? 'PERFORMANCE / CALENDAR RETURNS'
+      : 'SHORT-HORIZON EXECUTION / ATR TICK V1'
 
   return (
     <div className="app-shell">
@@ -182,8 +198,8 @@ function App() {
           <button className={view === 'orders' ? 'active' : ''} onClick={() => setView('orders')}>
             <ListOrdered size={16} />订单
           </button>
-          <button className={view === 'events' ? 'active' : ''} onClick={() => setView('events')}>
-            <ScrollText size={16} />事件
+          <button className={view === 'returns' ? 'active' : ''} onClick={() => setView('returns')}>
+            <CalendarDays size={16} />收益明细
           </button>
           <button className={view === 'warehouse' ? 'active' : ''} onClick={() => setView('warehouse')}>
             <Database size={16} />仓库
@@ -209,8 +225,8 @@ function App() {
       <main>
         <section className="page-head">
           <div>
-            <div className="kicker">{view === 'warehouse' ? 'MARKET DATA / SQLITE WAL' : 'SHORT-HORIZON EXECUTION / ATR TICK V1'}</div>
-            <h1>{view === 'warehouse' ? '数据仓库' : '实时模拟盘'}</h1>
+            <div className="kicker">{pageKicker}</div>
+            <h1>{pageTitle}</h1>
           </div>
           <div className="page-actions">
             <div className="account-switch" aria-label="模拟账户">
@@ -226,7 +242,7 @@ function App() {
               ))}
             </div>
             <div className="scope-chips">
-              <span>{account?.symbol ?? 'INITIALIZING'}</span><span>15m</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : account?.runtime.paper_model === 'futures' ? 'LONG / SHORT' : 'LONG ONLY'}</span>
+              <span>{account?.symbol ?? 'INITIALIZING'}</span><span>15m</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : view === 'returns' ? 'PERFORMANCE' : account?.runtime.paper_model === 'futures' ? 'LONG / SHORT' : 'LONG ONLY'}</span>
             </div>
           </div>
         </section>
@@ -240,8 +256,8 @@ function App() {
           <Monitor account={account} equity={equity.data ?? []} fills={fills.data ?? []} funding={funding.data ?? []} bars={ohlcv.data ?? []} />
         ) : view === 'orders' ? (
           <Orders rows={orders.data ?? []} />
-        ) : view === 'events' ? (
-          <Events rows={events.data ?? []} />
+        ) : view === 'returns' ? (
+          <Returns account={account} summary={returns.data} loading={returns.isLoading} />
         ) : (
           <Warehouse
             summary={warehouse.data}
@@ -1081,8 +1097,113 @@ function Orders({ rows }: { rows: Order[] }) {
   return <section className="panel full-table"><div className="panel-head"><div><span>ORDER LEDGER</span><h3>全部订单</h3></div><span>{rows.length} records</span></div>{!rows.length ? <div className="empty-table">暂无订单</div> : <div className="table-scroll"><table><thead><tr><th>提交时间</th><th>账户</th><th>方向</th><th>状态</th><th>信号价</th><th>成交价</th><th>ATR</th><th>原因</th></tr></thead><tbody>{rows.map((row) => <tr key={row.id}><td>{time(row.submitted_at_ms)}</td><td>{row.account_id.toUpperCase()}</td><td><span className={`side ${row.side.toLowerCase()}`}>{row.side}</span></td><td>{row.status}</td><td>{number(row.signal_price, 4)}</td><td>{number(row.fill_price, 4)}</td><td>{number(row.atr, 4)}</td><td>{row.reason}</td></tr>)}</tbody></table></div>}</section>
 }
 
-function Events({ rows }: { rows: EventItem[] }) {
-  return <section className="panel full-table"><div className="panel-head"><div><span>RUNTIME AUDIT</span><h3>事件日志</h3></div><span>{rows.length} records</span></div>{!rows.length ? <div className="empty-table">暂无事件</div> : <div className="event-list">{rows.map((row) => <div className="event-row" key={row.id}><span className={`event-level ${row.level.toLowerCase()}`}>{row.level}</span><time>{time(row.timestamp_ms)}</time><strong>{row.account_id.toUpperCase()}</strong><span>{row.event_type}</span><p>{row.message}</p></div>)}</div>}</section>
+function Returns({
+  account,
+  summary,
+  loading,
+}: {
+  account?: Account
+  summary?: ReturnSummary
+  loading: boolean
+}) {
+  if (loading || !account || !summary) {
+    return <div className="loading"><CalendarDays size={20} />正在计算收益明细</div>
+  }
+  const leadingDays = summary.daily.length
+    ? (new Date(summary.daily[0].start_ms).getDay() + 6) % 7
+    : 0
+  const weekly = [...summary.weekly].reverse()
+  const monthly = [...summary.monthly].reverse()
+
+  return (
+    <>
+      <section className="return-metrics">
+        <ReturnStat label="近 30 日收益" value={summary.return_30d} sub={`截至 ${returnDate(summary.as_of_ms)}`} />
+        <ReturnStat label="本周收益" value={summary.current_week_return} sub="周一至当前" />
+        <ReturnStat label="本月收益" value={summary.current_month_return} sub={returnMonth(summary.as_of_ms)} />
+        <ReturnStat label="年化收益" value={summary.annualized_return} sub={`成立以来 CAGR · ${summary.elapsed_days.toFixed(1)} 天`} />
+      </section>
+
+      <section className="panel return-calendar-panel">
+        <div className="panel-head">
+          <div><span>DAILY PERFORMANCE</span><h3>最近 30 天收益日历</h3></div>
+          <strong className={returnTone(summary.total_return)}>累计 {percent(summary.total_return)}</strong>
+        </div>
+        <div className="return-calendar">
+          <div className="calendar-weekdays">
+            {['一', '二', '三', '四', '五', '六', '日'].map((day) => <span key={day}>周{day}</span>)}
+          </div>
+          <div className="calendar-grid">
+            {Array.from({ length: leadingDays }, (_, index) => <i key={`blank-${index}`} />)}
+            {summary.daily.map((period, index) => (
+              <div
+                className={`calendar-day ${returnTone(period.return)} ${index === summary.daily.length - 1 ? 'current' : ''}`}
+                key={period.key}
+              >
+                <time>{calendarDate(period.start_ms)}</time>
+                <strong>{returnValue(period.return)}</strong>
+                <small>{period.equity === null ? '无数据' : money(period.equity, account.currency)}</small>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="return-period-grid">
+        <ReturnPeriodTable title="每周收益" kicker="WEEKLY RETURNS" rows={weekly} currency={account.currency} />
+        <ReturnPeriodTable title="每月收益" kicker="MONTHLY RETURNS" rows={monthly} currency={account.currency} />
+      </section>
+    </>
+  )
+}
+
+function ReturnStat({ label, value, sub }: { label: string; value: number | null; sub: string }) {
+  return <div className={`return-stat ${returnTone(value)}`}><span>{label}</span><strong>{returnValue(value)}</strong><small>{sub}</small></div>
+}
+
+function ReturnPeriodTable({
+  title,
+  kicker,
+  rows,
+  currency,
+}: {
+  title: string
+  kicker: string
+  rows: ReturnPeriod[]
+  currency: string
+}) {
+  return (
+    <div className="panel return-period-panel">
+      <div className="panel-head"><div><span>{kicker}</span><h3>{title}</h3></div><span>{rows.length} periods</span></div>
+      {!rows.length ? <div className="empty-table">暂无收益数据</div> : (
+        <div className="table-scroll"><table><thead><tr><th>周期</th><th>区间</th><th>期末净值</th><th>收益率</th></tr></thead><tbody>{rows.map((row) => (
+          <tr key={row.key}>
+            <td>{row.label}</td>
+            <td>{returnDate(row.start_ms)} - {returnDate(Math.min(row.end_ms - 1, Date.now()))}</td>
+            <td>{money(row.equity, currency)}</td>
+            <td><strong className={returnTone(row.return)}>{returnValue(row.return)}</strong></td>
+          </tr>
+        ))}</tbody></table></div>
+      )}
+    </div>
+  )
+}
+
+function returnTone(value: number | null) {
+  if (value === null || value === 0) return 'neutral-return'
+  return value > 0 ? 'positive-return' : 'negative-return'
+}
+
+function returnDate(value: number) {
+  return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(value)
+}
+
+function returnMonth(value: number) {
+  return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'long' }).format(value)
+}
+
+function calendarDate(value: number) {
+  return new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit' }).format(value)
 }
 
 export default App

@@ -17,7 +17,7 @@ from pydantic import BaseModel
 
 from mastermind_tick.config import Settings, load_settings
 from mastermind_tick.engine import PaperEngine
-from mastermind_tick.reporting import build_overview
+from mastermind_tick.reporting import build_overview, build_return_summary
 from mastermind_tick.store import PaperStore
 
 
@@ -77,6 +77,14 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     ) -> list[dict]:
         _require_account(store, account_id)
         return store.equity(account_id, limit)
+
+    @app.get("/api/accounts/{account_id}/returns")
+    def returns(
+        account_id: str,
+        timezone_offset_minutes: Annotated[int, Query(ge=-720, le=840)] = 0,
+    ) -> dict:
+        _require_account(store, account_id)
+        return build_return_summary(store, account_id, timezone_offset_minutes)
 
     @app.get("/api/fills")
     def fills(

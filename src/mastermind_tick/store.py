@@ -1000,6 +1000,28 @@ class PaperStore:
             ).fetchall()
         return [dict(row) for row in rows]
 
+    def equity_at_boundaries(
+        self,
+        account_id: str,
+        boundaries_ms: list[int],
+    ) -> dict[int, dict[str, Any] | None]:
+        """Return the last recorded NAV strictly before each period boundary."""
+        result: dict[int, dict[str, Any] | None] = {}
+        with self.connection() as connection:
+            for boundary_ms in sorted(set(boundaries_ms)):
+                row = connection.execute(
+                    """
+                    SELECT timestamp_ms, equity
+                    FROM equity_snapshots
+                    WHERE account_id = ? AND timestamp_ms < ?
+                    ORDER BY timestamp_ms DESC, id DESC
+                    LIMIT 1
+                    """,
+                    (account_id, boundary_ms),
+                ).fetchone()
+                result[boundary_ms] = dict(row) if row is not None else None
+        return result
+
     def agg_trades(self, instrument_id: str, limit: int = 100) -> list[dict[str, Any]]:
         with self.connection() as connection:
             rows = connection.execute(

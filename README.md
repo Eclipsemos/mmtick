@@ -62,7 +62,8 @@ Python 环境使用 `/home/spaceaic/env/.venv`。前端生产文件已构建到 
 - 价格图上的买入/卖出图标、醒目的净交易百分比、区间滚动和缩放；
 - 现金、持仓、累计收益、费用和最大回撤；
 - 手续费后完整交易胜率和 15 分钟年化夏普率；
-- 净值曲线、订单、成交和运行事件；
+- 净值曲线、订单和成交；
+- 收益明细：最近 30 个自然日收益日历、最近 12 周、最近 12 月及成立以来年化收益；
 - 数据仓库的 OHLCV、aggTrade、覆盖时间、记录数和磁盘占用；
 - 暂停/恢复信号执行和成交 CSV 导出。
 
@@ -92,6 +93,7 @@ Vite 会把 `/api` 转发到 `127.0.0.1:8100`。
 GET  /api/health
 GET  /api/overview
 GET  /api/accounts/{id}/equity
+GET  /api/accounts/{id}/returns
 GET  /api/orders
 GET  /api/fills
 GET  /api/events
@@ -102,5 +104,7 @@ GET  /api/market/ohlcv
 GET  /api/market/agg-trades
 POST /api/control       {"action":"pause" | "resume"}
 ```
+
+收益明细按浏览器本地时区划分自然日，周周期从周一开始。日、周、月收益均使用周期开始前最近一次持久化净值到周期末最后一次净值计算；账户首个周期以初始资金为基准。年化收益为成立以来 CAGR，页面同时显示实际运行天数。运行事件仍通过 `/api/events` 持久化并可查询，但不再占用主导航。
 
 停止服务不会平仓；账户、持仓和策略状态会保存在 SQLite，下一次启动继续运行。暂停操作会取消尚未成交的本地 pending 订单，并继续更新指标状态。

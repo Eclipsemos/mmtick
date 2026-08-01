@@ -1,4 +1,4 @@
-import type { AggTrade, EquityPoint, EventItem, Fill, FundingPayment, OhlcvBar, Order, Overview, WarehouseSummary } from './types'
+import type { AggTrade, EquityPoint, EventItem, Fill, FundingPayment, OhlcvBar, Order, Overview, ReturnSummary, WarehouseSummary } from './types'
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url)
@@ -10,6 +10,10 @@ export const api = {
   overview: () => getJson<Overview>('/api/overview'),
   equity: (accountId: string) =>
     getJson<EquityPoint[]>(`/api/accounts/${accountId}/equity?limit=2000`),
+  returns: (accountId: string) => {
+    const offset = -new Date().getTimezoneOffset()
+    return getJson<ReturnSummary>(`/api/accounts/${accountId}/returns?timezone_offset_minutes=${offset}`)
+  },
   fills: (accountId = 'soxlb') => getJson<Fill[]>(`/api/fills?account_id=${accountId}&limit=200`),
   orders: (accountId = 'soxlb') => getJson<Order[]>(`/api/orders?account_id=${accountId}&limit=200`),
   events: (accountId = 'soxlb') => getJson<EventItem[]>(`/api/events?account_id=${accountId}&limit=200`),

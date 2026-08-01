@@ -148,6 +148,33 @@ export type EquityPoint = {
   relation: string | null
 }
 
+export type ReturnPeriod = {
+  key: string
+  label: string
+  start_ms: number
+  end_ms: number
+  equity: string | null
+  return: number | null
+}
+
+export type ReturnSummary = {
+  account_id: string
+  generated_at_ms: number
+  as_of_ms: number
+  timezone_offset_minutes: number
+  initial_equity: string
+  current_equity: string
+  total_return: number
+  annualized_return: number | null
+  elapsed_days: number
+  return_30d: number | null
+  current_week_return: number | null
+  current_month_return: number | null
+  daily: ReturnPeriod[]
+  weekly: ReturnPeriod[]
+  monthly: ReturnPeriod[]
+}
+
 export type Fill = {
   id: string
   account_id: string
