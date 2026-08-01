@@ -96,7 +96,7 @@ def test_round_trip_realized_pnl_includes_both_fees(tmp_path) -> None:
     assert len(store.fills("soxlb")) == 2
 
 
-def test_pending_sell_can_fill_on_signal_tick_for_pine_immediately(tmp_path) -> None:
+def test_pending_sell_can_explicitly_fill_on_signal_tick(tmp_path) -> None:
     store = PaperStore(tmp_path / "paper.db")
     item = instrument()
     execution = ExecutionSettings(fee_bps=10, slippage_bps=0, minimum_notional=5)

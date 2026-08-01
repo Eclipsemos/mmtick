@@ -72,7 +72,7 @@ def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
             "atr_period": engine.settings.strategy.atr_period,
             "atr_multiplier": engine.settings.strategy.atr_multiplier,
             "signal_confirmation": "tick",
-            "fill_timing": "signal_tick",
+            "fill_timing": "next_tick",
             "position_fraction": engine.settings.strategy.position_fraction,
             "fee_bps": engine.settings.execution.fee_bps,
             "slippage_bps": engine.settings.execution.slippage_bps,

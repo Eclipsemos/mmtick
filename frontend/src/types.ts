@@ -26,7 +26,7 @@ export type DecisionView = {
   fresh_up_cross: boolean
   bar_end_ms: number | null
   signal_confirmation: 'TICK'
-  fill_timing: 'SIGNAL_TICK'
+  fill_timing: 'NEXT_TICK'
   last_signal: {
     side: 'BUY' | 'SELL'
     status: string
@@ -121,7 +121,7 @@ export type Overview = {
     atr_period: number
     atr_multiplier: number
     signal_confirmation: 'tick'
-    fill_timing: 'signal_tick'
+    fill_timing: 'next_tick'
     position_fraction: number
     fee_bps: number
     slippage_bps: number

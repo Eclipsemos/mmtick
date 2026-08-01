@@ -64,7 +64,7 @@ def test_tick_up_cross_emits_immediately_without_debounce() -> None:
     assert signal.side is Side.BUY
     assert signal.reason == "price_crossed_above_atr_stop"
     assert signal.signal_price == Decimal("10")
-    assert signal.signal_at_ms == start
+    assert signal.signal_at_ms is None
     assert signal.tick_id == "buy"
     assert strategy.bought_this_bar
     assert strategy.last_cross_result == "BUY_SIGNAL"
@@ -132,7 +132,7 @@ def test_paused_strategy_updates_line_without_consuming_trade_lock() -> None:
     assert strategy.last_cross_reason == "TRADING_PAUSED"
 
 
-def test_realtime_stop_recalculates_from_previous_official_bar_on_every_tick() -> None:
+def test_realtime_stop_moves_recursively_after_cross_check() -> None:
     strategy = warmed_strategy()
     start = 3 * BAR_MS
 
@@ -150,30 +150,30 @@ def test_realtime_stop_recalculates_from_previous_official_bar_on_every_tick() -
     )
 
     assert strategy.last_atr == Decimal("2.6875")
-    assert strategy.trailing_stop == Decimal("7.984375")
-    assert strategy.previous_tick_above
+    assert strategy.trailing_stop == Decimal("9.984375")
+    assert strategy.previous_price == Decimal("10")
 
 
-def test_current_binance_bar_seeds_realtime_state_without_signal() -> None:
+def test_current_bar_is_built_from_received_ticks() -> None:
     strategy = warmed_strategy()
-    current = Bar(
-        start_ms=3 * BAR_MS,
-        end_ms=4 * BAR_MS - 1,
-        open=Decimal("8"),
-        high=Decimal("12"),
-        low=Decimal("7"),
-        close=Decimal("10"),
+    start = 3 * BAR_MS
+
+    strategy.on_tick(
+        tick("first-live-tick", start, 10),
+        has_position=False,
+        has_pending_order=False,
     )
 
-    strategy.seed_current_bar(current)
+    assert strategy.current_bar is not None
+    assert strategy.current_bar.open == Decimal("10")
+    assert strategy.current_bar.high == Decimal("10")
+    assert strategy.current_bar.low == Decimal("10")
+    assert strategy.current_bar.close == Decimal("10")
+    assert strategy.last_atr == Decimal("1.6875")
+    assert strategy.trailing_stop == Decimal("8.734375")
 
-    assert strategy.last_atr == Decimal("3.1875")
-    assert strategy.trailing_stop == Decimal("7.609375")
-    assert strategy.previous_tick_above
-    assert strategy.last_cross is None
 
-
-def test_official_bar_replaces_local_ohlc_and_never_emits_close_signal() -> None:
+def test_next_tick_bar_commits_locally_synthesized_ohlc() -> None:
     strategy = warmed_strategy()
     start = 3 * BAR_MS
     strategy.on_tick(
@@ -181,26 +181,18 @@ def test_official_bar_replaces_local_ohlc_and_never_emits_close_signal() -> None
         has_position=False,
         has_pending_order=False,
     )
-    official = Bar(
-        start,
-        start + BAR_MS - 1,
-        Decimal("8"),
-        Decimal("8.5"),
-        Decimal("7.5"),
-        Decimal("8"),
-    )
-
-    signal = strategy.on_bar_close(
-        official,
+    strategy.on_tick(
+        tick("next-bar", start + BAR_MS, 8),
         has_position=False,
         has_pending_order=False,
     )
 
-    assert signal is None
-    assert strategy.completed_bars[-1].as_dict() == official.as_dict()
-    assert strategy.committed_atr == Decimal("1.1875")
-    assert strategy.committed_stop == Decimal("8.890625")
-    assert strategy.current_bar is None
+    assert strategy.completed_bars[-1].open == Decimal("20")
+    assert strategy.completed_bars[-1].high == Decimal("20")
+    assert strategy.completed_bars[-1].low == Decimal("20")
+    assert strategy.completed_bars[-1].close == Decimal("20")
+    assert strategy.current_bar is not None
+    assert strategy.current_bar.start_ms == start + BAR_MS
 
 
 def test_runtime_state_persists_tick_relation_and_locks() -> None:
@@ -214,13 +206,12 @@ def test_runtime_state_persists_tick_relation_and_locks() -> None:
 
     state = strategy.runtime_state()
 
-    assert state["pine_state_version"] == 6
-    assert state["previous_tick_above"] is True
+    assert state["algorithm_version"] == "25784e3"
     assert state["bought_this_bar"] is True
-    assert state["committed_stop"] == "9.03125"
+    assert state["trailing_stop"] == "9.984375"
 
 
-def test_close_confirmed_state_is_not_restored_into_tick_strategy() -> None:
+def test_other_algorithm_state_is_not_restored_into_original_strategy() -> None:
     strategy = warmed_strategy()
     strategy.restore_runtime(
         {

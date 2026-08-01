@@ -494,7 +494,7 @@ function Monitor({
             <div><dt>K 线开始</dt><dd>{time(strategy.bar_start_ms)}</dd></div>
             <div><dt>K 线状态</dt><dd>形成中，Tick 实时交易</dd></div>
             <div><dt>信号检测</dt><dd>每个成交 Tick</dd></div>
-            <div><dt>成交时点</dt><dd>信号 Tick</dd></div>
+            <div><dt>成交时点</dt><dd>下一成交 Tick</dd></div>
             <div><dt>买入锁</dt><dd>{strategy.bought_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
             <div><dt>空仓锁</dt><dd>{strategy.flattened_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
           </dl>

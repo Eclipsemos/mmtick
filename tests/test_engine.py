@@ -56,7 +56,7 @@ def test_flat_account_below_stop_is_armed_for_tick_cross() -> None:
     assert decision["state"] == "ARMED_FOR_BUY"
     assert decision["next_trigger"] == "PRICE_CROSS_ABOVE"
     assert decision["signal_confirmation"] == "TICK"
-    assert decision["fill_timing"] == "SIGNAL_TICK"
+    assert decision["fill_timing"] == "NEXT_TICK"
 
 
 def test_long_account_waits_for_realtime_down_cross() -> None:
@@ -86,7 +86,7 @@ def test_sell_lock_is_exposed_as_reentry_locked() -> None:
     assert not decision["reentry_lock_open"]
 
 
-def test_tick_signal_is_submitted_and_filled_on_same_tick_after_official_sync(tmp_path) -> None:
+def test_tick_signal_is_submitted_then_filled_on_next_tick(tmp_path) -> None:
     settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
     instrument = settings.instruments[0]
     store = PaperStore(settings.database_path)
@@ -118,22 +118,30 @@ def test_tick_signal_is_submitted_and_filled_on_same_tick_after_official_sync(tm
     asyncio.run(engine._process_tick(runtime, crossing_tick))
 
     order = store.orders(instrument.id, 1)[0]
-    fill = store.fills(instrument.id)[0]
     assert order["reason"] == "price_crossed_above_atr_stop"
     assert order["submitted_tick_id"] == crossing_tick.event_id
     assert order["submitted_at_ms"] == crossing_tick.timestamp_ms
-    assert order["filled_at_ms"] == crossing_tick.timestamp_ms
-    assert fill["timestamp_ms"] == crossing_tick.timestamp_ms
-    assert Decimal(fill["price"]) == Decimal("11.0055")
+    assert order["status"] == "PENDING"
+    assert store.fills(instrument.id) == []
+
+    fill_tick = Tick("fill-tick", 3_601_000, Decimal("11.2"), Decimal("1"), "test")
+    asyncio.run(engine._process_tick(runtime, fill_tick))
+
+    filled_order = store.orders(instrument.id, 1)[0]
+    fill = store.fills(instrument.id)[0]
+    assert filled_order["filled_at_ms"] == fill_tick.timestamp_ms
+    assert fill["timestamp_ms"] == fill_tick.timestamp_ms
+    assert Decimal(fill["price"]) == Decimal("11.20560")
+
+    asyncio.run(engine._process_official_close(runtime, official))
     stored = next(
-        bar
-        for bar in store.ohlcv_bars(instrument.id, 15, 2)
+        bar for bar in store.ohlcv_bars(instrument.id, 15, 2)
         if bar["start_ms"] == official.start_ms
     )
     assert stored["source"] == "test_kline_rest"
 
 
-def test_rest_failure_blocks_tick_signal_until_official_baseline_is_ready(tmp_path) -> None:
+def test_rest_failure_does_not_block_original_tick_strategy(tmp_path) -> None:
     settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
     instrument = settings.instruments[0]
     store = PaperStore(settings.database_path)
@@ -161,6 +169,7 @@ def test_rest_failure_blocks_tick_signal_until_official_baseline_is_ready(tmp_pa
         strategy=strategy,
     )
 
+    asyncio.run(engine._process_official_close(runtime, missing))
     asyncio.run(
         engine._process_tick(
             runtime,
@@ -169,5 +178,6 @@ def test_rest_failure_blocks_tick_signal_until_official_baseline_is_ready(tmp_pa
     )
 
     assert runtime.kline_validation == "REST_ERROR"
-    assert strategy.next_uncommitted_bar_start_ms == missing.start_ms
-    assert store.orders(instrument.id) == []
+    order = store.orders(instrument.id, 1)[0]
+    assert order["reason"] == "price_crossed_above_atr_stop"
+    assert order["status"] == "PENDING"
