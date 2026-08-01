@@ -167,7 +167,7 @@ class ATRTickStrategy:
         else:
             self.current_bar.update(tick)
 
-        atr = wilder_atr([*self.completed_bars, self.current_bar], self.period)
+        atr = self._current_atr()
         if atr is None:
             self.previous_price = tick.price
             return None
@@ -237,6 +237,11 @@ class ATRTickStrategy:
                 )
             self._record_cross("DOWN", tick.timestamp_ms, "BLOCKED", blocked_reason)
         return None
+
+    def _current_atr(self) -> Decimal | None:
+        if self.current_bar is None:
+            return None
+        return wilder_atr([*self.completed_bars, self.current_bar], self.period)
 
     def view(self) -> StrategyView:
         relation = "warming"
