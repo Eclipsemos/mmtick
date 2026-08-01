@@ -226,7 +226,7 @@ function App() {
               ))}
             </div>
             <div className="scope-chips">
-              <span>{account?.symbol ?? 'INITIALIZING'}</span><span>15m</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : 'LONG ONLY'}</span>
+              <span>{account?.symbol ?? 'INITIALIZING'}</span><span>15m</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : account?.runtime.paper_model === 'futures' ? 'LONG / SHORT' : 'LONG ONLY'}</span>
             </div>
           </div>
         </section>
@@ -324,6 +324,8 @@ function Monitor({
   if (!account) return <div className="loading"><Activity size={20} />正在初始化账户</div>
   const runtime = account.runtime
   const strategy = runtime.strategy
+  const positionQuantity = Number(account.quantity)
+  const positionSide = positionQuantity > 0 ? '多头' : positionQuantity < 0 ? '空头' : '空仓'
   const positive = Number(account.total_pnl) >= 0
   const periodReturn = visibleStart && visibleEnd && visibleStart.price
     ? visibleEnd.price / visibleStart.price - 1
@@ -362,7 +364,7 @@ function Monitor({
       <section className="metrics-grid">
         <Metric label="账户净值" value={money(account.equity, account.currency)} sub={`初始 ${money(account.initial_cash, account.currency)}`} icon={<WalletCards />} />
         <Metric label="累计收益" value={percent(account.total_return)} sub={money(account.total_pnl, account.currency)} tone={positive ? 'good' : 'bad'} icon={positive ? <TrendingUp /> : <TrendingDown />} />
-        <Metric label="当前持仓" value={number(account.quantity)} sub={`均价 ${money(account.average_price, account.currency)}`} icon={<Activity />} />
+        <Metric label="当前持仓" value={number(Math.abs(positionQuantity))} sub={`${positionSide} · 均价 ${money(account.average_price, account.currency)}`} icon={<Activity />} />
         <Metric label="最大回撤" value={percent(account.max_drawdown)} sub={`${account.round_trips} 次完整交易`} tone="bad" icon={<TrendingDown />} />
         <Metric label="夏普率" value={number(account.sharpe_ratio, 2)} sub="15m 年化 · rf 0%" tone={account.sharpe_ratio === null ? '' : account.sharpe_ratio >= 0 ? 'good' : 'bad'} icon={<Gauge />} />
         <Metric label="交易胜率" value={account.win_rate === null ? '--' : rate(account.win_rate)} sub={`${account.winning_trades} 赢 / ${account.round_trips} 笔`} tone={account.win_rate === null ? '' : account.win_rate >= 0.5 ? 'good' : 'bad'} icon={<Target />} />
@@ -495,8 +497,8 @@ function Monitor({
             <div><dt>K 线状态</dt><dd>形成中，Tick 实时交易</dd></div>
             <div><dt>信号检测</dt><dd>每个成交 Tick</dd></div>
             <div><dt>成交时点</dt><dd>下一成交 Tick</dd></div>
-            <div><dt>买入锁</dt><dd>{strategy.bought_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
-            <div><dt>空仓锁</dt><dd>{strategy.flattened_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
+            <div><dt>{runtime.paper_model === 'futures' ? 'BUY 锁' : '买入锁'}</dt><dd>{strategy.bought_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
+            <div><dt>{runtime.paper_model === 'futures' ? 'SELL 锁' : '空仓锁'}</dt><dd>{strategy.flattened_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
           </dl>
           {runtime.paper_model === 'futures' && (
             <dl className="strategy-values futures-values">
@@ -511,10 +513,10 @@ function Monitor({
           )}
           <div className="strategy-foot">
             <span>15m</span>
-            <span>{(runtime.position_fraction * 100).toFixed(0)}% exposure</span>
+            <span>{(runtime.position_fraction * 100).toFixed(0)}% {runtime.paper_model === 'futures' ? 'margin' : 'exposure'}</span>
             <span>{runtime.paper_model === 'futures' ? `${runtime.leverage}x ${runtime.margin_mode}` : 'SPOT'}</span>
             <span>TICK signals</span>
-            <span>SIGNAL-TICK fills</span>
+            <span>NEXT-TICK fills</span>
           </div>
         </div>
       </section>
@@ -785,12 +787,39 @@ function buildTradeMarkers(fills: Fill[]): TradePoint[] {
 }
 
 function buildCompletedTrades(fills: Fill[], funding: FundingPayment[] = []): CompletedTrade[] {
-  const ordered = [...fills].sort((left, right) => left.timestamp_ms - right.timestamp_ms)
+  const ordered = [...fills].sort((left, right) => (
+    left.timestamp_ms - right.timestamp_ms
+    || (left.position_effect === 'CLOSE' ? -1 : right.position_effect === 'CLOSE' ? 1 : 0)
+  ))
   const trades: CompletedTrade[] = []
   let entry: Fill | null = null
 
   for (const fill of ordered) {
     const quantity = Number(fill.quantity)
+    if (fill.position_effect === 'OPEN' && quantity > 0) {
+      entry = fill
+      continue
+    }
+    if (fill.position_effect === 'CLOSE') {
+      if (quantity > 0 && entry) {
+        const fundingPnl = funding
+          .filter((payment) => payment.timestamp_ms >= entry!.timestamp_ms && payment.timestamp_ms <= fill.timestamp_ms)
+          .reduce((total, payment) => total + Number(payment.amount), 0)
+        const netPnl = Number(fill.realized_pnl ?? 0) - Number(entry.fee) + fundingPnl
+        const entryNotional = Number(entry.notional)
+        trades.push({
+          entryTimestamp: entry.timestamp_ms,
+          exitTimestamp: fill.timestamp_ms,
+          entryPrice: Number(entry.price),
+          exitPrice: Number(fill.price),
+          netPnl,
+          returnPercent: entryNotional ? netPnl / entryNotional : 0,
+        })
+        entry = null
+      }
+      continue
+    }
+
     if (fill.side === 'BUY' && quantity > 0) {
       entry = fill
       continue
@@ -906,9 +935,12 @@ const decisionText = {
   WARMING_UP: ['ATR 预热中', '历史 K 线不足，暂时不能判断穿越'],
   ORDER_PENDING: ['订单待成交', '信号已提交，正在等待下一个 Tick 模拟撮合'],
   HOLDING_LONG: ['持仓监控中', '已持有多头，等待价格实时向下穿越 ATR 止损线'],
+  HOLDING_SHORT: ['空头监控中', '已持有空头，等待价格实时向上穿越 ATR 止损线'],
   REENTRY_LOCKED: ['本 K 线禁止重入', '本根 15 分钟 K 线已经卖出，即使重新上穿也不会买入'],
   BUY_LOCKED: ['本 K 线买入锁定', '本根 15 分钟 K 线已经使用过买入信号'],
   ARMED_FOR_BUY: ['等待向上穿越', '当前价格在 ATR 线下方，下一次实时向上穿越可触发买入'],
+  ARMED_FOR_LONG: ['等待做多', '当前价格在 ATR 线下方，向上穿越后建立多头'],
+  ARMED_FOR_SHORT: ['等待做空', '当前价格在 ATR 线上方，向下穿越后建立空头'],
   WAITING_FOR_RESET: ['等待重新武装', '当前价格虽高于 ATR，但没有新的下方到上方穿越'],
 } as const
 
@@ -925,7 +957,8 @@ const triggerText: Record<string, string> = {
 
 const crossReasonText: Record<string, string> = {
   TRADING_PAUSED: '策略暂停',
-  ALREADY_LONG: '已有持仓',
+  ALREADY_LONG: '已有多头持仓',
+  ALREADY_SHORT: '已有空头持仓',
   ORDER_PENDING: '已有待成交订单',
   BUY_LOCKED_THIS_BAR: '本 K 线买入锁',
   REENTRY_LOCKED_THIS_BAR: '卖出后本 K 线禁止重入',
@@ -937,7 +970,11 @@ function DecisionStatus({ runtime }: { runtime: Account['runtime'] }) {
   const decision = runtime.decision
   const strategy = runtime.strategy
   const copy = decisionText[decision.state]
-  const tone = decision.state === 'ARMED_FOR_BUY' || decision.state === 'HOLDING_LONG'
+  const tone = decision.state === 'ARMED_FOR_BUY'
+    || decision.state === 'ARMED_FOR_LONG'
+    || decision.state === 'ARMED_FOR_SHORT'
+    || decision.state === 'HOLDING_LONG'
+    || decision.state === 'HOLDING_SHORT'
     ? 'ready'
     : decision.state === 'PAUSED'
       ? 'blocked'
@@ -962,7 +999,7 @@ function DecisionStatus({ runtime }: { runtime: Account['runtime'] }) {
       </div>
       <p>{copy[1]}</p>
       <dl className="decision-facts">
-        <div><dt>仓位</dt><dd>{decision.has_position ? '多头持仓' : '空仓'}</dd></div>
+        <div><dt>仓位</dt><dd>{decision.position_side === 'LONG' ? '多头持仓' : decision.position_side === 'SHORT' ? '空头持仓' : '空仓'}</dd></div>
         <div><dt>订单</dt><dd>{decision.has_pending_order ? '待成交' : '无待成交'}</dd></div>
         <div><dt>最近 Tick 穿越</dt><dd>{lastCross}</dd></div>
         <div><dt>下一触发条件</dt><dd>{triggerText[decision.next_trigger] ?? decision.next_trigger}</dd></div>
@@ -970,7 +1007,7 @@ function DecisionStatus({ runtime }: { runtime: Account['runtime'] }) {
       <div className="decision-gates" aria-label="买入门控">
         <Gate open={decision.trading_enabled} label="策略运行" />
         <Gate open={decision.strategy_ready} label="ATR 就绪" />
-        <Gate open={!decision.has_position} label="当前空仓" />
+        <Gate open={decision.allow_short || !decision.has_position} label={decision.allow_short ? '允许多空反手' : '当前空仓'} />
         <Gate open={!decision.has_pending_order} label="无待成交单" />
         <Gate open={decision.buy_lock_open} label="买入锁开放" />
         <Gate open={decision.reentry_lock_open} label="重入锁开放" />
@@ -986,7 +1023,7 @@ function Gate({ open, label }: { open: boolean; label: string }) {
 
 function FillTable({ rows }: { rows: Fill[] }) {
   if (!rows.length) return <div className="empty-table">暂无成交</div>
-  return <div className="table-scroll"><table><thead><tr><th>时间</th><th>账户</th><th>方向</th><th>价格</th><th>数量</th><th>手续费</th><th>数据源</th></tr></thead><tbody>{rows.map((row) => <tr key={row.id}><td>{time(row.timestamp_ms)}</td><td>{row.account_id.toUpperCase()}</td><td><span className={`side ${row.side.toLowerCase()}`}>{row.side}</span></td><td>{number(row.price, 4)}</td><td>{number(row.quantity, 3)}</td><td>{number(row.fee, 4)}</td><td>{row.source}</td></tr>)}</tbody></table></div>
+  return <div className="table-scroll"><table><thead><tr><th>时间</th><th>账户</th><th>方向</th><th>动作</th><th>价格</th><th>数量</th><th>手续费</th><th>数据源</th></tr></thead><tbody>{rows.map((row) => <tr key={row.id}><td>{time(row.timestamp_ms)}</td><td>{row.account_id.toUpperCase()}</td><td><span className={`side ${row.side.toLowerCase()}`}>{row.side}</span></td><td>{row.position_effect ?? '--'}</td><td>{number(row.price, 4)}</td><td>{number(row.quantity, 3)}</td><td>{number(row.fee, 4)}</td><td>{row.source}</td></tr>)}</tbody></table></div>
 }
 
 function Warehouse({

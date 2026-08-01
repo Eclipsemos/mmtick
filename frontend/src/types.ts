@@ -14,11 +14,13 @@ export type StrategyView = {
 }
 
 export type DecisionView = {
-  state: 'PAUSED' | 'WARMING_UP' | 'ORDER_PENDING' | 'HOLDING_LONG' | 'REENTRY_LOCKED' | 'BUY_LOCKED' | 'ARMED_FOR_BUY' | 'WAITING_FOR_RESET'
+  state: 'PAUSED' | 'WARMING_UP' | 'ORDER_PENDING' | 'HOLDING_LONG' | 'HOLDING_SHORT' | 'REENTRY_LOCKED' | 'BUY_LOCKED' | 'ARMED_FOR_BUY' | 'ARMED_FOR_LONG' | 'ARMED_FOR_SHORT' | 'WAITING_FOR_RESET'
   reason: string
   next_trigger: string
   trading_enabled: boolean
   has_position: boolean
+  position_side: 'LONG' | 'SHORT' | 'FLAT'
+  allow_short: boolean
   has_pending_order: boolean
   strategy_ready: boolean
   buy_lock_open: boolean
@@ -157,6 +159,10 @@ export type Fill = {
   fee: string
   reason: string
   source: string
+  position_effect: 'OPEN' | 'CLOSE' | null
+  position_before: string | null
+  position_after: string | null
+  realized_pnl: string | null
 }
 
 export type FundingPayment = {

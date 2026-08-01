@@ -92,6 +92,39 @@ def test_down_cross_then_up_cross_is_locked_for_same_bar() -> None:
     assert strategy.last_cross_reason == "REENTRY_LOCKED_THIS_BAR"
 
 
+def test_futures_down_cross_opens_short_from_flat() -> None:
+    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
+    strategy.bootstrap(bars([10, 9, 8, 9, 12]))
+    start = 5 * BAR_MS
+
+    signal = strategy.on_tick(
+        tick("short", start, 10),
+        has_position=False,
+        has_pending_order=False,
+        allow_short=True,
+    )
+
+    assert signal is not None
+    assert signal.side is Side.SELL
+    assert strategy.flattened_this_bar
+
+
+def test_futures_up_cross_reverses_short_to_long() -> None:
+    strategy = warmed_strategy()
+    start = 3 * BAR_MS
+
+    signal = strategy.on_tick(
+        tick("reverse-long", start, 10),
+        has_position=True,
+        has_pending_order=False,
+        allow_short=True,
+        is_short=True,
+    )
+
+    assert signal is not None
+    assert signal.side is Side.BUY
+
+
 def test_buy_and_sell_are_each_limited_to_one_signal_per_bar() -> None:
     strategy = warmed_strategy()
     start = 3 * BAR_MS

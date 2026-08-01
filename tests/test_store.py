@@ -1,3 +1,4 @@
+from dataclasses import replace
 from decimal import Decimal
 
 from mastermind_tick.config import ExecutionSettings, InstrumentSettings
@@ -266,7 +267,7 @@ def test_late_tick_is_archived_without_overwriting_official_closed_bar(tmp_path)
     assert store.agg_trades(item.id, 1)[0]["event_id"] == "late-trade"
 
 
-def test_futures_round_trip_uses_margin_accounting(tmp_path) -> None:
+def test_futures_sell_reverses_long_to_short(tmp_path) -> None:
     store = PaperStore(tmp_path / "paper.db")
     item = futures_instrument()
     execution = ExecutionSettings(fee_bps=10, slippage_bps=5, minimum_notional=5)
@@ -295,9 +296,58 @@ def test_futures_round_trip_uses_margin_accounting(tmp_path) -> None:
 
     store.submit_order(item.id, signal(Side.SELL, "sell-signal", "110"), 4)
     store.fill_pending(item.id, market_tick("sell-fill", 5, "110"), item, execution, 0.95)
-    closed = store.account(item.id)
-    assert Decimal(closed["quantity"]) == 0
-    assert Decimal(closed["cash"]) == Decimal("10940.0250")
+    reversed_account = store.account(item.id)
+    assert Decimal(reversed_account["quantity"]) < 0
+    assert Decimal(reversed_account["average_price"]) == Decimal("110.0")
+    reversal_fills = [fill for fill in store.fills(item.id) if fill["timestamp_ms"] == 5]
+    assert {fill["position_effect"] for fill in reversal_fills} == {"CLOSE", "OPEN"}
+    close = next(fill for fill in reversal_fills if fill["position_effect"] == "CLOSE")
+    assert Decimal(close["realized_pnl"]) == Decimal("944.7750")
+
+    short_mark = store.snapshot(
+        item.id,
+        Tick("short-mark", 6, Decimal("100"), Decimal("1"), "test", mark_price=Decimal("100")),
+    )
+    assert Decimal(short_mark["unrealized_pnl"]) > 0
+    assert Decimal(short_mark["initial_margin"]) > 0
+
+
+def test_two_x_futures_reverses_short_back_to_long(tmp_path) -> None:
+    store = PaperStore(tmp_path / "paper.db")
+    item = replace(futures_instrument(), leverage=2)
+    execution = ExecutionSettings(fee_bps=10, slippage_bps=0, minimum_notional=5)
+    store.ensure_account(item, 10_000, 1)
+
+    store.submit_order(item.id, signal(Side.SELL, "short-signal"), 1)
+    store.fill_pending(item.id, market_tick("short-fill", 2, "100"), item, execution, 0.95)
+    short_account = store.account(item.id)
+    assert Decimal(short_account["quantity"]) == Decimal("-190")
+    assert Decimal(short_account["cash"]) == Decimal("9990.5000")
+
+    store.submit_order(item.id, signal(Side.BUY, "long-signal", "90"), 3)
+    store.fill_pending(item.id, market_tick("long-fill", 4, "90"), item, execution, 0.95)
+    long_account = store.account(item.id)
+    assert Decimal(long_account["quantity"]) > 0
+    assert Decimal(long_account["average_price"]) == Decimal("90")
+    assert Decimal(long_account["cash"]) > Decimal("11800")
+
+
+def test_short_futures_receives_positive_funding(tmp_path) -> None:
+    store = PaperStore(tmp_path / "paper.db")
+    item = replace(futures_instrument(), leverage=2)
+    execution = ExecutionSettings(fee_bps=10, slippage_bps=0, minimum_notional=5)
+    store.ensure_account(item, 10_000, 1)
+    store.submit_order(item.id, signal(Side.SELL, "short-signal"), 1)
+    store.fill_pending(item.id, market_tick("short-fill", 2, "100"), item, execution, 0.95)
+
+    payment = store.apply_funding(
+        item.id,
+        FundingRate(28_800_000, Decimal("0.001"), Decimal("100")),
+    )
+
+    assert payment is not None
+    assert Decimal(str(payment["amount"])) == Decimal("19.000")
+    assert Decimal(str(payment["notional"])) == Decimal("19000")
 
 
 def test_futures_funding_is_idempotent_and_updates_equity(tmp_path) -> None:

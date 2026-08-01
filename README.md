@@ -18,16 +18,16 @@ Mastermind 旗下短线策略产品。当前版本使用提交 `25784e3` 的原�
 15 分钟 K 线
 ATR Period = 7
 ATR Multiplier = 1.0
-仅做多，100% 账户权益
-成交 Tick 实时上穿 ATR 线后买入，实时下穿后平仓
+SOXLB 现货仅做多；SOXL 永续以 2x 多空反手
+成交 Tick 实时上穿后目标多头，实时下穿后目标空头/现货平仓
 信号在当前 Tick 生成，并在下一成交 Tick 模拟成交
 ```
 
 ATR 使用 TradingView `ta.atr` 对应的 Wilder RMA。启动时使用 Binance 官方历史 K 线预热；运行后由收到的成交 Tick 合成 15 分钟 K 线。每个 Tick 使用更新前的价格和 ATR 止损线判断穿越，随后递归更新当前 ATR 与止损线，保持 `25784e3` 的原始执行顺序。
 
-价格从 ATR 线下方实时穿到上方时买入，从上方实时穿到下方时平仓。系统不使用时间防抖；同一根 K 线的买入、卖出及卖出后重入仍受原策略锁控制。订单在信号后的下一成交 Tick 撮合。Binance 官方 15 分钟 K 线继续通过 REST `/klines` 校验并写入仓库和蜡烛图，但不会改写或暂停运行中的 Tick 策略。SOXLB 默认单边手续费 10 bps、滑点 5 bps。SOXL Perpetual 使用 1x 逐仓模型、95% 名义敞口、5 bps taker 手续费和 2 bps 模拟滑点，始终只做多。参数位于 [config/settings.toml](config/settings.toml)。
+价格从 ATR 线下方实时穿到上方时触发 BUY，从上方实时穿到下方时触发 SELL。SOXLB 的 SELL 平掉多头；SOXL Perpetual 的 SELL 平多并反手做空，BUY 平空并反手做多。系统不使用时间防抖；同一根 K 线的买入、卖出及卖出后重入仍受原策略锁控制。订单在信号后的下一成交 Tick 撮合。Binance 官方 15 分钟 K 线继续通过 REST `/klines` 校验并写入仓库和蜡烛图，但不会改写或暂停运行中的 Tick 策略。SOXLB 默认单边手续费 10 bps、滑点 5 bps。SOXL Perpetual 使用 2x 逐仓模型、95% 保证金利用率、5 bps taker 手续费和 2 bps 模拟滑点。参数位于 [config/settings.toml](config/settings.toml)。
 
-永续账户按标记价格计算未实现盈亏、初始保证金与可用余额。每 8 小时从 Binance 公共资金费历史同步实际费率，多头资金费以 `-名义价值 × 费率` 计入现金、净值、交易胜率和收益区间。
+永续账户按带方向持仓和标记价格计算未实现盈亏、初始保证金与可用余额。每 8 小时从 Binance 公共资金费历史同步实际费率：正费率时多头支付、空头收取，并计入现金、净值、交易胜率和收益区间。
 
 ## 数据
 

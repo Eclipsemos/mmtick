@@ -70,7 +70,11 @@ CREATE TABLE IF NOT EXISTS fills (
     notional TEXT NOT NULL,
     fee TEXT NOT NULL,
     reason TEXT NOT NULL,
-    source TEXT NOT NULL
+    source TEXT NOT NULL,
+    position_effect TEXT,
+    position_before TEXT,
+    position_after TEXT,
+    realized_pnl TEXT
 );
 
 CREATE TABLE IF NOT EXISTS equity_snapshots (
@@ -232,6 +236,18 @@ class PaperStore:
         for name, definition in account_migrations.items():
             if name not in account_columns:
                 connection.execute(f"ALTER TABLE accounts ADD COLUMN {name} {definition}")
+
+        fill_columns = {
+            row["name"] for row in connection.execute("PRAGMA table_info(fills)").fetchall()
+        }
+        for name in (
+            "position_effect",
+            "position_before",
+            "position_after",
+            "realized_pnl",
+        ):
+            if name not in fill_columns:
+                connection.execute(f"ALTER TABLE fills ADD COLUMN {name} TEXT")
 
     @contextmanager
     def connection(self) -> Iterator[sqlite3.Connection]:
@@ -570,33 +586,103 @@ class PaperStore:
             is_futures = account["paper_model"] == "futures"
             leverage = Decimal(int(account["leverage"]))
 
-            if side is Side.BUY:
-                fill_price = market_price * (Decimal("1") + slip_rate)
+            fill_price = market_price * (
+                Decimal("1") + slip_rate if side is Side.BUY else Decimal("1") - slip_rate
+            )
+            fill_legs: list[dict[str, Decimal | str]] = []
+            position_before = quantity
+
+            if is_futures:
+                desired_sign = Decimal("1") if side is Side.BUY else Decimal("-1")
+                if quantity * desired_sign > 0:
+                    connection.execute(
+                        "UPDATE orders SET status = 'REJECTED' WHERE id = ?", (order["id"],)
+                    )
+                    return {"status": "REJECTED", "reason": "already_positioned"}
+
+                if quantity:
+                    close_quantity = abs(quantity)
+                    close_notional = fill_price * close_quantity
+                    close_fee = close_notional * fee_rate
+                    close_realized = quantity * (fill_price - average_price) - close_fee
+                    cash += close_realized
+                    realized_pnl += close_realized
+                    total_fees += close_fee
+                    fill_legs.append(
+                        {
+                            "quantity": close_quantity,
+                            "notional": close_notional,
+                            "fee": close_fee,
+                            "effect": "CLOSE",
+                            "before": quantity,
+                            "after": Decimal("0"),
+                            "realized": close_realized,
+                        }
+                    )
+
                 budget = cash * Decimal(str(position_fraction))
-                raw_quantity = (
-                    budget / fill_price
-                    if is_futures
-                    else budget / (fill_price * (Decimal("1") + fee_rate))
-                )
-                fill_quantity = _floor_step(raw_quantity, step)
-                notional = fill_price * fill_quantity
-                fee = notional * fee_rate
-                required_balance = notional / leverage + fee if is_futures else notional + fee
+                open_quantity = _floor_step(budget * leverage / fill_price, step)
+                open_notional = fill_price * open_quantity
+                open_fee = open_notional * fee_rate
+                required_balance = open_notional / leverage + open_fee
                 if (
-                    notional < Decimal(str(minimum_notional))
-                    or fill_quantity <= 0
+                    open_notional < Decimal(str(minimum_notional))
+                    or open_quantity <= 0
                     or required_balance > cash
                 ):
                     connection.execute(
                         "UPDATE orders SET status = 'REJECTED' WHERE id = ?", (order["id"],)
                     )
                     return {"status": "REJECTED", "reason": "insufficient_margin"}
-                cash -= fee if is_futures else notional + fee
+                quantity = desired_sign * open_quantity
+                average_price = fill_price
+                cash -= open_fee
+                realized_pnl -= open_fee
+                total_fees += open_fee
+                fill_legs.append(
+                    {
+                        "quantity": open_quantity,
+                        "notional": open_notional,
+                        "fee": open_fee,
+                        "effect": "OPEN",
+                        "before": Decimal("0"),
+                        "after": quantity,
+                        "realized": -open_fee,
+                    }
+                )
+            elif side is Side.BUY:
+                budget = cash * Decimal(str(position_fraction))
+                fill_quantity = _floor_step(
+                    budget / (fill_price * (Decimal("1") + fee_rate)), step
+                )
+                notional = fill_price * fill_quantity
+                fee = notional * fee_rate
+                if (
+                    notional < Decimal(str(minimum_notional))
+                    or fill_quantity <= 0
+                    or notional + fee > cash
+                ):
+                    connection.execute(
+                        "UPDATE orders SET status = 'REJECTED' WHERE id = ?", (order["id"],)
+                    )
+                    return {"status": "REJECTED", "reason": "insufficient_balance"}
+                cash -= notional + fee
                 quantity += fill_quantity
                 average_price = fill_price
                 realized_pnl -= fee
+                total_fees += fee
+                fill_legs.append(
+                    {
+                        "quantity": fill_quantity,
+                        "notional": notional,
+                        "fee": fee,
+                        "effect": "OPEN",
+                        "before": position_before,
+                        "after": quantity,
+                        "realized": -fee,
+                    }
+                )
             else:
-                fill_price = market_price * (Decimal("1") - slip_rate)
                 fill_quantity = quantity
                 notional = fill_price * fill_quantity
                 fee = notional * fee_rate
@@ -605,17 +691,29 @@ class PaperStore:
                         "UPDATE orders SET status = 'REJECTED' WHERE id = ?", (order["id"],)
                     )
                     return {"status": "REJECTED", "reason": "no_position"}
-                cash += (
-                    (fill_price - average_price) * fill_quantity - fee
-                    if is_futures
-                    else notional - fee
-                )
-                realized_pnl += (fill_price - average_price) * fill_quantity - fee
+                close_realized = (fill_price - average_price) * fill_quantity - fee
+                cash += notional - fee
+                realized_pnl += close_realized
+                total_fees += fee
                 quantity = Decimal("0")
                 average_price = Decimal("0")
+                fill_legs.append(
+                    {
+                        "quantity": fill_quantity,
+                        "notional": notional,
+                        "fee": fee,
+                        "effect": "CLOSE",
+                        "before": position_before,
+                        "after": quantity,
+                        "realized": close_realized,
+                    }
+                )
 
-            total_fees += fee
-            fill_id = uuid.uuid4().hex
+            fill_quantity = sum(
+                (Decimal(str(leg["quantity"])) for leg in fill_legs), Decimal("0")
+            )
+            notional = sum((Decimal(str(leg["notional"])) for leg in fill_legs), Decimal("0"))
+            fee = sum((Decimal(str(leg["fee"])) for leg in fill_legs), Decimal("0"))
             connection.execute(
                 """
                 UPDATE accounts SET cash = ?, quantity = ?, average_price = ?, realized_pnl = ?,
@@ -645,31 +743,41 @@ class PaperStore:
                     order["id"],
                 ),
             )
-            connection.execute(
-                """
-                INSERT INTO fills (
-                    id, order_id, account_id, side, timestamp_ms, price, quantity,
-                    notional, fee, reason, source
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    fill_id,
-                    order["id"],
-                    account_id,
-                    side.value,
-                    tick.timestamp_ms,
-                    str(fill_price),
-                    str(fill_quantity),
-                    str(notional),
-                    str(fee),
-                    order["reason"],
-                    tick.source,
-                ),
-            )
+            fill_ids = []
+            for leg in fill_legs:
+                fill_id = uuid.uuid4().hex
+                fill_ids.append(fill_id)
+                connection.execute(
+                    """
+                    INSERT INTO fills (
+                        id, order_id, account_id, side, timestamp_ms, price, quantity,
+                        notional, fee, reason, source, position_effect,
+                        position_before, position_after, realized_pnl
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        fill_id,
+                        order["id"],
+                        account_id,
+                        side.value,
+                        tick.timestamp_ms,
+                        str(fill_price),
+                        str(leg["quantity"]),
+                        str(leg["notional"]),
+                        str(leg["fee"]),
+                        order["reason"],
+                        tick.source,
+                        leg["effect"],
+                        str(leg["before"]),
+                        str(leg["after"]),
+                        str(leg["realized"]),
+                    ),
+                )
 
         result = {
             "status": "FILLED",
-            "fill_id": fill_id,
+            "fill_id": fill_ids[-1],
+            "fill_ids": fill_ids,
             "order_id": order["id"],
             "side": side.value,
             "price": str(fill_price),
@@ -681,7 +789,7 @@ class PaperStore:
             tick.timestamp_ms,
             "INFO",
             "FILL",
-            f"{side.value} {fill_quantity} @ {fill_price:.4f}",
+            f"{side.value} {position_before} -> {quantity} @ {fill_price:.4f}",
             result,
         )
         return result
@@ -704,10 +812,10 @@ class PaperStore:
                 return None
 
             quantity = Decimal(account["quantity"])
-            if quantity <= 0:
+            if quantity == 0:
                 return None
-            notional = quantity * funding.mark_price
-            amount = -(notional * funding.rate)
+            notional = abs(quantity) * funding.mark_price
+            amount = -(quantity * funding.mark_price * funding.rate)
             payment_id = f"{account_id}:{funding.timestamp_ms}"
             inserted = connection.execute(
                 """
@@ -810,7 +918,9 @@ class PaperStore:
         total_funding = Decimal(account["total_funding"])
         is_futures = account["paper_model"] == "futures"
         mark_price = tick.mark_price or tick.price
-        market_value = quantity * (mark_price if is_futures else tick.price)
+        market_value = (
+            abs(quantity) * mark_price if is_futures else quantity * tick.price
+        )
         unrealized = quantity * (mark_price - average_price) if quantity else Decimal("0")
         if is_futures:
             equity = cash + unrealized

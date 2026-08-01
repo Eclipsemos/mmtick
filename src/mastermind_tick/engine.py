@@ -206,12 +206,17 @@ class PaperEngine:
                     _position_fraction(runtime.instrument, self.settings),
                 )
             account = self.store.account(account_id)
-            has_position = Decimal(account["quantity"]) > 0
+            position_quantity = Decimal(account["quantity"])
+            has_position = position_quantity != 0
+            is_short = position_quantity < 0
+            allow_short = runtime.instrument.paper_model == "futures"
             has_pending = self.store.has_pending_order(account_id)
             signal = runtime.strategy.on_tick(
                 tick,
                 has_position=has_position,
                 has_pending_order=has_pending,
+                allow_short=allow_short,
+                is_short=is_short,
                 emit_signals=self.trading_enabled,
             )
             if signal:
@@ -360,7 +365,10 @@ class PaperEngine:
         for runtime in self.runtimes.values():
             view = runtime.strategy.view()
             account = self.store.account(runtime.instrument.id)
-            has_position = Decimal(account["quantity"]) > 0
+            position_quantity = Decimal(account["quantity"])
+            has_position = position_quantity != 0
+            is_short = position_quantity < 0
+            allow_short = runtime.instrument.paper_model == "futures"
             has_pending = self.store.has_pending_order(runtime.instrument.id)
             latest_orders = self.store.orders(runtime.instrument.id, 1)
             values.append(
@@ -406,6 +414,8 @@ class PaperEngine:
                         has_position=has_position,
                         has_pending_order=has_pending,
                         bar_ms=runtime.strategy.bar_ms,
+                        allow_short=allow_short,
+                        is_short=is_short,
                         last_order=latest_orders[0] if latest_orders else None,
                     ),
                 }
@@ -463,6 +473,8 @@ def _decision_view(
     has_position: bool,
     has_pending_order: bool,
     bar_ms: int,
+    allow_short: bool = False,
+    is_short: bool = False,
     last_order: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if not trading_enabled:
@@ -477,6 +489,10 @@ def _decision_view(
         state = "ORDER_PENDING"
         reason = "WAITING_NEXT_TICK_FILL"
         next_trigger = "NEXT_TICK_FILL"
+    elif has_position and is_short:
+        state = "HOLDING_SHORT"
+        reason = "PRICE_BELOW_STOP" if view.relation == "below" else "NO_FRESH_UP_CROSS"
+        next_trigger = "PRICE_CROSS_ABOVE"
     elif has_position:
         state = "HOLDING_LONG"
         reason = "PRICE_ABOVE_STOP" if view.relation == "above" else "NO_FRESH_DOWN_CROSS"
@@ -489,6 +505,14 @@ def _decision_view(
         state = "BUY_LOCKED"
         reason = "BUY_SIGNAL_USED_THIS_BAR"
         next_trigger = "NEXT_BAR"
+    elif allow_short and view.relation == "below":
+        state = "ARMED_FOR_LONG"
+        reason = "PRICE_BELOW_STOP"
+        next_trigger = "PRICE_CROSS_ABOVE"
+    elif allow_short:
+        state = "ARMED_FOR_SHORT"
+        reason = "PRICE_ABOVE_STOP"
+        next_trigger = "PRICE_CROSS_BELOW"
     elif view.relation == "below":
         state = "ARMED_FOR_BUY"
         reason = "PRICE_BELOW_STOP"
@@ -504,6 +528,8 @@ def _decision_view(
         "next_trigger": next_trigger,
         "trading_enabled": trading_enabled,
         "has_position": has_position,
+        "position_side": "SHORT" if is_short else "LONG" if has_position else "FLAT",
+        "allow_short": allow_short,
         "has_pending_order": has_pending_order,
         "strategy_ready": view.ready,
         "buy_lock_open": not view.bought_this_bar,

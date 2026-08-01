@@ -138,6 +138,8 @@ class ATRTickStrategy:
         *,
         has_position: bool,
         has_pending_order: bool,
+        allow_short: bool = False,
+        is_short: bool = False,
         emit_signals: bool = True,
     ) -> StrategySignal | None:
         bar_start = tick.timestamp_ms // self.bar_ms * self.bar_ms
@@ -195,6 +197,8 @@ class ATRTickStrategy:
                 has_pending_order=has_pending_order,
                 bought_this_bar=self.bought_this_bar,
                 flattened_this_bar=self.flattened_this_bar,
+                allow_short=allow_short,
+                is_short=is_short,
             )
             if blocked_reason is None:
                 self.bought_this_bar = True
@@ -216,6 +220,8 @@ class ATRTickStrategy:
                 has_position=has_position,
                 has_pending_order=has_pending_order,
                 flattened_this_bar=self.flattened_this_bar,
+                allow_short=allow_short,
+                is_short=is_short,
             )
             if blocked_reason is None:
                 self.flattened_this_bar = True
@@ -295,10 +301,12 @@ def _buy_block_reason(
     has_pending_order: bool,
     bought_this_bar: bool,
     flattened_this_bar: bool,
+    allow_short: bool,
+    is_short: bool,
 ) -> str | None:
     if not emit_signals:
         return "TRADING_PAUSED"
-    if has_position:
+    if has_position and (not allow_short or not is_short):
         return "ALREADY_LONG"
     if has_pending_order:
         return "ORDER_PENDING"
@@ -315,10 +323,14 @@ def _sell_block_reason(
     has_position: bool,
     has_pending_order: bool,
     flattened_this_bar: bool,
+    allow_short: bool,
+    is_short: bool,
 ) -> str | None:
     if not emit_signals:
         return "TRADING_PAUSED"
-    if not has_position:
+    if allow_short and has_position and is_short:
+        return "ALREADY_SHORT"
+    if not allow_short and not has_position:
         return "NO_POSITION"
     if has_pending_order:
         return "ORDER_PENDING"

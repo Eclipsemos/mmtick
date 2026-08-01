@@ -121,7 +121,13 @@ def _trade_stats(
     fills: list[dict[str, Any]],
     funding_payments: list[dict[str, Any]] | None = None,
 ) -> dict[str, int | float | None]:
-    ordered = sorted(fills, key=lambda fill: int(fill["timestamp_ms"]))
+    ordered = sorted(
+        fills,
+        key=lambda fill: (
+            int(fill["timestamp_ms"]),
+            0 if fill.get("position_effect") == "CLOSE" else 1,
+        ),
+    )
     funding = sorted(
         funding_payments or [],
         key=lambda payment: int(payment["timestamp_ms"]),
@@ -131,6 +137,19 @@ def _trade_stats(
     completed = 0
     for fill in ordered:
         quantity = Decimal(fill["quantity"])
+        effect = fill.get("position_effect")
+        if effect == "OPEN" and quantity > 0:
+            entry = fill
+            continue
+        if effect == "CLOSE" and quantity > 0 and entry is not None:
+            net_pnl = Decimal(fill.get("realized_pnl") or "0") - Decimal(entry["fee"])
+            net_pnl += _funding_between(funding, entry, fill)
+            completed += 1
+            if net_pnl > 0:
+                wins += 1
+            entry = None
+            continue
+
         if fill["side"] == "BUY" and quantity > 0:
             entry = fill
             continue
@@ -144,16 +163,7 @@ def _trade_stats(
         entry_unit_cost = (Decimal(entry["notional"]) + Decimal(entry["fee"])) / entry_quantity
         exit_unit_proceeds = (Decimal(fill["notional"]) - Decimal(fill["fee"])) / quantity
         net_pnl = (exit_unit_proceeds - entry_unit_cost) * matched_quantity
-        net_pnl += sum(
-            (
-                Decimal(payment["amount"])
-                for payment in funding
-                if int(entry["timestamp_ms"])
-                <= int(payment["timestamp_ms"])
-                <= int(fill["timestamp_ms"])
-            ),
-            Decimal("0"),
-        )
+        net_pnl += _funding_between(funding, entry, fill)
         completed += 1
         if net_pnl > 0:
             wins += 1
@@ -165,3 +175,20 @@ def _trade_stats(
         "losing_trades": completed - wins,
         "win_rate": wins / completed if completed else None,
     }
+
+
+def _funding_between(
+    funding: list[dict[str, Any]],
+    entry: dict[str, Any],
+    exit_fill: dict[str, Any],
+) -> Decimal:
+    return sum(
+        (
+            Decimal(payment["amount"])
+            for payment in funding
+            if int(entry["timestamp_ms"])
+            <= int(payment["timestamp_ms"])
+            <= int(exit_fill["timestamp_ms"])
+        ),
+        Decimal("0"),
+    )

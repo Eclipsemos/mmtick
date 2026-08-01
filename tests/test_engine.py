@@ -73,6 +73,22 @@ def test_long_account_waits_for_realtime_down_cross() -> None:
     assert decision["next_trigger"] == "PRICE_CROSS_BELOW"
 
 
+def test_short_account_waits_for_realtime_up_cross() -> None:
+    decision = _decision_view(
+        strategy_view(relation="below", price=Decimal("99")),
+        trading_enabled=True,
+        has_position=True,
+        has_pending_order=False,
+        bar_ms=900_000,
+        allow_short=True,
+        is_short=True,
+    )
+
+    assert decision["state"] == "HOLDING_SHORT"
+    assert decision["position_side"] == "SHORT"
+    assert decision["next_trigger"] == "PRICE_CROSS_ABOVE"
+
+
 def test_sell_lock_is_exposed_as_reentry_locked() -> None:
     decision = _decision_view(
         strategy_view(flattened_this_bar=True),
