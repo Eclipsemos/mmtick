@@ -69,6 +69,7 @@ type TradePoint = {
 }
 
 type CompletedTrade = {
+  direction: 'LONG' | 'SHORT'
   entryTimestamp: number
   exitTimestamp: number
   entryPrice: number
@@ -85,6 +86,17 @@ type ChartRange = {
 const DEFAULT_VISIBLE_POINTS = 500
 const DEFAULT_VISIBLE_KLINES = 60
 const MIN_VISIBLE_POINTS = 20
+const CHART_COLORS = {
+  grid: '#e3e9ed',
+  axis: '#687782',
+  profit: '#078a61',
+  loss: '#d74750',
+  price: '#25313a',
+  atr: '#d39a18',
+  canvas: '#ffffff',
+  brush: '#edf2f4',
+  brushStroke: '#87959f',
+}
 
 function money(value: string | number | null, currency = 'USD') {
   if (value === null) return '--'
@@ -411,12 +423,12 @@ function Monitor({
             {priceChart.length > 1 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={priceChart} margin={{ top: 24, right: 24, bottom: 2, left: 2 }}>
-                  <CartesianGrid stroke="#20272d" vertical={false} />
+                  <CartesianGrid stroke={CHART_COLORS.grid} vertical={false} />
                   <XAxis
                     dataKey="timestamp"
                     type="number"
                     domain={['dataMin', 'dataMax']}
-                    stroke="#66727d"
+                    stroke={CHART_COLORS.axis}
                     tickLine={false}
                     axisLine={false}
                     minTickGap={70}
@@ -425,7 +437,7 @@ function Monitor({
                   />
                   <YAxis
                     domain={['auto', 'auto']}
-                    stroke="#66727d"
+                    stroke={CHART_COLORS.axis}
                     tickLine={false}
                     axisLine={false}
                     width={58}
@@ -444,7 +456,7 @@ function Monitor({
                   />
                   {visibleCompletedTrades.map((trade) => {
                     const profitable = trade.netPnl >= 0
-                    const color = profitable ? '#3fd6a1' : '#ff6f78'
+                    const color = profitable ? CHART_COLORS.profit : CHART_COLORS.loss
                     return (
                       <ReferenceArea
                         key={`${trade.entryTimestamp}-${trade.exitTimestamp}`}
@@ -461,7 +473,7 @@ function Monitor({
                         strokeDasharray="4 3"
                         ifOverflow="extendDomain"
                         label={{
-                          value: `${money(trade.netPnl, account.currency)} · ${percent(trade.returnPercent)}`,
+                          value: `${trade.direction === 'LONG' ? '做多' : '做空'} · ${money(trade.netPnl, account.currency)} · ${percent(trade.returnPercent)}`,
                           position: 'center',
                           fill: color,
                           fontSize: 13,
@@ -470,8 +482,8 @@ function Monitor({
                       />
                     )
                   })}
-                  <Line dataKey="price" name="价格" type="monotone" stroke="#e7ecef" strokeWidth={2} dot={false} isAnimationActive={false} />
-                  <Line dataKey="trailingStop" name="ATR 止损线" type="stepAfter" stroke="#e8bd58" strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
+                  <Line dataKey="price" name="价格" type="monotone" stroke={CHART_COLORS.price} strokeWidth={2} dot={false} isAnimationActive={false} />
+                  <Line dataKey="trailingStop" name="ATR 止损线" type="stepAfter" stroke={CHART_COLORS.atr} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
                   <Scatter
                     data={visibleTradeMarkers}
                     dataKey="price"
@@ -485,8 +497,8 @@ function Monitor({
                     endIndex={priceRange.endIndex}
                     height={25}
                     travellerWidth={9}
-                    stroke="#53616b"
-                    fill="#0d1114"
+                    stroke={CHART_COLORS.brushStroke}
+                    fill={CHART_COLORS.brush}
                     tickFormatter={(value) => time(Number(value))}
                     onChange={(next) => {
                       if (typeof next.startIndex === 'number' && typeof next.endIndex === 'number') {
@@ -559,11 +571,11 @@ function Monitor({
             {equityChart.length > 1 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={equityChart} margin={{ top: 12, right: 12, bottom: 0, left: 0 }}>
-                  <CartesianGrid stroke="#20272d" vertical={false} />
+                  <CartesianGrid stroke={CHART_COLORS.grid} vertical={false} />
                   <XAxis dataKey="timestamp" hide />
                   <YAxis domain={['auto', 'auto']} hide />
                   <Tooltip labelFormatter={(value) => time(Number(value))} formatter={(value) => money(Number(value), account.currency)} />
-                  <Line dataKey="equity" type="monotone" stroke="#3fd6a1" strokeWidth={2} dot={false} isAnimationActive={false} />
+                  <Line dataKey="equity" type="monotone" stroke={CHART_COLORS.profit} strokeWidth={2} dot={false} isAnimationActive={false} />
                 </LineChart>
               </ResponsiveContainer>
             ) : <div className="empty-chart">等待净值快照</div>}
@@ -764,7 +776,7 @@ function KlineSvg({ bars, fills }: { bars: KlinePoint[]; fills: Fill[] }) {
       {bars.map((bar, index) => {
         const center = x(index)
         const up = bar.close >= bar.open
-        const color = up ? '#3fd6a1' : '#ff6f78'
+        const color = up ? CHART_COLORS.profit : CHART_COLORS.loss
         const bodyTop = y(Math.max(bar.open, bar.close))
         const bodyHeight = Math.max(2, Math.abs(y(bar.open) - y(bar.close)))
         return (
@@ -779,10 +791,10 @@ function KlineSvg({ bars, fills }: { bars: KlinePoint[]; fills: Fill[] }) {
         const center = x(index)
         const markerY = y(Number(fill.price))
         const buy = fill.side === 'BUY'
-        const color = buy ? '#3fd6a1' : '#ff6f78'
+        const color = buy ? CHART_COLORS.profit : CHART_COLORS.loss
         return (
           <g key={fill.id} className="kline-trade-marker" data-testid={`kline-marker-${fill.side.toLowerCase()}`}>
-            <circle cx={center} cy={markerY} r={7} fill="#10151a" stroke={color} strokeWidth={2} />
+            <circle cx={center} cy={markerY} r={7} fill={CHART_COLORS.canvas} stroke={color} strokeWidth={2} />
             <path d={buy ? `M ${center - 3} ${markerY + 2} L ${center} ${markerY - 3} L ${center + 3} ${markerY + 2}` : `M ${center - 3} ${markerY - 2} L ${center} ${markerY + 3} L ${center + 3} ${markerY - 2}`} fill="none" stroke={color} strokeWidth={1.5} />
             <text x={center} y={buy ? markerY + 21 : markerY - 12} textAnchor="middle" fill={color} className="kline-trade-label">{fill.side}</text>
           </g>
@@ -824,6 +836,7 @@ function buildCompletedTrades(fills: Fill[], funding: FundingPayment[] = []): Co
         const netPnl = Number(fill.realized_pnl ?? 0) - Number(entry.fee) + fundingPnl
         const entryNotional = Number(entry.notional)
         trades.push({
+          direction: entry.side === 'SELL' ? 'SHORT' : 'LONG',
           entryTimestamp: entry.timestamp_ms,
           exitTimestamp: fill.timestamp_ms,
           entryPrice: Number(entry.price),
@@ -852,6 +865,7 @@ function buildCompletedTrades(fills: Fill[], funding: FundingPayment[] = []): Co
       .reduce((total, payment) => total + Number(payment.amount), 0)
     const netPnl = (exitUnitProceeds - entryUnitCost) * matchedQuantity + fundingPnl
     trades.push({
+      direction: 'LONG',
       entryTimestamp: entry.timestamp_ms,
       exitTimestamp: fill.timestamp_ms,
       entryPrice: Number(entry.price),
@@ -875,12 +889,12 @@ function TradeMarker({ cx = 0, cy = 0, payload }: TradeMarkerProps) {
   if (!payload || (payload.side !== 'BUY' && payload.side !== 'SELL')) return null
   const isBuy = payload.side === 'BUY'
   const Icon = isBuy ? CircleArrowUp : CircleArrowDown
-  const color = isBuy ? '#3fd6a1' : '#ff6f78'
+  const color = isBuy ? CHART_COLORS.profit : CHART_COLORS.loss
   const label = isBuy ? 'BUY' : 'SELL'
   const labelY = isBuy ? cy + 30 : cy - 21
   return (
     <g data-testid={`trade-marker-${payload.side.toLowerCase()}`}>
-      <Icon x={cx - 10} y={cy - 10} width={20} height={20} color={color} fill="#10151a" strokeWidth={2.2} />
+      <Icon x={cx - 10} y={cy - 10} width={20} height={20} color={color} fill={CHART_COLORS.canvas} strokeWidth={2.2} />
       <text x={cx} y={labelY} textAnchor="middle" fill={color} className="trade-marker-label">{label}</text>
     </g>
   )

@@ -86,6 +86,8 @@ test('price chart renders ATR line and trade percentage markers', async ({ page 
         { id: 'buy-loss', account_id: 'soxlb', side: 'BUY', timestamp_ms: now - 20_000, price: '108', quantity: '10', notional: '1080', fee: '1.08', reason: 'test', source: 'test' },
         { id: 'sell-profit', account_id: 'soxlb', side: 'SELL', timestamp_ms: now - 30_000, price: '110', quantity: '10', notional: '1100', fee: '1.1', reason: 'test', source: 'test' },
         { id: 'buy-profit', account_id: 'soxlb', side: 'BUY', timestamp_ms: now - 40_000, price: '100', quantity: '10', notional: '1000', fee: '1', reason: 'test', source: 'test' },
+        { id: 'buy-close-short', account_id: 'soxlb', side: 'BUY', timestamp_ms: now - 45_000, price: '100', quantity: '10', notional: '1000', fee: '1', reason: 'test', source: 'test', position_effect: 'CLOSE', position_before: '-10', position_after: '0', realized_pnl: '99' },
+        { id: 'sell-open-short', account_id: 'soxlb', side: 'SELL', timestamp_ms: now - 50_000, price: '110', quantity: '10', notional: '1100', fee: '1', reason: 'test', source: 'test', position_effect: 'OPEN', position_before: '0', position_after: '-10', realized_pnl: '-1' },
       ]),
     })
   })
@@ -119,14 +121,16 @@ test('price chart renders ATR line and trade percentage markers', async ({ page 
   expect(pageErrors).toEqual([])
   await expect(page.getByRole('heading', { name: '价格与交易信号' })).toBeVisible()
   await expect(page.getByText('ATR 止损线').first()).toBeVisible()
-  await expect(page.getByTestId('trade-marker-buy')).toHaveCount(2)
-  await expect(page.getByTestId('trade-marker-sell')).toHaveCount(2)
-  await expect(page.locator('.trade-range.profit')).toBeVisible()
+  await expect(page.getByTestId('trade-marker-buy')).toHaveCount(3)
+  await expect(page.getByTestId('trade-marker-sell')).toHaveCount(3)
+  await expect(page.locator('.trade-range.profit')).toHaveCount(2)
+  await expect(page.locator('.trade-range.profit').first()).toBeVisible()
   await expect(page.locator('.trade-range.loss')).toBeVisible()
-  await expect(page.getByText('$97.90 · +9.78%')).toBeVisible()
-  await expect(page.getByText('-$92.07 · -8.52%')).toBeVisible()
+  await expect(page.getByText('做多 · $97.90 · +9.78%')).toBeVisible()
+  await expect(page.getByText('做多 · -$92.07 · -8.52%')).toBeVisible()
+  await expect(page.getByText('做空 · $98.00 · +8.91%')).toBeVisible()
   await expect(page.locator('.recharts-line-curve')).toHaveCount(3)
-  const atrLine = page.locator('.recharts-line-curve[stroke="#e8bd58"]')
+  const atrLine = page.locator('.recharts-line-curve[stroke="#d39a18"]')
   await expect(atrLine).toBeVisible()
   await expect(atrLine).not.toHaveAttribute('stroke-dasharray')
   await page.getByTestId('trade-marker-buy').first().hover({ force: true })
@@ -140,8 +144,8 @@ test('price chart renders ATR line and trade percentage markers', async ({ page 
   await expect(page.locator('.recharts-brush')).toBeVisible()
   await expect(page.getByTestId('official-kline-chart')).toBeVisible()
   await expect(page.locator('.kline-candle')).toHaveCount(5)
-  await expect(page.getByTestId('kline-marker-buy')).toHaveCount(2)
-  await expect(page.getByTestId('kline-marker-sell')).toHaveCount(2)
+  await expect(page.getByTestId('kline-marker-buy')).toHaveCount(3)
+  await expect(page.getByTestId('kline-marker-sell')).toHaveCount(3)
   await page.getByRole('button', { name: '放大K线' }).click()
   await page.getByRole('button', { name: '向右滚动K线' }).click()
   await page.getByRole('button', { name: '显示全部K线' }).click()
