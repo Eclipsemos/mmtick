@@ -359,6 +359,16 @@ function Monitor({
   const strategy = runtime.strategy
   const positionQuantity = Number(account.quantity)
   const positionSide = positionQuantity > 0 ? '多头' : positionQuantity < 0 ? '空头' : '空仓'
+  const averagePrice = Number(account.average_price)
+  const trailingStop = Number(strategy.trailing_stop)
+  const stopEstimate = positionQuantity !== 0
+    && averagePrice > 0
+    && Number.isFinite(trailingStop)
+    ? {
+        pnl: positionQuantity * (trailingStop - averagePrice),
+        returnPercent: Math.sign(positionQuantity) * (trailingStop / averagePrice - 1),
+      }
+    : null
   const positive = Number(account.total_pnl) >= 0
   const periodReturn = visibleStart && visibleEnd && visibleStart.price
     ? visibleEnd.price / visibleStart.price - 1
@@ -424,6 +434,32 @@ function Monitor({
               <strong className={periodReturn >= 0 ? 'good-text' : 'bad-text'}>{percent(periodReturn)}</strong>
             </div>
           </div>
+          {stopEstimate && (
+            <div
+              className="position-stop-summary"
+              role="status"
+              aria-label="当前持仓 ATR 平仓预估"
+              title="按当前 ATR 止损线估算，未计下一 Tick 滑点、平仓手续费和资金费"
+            >
+              <span className={`position-side ${positionQuantity > 0 ? 'long' : 'short'}`}>
+                {positionSide}
+              </span>
+              <div>
+                <small>当前成本价</small>
+                <strong>{money(averagePrice, account.currency)}</strong>
+              </div>
+              <div>
+                <small>ATR 平仓价</small>
+                <strong>{money(trailingStop, account.currency)}</strong>
+              </div>
+              <div>
+                <small>预计收益</small>
+                <strong className={stopEstimate.pnl >= 0 ? 'good-text' : 'bad-text'}>
+                  {money(stopEstimate.pnl, account.currency)} · {percent(stopEstimate.returnPercent)}
+                </strong>
+              </div>
+            </div>
+          )}
           <div className="price-chart-wrap">
             {priceChart.length > 1 ? (
               <ResponsiveContainer width="100%" height="100%">

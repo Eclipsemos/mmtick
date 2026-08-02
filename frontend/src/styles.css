@@ -149,6 +149,13 @@ h1 { margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: 0; }
 .price-head { gap: 18px; }
 .chart-summary { display: flex; align-items: center; gap: 20px; }
 .chart-summary > strong { font: 500 14px 'DM Mono', monospace; }
+.position-stop-summary {
+  min-height: 54px; padding: 8px 18px; display: grid; grid-template-columns: auto repeat(3, minmax(110px, 1fr));
+  align-items: center; gap: 20px; border-bottom: 1px solid var(--line); background: #fbfcfd;
+}
+.position-stop-summary > div { min-width: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.position-stop-summary small { color: var(--muted); font-size: 10px; white-space: nowrap; }
+.position-stop-summary strong { font: 700 11px 'DM Mono', monospace; white-space: nowrap; }
 .chart-controls { height: 30px; display: flex; align-items: center; border: 1px solid var(--line); border-radius: 5px; background: #f7f9fa; overflow: hidden; }
 .chart-controls button { width: 31px; height: 28px; padding: 0; display: grid; place-items: center; border: 0; border-left: 1px solid var(--line); color: #849099; background: transparent; cursor: pointer; }
 .chart-controls button:first-child { border-left: 0; }
@@ -322,6 +329,9 @@ footer { height: 44px; padding: 0 30px; display: flex; align-items: center; just
   .chart-summary { align-items: flex-end; flex-direction: column-reverse; gap: 7px; }
   .chart-controls { order: 3; }
   .chart-legend { gap: 8px; }
+  .position-stop-summary { padding: 10px 14px; grid-template-columns: auto 1fr 1fr; gap: 9px 14px; }
+  .position-stop-summary > div { align-items: flex-start; flex-direction: column; gap: 3px; }
+  .position-stop-summary > div:last-child { grid-column: 2 / -1; flex-direction: row; align-items: baseline; }
   .price-chart-wrap { height: 370px; padding-left: 2px; padding-right: 5px; }
   .kline-chart-wrap { height: 350px; padding-left: 2px; padding-right: 2px; }
   .event-row { padding: 12px 0; grid-template-columns: 55px 1fr; gap: 7px; }
