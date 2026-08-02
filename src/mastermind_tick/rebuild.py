@@ -73,6 +73,9 @@ def rebuild_candidate(settings: Settings, candidate_path: Path) -> dict[str, Any
             "period": settings.strategy.atr_period,
             "multiplier": settings.strategy.atr_multiplier,
             "bar_ms": settings.strategy.bar_minutes * 60_000,
+            "trend_efficiency_period": settings.strategy.trend_efficiency_period,
+            "minimum_trend_efficiency": settings.strategy.minimum_trend_efficiency,
+            "reversal_confirmation_atr": settings.strategy.reversal_confirmation_atr,
         },
         "market_counts": after_market,
         "accounts": [asdict(result) for result in results],
@@ -110,6 +113,9 @@ def _rebuild_account(
         settings.strategy.atr_period,
         settings.strategy.atr_multiplier,
         settings.strategy.bar_minutes,
+        settings.strategy.trend_efficiency_period,
+        settings.strategy.minimum_trend_efficiency,
+        settings.strategy.reversal_confirmation_atr,
     )
     strategy.bootstrap(warmup)
     position_fraction = (
@@ -168,6 +174,11 @@ def _rebuild_account(
                     settings.execution,
                     position_fraction,
                 )
+                if fill is not None:
+                    strategy.on_fill(
+                        tick.timestamp_ms,
+                        filled=fill.get("status") == "FILLED",
+                    )
                 has_pending = False
                 position_quantity = Decimal(store.account(instrument.id)["quantity"])
             signal = strategy.on_tick(

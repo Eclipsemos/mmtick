@@ -47,7 +47,13 @@ def futures_instrument() -> InstrumentSettings:
     )
 
 
-def signal(side: Side, tick_id: str, price: str = "100") -> StrategySignal:
+def signal(
+    side: Side,
+    tick_id: str,
+    price: str = "100",
+    *,
+    reduce_only: bool = False,
+) -> StrategySignal:
     return StrategySignal(
         side=side,
         reason="test_cross",
@@ -56,6 +62,7 @@ def signal(side: Side, tick_id: str, price: str = "100") -> StrategySignal:
         atr=Decimal("2"),
         bar_start_ms=0,
         tick_id=tick_id,
+        reduce_only=reduce_only,
     )
 
 
@@ -267,7 +274,7 @@ def test_late_tick_is_archived_without_overwriting_official_closed_bar(tmp_path)
     assert store.agg_trades(item.id, 1)[0]["event_id"] == "late-trade"
 
 
-def test_futures_sell_reverses_long_to_short(tmp_path) -> None:
+def test_futures_reduce_only_sell_closes_long_before_separate_short(tmp_path) -> None:
     store = PaperStore(tmp_path / "paper.db")
     item = futures_instrument()
     execution = ExecutionSettings(fee_bps=10, slippage_bps=5, minimum_notional=5)
@@ -294,25 +301,34 @@ def test_futures_sell_reverses_long_to_short(tmp_path) -> None:
     assert Decimal(point["equity"]) == Decimal("10850.2500")
     assert Decimal(point["initial_margin"]) == Decimal("10355")
 
-    store.submit_order(item.id, signal(Side.SELL, "sell-signal", "110"), 4)
+    store.submit_order(
+        item.id,
+        signal(Side.SELL, "sell-signal", "110", reduce_only=True),
+        4,
+    )
     store.fill_pending(item.id, market_tick("sell-fill", 5, "110"), item, execution, 0.95)
-    reversed_account = store.account(item.id)
-    assert Decimal(reversed_account["quantity"]) < 0
-    assert Decimal(reversed_account["average_price"]) == Decimal("110.0")
-    reversal_fills = [fill for fill in store.fills(item.id) if fill["timestamp_ms"] == 5]
-    assert {fill["position_effect"] for fill in reversal_fills} == {"CLOSE", "OPEN"}
-    close = next(fill for fill in reversal_fills if fill["position_effect"] == "CLOSE")
+    flat_account = store.account(item.id)
+    assert Decimal(flat_account["quantity"]) == 0
+    close_fills = [fill for fill in store.fills(item.id) if fill["timestamp_ms"] == 5]
+    assert {fill["position_effect"] for fill in close_fills} == {"CLOSE"}
+    close = close_fills[0]
     assert Decimal(close["realized_pnl"]) == Decimal("944.7750")
+
+    store.submit_order(item.id, signal(Side.SELL, "short-signal", "109"), 6)
+    store.fill_pending(item.id, market_tick("short-fill", 7, "109"), item, execution, 0.95)
+    short_account = store.account(item.id)
+    assert Decimal(short_account["quantity"]) < 0
+    assert Decimal(short_account["average_price"]) == Decimal("109")
 
     short_mark = store.snapshot(
         item.id,
-        Tick("short-mark", 6, Decimal("100"), Decimal("1"), "test", mark_price=Decimal("100")),
+        Tick("short-mark", 8, Decimal("100"), Decimal("1"), "test", mark_price=Decimal("100")),
     )
     assert Decimal(short_mark["unrealized_pnl"]) > 0
     assert Decimal(short_mark["initial_margin"]) > 0
 
 
-def test_two_x_futures_reverses_short_back_to_long(tmp_path) -> None:
+def test_futures_reduce_only_buy_closes_short_before_separate_long(tmp_path) -> None:
     store = PaperStore(tmp_path / "paper.db")
     item = replace(futures_instrument(), leverage=2)
     execution = ExecutionSettings(fee_bps=10, slippage_bps=0, minimum_notional=5)
@@ -324,12 +340,42 @@ def test_two_x_futures_reverses_short_back_to_long(tmp_path) -> None:
     assert Decimal(short_account["quantity"]) == Decimal("-190")
     assert Decimal(short_account["cash"]) == Decimal("9990.5000")
 
-    store.submit_order(item.id, signal(Side.BUY, "long-signal", "90"), 3)
-    store.fill_pending(item.id, market_tick("long-fill", 4, "90"), item, execution, 0.95)
+    store.submit_order(
+        item.id,
+        signal(Side.BUY, "close-short-signal", "90", reduce_only=True),
+        3,
+    )
+    store.fill_pending(item.id, market_tick("close-short-fill", 4, "90"), item, execution, 0.95)
+    assert Decimal(store.account(item.id)["quantity"]) == 0
+
+    store.submit_order(item.id, signal(Side.BUY, "long-signal", "90"), 5)
+    store.fill_pending(item.id, market_tick("long-fill", 6, "90"), item, execution, 0.95)
     long_account = store.account(item.id)
     assert Decimal(long_account["quantity"]) > 0
     assert Decimal(long_account["average_price"]) == Decimal("90")
     assert Decimal(long_account["cash"]) > Decimal("11800")
+
+
+def test_futures_opposite_open_order_is_rejected_while_positioned(tmp_path) -> None:
+    store = PaperStore(tmp_path / "paper.db")
+    item = futures_instrument()
+    execution = ExecutionSettings(fee_bps=10, slippage_bps=0, minimum_notional=5)
+    store.ensure_account(item, 10_000, 1)
+    store.submit_order(item.id, signal(Side.BUY, "long-signal"), 1)
+    store.fill_pending(item.id, market_tick("long-fill", 2, "100"), item, execution, 0.95)
+    quantity = Decimal(store.account(item.id)["quantity"])
+
+    store.submit_order(item.id, signal(Side.SELL, "invalid-short"), 3)
+    result = store.fill_pending(
+        item.id,
+        market_tick("invalid-short-fill", 4, "99"),
+        item,
+        execution,
+        0.95,
+    )
+
+    assert result == {"status": "REJECTED", "reason": "position_not_flat"}
+    assert Decimal(store.account(item.id)["quantity"]) == quantity
 
 
 def test_short_futures_receives_positive_funding(tmp_path) -> None:

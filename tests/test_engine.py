@@ -19,6 +19,12 @@ def strategy_view(**overrides) -> StrategyView:
         "bar_start_ms": 1_800_000,
         "bought_this_bar": False,
         "flattened_this_bar": False,
+        "action_this_bar": False,
+        "trend_efficiency": Decimal("0.5"),
+        "trend_filter_passed": True,
+        "reversal_direction": None,
+        "reversal_anchor": None,
+        "reversal_eligible_bar_ms": None,
         "last_cross": None,
         "last_cross_at_ms": None,
         "last_cross_result": None,
@@ -89,17 +95,17 @@ def test_short_account_waits_for_realtime_up_cross() -> None:
     assert decision["next_trigger"] == "PRICE_CROSS_ABOVE"
 
 
-def test_sell_lock_is_exposed_as_reentry_locked() -> None:
+def test_action_lock_is_exposed_for_the_current_bar() -> None:
     decision = _decision_view(
-        strategy_view(flattened_this_bar=True),
+        strategy_view(action_this_bar=True),
         trading_enabled=True,
         has_position=False,
         has_pending_order=False,
         bar_ms=900_000,
     )
 
-    assert decision["state"] == "REENTRY_LOCKED"
-    assert not decision["reentry_lock_open"]
+    assert decision["state"] == "ACTION_LOCKED"
+    assert not decision["action_lock_open"]
 
 
 def test_tick_signal_is_submitted_then_filled_on_next_tick(tmp_path) -> None:
@@ -108,7 +114,13 @@ def test_tick_signal_is_submitted_then_filled_on_next_tick(tmp_path) -> None:
     store = PaperStore(settings.database_path)
     store.ensure_account(instrument, settings.initial_cash, 1)
     engine = PaperEngine(settings, store)
-    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
+    strategy = ATRTickStrategy(
+        period=2,
+        multiplier=0.75,
+        bar_minutes=15,
+        trend_efficiency_period=2,
+        minimum_trend_efficiency=0,
+    )
     strategy.bootstrap(
         [
             Bar(0, 899_999, Decimal("10"), Decimal("10.5"), Decimal("9.5"), Decimal("10")),
@@ -163,7 +175,13 @@ def test_rest_failure_does_not_block_original_tick_strategy(tmp_path) -> None:
     store = PaperStore(settings.database_path)
     store.ensure_account(instrument, settings.initial_cash, 1)
     engine = PaperEngine(settings, store)
-    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
+    strategy = ATRTickStrategy(
+        period=2,
+        multiplier=0.75,
+        bar_minutes=15,
+        trend_efficiency_period=2,
+        minimum_trend_efficiency=0,
+    )
     strategy.bootstrap(
         [
             Bar(0, 899_999, Decimal("10"), Decimal("10.5"), Decimal("9.5"), Decimal("10")),

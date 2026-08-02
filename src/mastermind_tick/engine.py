@@ -56,6 +56,9 @@ class PaperEngine:
                 period=self.settings.strategy.atr_period,
                 multiplier=self.settings.strategy.atr_multiplier,
                 bar_minutes=self.settings.strategy.bar_minutes,
+                trend_efficiency_period=self.settings.strategy.trend_efficiency_period,
+                minimum_trend_efficiency=self.settings.strategy.minimum_trend_efficiency,
+                reversal_confirmation_atr=self.settings.strategy.reversal_confirmation_atr,
             )
             runtime = InstrumentRuntime(instrument=instrument, feed=feed, strategy=strategy)
             account = self.store.account(instrument.id)
@@ -205,6 +208,11 @@ class PaperEngine:
                     self.settings.execution,
                     _position_fraction(runtime.instrument, self.settings),
                 )
+                if fill is not None:
+                    runtime.strategy.on_fill(
+                        tick.timestamp_ms,
+                        filled=fill.get("status") == "FILLED",
+                    )
             account = self.store.account(account_id)
             position_quantity = Decimal(account["quantity"])
             has_position = position_quantity != 0
@@ -399,6 +407,15 @@ class PaperEngine:
                         "bar_minutes": runtime.strategy.bar_ms // 60_000,
                         "atr_period": runtime.strategy.period,
                         "atr_multiplier": float(runtime.strategy.multiplier),
+                        "trend_efficiency_period": runtime.strategy.trend_efficiency_period,
+                        "minimum_trend_efficiency": float(
+                            runtime.strategy.minimum_trend_efficiency
+                        ),
+                        "reversal_confirmation_atr": float(
+                            runtime.strategy.reversal_confirmation_atr
+                        ),
+                        "one_action_per_bar": True,
+                        "futures_reversal_mode": "close_then_confirm",
                         "signal_confirmation": "tick",
                         "fill_timing": "next_tick",
                     },
@@ -438,7 +455,7 @@ class PaperEngine:
 
 
 def _strategy_view(value: dict[str, Any]) -> dict[str, Any]:
-    for key in ("atr", "trailing_stop", "price"):
+    for key in ("atr", "trailing_stop", "price", "trend_efficiency", "reversal_anchor"):
         if value[key] is not None:
             value[key] = str(value[key])
     return value
@@ -505,14 +522,18 @@ def _decision_view(
         state = "HOLDING_LONG"
         reason = "PRICE_ABOVE_STOP" if view.relation == "above" else "NO_FRESH_DOWN_CROSS"
         next_trigger = "PRICE_CROSS_BELOW"
-    elif view.flattened_this_bar:
-        state = "REENTRY_LOCKED"
-        reason = "SOLD_THIS_BAR"
-        next_trigger = "NEXT_BAR_AND_FRESH_UP_CROSS"
-    elif view.bought_this_bar:
-        state = "BUY_LOCKED"
-        reason = "BUY_SIGNAL_USED_THIS_BAR"
+    elif view.action_this_bar:
+        state = "ACTION_LOCKED"
+        reason = "ACTION_USED_THIS_BAR"
         next_trigger = "NEXT_BAR"
+    elif view.reversal_direction:
+        state = "REVERSAL_CONFIRMATION"
+        reason = f"WAITING_CONFIRMED_{view.reversal_direction}"
+        next_trigger = "NEXT_BAR_REVERSAL_CONFIRMATION"
+    elif not view.trend_filter_passed:
+        state = "TREND_FILTERED"
+        reason = "LOW_TREND_EFFICIENCY"
+        next_trigger = "TREND_FILTER_RECOVERY"
     elif allow_short and view.relation == "below":
         state = "ARMED_FOR_LONG"
         reason = "PRICE_BELOW_STOP"
@@ -540,8 +561,12 @@ def _decision_view(
         "allow_short": allow_short,
         "has_pending_order": has_pending_order,
         "strategy_ready": view.ready,
-        "buy_lock_open": not view.bought_this_bar,
-        "reentry_lock_open": not view.flattened_this_bar,
+        "buy_lock_open": not view.action_this_bar,
+        "reentry_lock_open": not view.action_this_bar,
+        "action_lock_open": not view.action_this_bar,
+        "trend_filter_passed": view.trend_filter_passed,
+        "reversal_direction": view.reversal_direction,
+        "reversal_eligible_bar_ms": view.reversal_eligible_bar_ms,
         "fresh_up_cross": view.last_cross == "UP" and view.last_cross_result == "BUY_SIGNAL",
         "bar_end_ms": view.bar_start_ms + bar_ms if view.bar_start_ms is not None else None,
         "signal_confirmation": "TICK",

@@ -36,7 +36,13 @@ def tick(event_id: str, timestamp_ms: int, price: float) -> Tick:
 
 
 def warmed_strategy() -> ATRTickStrategy:
-    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
+    strategy = ATRTickStrategy(
+        period=2,
+        multiplier=0.75,
+        bar_minutes=15,
+        trend_efficiency_period=2,
+        minimum_trend_efficiency=0,
+    )
     strategy.bootstrap(bars([10, 9, 8]))
     return strategy
 
@@ -71,7 +77,13 @@ def test_tick_up_cross_emits_immediately_without_debounce() -> None:
 
 
 def test_down_cross_then_up_cross_is_locked_for_same_bar() -> None:
-    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
+    strategy = ATRTickStrategy(
+        period=2,
+        multiplier=0.75,
+        bar_minutes=15,
+        trend_efficiency_period=2,
+        minimum_trend_efficiency=0,
+    )
     strategy.bootstrap(bars([10, 9, 8, 9, 12]))
     start = 5 * BAR_MS
 
@@ -89,11 +101,17 @@ def test_down_cross_then_up_cross_is_locked_for_same_bar() -> None:
     assert blocked is None
     assert strategy.last_cross == "UP"
     assert strategy.last_cross_result == "BLOCKED"
-    assert strategy.last_cross_reason == "REENTRY_LOCKED_THIS_BAR"
+    assert strategy.last_cross_reason == "ACTION_LOCKED_THIS_BAR"
 
 
 def test_futures_down_cross_opens_short_from_flat() -> None:
-    strategy = ATRTickStrategy(period=2, multiplier=0.75, bar_minutes=15)
+    strategy = ATRTickStrategy(
+        period=2,
+        multiplier=0.75,
+        bar_minutes=15,
+        trend_efficiency_period=2,
+        minimum_trend_efficiency=0,
+    )
     strategy.bootstrap(bars([10, 9, 8, 9, 12]))
     start = 5 * BAR_MS
 
@@ -123,9 +141,140 @@ def test_futures_up_cross_reverses_short_to_long() -> None:
 
     assert signal is not None
     assert signal.side is Side.BUY
+    assert signal.reduce_only is True
 
 
-def test_buy_and_sell_are_each_limited_to_one_signal_per_bar() -> None:
+def test_futures_reversal_closes_then_opens_short_after_next_bar_confirmation() -> None:
+    strategy = ATRTickStrategy(
+        period=2,
+        multiplier=0.75,
+        bar_minutes=15,
+        trend_efficiency_period=2,
+        minimum_trend_efficiency=0,
+        reversal_confirmation_atr=0.25,
+    )
+    strategy.bootstrap(bars([10, 9, 8, 9, 12]))
+    close_bar = 5 * BAR_MS
+
+    close = strategy.on_tick(
+        tick("close-long", close_bar, 10),
+        has_position=True,
+        has_pending_order=False,
+        allow_short=True,
+    )
+    assert close is not None
+    assert close.side is Side.SELL
+    assert close.reduce_only is True
+    assert strategy.reversal_direction == "SHORT"
+
+    strategy.on_fill(close_bar + 1, filled=True)
+    assert strategy.reversal_eligible_bar_ms == close_bar + BAR_MS
+    assert strategy.on_tick(
+        tick("same-bar-drop", close_bar + 2, 8),
+        has_position=False,
+        has_pending_order=False,
+        allow_short=True,
+    ) is None
+
+    eligible_bar = close_bar + BAR_MS
+    assert strategy.on_tick(
+        tick("next-bar-wait", eligible_bar, 10),
+        has_position=False,
+        has_pending_order=False,
+        allow_short=True,
+    ) is None
+    confirmed = strategy.on_tick(
+        tick("next-bar-confirm", eligible_bar + 1, 8),
+        has_position=False,
+        has_pending_order=False,
+        allow_short=True,
+    )
+
+    assert confirmed is not None
+    assert confirmed.side is Side.SELL
+    assert confirmed.reason == "confirmed_short_reversal"
+    assert confirmed.reduce_only is False
+    assert strategy.reversal_direction is None
+
+
+def test_futures_reversal_confirmation_expires_after_the_next_bar() -> None:
+    strategy = warmed_strategy()
+    close_bar = 3 * BAR_MS
+    close = strategy.on_tick(
+        tick("close-short", close_bar, 10),
+        has_position=True,
+        has_pending_order=False,
+        allow_short=True,
+        is_short=True,
+    )
+    assert close is not None and close.reduce_only
+    strategy.on_fill(close_bar + 1, filled=True)
+
+    eligible_bar = close_bar + BAR_MS
+    assert strategy.on_tick(
+        tick("unconfirmed", eligible_bar, 10),
+        has_position=False,
+        has_pending_order=False,
+        allow_short=True,
+    ) is None
+    assert strategy.reversal_direction == "LONG"
+    assert strategy.on_tick(
+        tick("expired", eligible_bar + BAR_MS, 10),
+        has_position=False,
+        has_pending_order=False,
+        allow_short=True,
+    ) is None
+    assert strategy.reversal_direction is None
+
+
+def test_low_trend_efficiency_blocks_a_new_position() -> None:
+    strategy = ATRTickStrategy(
+        period=2,
+        multiplier=0.75,
+        bar_minutes=15,
+        trend_efficiency_period=2,
+        minimum_trend_efficiency=0.5,
+    )
+    strategy.bootstrap(bars([10, 11, 10]))
+    strategy.previous_price = Decimal("10")
+    strategy.trailing_stop = Decimal("11")
+
+    signal = strategy.on_tick(
+        tick("choppy-entry", 3 * BAR_MS, 12),
+        has_position=False,
+        has_pending_order=False,
+    )
+
+    assert signal is None
+    assert strategy.last_trend_efficiency == Decimal("1") / Decimal("3")
+    assert strategy.last_cross_reason == "LOW_TREND_EFFICIENCY"
+    assert strategy.action_this_bar is False
+
+
+def test_low_trend_efficiency_does_not_block_an_exit() -> None:
+    strategy = ATRTickStrategy(
+        period=2,
+        multiplier=0.75,
+        bar_minutes=15,
+        trend_efficiency_period=2,
+        minimum_trend_efficiency=0.5,
+    )
+    strategy.bootstrap(bars([10, 9, 12]))
+    strategy.previous_price = Decimal("12")
+    strategy.trailing_stop = Decimal("11")
+
+    signal = strategy.on_tick(
+        tick("choppy-exit", 3 * BAR_MS, 10),
+        has_position=True,
+        has_pending_order=False,
+    )
+
+    assert strategy.last_trend_efficiency == Decimal("0.2")
+    assert signal is not None
+    assert signal.side is Side.SELL
+
+
+def test_only_one_trade_action_is_allowed_per_bar() -> None:
     strategy = warmed_strategy()
     start = 3 * BAR_MS
 
@@ -137,7 +286,8 @@ def test_buy_and_sell_are_each_limited_to_one_signal_per_bar() -> None:
     sell = strategy.on_tick(
         tick("sell", start + 1_000, 7), has_position=True, has_pending_order=False
     )
-    assert sell is not None and sell.side is Side.SELL
+    assert sell is None
+    assert strategy.last_cross_reason == "ACTION_LOCKED_THIS_BAR"
 
     second_buy = strategy.on_tick(
         tick("second-buy", start + 2_000, 11),
@@ -145,7 +295,7 @@ def test_buy_and_sell_are_each_limited_to_one_signal_per_bar() -> None:
         has_pending_order=False,
     )
     assert second_buy is None
-    assert strategy.last_cross_reason == "BUY_LOCKED_THIS_BAR"
+    assert strategy.last_cross_reason == "ACTION_LOCKED_THIS_BAR"
 
 
 def test_paused_strategy_updates_line_without_consuming_trade_lock() -> None:
@@ -239,17 +389,42 @@ def test_runtime_state_persists_tick_relation_and_locks() -> None:
 
     state = strategy.runtime_state()
 
-    assert state["algorithm_version"] == "25784e3"
+    assert state["algorithm_version"] == "atr_tick_v2_regime_guard"
     assert state["period"] == 2
     assert state["multiplier"] == "0.75"
     assert state["bar_ms"] == BAR_MS
     assert state["bought_this_bar"] is True
+    assert state["action_this_bar"] is True
+    assert state["trend_efficiency_period"] == 2
+    assert state["minimum_trend_efficiency"] == "0"
+    assert state["reversal_confirmation_atr"] == "0.25"
     assert state["trailing_stop"] == "9.984375"
 
     restored = warmed_strategy()
     restored.restore_runtime(state)
     assert restored.current_bar is not None
     assert restored.trailing_stop == strategy.trailing_stop
+
+
+def test_runtime_state_persists_pending_reversal() -> None:
+    strategy = warmed_strategy()
+    close_bar = 3 * BAR_MS
+    signal = strategy.on_tick(
+        tick("close-short", close_bar, 10),
+        has_position=True,
+        has_pending_order=False,
+        allow_short=True,
+        is_short=True,
+    )
+    assert signal is not None and signal.reduce_only
+    strategy.on_fill(close_bar + 1, filled=True)
+
+    restored = warmed_strategy()
+    restored.restore_runtime(strategy.runtime_state())
+
+    assert restored.reversal_direction == "LONG"
+    assert restored.reversal_anchor == Decimal("10")
+    assert restored.reversal_eligible_bar_ms == close_bar + BAR_MS
 
 
 def test_runtime_state_from_different_parameters_is_not_restored() -> None:

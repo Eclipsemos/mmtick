@@ -14,6 +14,9 @@ class StrategySettings:
     atr_period: int
     atr_multiplier: float
     position_fraction: float
+    trend_efficiency_period: int = 8
+    minimum_trend_efficiency: float = 0.25
+    reversal_confirmation_atr: float = 0.25
 
 
 @dataclass(frozen=True)
@@ -78,6 +81,12 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         raise ValueError("strategy.atr_multiplier must be positive")
     if not 0 < strategy.position_fraction <= 1:
         raise ValueError("strategy.position_fraction must be in (0, 1]")
+    if strategy.trend_efficiency_period < 2:
+        raise ValueError("strategy.trend_efficiency_period must be at least 2")
+    if not 0 <= strategy.minimum_trend_efficiency <= 1:
+        raise ValueError("strategy.minimum_trend_efficiency must be in [0, 1]")
+    if strategy.reversal_confirmation_atr < 0:
+        raise ValueError("strategy.reversal_confirmation_atr cannot be negative")
     if execution.fee_bps < 0 or execution.slippage_bps < 0:
         raise ValueError("execution costs cannot be negative")
     if not instruments:

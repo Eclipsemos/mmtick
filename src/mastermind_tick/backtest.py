@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from mastermind_tick.config import InstrumentSettings, Settings, load_settings
-from mastermind_tick.models import Bar, FundingRate, Side, Tick
+from mastermind_tick.models import Bar, FundingRate, Side, StrategySignal, Tick
 from mastermind_tick.strategy import ATRTickStrategy, true_range, wilder_atr
 
 DEFAULT_PERIODS = (5, 7, 10, 14, 21, 28, 35, 42, 56)
@@ -79,8 +79,23 @@ class ReplayResult:
 class ReplayATRTickStrategy(ATRTickStrategy):
     """Equivalent ATR calculation that avoids replaying all prior bars per Tick."""
 
-    def __init__(self, period: int, multiplier: float, bar_minutes: int):
-        super().__init__(period, multiplier, bar_minutes)
+    def __init__(
+        self,
+        period: int,
+        multiplier: float,
+        bar_minutes: int,
+        trend_efficiency_period: int = 8,
+        minimum_trend_efficiency: float = 0.25,
+        reversal_confirmation_atr: float = 0.25,
+    ):
+        super().__init__(
+            period,
+            multiplier,
+            bar_minutes,
+            trend_efficiency_period,
+            minimum_trend_efficiency,
+            reversal_confirmation_atr,
+        )
         self._closed_signature: tuple[int, int | None] | None = None
         self._closed_atr: Decimal | None = None
 
@@ -136,14 +151,21 @@ class ReplayBroker:
     def is_short(self) -> bool:
         return self.quantity < 0
 
-    def fill(self, side: Side, market_price: Decimal, timestamp_ms: int) -> bool:
+    def fill(
+        self,
+        side: Side,
+        market_price: Decimal,
+        timestamp_ms: int,
+        *,
+        reduce_only: bool = False,
+    ) -> bool:
         fill_price = market_price * (
             Decimal("1") + self.slippage_rate
             if side is Side.BUY
             else Decimal("1") - self.slippage_rate
         )
         if self.instrument.paper_model == "futures":
-            return self._fill_futures(side, fill_price, timestamp_ms)
+            return self._fill_futures(side, fill_price, timestamp_ms, reduce_only=reduce_only)
         return self._fill_spot(side, fill_price, timestamp_ms)
 
     def _fill_spot(self, side: Side, fill_price: Decimal, timestamp_ms: int) -> bool:
@@ -187,12 +209,18 @@ class ReplayBroker:
         self.average_price = Decimal("0")
         return True
 
-    def _fill_futures(self, side: Side, fill_price: Decimal, timestamp_ms: int) -> bool:
+    def _fill_futures(
+        self,
+        side: Side,
+        fill_price: Decimal,
+        timestamp_ms: int,
+        *,
+        reduce_only: bool,
+    ) -> bool:
         desired_sign = Decimal("1") if side is Side.BUY else Decimal("-1")
-        if self.quantity * desired_sign > 0:
-            return False
-
-        if self.quantity:
+        if reduce_only:
+            if not self.quantity or self.quantity * desired_sign >= 0:
+                return False
             close_quantity = abs(self.quantity)
             close_fee = fill_price * close_quantity * self.fee_rate
             close_realized = self.quantity * (fill_price - self.average_price) - close_fee
@@ -201,6 +229,10 @@ class ReplayBroker:
             self._complete_trade(fill_price, close_fee, timestamp_ms)
             self.quantity = Decimal("0")
             self.average_price = Decimal("0")
+            return True
+
+        if self.quantity:
+            return False
 
         budget = self.cash * self.position_fraction
         quantity = _floor_step(budget * self.leverage / fill_price, self.step)
@@ -280,8 +312,7 @@ class ReplayCandidate:
     parameters: ReplayParameters
     strategy: ReplayATRTickStrategy
     broker: ReplayBroker
-    pending_side: Side | None = None
-    pending_tick_id: str | None = None
+    pending_signal: StrategySignal | None = None
     signals: int = 0
     funding_index: int = 0
 
@@ -293,21 +324,25 @@ class ReplayCandidate:
             self.broker.apply_funding(funding_rates[self.funding_index])
             self.funding_index += 1
 
-        if self.pending_side is not None and tick.event_id != self.pending_tick_id:
-            self.broker.fill(self.pending_side, tick.price, tick.timestamp_ms)
-            self.pending_side = None
-            self.pending_tick_id = None
+        if self.pending_signal is not None and tick.event_id != self.pending_signal.tick_id:
+            filled = self.broker.fill(
+                self.pending_signal.side,
+                tick.price,
+                tick.timestamp_ms,
+                reduce_only=self.pending_signal.reduce_only,
+            )
+            self.strategy.on_fill(tick.timestamp_ms, filled=filled)
+            self.pending_signal = None
 
         signal = self.strategy.on_tick(
             tick,
             has_position=self.broker.has_position,
-            has_pending_order=self.pending_side is not None,
+            has_pending_order=self.pending_signal is not None,
             allow_short=self.broker.instrument.paper_model == "futures",
             is_short=self.broker.is_short,
         )
         if signal is not None:
-            self.pending_side = signal.side
-            self.pending_tick_id = signal.tick_id
+            self.pending_signal = signal
             self.signals += 1
         self.broker.mark(tick.price)
 
@@ -372,7 +407,12 @@ def run_parameter_grid(
         candidates = []
         for item in parameters:
             strategy = ReplayATRTickStrategy(
-                item.atr_period, item.atr_multiplier, settings.strategy.bar_minutes
+                item.atr_period,
+                item.atr_multiplier,
+                settings.strategy.bar_minutes,
+                settings.strategy.trend_efficiency_period,
+                settings.strategy.minimum_trend_efficiency,
+                settings.strategy.reversal_confirmation_atr,
             )
             strategy.bootstrap(warmup_bars)
             candidates.append(

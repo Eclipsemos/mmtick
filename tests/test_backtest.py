@@ -84,13 +84,22 @@ def test_replay_strategy_matches_production_tick_state(period: int, multiplier: 
         actual = replay.on_tick(item, **kwargs)
 
         assert (actual.side if actual else None) == (expected.side if expected else None)
+        assert (actual.reduce_only if actual else None) == (
+            expected.reduce_only if expected else None
+        )
         assert replay.last_atr == production.last_atr
         assert replay.trailing_stop == production.trailing_stop
         assert replay.previous_price == production.previous_price
         assert replay.bought_this_bar == production.bought_this_bar
         assert replay.flattened_this_bar == production.flattened_this_bar
         if expected is not None:
-            position_side = 1 if expected.side is Side.BUY else -1
+            production.on_fill(item.timestamp_ms, filled=True)
+            replay.on_fill(item.timestamp_ms, filled=True)
+            position_side = (
+                0
+                if expected.reduce_only
+                else 1 if expected.side is Side.BUY else -1
+            )
 
 
 def test_spot_round_trip_net_pnl_includes_both_fees_and_slippage() -> None:
@@ -130,19 +139,19 @@ def test_futures_short_trade_includes_fees_slippage_and_funding() -> None:
     funding = FundingRate(2, Decimal("0.001"), Decimal("95"))
     funding_amount = broker.apply_funding(funding)
     assert funding_amount > 0
-    assert broker.fill(Side.BUY, Decimal("90"), 3)
+    assert broker.fill(Side.BUY, Decimal("90"), 3, reduce_only=True)
 
     trade = broker.trades[0]
     expected_gross = trade.quantity * (trade.entry_price - trade.exit_price)
     assert trade.direction == "SHORT"
     assert trade.funding == funding_amount
     assert trade.net_pnl == expected_gross - trade.fees + funding_amount
-    assert broker.quantity > 0
-    assert broker.total_fees > trade.fees
+    assert broker.quantity == 0
+    assert broker.total_fees == trade.fees
 
 
 def test_candidate_fills_signal_on_the_next_tick() -> None:
-    strategy = ReplayATRTickStrategy(2, 0.75, 15)
+    strategy = ReplayATRTickStrategy(2, 0.75, 15, 2, 0)
     strategy.bootstrap(bars([10, 9, 8]))
     broker = ReplayBroker(
         instrument(),
@@ -159,11 +168,12 @@ def test_candidate_fills_signal_on_the_next_tick() -> None:
     )
 
     candidate.process_tick(tick("signal", 3 * BAR_MS, 10), [])
-    assert candidate.pending_side is Side.BUY
+    assert candidate.pending_signal is not None
+    assert candidate.pending_signal.side is Side.BUY
     assert not broker.has_position
 
     candidate.process_tick(tick("fill", 3 * BAR_MS + 1, 10), [])
-    assert candidate.pending_side is None
+    assert candidate.pending_signal is None
     assert broker.has_position
     assert broker.average_price == Decimal("10.005")
 

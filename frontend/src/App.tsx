@@ -543,6 +543,11 @@ function Monitor({
               <div><dt>K 线周期</dt><dd>{runtime.strategy_config.bar_minutes}m</dd></div>
               <div><dt>ATR 周期</dt><dd>{runtime.strategy_config.atr_period}</dd></div>
               <div><dt>ATR 倍数</dt><dd>{number(runtime.strategy_config.atr_multiplier, 2)}</dd></div>
+              <div><dt>效率比周期</dt><dd>{runtime.strategy_config.trend_efficiency_period} 根</dd></div>
+              <div><dt>最低趋势效率</dt><dd>{number(runtime.strategy_config.minimum_trend_efficiency, 2)}</dd></div>
+              <div><dt>反向确认距离</dt><dd>{number(runtime.strategy_config.reversal_confirmation_atr, 2)} ATR</dd></div>
+              <div><dt>单 K 线动作</dt><dd>{runtime.strategy_config.one_action_per_bar ? '最多 1 次' : '--'}</dd></div>
+              <div><dt>永续反向模式</dt><dd>{runtime.paper_model === 'futures' ? '先平仓，再确认' : '仅做多'}</dd></div>
               <div><dt>仓位比例</dt><dd>{(runtime.position_fraction * 100).toFixed(0)}%</dd></div>
               <div><dt>杠杆 / 模式</dt><dd>{runtime.paper_model === 'futures' ? `${runtime.leverage}x ${runtime.margin_mode}` : '1x SPOT'}</dd></div>
               <div><dt>Taker 手续费</dt><dd>{number(runtime.fee_bps, 2)} bps</dd></div>
@@ -557,8 +562,10 @@ function Monitor({
             <div><dt>K 线状态</dt><dd>形成中，Tick 实时交易</dd></div>
             <div><dt>信号检测</dt><dd>每个成交 Tick</dd></div>
             <div><dt>成交时点</dt><dd>下一成交 Tick</dd></div>
-            <div><dt>{runtime.paper_model === 'futures' ? 'BUY 锁' : '买入锁'}</dt><dd>{strategy.bought_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
-            <div><dt>{runtime.paper_model === 'futures' ? 'SELL 锁' : '空仓锁'}</dt><dd>{strategy.flattened_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
+            <div><dt>趋势效率比</dt><dd>{number(strategy.trend_efficiency, 3)}</dd></div>
+            <div><dt>趋势过滤</dt><dd>{strategy.trend_filter_passed ? 'PASS' : 'BLOCKED'}</dd></div>
+            <div><dt>本 K 线动作锁</dt><dd>{strategy.action_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
+            <div><dt>反向确认</dt><dd>{strategy.reversal_direction ? `等待 ${strategy.reversal_direction}` : 'NONE'}</dd></div>
           </dl>
           {runtime.paper_model === 'futures' && (
             <dl className="strategy-values futures-values">
@@ -1001,8 +1008,9 @@ const decisionText = {
   ORDER_PENDING: ['订单待成交', '信号已提交，正在等待下一个 Tick 模拟撮合'],
   HOLDING_LONG: ['持仓监控中', '已持有多头，等待价格实时向下穿越 ATR 止损线'],
   HOLDING_SHORT: ['空头监控中', '已持有空头，等待价格实时向上穿越 ATR 止损线'],
-  REENTRY_LOCKED: ['本 K 线禁止重入', '本根 15 分钟 K 线已经卖出，即使重新上穿也不会买入'],
-  BUY_LOCKED: ['本 K 线买入锁定', '本根 15 分钟 K 线已经使用过买入信号'],
+  ACTION_LOCKED: ['本 K 线动作锁定', '本根 15 分钟 K 线已经执行一次交易，下一根 K 线前不再交易'],
+  REVERSAL_CONFIRMATION: ['等待反向确认', '已平仓，只有下一根 K 线继续突破确认距离才开反向仓位'],
+  TREND_FILTERED: ['震荡过滤中', '当前趋势效率不足，不建立新仓位'],
   ARMED_FOR_BUY: ['等待向上穿越', '当前价格在 ATR 线下方，下一次实时向上穿越可触发买入'],
   ARMED_FOR_LONG: ['等待做多', '当前价格在 ATR 线下方，向上穿越后建立多头'],
   ARMED_FOR_SHORT: ['等待做空', '当前价格在 ATR 线上方，向下穿越后建立空头'],
@@ -1016,6 +1024,8 @@ const triggerText: Record<string, string> = {
   PRICE_CROSS_BELOW: '价格实时向下穿越 ATR 线',
   NEXT_BAR_AND_FRESH_UP_CROSS: '进入下一根 K 线，并出现新的向上穿越',
   NEXT_BAR: '等待下一根 15 分钟 K 线',
+  NEXT_BAR_REVERSAL_CONFIRMATION: '下一根 K 线继续突破 0.25 ATR',
+  TREND_FILTER_RECOVERY: '趋势效率恢复至开仓阈值',
   PRICE_CROSS_ABOVE: '价格实时向上穿越 ATR 线',
   PRICE_BELOW_THEN_CROSS_ABOVE: '价格先回到 ATR 线下方，再重新上穿',
 }
@@ -1025,8 +1035,10 @@ const crossReasonText: Record<string, string> = {
   ALREADY_LONG: '已有多头持仓',
   ALREADY_SHORT: '已有空头持仓',
   ORDER_PENDING: '已有待成交订单',
-  BUY_LOCKED_THIS_BAR: '本 K 线买入锁',
-  REENTRY_LOCKED_THIS_BAR: '卖出后本 K 线禁止重入',
+  ACTION_LOCKED_THIS_BAR: '本 K 线已经执行一次交易',
+  LOW_TREND_EFFICIENCY: '趋势效率不足',
+  TREND_FILTER_WARMING: '趋势过滤预热中',
+  REVERSAL_CANCELED_OPPOSITE_CROSS: '反向确认因价格反向穿越而取消',
   NO_POSITION: '没有可卖持仓',
   EXIT_LOCKED_THIS_BAR: '本 K 线卖出锁',
 }
@@ -1034,7 +1046,10 @@ const crossReasonText: Record<string, string> = {
 function DecisionStatus({ runtime }: { runtime: Account['runtime'] }) {
   const decision = runtime.decision
   const strategy = runtime.strategy
-  const copy = decisionText[decision.state]
+  const copy = decisionText[decision.state] ?? [
+    '状态同步中',
+    '前后端策略状态版本暂时不一致，等待服务刷新',
+  ]
   const tone = decision.state === 'ARMED_FOR_BUY'
     || decision.state === 'ARMED_FOR_LONG'
     || decision.state === 'ARMED_FOR_SHORT'
@@ -1072,10 +1087,9 @@ function DecisionStatus({ runtime }: { runtime: Account['runtime'] }) {
       <div className="decision-gates" aria-label="买入门控">
         <Gate open={decision.trading_enabled} label="策略运行" />
         <Gate open={decision.strategy_ready} label="ATR 就绪" />
-        <Gate open={decision.allow_short || !decision.has_position} label={decision.allow_short ? '允许多空反手' : '当前空仓'} />
+        <Gate open={decision.trend_filter_passed} label="趋势过滤通过" />
         <Gate open={!decision.has_pending_order} label="无待成交单" />
-        <Gate open={decision.buy_lock_open} label="买入锁开放" />
-        <Gate open={decision.reentry_lock_open} label="重入锁开放" />
+        <Gate open={decision.action_lock_open} label="本 K 线动作锁开放" />
         <Gate open={decision.signal_confirmation === 'TICK'} label="Tick 实时检测" />
       </div>
     </section>

@@ -56,7 +56,8 @@ CREATE TABLE IF NOT EXISTS orders (
     filled_at_ms INTEGER,
     fill_price TEXT,
     fill_quantity TEXT,
-    fee TEXT
+    fee TEXT,
+    reduce_only INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS fills (
@@ -262,6 +263,14 @@ class PaperStore:
         ):
             if name not in fill_columns:
                 connection.execute(f"ALTER TABLE fills ADD COLUMN {name} TEXT")
+
+        order_columns = {
+            row["name"] for row in connection.execute("PRAGMA table_info(orders)").fetchall()
+        }
+        if "reduce_only" not in order_columns:
+            connection.execute(
+                "ALTER TABLE orders ADD COLUMN reduce_only INTEGER NOT NULL DEFAULT 0"
+            )
 
         connection.execute(
             """
@@ -531,8 +540,8 @@ class PaperStore:
                 """
                 INSERT INTO orders (
                     id, account_id, side, status, reason, signal_price, trailing_stop, atr,
-                    bar_start_ms, submitted_tick_id, submitted_at_ms
-                ) VALUES (?, ?, ?, 'PENDING', ?, ?, ?, ?, ?, ?, ?)
+                    bar_start_ms, submitted_tick_id, submitted_at_ms, reduce_only
+                ) VALUES (?, ?, ?, 'PENDING', ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     order_id,
@@ -545,6 +554,7 @@ class PaperStore:
                     signal.bar_start_ms,
                     signal.tick_id,
                     now_ms,
+                    int(signal.reduce_only),
                 ),
             )
         self.add_event(
@@ -553,7 +563,11 @@ class PaperStore:
             "INFO",
             "SIGNAL",
             f"{signal.side.value} signal at {signal.signal_price}",
-            {"order_id": order_id, "reason": signal.reason},
+            {
+                "order_id": order_id,
+                "reason": signal.reason,
+                "reduce_only": signal.reduce_only,
+            },
         )
         return order_id
 
@@ -609,6 +623,7 @@ class PaperStore:
             step = Decimal(str(instrument.quantity_step))
             is_futures = account["paper_model"] == "futures"
             leverage = Decimal(int(account["leverage"]))
+            reduce_only = bool(order["reduce_only"])
 
             fill_price = market_price * (
                 Decimal("1") + slip_rate if side is Side.BUY else Decimal("1") - slip_rate
@@ -618,13 +633,14 @@ class PaperStore:
 
             if is_futures:
                 desired_sign = Decimal("1") if side is Side.BUY else Decimal("-1")
-                if quantity * desired_sign > 0:
-                    connection.execute(
-                        "UPDATE orders SET status = 'REJECTED' WHERE id = ?", (order["id"],)
-                    )
-                    return {"status": "REJECTED", "reason": "already_positioned"}
+                if reduce_only:
+                    if quantity == 0 or quantity * desired_sign >= 0:
+                        connection.execute(
+                            "UPDATE orders SET status = 'REJECTED' WHERE id = ?",
+                            (order["id"],),
+                        )
+                        return {"status": "REJECTED", "reason": "invalid_reduce_only"}
 
-                if quantity:
                     close_quantity = abs(quantity)
                     close_notional = fill_price * close_quantity
                     close_fee = close_notional * fee_rate
@@ -643,37 +659,44 @@ class PaperStore:
                             "realized": close_realized,
                         }
                     )
-
-                budget = cash * Decimal(str(position_fraction))
-                open_quantity = _floor_step(budget * leverage / fill_price, step)
-                open_notional = fill_price * open_quantity
-                open_fee = open_notional * fee_rate
-                required_balance = open_notional / leverage + open_fee
-                if (
-                    open_notional < Decimal(str(minimum_notional))
-                    or open_quantity <= 0
-                    or required_balance > cash
-                ):
+                    quantity = Decimal("0")
+                    average_price = Decimal("0")
+                elif quantity != 0:
                     connection.execute(
                         "UPDATE orders SET status = 'REJECTED' WHERE id = ?", (order["id"],)
                     )
-                    return {"status": "REJECTED", "reason": "insufficient_margin"}
-                quantity = desired_sign * open_quantity
-                average_price = fill_price
-                cash -= open_fee
-                realized_pnl -= open_fee
-                total_fees += open_fee
-                fill_legs.append(
-                    {
-                        "quantity": open_quantity,
-                        "notional": open_notional,
-                        "fee": open_fee,
-                        "effect": "OPEN",
-                        "before": Decimal("0"),
-                        "after": quantity,
-                        "realized": -open_fee,
-                    }
-                )
+                    return {"status": "REJECTED", "reason": "position_not_flat"}
+                else:
+                    budget = cash * Decimal(str(position_fraction))
+                    open_quantity = _floor_step(budget * leverage / fill_price, step)
+                    open_notional = fill_price * open_quantity
+                    open_fee = open_notional * fee_rate
+                    required_balance = open_notional / leverage + open_fee
+                    if (
+                        open_notional < Decimal(str(minimum_notional))
+                        or open_quantity <= 0
+                        or required_balance > cash
+                    ):
+                        connection.execute(
+                            "UPDATE orders SET status = 'REJECTED' WHERE id = ?", (order["id"],)
+                        )
+                        return {"status": "REJECTED", "reason": "insufficient_margin"}
+                    quantity = desired_sign * open_quantity
+                    average_price = fill_price
+                    cash -= open_fee
+                    realized_pnl -= open_fee
+                    total_fees += open_fee
+                    fill_legs.append(
+                        {
+                            "quantity": open_quantity,
+                            "notional": open_notional,
+                            "fee": open_fee,
+                            "effect": "OPEN",
+                            "before": Decimal("0"),
+                            "after": quantity,
+                            "realized": -open_fee,
+                        }
+                    )
             elif side is Side.BUY:
                 budget = cash * Decimal(str(position_fraction))
                 fill_quantity = _floor_step(
@@ -807,6 +830,7 @@ class PaperStore:
             "price": str(fill_price),
             "quantity": str(fill_quantity),
             "fee": str(fee),
+            "reduce_only": reduce_only,
         }
         self.add_event(
             account_id,

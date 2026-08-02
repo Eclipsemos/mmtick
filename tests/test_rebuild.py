@@ -38,7 +38,7 @@ def _settings(tmp_path) -> Settings:
         frontend_dist=tmp_path / "dist",
         initial_cash=10_000,
         equity_snapshot_seconds=10,
-        strategy=StrategySettings("atr", 15, 2, 0.5, 1),
+        strategy=StrategySettings("atr", 15, 2, 0.5, 1, 2, 0, 0.25),
         execution=ExecutionSettings(10, 0, 5),
         warmup_bars=10,
         instruments=(_instrument(),),
@@ -119,6 +119,8 @@ def test_rebuild_candidate_replaces_ledger_and_preserves_market_data(tmp_path) -
     assert state["period"] == 2
     assert state["multiplier"] == "0.5"
     assert state["bar_ms"] == BAR_MS
+    assert state["trend_efficiency_period"] == 2
+    assert state["minimum_trend_efficiency"] == "0"
     assert report["market_counts"]["agg_trades"] == source_market_count
 
 

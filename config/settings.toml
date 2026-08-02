@@ -12,6 +12,9 @@ bar_minutes = 15
 atr_period = 28
 atr_multiplier = 1.25
 position_fraction = 1.0
+trend_efficiency_period = 8
+minimum_trend_efficiency = 0.25
+reversal_confirmation_atr = 0.25
 
 [execution]
 fee_bps = 10.0
@@ -45,7 +48,7 @@ feed = "binance_futures"
 quantity_step = 0.01
 reference_symbol = "SOXL"
 paper_model = "futures"
-leverage = 2
+leverage = 1
 margin_mode = "isolated"
 position_fraction = 0.95
 fee_bps = 5.0
