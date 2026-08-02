@@ -198,7 +198,7 @@ function App() {
     ? 'MARKET DATA / SQLITE WAL'
     : view === 'returns'
       ? 'PERFORMANCE / CALENDAR RETURNS'
-      : 'SHORT-HORIZON EXECUTION / ATR TICK V1'
+      : 'SHORT-HORIZON EXECUTION / ATR TICK V3'
 
   return (
     <div className="app-shell">
@@ -547,9 +547,10 @@ function Monitor({
               <div><dt>最低趋势效率</dt><dd>{number(runtime.strategy_config.minimum_trend_efficiency, 2)}</dd></div>
               <div><dt>反向确认距离</dt><dd>{number(runtime.strategy_config.reversal_confirmation_atr, 2)} ATR</dd></div>
               <div><dt>单 K 线动作</dt><dd>{runtime.strategy_config.one_action_per_bar ? '最多 1 次' : '--'}</dd></div>
+              <div><dt>启动趋势对齐</dt><dd>{runtime.strategy_config.startup_alignment ? '启用' : '--'}</dd></div>
               <div><dt>永续反向模式</dt><dd>{runtime.paper_model === 'futures' ? '先平仓，再确认' : '仅做多'}</dd></div>
               <div><dt>仓位比例</dt><dd>{(runtime.position_fraction * 100).toFixed(0)}%</dd></div>
-              <div><dt>杠杆 / 模式</dt><dd>{runtime.paper_model === 'futures' ? `${runtime.leverage}x ${runtime.margin_mode}` : '1x SPOT'}</dd></div>
+              <div><dt>杠杆 / 模式</dt><dd>{runtime.paper_model === 'futures' ? `${runtime.leverage}x ${runtime.margin_mode} · ${number(runtime.target_exposure, 2)}x 目标暴露` : '1x SPOT'}</dd></div>
               <div><dt>Taker 手续费</dt><dd>{number(runtime.fee_bps, 2)} bps</dd></div>
               <div><dt>模拟滑点</dt><dd>{number(runtime.slippage_bps, 2)} bps</dd></div>
             </dl>

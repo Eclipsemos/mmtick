@@ -76,6 +76,80 @@ def test_tick_up_cross_emits_immediately_without_debounce() -> None:
     assert strategy.last_cross_result == "BUY_SIGNAL"
 
 
+def test_startup_alignment_opens_long_inside_an_established_uptrend() -> None:
+    strategy = warmed_strategy()
+    strategy.previous_price = Decimal("12")
+    strategy.trailing_stop = Decimal("10")
+
+    signal = strategy.on_tick(
+        tick("startup-long", 3 * BAR_MS, 12),
+        has_position=False,
+        has_pending_order=False,
+    )
+
+    assert signal is not None
+    assert signal.side is Side.BUY
+    assert signal.reason == "startup_trend_alignment"
+    assert signal.reduce_only is False
+    assert strategy.startup_alignment_checked is True
+
+
+def test_startup_alignment_opens_short_for_futures_downtrend() -> None:
+    strategy = warmed_strategy()
+    strategy.previous_price = Decimal("8")
+    strategy.trailing_stop = Decimal("10")
+
+    signal = strategy.on_tick(
+        tick("startup-short", 3 * BAR_MS, 8),
+        has_position=False,
+        has_pending_order=False,
+        allow_short=True,
+    )
+
+    assert signal is not None
+    assert signal.side is Side.SELL
+    assert signal.reason == "startup_trend_alignment"
+    assert signal.reduce_only is False
+
+
+def test_startup_alignment_never_opens_a_spot_short() -> None:
+    strategy = warmed_strategy()
+    strategy.previous_price = Decimal("8")
+    strategy.trailing_stop = Decimal("10")
+
+    signal = strategy.on_tick(
+        tick("spot-below", 3 * BAR_MS, 8),
+        has_position=False,
+        has_pending_order=False,
+    )
+
+    assert signal is None
+    assert strategy.startup_alignment_checked is True
+
+
+def test_paused_startup_alignment_waits_until_trading_resumes() -> None:
+    strategy = warmed_strategy()
+    strategy.previous_price = Decimal("12")
+    strategy.trailing_stop = Decimal("10")
+    start = 3 * BAR_MS
+
+    assert strategy.on_tick(
+        tick("paused-startup", start, 12),
+        has_position=False,
+        has_pending_order=False,
+        emit_signals=False,
+    ) is None
+    assert strategy.startup_alignment_checked is False
+    signal = strategy.on_tick(
+        tick("resumed-startup", start + 1, 12),
+        has_position=False,
+        has_pending_order=False,
+    )
+
+    assert signal is not None
+    assert signal.reason == "startup_trend_alignment"
+
+
 def test_down_cross_then_up_cross_is_locked_for_same_bar() -> None:
     strategy = ATRTickStrategy(
         period=2,
@@ -389,7 +463,7 @@ def test_runtime_state_persists_tick_relation_and_locks() -> None:
 
     state = strategy.runtime_state()
 
-    assert state["algorithm_version"] == "atr_tick_v2_regime_guard"
+    assert state["algorithm_version"] == "atr_tick_v3_startup_alignment"
     assert state["period"] == 2
     assert state["multiplier"] == "0.75"
     assert state["bar_ms"] == BAR_MS
@@ -398,12 +472,38 @@ def test_runtime_state_persists_tick_relation_and_locks() -> None:
     assert state["trend_efficiency_period"] == 2
     assert state["minimum_trend_efficiency"] == "0"
     assert state["reversal_confirmation_atr"] == "0.25"
+    assert state["startup_alignment_checked"] is True
     assert state["trailing_stop"] == "9.984375"
 
     restored = warmed_strategy()
     restored.restore_runtime(state)
     assert restored.current_bar is not None
     assert restored.trailing_stop == strategy.trailing_stop
+    assert restored.startup_alignment_checked is True
+
+
+def test_restored_runtime_does_not_repeat_startup_alignment() -> None:
+    original = warmed_strategy()
+    original.previous_price = Decimal("8")
+    original.trailing_stop = Decimal("10")
+    original.on_tick(
+        tick("initial-check", 3 * BAR_MS, 8),
+        has_position=False,
+        has_pending_order=False,
+    )
+    restored = warmed_strategy()
+    restored.restore_runtime(original.runtime_state())
+    restored.previous_price = Decimal("12")
+    restored.trailing_stop = Decimal("10")
+
+    signal = restored.on_tick(
+        tick("would-align-again", 3 * BAR_MS + 1, 12),
+        has_position=False,
+        has_pending_order=False,
+    )
+
+    assert signal is None
+    assert restored.startup_alignment_checked is True
 
 
 def test_runtime_state_persists_pending_reversal() -> None:

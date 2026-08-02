@@ -7,10 +7,10 @@ initial_cash = 100000.0
 equity_snapshot_seconds = 10
 
 [strategy]
-name = "xiaoguo_atr_tick_v1"
+name = "xiaoguo_atr_tick_v3_sample_optimized"
 bar_minutes = 15
-atr_period = 28
-atr_multiplier = 1.25
+atr_period = 21
+atr_multiplier = 4.0
 position_fraction = 1.0
 trend_efficiency_period = 8
 minimum_trend_efficiency = 0.25
@@ -48,9 +48,9 @@ feed = "binance_futures"
 quantity_step = 0.01
 reference_symbol = "SOXL"
 paper_model = "futures"
-leverage = 1
+leverage = 2
 margin_mode = "isolated"
-position_fraction = 0.95
+position_fraction = 0.625
 fee_bps = 5.0
 slippage_bps = 2.0
 minimum_notional = 5.0

@@ -492,6 +492,7 @@ def run_parameter_grid(
         "slippage_bps": float(slippage_bps),
         "leverage": instrument.leverage,
         "position_fraction": float(position_fraction),
+        "target_exposure": float(position_fraction * Decimal(instrument.leverage)),
         "funding_events": len(funding_rates),
     }
     return metadata, results
@@ -634,6 +635,12 @@ def build_report(payload: dict[str, Any]) -> str:
                 ),
                 "",
                 (
+                    f"Execution: {metadata['leverage']}x venue leverage, "
+                    f"{metadata['position_fraction']:.2%} position budget, "
+                    f"{metadata['target_exposure']:.2f}x target exposure."
+                ),
+                "",
+                (
                     f"Recommended in this sample: ATR({recommendation['atr_period']}) x "
                     f"{recommendation['atr_multiplier']:.2f}."
                 ),
@@ -692,6 +699,11 @@ def main() -> None:
     parser.add_argument("--output-dir", default="reports")
     parser.add_argument("--start-ms", type=int)
     parser.add_argument("--end-ms", type=int)
+    parser.add_argument(
+        "--minimum-return",
+        type=float,
+        help="Fail when any selected instrument's recommendation is below this return.",
+    )
     args = parser.parse_args()
 
     settings = load_settings(args.config)
@@ -743,6 +755,21 @@ def main() -> None:
     markdown_path.write_text(build_report(payload))
     print(json_path)
     print(markdown_path)
+    if args.minimum_return is not None:
+        failures = [
+            run
+            for run in runs
+            if run["recommendation"]["net_return"] < args.minimum_return
+        ]
+        if failures:
+            details = ", ".join(
+                f"{run['metadata']['instrument_id']}="
+                f"{run['recommendation']['net_return']:.2%}"
+                for run in failures
+            )
+            raise SystemExit(
+                f"minimum return {args.minimum_return:.2%} not met: {details}"
+            )
 
 
 if __name__ == "__main__":

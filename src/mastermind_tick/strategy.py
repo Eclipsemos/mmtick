@@ -1,4 +1,4 @@
-"""Tick-driven ATR trailing-stop strategy from commit 25784e3."""
+"""Tick-driven ATR trailing-stop strategy with regime and startup alignment guards."""
 
 from __future__ import annotations
 
@@ -56,7 +56,7 @@ class StrategyView:
 class ATRTickStrategy:
     """Apply the supplied 15-minute ATR rules on every received market tick."""
 
-    ALGORITHM_VERSION = "atr_tick_v2_regime_guard"
+    ALGORITHM_VERSION = "atr_tick_v3_startup_alignment"
 
     def __init__(
         self,
@@ -95,6 +95,7 @@ class ATRTickStrategy:
         self.reversal_direction: str | None = None
         self.reversal_anchor: Decimal | None = None
         self.reversal_eligible_bar_ms: int | None = None
+        self.startup_alignment_checked = False
         self.last_cross: str | None = None
         self.last_cross_at_ms: int | None = None
         self.last_cross_result: str | None = None
@@ -113,6 +114,7 @@ class ATRTickStrategy:
         self.reversal_direction = None
         self.reversal_anchor = None
         self.reversal_eligible_bar_ms = None
+        self.startup_alignment_checked = False
         for bar in sorted(bars, key=lambda value: value.start_ms):
             candidate = [*self.completed_bars, bar]
             atr = wilder_atr(candidate, self.period)
@@ -149,6 +151,9 @@ class ATRTickStrategy:
         self.reversal_direction = value.get("reversal_direction")
         self.reversal_anchor = _decimal_or_none(value.get("reversal_anchor"))
         self.reversal_eligible_bar_ms = value.get("reversal_eligible_bar_ms")
+        self.startup_alignment_checked = bool(
+            value.get("startup_alignment_checked", False)
+        )
         current_value = value.get("current_bar")
         current = Bar.from_dict(current_value) if current_value else None
         latest_completed_start = (
@@ -185,6 +190,7 @@ class ATRTickStrategy:
             "reversal_direction": self.reversal_direction,
             "reversal_anchor": _string_or_none(self.reversal_anchor),
             "reversal_eligible_bar_ms": self.reversal_eligible_bar_ms,
+            "startup_alignment_checked": self.startup_alignment_checked,
             "last_cross": self.last_cross,
             "last_cross_at_ms": self.last_cross_at_ms,
             "last_cross_result": self.last_cross_result,
@@ -328,7 +334,53 @@ class ATRTickStrategy:
                     reversal_after="SHORT" if allow_short and reduce_only else None,
                 )
             self._record_cross("DOWN", tick.timestamp_ms, "BLOCKED", blocked_reason)
+
+        startup_signal = self._startup_alignment_signal(
+            tick,
+            atr,
+            bar_start,
+            has_position=has_position,
+            has_pending_order=has_pending_order,
+            allow_short=allow_short,
+            emit_signals=emit_signals,
+        )
+        if startup_signal is not None:
+            return startup_signal
         return None
+
+    def _startup_alignment_signal(
+        self,
+        tick: Tick,
+        atr: Decimal,
+        bar_start: int,
+        *,
+        has_position: bool,
+        has_pending_order: bool,
+        allow_short: bool,
+        emit_signals: bool,
+    ) -> StrategySignal | None:
+        """Align a fresh account once when it starts inside an established trend."""
+        if self.startup_alignment_checked or not emit_signals:
+            return None
+        self.startup_alignment_checked = True
+        if has_position or has_pending_order:
+            return None
+        if self._entry_filter_reason() is not None or self.trailing_stop is None:
+            return None
+        if tick.price > self.trailing_stop:
+            side = Side.BUY
+        elif allow_short and tick.price < self.trailing_stop:
+            side = Side.SELL
+        else:
+            return None
+        return self._emit_signal(
+            tick,
+            atr,
+            bar_start,
+            side,
+            "startup_trend_alignment",
+            reduce_only=False,
+        )
 
     def on_fill(self, timestamp_ms: int, *, filled: bool) -> None:
         """Apply the one-action lock to the actual fill bar and arm delayed reversal."""
@@ -391,6 +443,7 @@ class ATRTickStrategy:
         reduce_only: bool,
         reversal_after: str | None = None,
     ) -> StrategySignal:
+        self.startup_alignment_checked = True
         self.action_this_bar = True
         self.last_action_bar_start_ms = bar_start
         self.bought_this_bar = side is Side.BUY

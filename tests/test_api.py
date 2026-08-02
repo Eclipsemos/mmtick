@@ -45,8 +45,12 @@ def test_health_and_empty_overview(tmp_path) -> None:
 def test_active_strategy_uses_recommended_atr_parameters() -> None:
     settings = load_settings("config/settings.toml")
 
-    assert settings.strategy.atr_period == 28
-    assert settings.strategy.atr_multiplier == 1.25
+    assert settings.strategy.atr_period == 21
+    assert settings.strategy.atr_multiplier == 4.0
+    perp = next(item for item in settings.instruments if item.id == "soxl_perp")
+    assert perp.leverage == 2
+    assert perp.position_fraction == 0.625
+    assert perp.leverage * perp.position_fraction == 1.25
 
 
 def test_return_summary_uses_period_boundary_equity(tmp_path) -> None:

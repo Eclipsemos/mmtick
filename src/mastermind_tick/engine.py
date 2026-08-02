@@ -392,6 +392,9 @@ class PaperEngine:
                     "leverage": runtime.instrument.leverage,
                     "margin_mode": runtime.instrument.margin_mode,
                     "position_fraction": _position_fraction(runtime.instrument, self.settings),
+                    "target_exposure": _target_exposure(
+                        runtime.instrument, self.settings
+                    ),
                     "fee_bps": (
                         runtime.instrument.fee_bps
                         if runtime.instrument.fee_bps is not None
@@ -415,6 +418,7 @@ class PaperEngine:
                             runtime.strategy.reversal_confirmation_atr
                         ),
                         "one_action_per_bar": True,
+                        "startup_alignment": True,
                         "futures_reversal_mode": "close_then_confirm",
                         "signal_confirmation": "tick",
                         "fill_timing": "next_tick",
@@ -467,6 +471,10 @@ def _position_fraction(instrument: InstrumentSettings, settings: Settings) -> fl
         if instrument.position_fraction is not None
         else settings.strategy.position_fraction
     )
+
+
+def _target_exposure(instrument: InstrumentSettings, settings: Settings) -> float:
+    return _position_fraction(instrument, settings) * instrument.leverage
 
 
 def _bar_differences(stream_bar: Bar, rest_bar: Bar) -> dict[str, Any]:

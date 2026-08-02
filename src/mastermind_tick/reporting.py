@@ -77,6 +77,7 @@ def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
             "minimum_trend_efficiency": engine.settings.strategy.minimum_trend_efficiency,
             "reversal_confirmation_atr": engine.settings.strategy.reversal_confirmation_atr,
             "one_action_per_bar": True,
+            "startup_alignment": True,
             "futures_reversal_mode": "close_then_confirm",
             "signal_confirmation": "tick",
             "fill_timing": "next_tick",

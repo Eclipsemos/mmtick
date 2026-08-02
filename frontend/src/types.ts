@@ -59,6 +59,7 @@ export type Runtime = {
   leverage: number
   margin_mode: string
   position_fraction: number
+  target_exposure: number
   fee_bps: number
   slippage_bps: number
   strategy_config: {
@@ -70,6 +71,7 @@ export type Runtime = {
     minimum_trend_efficiency: number
     reversal_confirmation_atr: number
     one_action_per_bar: boolean
+    startup_alignment: boolean
     futures_reversal_mode: 'close_then_confirm'
     signal_confirmation: 'tick'
     fill_timing: 'next_tick'
@@ -149,6 +151,7 @@ export type Overview = {
     minimum_trend_efficiency: number
     reversal_confirmation_atr: number
     one_action_per_bar: boolean
+    startup_alignment: boolean
     futures_reversal_mode: 'close_then_confirm'
     signal_confirmation: 'tick'
     fill_timing: 'next_tick'
