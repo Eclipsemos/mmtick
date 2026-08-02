@@ -160,7 +160,6 @@ h1 { margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: 0; }
 .price-dot { background: #25313a; }
 .atr-dot { background: var(--yellow); }
 .trade-marker-label { font: 700 9px 'DM Mono', monospace; }
-.trade-range text { font-family: 'DM Mono', monospace; font-weight: 800; paint-order: stroke; stroke: #fff; stroke-width: 5px; stroke-linejoin: round; filter: drop-shadow(0 1px 1px rgba(255, 255, 255, .8)); }
 .recharts-brush-slide { fill: #dbe4e9; fill-opacity: .82; }
 .recharts-brush-traveller rect { fill: #9eabb4; stroke: #7c8b95; }
 .recharts-brush-texts text { fill: #667782; font: 9px 'DM Mono', monospace; }

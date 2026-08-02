@@ -35,7 +35,6 @@ import {
   ComposedChart,
   Line,
   LineChart,
-  ReferenceArea,
   ResponsiveContainer,
   Scatter,
   Tooltip,
@@ -68,6 +67,7 @@ type TradePoint = {
   timestamp: number
   price: number
   side: 'BUY' | 'SELL'
+  action: 'LONG' | 'SHORT' | 'CLOSE'
 }
 
 type CompletedTrade = {
@@ -96,6 +96,7 @@ const CHART_COLORS = {
   axis: '#687782',
   profit: '#078a61',
   loss: '#d74750',
+  close: '#596a75',
   price: '#25313a',
   atr: '#d39a18',
   canvas: '#ffffff',
@@ -311,7 +312,10 @@ function Monitor({
   )
   const priceChart = useMemo(() => buildPriceChart(equity), [equity])
   const klineChart = useMemo(() => buildKlineChart(bars), [bars])
-  const tradeMarkers = useMemo(() => buildTradeMarkers(accountFills), [accountFills])
+  const tradeMarkers = useMemo(
+    () => buildTradeMarkers(accountFills, account?.runtime.paper_model ?? 'spot'),
+    [accountFills, account?.runtime.paper_model],
+  )
   const completedTrades = useMemo(
     () => buildCompletedTrades(accountFills, funding),
     [accountFills, funding],
@@ -322,7 +326,9 @@ function Monitor({
     DEFAULT_VISIBLE_KLINES,
   )
   const [showStrategyParameters, setShowStrategyParameters] = useState(false)
+  const [hoveredTradeMarker, setHoveredTradeMarker] = useState<TradePoint | null>(null)
   useEffect(() => setShowStrategyParameters(false), [account?.id])
+  useEffect(() => setHoveredTradeMarker(null), [account?.id])
   const visibleStart = priceChart[priceRange.startIndex]
   const visibleEnd = priceChart[priceRange.endIndex]
   const visibleTradeMarkers = useMemo(
@@ -332,14 +338,6 @@ function Monitor({
         : true
     )),
     [tradeMarkers, visibleStart, visibleEnd],
-  )
-  const visibleCompletedTrades = useMemo(
-    () => completedTrades.filter((trade) => (
-      visibleStart && visibleEnd
-        ? trade.exitTimestamp >= visibleStart.timestamp && trade.entryTimestamp <= visibleEnd.timestamp
-        : true
-    )),
-    [completedTrades, visibleStart, visibleEnd],
   )
   const visibleKlines = klineChart.slice(klineRange.startIndex, klineRange.endIndex + 1)
   const visibleKlineStart = visibleKlines[0]
@@ -457,45 +455,23 @@ function Monitor({
                         currency={account.currency}
                         pricePoints={priceChart}
                         tradePoints={tradeMarkers}
+                        hoveredTrade={hoveredTradeMarker}
                         referencePrice={visibleStart?.price ?? null}
                       />
                     )}
                   />
-                  {visibleCompletedTrades.map((trade) => {
-                    const profitable = trade.netPnl >= 0
-                    const color = profitable ? CHART_COLORS.profit : CHART_COLORS.loss
-                    return (
-                      <ReferenceArea
-                        key={`${trade.entryTimestamp}-${trade.exitTimestamp}`}
-                        className={`trade-range ${profitable ? 'profit' : 'loss'}`}
-                        x1={trade.entryTimestamp}
-                        x2={trade.exitTimestamp}
-                        y1={trade.entryPrice}
-                        y2={trade.exitPrice}
-                        fill={color}
-                        fillOpacity={0.2}
-                        stroke={color}
-                        strokeOpacity={0.95}
-                        strokeWidth={2}
-                        strokeDasharray="4 3"
-                        ifOverflow="extendDomain"
-                        label={{
-                          value: `${trade.direction === 'LONG' ? '做多' : '做空'} · ${money(trade.netPnl, account.currency)} · ${percent(trade.returnPercent)}`,
-                          position: 'center',
-                          fill: color,
-                          fontSize: 13,
-                          fontWeight: 800,
-                        }}
-                      />
-                    )
-                  })}
                   <Line dataKey="price" name="价格" type="monotone" stroke={CHART_COLORS.price} strokeWidth={2} dot={false} isAnimationActive={false} />
                   <Line dataKey="trailingStop" name="ATR 止损线" type="stepAfter" stroke={CHART_COLORS.atr} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
                   <Scatter
                     data={visibleTradeMarkers}
                     dataKey="price"
                     name="成交"
-                    shape={(props: unknown) => <TradeMarker {...(props as TradeMarkerProps)} />}
+                    shape={(props: unknown) => (
+                      <TradeMarker
+                        {...(props as TradeMarkerProps)}
+                        onHover={setHoveredTradeMarker}
+                      />
+                    )}
                     isAnimationActive={false}
                   />
                   <Brush
@@ -839,12 +815,51 @@ function KlineSvg({ bars, fills }: { bars: KlinePoint[]; fills: Fill[] }) {
   )
 }
 
-function buildTradeMarkers(fills: Fill[]): TradePoint[] {
-  return fills.map((fill) => ({
-    timestamp: fill.timestamp_ms,
-    price: Number(fill.price),
-    side: fill.side as 'BUY' | 'SELL',
-  }))
+function buildTradeMarkers(fills: Fill[], paperModel: 'spot' | 'futures'): TradePoint[] {
+  const ordered = [...fills].sort((left, right) => (
+    left.timestamp_ms - right.timestamp_ms
+    || (left.position_effect === 'CLOSE' ? -1 : right.position_effect === 'CLOSE' ? 1 : 0)
+  ))
+  let inferredPosition: 'LONG' | 'SHORT' | 'FLAT' = 'FLAT'
+
+  return ordered.map((fill) => {
+    const side = fill.side as 'BUY' | 'SELL'
+    const beforeValue = Number(fill.position_before)
+    const afterValue = Number(fill.position_after)
+    const before = fill.position_before !== null && Number.isFinite(beforeValue) ? beforeValue : null
+    const after = fill.position_after !== null && Number.isFinite(afterValue) ? afterValue : null
+    let action: TradePoint['action']
+
+    if (
+      fill.position_effect === 'CLOSE'
+      || (before !== null && after === 0 && before !== 0)
+    ) {
+      action = 'CLOSE'
+    } else if (fill.position_effect === 'OPEN') {
+      action = after !== null ? (after < 0 ? 'SHORT' : 'LONG') : (side === 'SELL' ? 'SHORT' : 'LONG')
+    } else if (before !== null && after !== null && before === 0 && after !== 0) {
+      action = after < 0 ? 'SHORT' : 'LONG'
+    } else if (paperModel === 'spot') {
+      action = side === 'BUY' ? 'LONG' : 'CLOSE'
+    } else {
+      action = side === 'BUY'
+        ? (inferredPosition === 'SHORT' ? 'CLOSE' : 'LONG')
+        : (inferredPosition === 'LONG' ? 'CLOSE' : 'SHORT')
+    }
+
+    if (after !== null) {
+      inferredPosition = after > 0 ? 'LONG' : after < 0 ? 'SHORT' : 'FLAT'
+    } else {
+      inferredPosition = action === 'LONG' ? 'LONG' : action === 'SHORT' ? 'SHORT' : 'FLAT'
+    }
+
+    return {
+      timestamp: fill.timestamp_ms,
+      price: Number(fill.price),
+      side,
+      action,
+    }
+  })
 }
 
 function buildCompletedTrades(fills: Fill[], funding: FundingPayment[] = []): CompletedTrade[] {
@@ -926,17 +941,23 @@ type TradeMarkerProps = {
   cx?: number
   cy?: number
   payload?: TradePoint
+  onHover?: (trade: TradePoint | null) => void
 }
 
-function TradeMarker({ cx = 0, cy = 0, payload }: TradeMarkerProps) {
+function TradeMarker({ cx = 0, cy = 0, payload, onHover }: TradeMarkerProps) {
   if (!payload || (payload.side !== 'BUY' && payload.side !== 'SELL')) return null
-  const isBuy = payload.side === 'BUY'
-  const Icon = isBuy ? CircleArrowUp : CircleArrowDown
-  const color = isBuy ? CHART_COLORS.profit : CHART_COLORS.loss
-  const label = isBuy ? 'BUY' : 'SELL'
-  const labelY = isBuy ? cy + 30 : cy - 21
+  const isLong = payload.action === 'LONG'
+  const isShort = payload.action === 'SHORT'
+  const Icon = isLong ? CircleArrowUp : isShort ? CircleArrowDown : CircleX
+  const color = isLong ? CHART_COLORS.profit : isShort ? CHART_COLORS.loss : CHART_COLORS.close
+  const label = isLong ? '做多' : isShort ? '做空' : '平仓'
+  const labelY = isLong ? cy + 30 : cy - 21
   return (
-    <g data-testid={`trade-marker-${payload.side.toLowerCase()}`}>
+    <g
+      data-testid={`trade-marker-${payload.action.toLowerCase()}`}
+      onMouseEnter={() => onHover?.(payload)}
+      onMouseLeave={() => onHover?.(null)}
+    >
       <Icon x={cx - 10} y={cy - 10} width={20} height={20} color={color} fill={CHART_COLORS.canvas} strokeWidth={2.2} />
       <text x={cx} y={labelY} textAnchor="middle" fill={color} className="trade-marker-label">{label}</text>
     </g>
@@ -950,6 +971,7 @@ function PriceTooltip({
   currency,
   pricePoints,
   tradePoints,
+  hoveredTrade,
   referencePrice,
 }: {
   active?: boolean
@@ -958,16 +980,19 @@ function PriceTooltip({
   currency: string
   pricePoints: PricePoint[]
   tradePoints: TradePoint[]
+  hoveredTrade: TradePoint | null
   referencePrice: number | null
 }) {
   const values = (payload ?? []).flatMap((item) => item.payload ? [item.payload] : [])
   const payloadPrice = values.find(isPricePoint)
   const payloadTrade = values.find(isTradePoint)
-  const timestamp = Number(label ?? payloadPrice?.timestamp ?? payloadTrade?.timestamp)
+  const timestamp = Number(hoveredTrade?.timestamp ?? payloadTrade?.timestamp ?? label ?? payloadPrice?.timestamp)
   if (!active || !Number.isFinite(timestamp)) return null
 
-  const point = payloadPrice ?? pricePoints.find((item) => item.timestamp === timestamp)
-  const trade = payloadTrade ?? tradePoints.find((item) => item.timestamp === timestamp)
+  const point = payloadPrice
+    ?? pricePoints.find((item) => item.timestamp === timestamp)
+    ?? nearestPricePoint(pricePoints, timestamp)
+  const trade = hoveredTrade ?? payloadTrade ?? tradePoints.find((item) => item.timestamp === timestamp)
   if (!point && !trade) return null
   const change = point && referencePrice ? point.price / referencePrice - 1 : null
 
@@ -981,14 +1006,22 @@ function PriceTooltip({
       )}
       {trade && (
         <div>
-          <span>成交信号</span>
-          <strong className={trade.side === 'BUY' ? 'good-text' : 'bad-text'}>
-            {trade.side} · {money(trade.price, currency)}
+          <span>交易动作</span>
+          <strong className={trade.action === 'LONG' ? 'good-text' : trade.action === 'SHORT' ? 'bad-text' : ''}>
+            {trade.action === 'LONG' ? '做多' : trade.action === 'SHORT' ? '做空' : '平仓'} · {money(trade.price, currency)}
           </strong>
         </div>
       )}
     </div>
   )
+}
+
+function nearestPricePoint(points: PricePoint[], timestamp: number) {
+  return points.reduce<PricePoint | undefined>((nearest, point) => (
+    !nearest || Math.abs(point.timestamp - timestamp) < Math.abs(nearest.timestamp - timestamp)
+      ? point
+      : nearest
+  ), undefined)
 }
 
 function isPricePoint(value: PricePoint | TradePoint): value is PricePoint {
