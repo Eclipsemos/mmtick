@@ -24,6 +24,10 @@ DEFAULT_MULTIPLIERS = (0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0)
 class ReplayParameters:
     atr_period: int
     atr_multiplier: float
+    variant: str = "baseline"
+    fixed_take_profit_atr: float | None = None
+    profit_activation_atr: float | None = None
+    profit_trailing_atr: float | None = None
 
 
 @dataclass
@@ -56,6 +60,10 @@ class ReplayResult:
     paper_model: str
     atr_period: int
     atr_multiplier: float
+    variant: str
+    fixed_take_profit_atr: float | None
+    profit_activation_atr: float | None
+    profit_trailing_atr: float | None
     start_ms: int
     end_ms: int
     tick_count: int
@@ -69,10 +77,14 @@ class ReplayResult:
     winning_trades: int
     losing_trades: int
     win_rate: float | None
+    gross_profit: float
+    gross_loss: float
+    profit_factor: float | None
     max_drawdown: float
     total_fees: float
     total_funding: float
     signals: int
+    profit_exit_signals: int
     ending_position: str
 
 
@@ -314,7 +326,12 @@ class ReplayCandidate:
     broker: ReplayBroker
     pending_signal: StrategySignal | None = None
     signals: int = 0
+    profit_exit_signals: int = 0
     funding_index: int = 0
+    entry_atr: Decimal | None = None
+    favorable_extreme: Decimal | None = None
+    profit_stop: Decimal | None = None
+    profit_protection_active: bool = False
 
     def process_tick(self, tick: Tick, funding_rates: list[FundingRate]) -> None:
         while (
@@ -325,14 +342,24 @@ class ReplayCandidate:
             self.funding_index += 1
 
         if self.pending_signal is not None and tick.event_id != self.pending_signal.tick_id:
+            pending_signal = self.pending_signal
+            position_before = self.broker.quantity
             filled = self.broker.fill(
-                self.pending_signal.side,
+                pending_signal.side,
                 tick.price,
                 tick.timestamp_ms,
-                reduce_only=self.pending_signal.reduce_only,
+                reduce_only=pending_signal.reduce_only,
             )
             self.strategy.on_fill(tick.timestamp_ms, filled=filled)
             self.pending_signal = None
+            if filled:
+                if position_before == 0 and self.broker.has_position:
+                    self.entry_atr = pending_signal.atr
+                    self.favorable_extreme = self.broker.average_price
+                    self.profit_stop = None
+                    self.profit_protection_active = False
+                elif position_before != 0 and not self.broker.has_position:
+                    self._clear_profit_state()
 
         signal = self.strategy.on_tick(
             tick,
@@ -341,10 +368,121 @@ class ReplayCandidate:
             allow_short=self.broker.instrument.paper_model == "futures",
             is_short=self.broker.is_short,
         )
+        if signal is None:
+            signal = self._profit_exit_signal(tick)
         if signal is not None:
             self.pending_signal = signal
             self.signals += 1
         self.broker.mark(tick.price)
+
+    def _profit_exit_signal(self, tick: Tick) -> StrategySignal | None:
+        atr = self.strategy.last_atr
+        if (
+            not self.broker.has_position
+            or self.entry_atr is None
+            or atr is None
+            or self.strategy.trailing_stop is None
+        ):
+            return None
+
+        is_short = self.broker.is_short
+        entry_price = self.broker.average_price
+        self.favorable_extreme = (
+            min(self.favorable_extreme or entry_price, tick.price)
+            if is_short
+            else max(self.favorable_extreme or entry_price, tick.price)
+        )
+        if self.strategy.action_this_bar:
+            return None
+
+        fixed_atr = self.parameters.fixed_take_profit_atr
+        if fixed_atr is not None:
+            distance = self.entry_atr * Decimal(str(fixed_atr))
+            reached = (
+                tick.price <= entry_price - distance
+                if is_short
+                else tick.price >= entry_price + distance
+            )
+            if reached:
+                return self._build_profit_signal(
+                    tick,
+                    atr,
+                    "fixed_atr_take_profit",
+                    entry_price - distance if is_short else entry_price + distance,
+                )
+
+        activation_atr = self.parameters.profit_activation_atr
+        trailing_atr = self.parameters.profit_trailing_atr
+        if activation_atr is None or trailing_atr is None:
+            return None
+        activation_distance = self.entry_atr * Decimal(str(activation_atr))
+        favorable_move = (
+            entry_price - self.favorable_extreme
+            if is_short
+            else self.favorable_extreme - entry_price
+        )
+        trailing_distance = atr * Decimal(str(trailing_atr))
+        if not self.profit_protection_active:
+            if favorable_move < activation_distance:
+                return None
+            self.profit_protection_active = True
+            self.profit_stop = (
+                tick.price + trailing_distance
+                if is_short
+                else tick.price - trailing_distance
+            )
+            return None
+
+        if self.profit_stop is None:
+            return None
+        crossed = (
+            tick.price >= self.profit_stop
+            if is_short
+            else tick.price <= self.profit_stop
+        )
+        if crossed:
+            return self._build_profit_signal(
+                tick,
+                atr,
+                "atr_profit_protection",
+                self.profit_stop,
+            )
+        candidate_stop = (
+            tick.price + trailing_distance
+            if is_short
+            else tick.price - trailing_distance
+        )
+        self.profit_stop = (
+            min(self.profit_stop, candidate_stop)
+            if is_short
+            else max(self.profit_stop, candidate_stop)
+        )
+        return None
+
+    def _build_profit_signal(
+        self,
+        tick: Tick,
+        atr: Decimal,
+        reason: str,
+        exit_stop: Decimal,
+    ) -> StrategySignal:
+        self.profit_exit_signals += 1
+        return StrategySignal(
+            side=Side.BUY if self.broker.is_short else Side.SELL,
+            reason=reason,
+            signal_price=tick.price,
+            trailing_stop=exit_stop,
+            atr=atr,
+            bar_start_ms=tick.timestamp_ms // self.strategy.bar_ms * self.strategy.bar_ms,
+            tick_id=tick.event_id,
+            reduce_only=self.broker.instrument.paper_model == "futures",
+        )
+
+    def _clear_profit_state(self) -> None:
+        self.entry_atr = None
+        self.favorable_extreme = None
+        self.profit_stop = None
+        self.profit_protection_active = False
 
 
 def run_parameter_grid(
@@ -435,7 +573,8 @@ def run_parameter_grid(
         last_price: Decimal | None = None
         rows = connection.execute(
             """
-            SELECT event_id, timestamp_ms, price, quantity, source,
+            SELECT event_id, timestamp_ms, price, open_price, high_price, low_price,
+                   quantity, source,
                    first_trade_id, last_trade_id
             FROM agg_trades
             WHERE instrument_id = ? AND timestamp_ms BETWEEN ? AND ?
@@ -452,6 +591,15 @@ def run_parameter_grid(
                 source=row["source"],
                 first_trade_id=row["first_trade_id"],
                 last_trade_id=row["last_trade_id"],
+                open_price=(
+                    Decimal(row["open_price"]) if row["open_price"] is not None else None
+                ),
+                high_price=(
+                    Decimal(row["high_price"]) if row["high_price"] is not None else None
+                ),
+                low_price=(
+                    Decimal(row["low_price"]) if row["low_price"] is not None else None
+                ),
             )
             for candidate in candidates:
                 candidate.process_tick(tick, funding_rates)
@@ -513,6 +661,14 @@ def _candidate_result(
     net_profit = final_equity - broker.initial_cash
     wins = sum(trade.net_pnl > 0 for trade in broker.trades)
     losses = len(broker.trades) - wins
+    gross_profit = sum(
+        (trade.net_pnl for trade in broker.trades if trade.net_pnl > 0),
+        Decimal("0"),
+    )
+    gross_loss = -sum(
+        (trade.net_pnl for trade in broker.trades if trade.net_pnl < 0),
+        Decimal("0"),
+    )
     ending_position = "SHORT" if broker.quantity < 0 else "LONG" if broker.quantity > 0 else "FLAT"
     return ReplayResult(
         instrument_id=instrument.id,
@@ -520,6 +676,10 @@ def _candidate_result(
         paper_model=instrument.paper_model,
         atr_period=candidate.parameters.atr_period,
         atr_multiplier=candidate.parameters.atr_multiplier,
+        variant=candidate.parameters.variant,
+        fixed_take_profit_atr=candidate.parameters.fixed_take_profit_atr,
+        profit_activation_atr=candidate.parameters.profit_activation_atr,
+        profit_trailing_atr=candidate.parameters.profit_trailing_atr,
         start_ms=start_ms,
         end_ms=end_ms,
         tick_count=tick_count,
@@ -533,10 +693,14 @@ def _candidate_result(
         winning_trades=wins,
         losing_trades=losses,
         win_rate=wins / len(broker.trades) if broker.trades else None,
+        gross_profit=float(gross_profit),
+        gross_loss=float(gross_loss),
+        profit_factor=float(gross_profit / gross_loss) if gross_loss else None,
         max_drawdown=float(broker.max_drawdown),
         total_fees=float(broker.total_fees),
         total_funding=float(broker.total_funding),
         signals=candidate.signals,
+        profit_exit_signals=candidate.profit_exit_signals,
         ending_position=ending_position,
     )
 

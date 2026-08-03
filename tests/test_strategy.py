@@ -544,6 +544,26 @@ def test_runtime_state_from_different_parameters_is_not_restored() -> None:
     assert changed.multiplier == Decimal("1.25")
 
 
+def test_incomplete_runtime_state_does_not_clear_warmed_indicator() -> None:
+    incomplete = ATRTickStrategy(
+        period=2,
+        multiplier=0.75,
+        bar_minutes=15,
+        trend_efficiency_period=2,
+        minimum_trend_efficiency=0,
+    ).runtime_state()
+    restored = warmed_strategy()
+    expected_previous_price = restored.previous_price
+    expected_stop = restored.trailing_stop
+    expected_atr = restored.last_atr
+
+    restored.restore_runtime(incomplete)
+
+    assert restored.previous_price == expected_previous_price
+    assert restored.trailing_stop == expected_stop
+    assert restored.last_atr == expected_atr
+
+
 def test_stale_runtime_bar_keeps_last_tick_stop_for_next_bar() -> None:
     original = warmed_strategy()
     original.on_tick(

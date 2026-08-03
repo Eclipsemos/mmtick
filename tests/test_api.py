@@ -106,6 +106,50 @@ def test_chart_endpoints_page_backwards_with_time_cursor(tmp_path) -> None:
     assert [row["start_ms"] for row in ohlcv.json()] == [900_000, 0]
 
 
+def test_reconstructed_signals_endpoint_is_separate_from_fills(tmp_path) -> None:
+    settings = replace(
+        load_settings("config/settings.toml"),
+        database_path=tmp_path / "paper.db",
+        frontend_dist=tmp_path / "missing-frontend",
+    )
+    app = create_app(settings, start_engine=False)
+    instrument = next(item for item in settings.instruments if item.id == "soxl_perp")
+    app.state.store.ensure_account(instrument, settings.initial_cash, 1)
+    with app.state.store.connection() as connection:
+        connection.execute(
+            """
+            INSERT INTO reconstructed_signals (
+                id, account_id, timestamp_ms, side, action, price, atr,
+                trailing_stop, reason, source, replay_start_ms, replay_end_ms,
+                created_at_ms
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "reconstructed:test",
+                instrument.id,
+                100,
+                "BUY",
+                "CLOSE",
+                "123",
+                "2",
+                "121",
+                "replayed_cross",
+                "reconstructed_aggtrade_rest",
+                1,
+                200,
+                300,
+            ),
+        )
+
+    with TestClient(app) as client:
+        signals = client.get(f"/api/reconstructed-signals?account_id={instrument.id}")
+        fills = client.get(f"/api/fills?account_id={instrument.id}")
+
+    assert signals.status_code == 200
+    assert signals.json()[0]["action"] == "CLOSE"
+    assert fills.json() == []
+
+
 def test_return_summary_uses_period_boundary_equity(tmp_path) -> None:
     settings = replace(
         load_settings("config/settings.toml"),

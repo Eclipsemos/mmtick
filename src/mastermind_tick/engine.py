@@ -15,6 +15,9 @@ from mastermind_tick.models import Bar, Tick
 from mastermind_tick.store import PaperStore
 from mastermind_tick.strategy import ATRTickStrategy, StrategyView
 
+KLINE_RECONCILIATION_INTERVAL_SECONDS = 30
+KLINE_CLOSE_GRACE_MS = 5_000
+
 
 @dataclass
 class InstrumentRuntime:
@@ -32,8 +35,10 @@ class InstrumentRuntime:
     last_kline_verified_at_ms: int | None = None
     kline_validation: str = "PENDING"
     kline_mismatches: int = 0
+    strategy_ready: bool = True
     task: asyncio.Task | None = field(default=None, repr=False)
     kline_task: asyncio.Task | None = field(default=None, repr=False)
+    kline_reconciliation_task: asyncio.Task | None = field(default=None, repr=False)
     lock: asyncio.Lock = field(default_factory=asyncio.Lock, repr=False)
 
 
@@ -60,7 +65,12 @@ class PaperEngine:
                 minimum_trend_efficiency=self.settings.strategy.minimum_trend_efficiency,
                 reversal_confirmation_atr=self.settings.strategy.reversal_confirmation_atr,
             )
-            runtime = InstrumentRuntime(instrument=instrument, feed=feed, strategy=strategy)
+            runtime = InstrumentRuntime(
+                instrument=instrument,
+                feed=feed,
+                strategy=strategy,
+                strategy_ready=False,
+            )
             account = self.store.account(instrument.id)
             latest_funding = self.store.latest_funding_time(instrument.id)
             runtime.funding_cursor_ms = max(
@@ -68,21 +78,9 @@ class PaperEngine:
                 latest_funding or 0,
             )
             self.runtimes[instrument.id] = runtime
+            strategy.restore_runtime(self.store.strategy_state(instrument.id))
             try:
-                history = await feed.history(self.settings.warmup_bars)
-                self.store.upsert_history_bars(
-                    instrument,
-                    self.settings.strategy.bar_minutes,
-                    history,
-                    feed.kline_source_name,
-                )
-                strategy.bootstrap(history)
-                if history:
-                    runtime.last_official_bar_start_ms = history[-1].start_ms
-                    runtime.last_kline_verified_at_ms = self.started_at_ms
-                    runtime.kline_validation = "REST_VERIFIED"
-                strategy.restore_runtime(self.store.strategy_state(instrument.id))
-                runtime.status_message = f"Warm-up ready: {len(history)} x 15m bars"
+                await self._warmup_runtime(runtime)
             except Exception as exc:
                 runtime.status = "DEGRADED"
                 runtime.status_message = f"Warm-up failed: {type(exc).__name__}: {exc}"
@@ -99,13 +97,21 @@ class PaperEngine:
             runtime.kline_task = asyncio.create_task(
                 self._run_klines(runtime), name=f"klines-{instrument.id}"
             )
+            runtime.kline_reconciliation_task = asyncio.create_task(
+                self._run_kline_reconciliation(runtime),
+                name=f"kline-reconciliation-{instrument.id}",
+            )
 
     async def stop(self) -> None:
         self._stopping = True
         tasks = [
             task
             for runtime in self.runtimes.values()
-            for task in (runtime.task, runtime.kline_task)
+            for task in (
+                runtime.task,
+                runtime.kline_task,
+                runtime.kline_reconciliation_task,
+            )
             if task
         ]
         for task in tasks:
@@ -143,7 +149,32 @@ class PaperEngine:
             )
 
     async def _run_instrument(self, runtime: InstrumentRuntime) -> None:
+        warmup_retries = 0
         while not self._stopping:
+            if not runtime.strategy_ready:
+                runtime.status = "CONNECTING"
+                runtime.status_message = "Retrying strategy warm-up"
+                try:
+                    await self._warmup_runtime(runtime)
+                    warmup_retries = 0
+                except asyncio.CancelledError:
+                    raise
+                except Exception as exc:
+                    warmup_retries += 1
+                    runtime.status = "DEGRADED"
+                    runtime.status_message = (
+                        f"Warm-up retry failed: {type(exc).__name__}: {exc}"
+                    )
+                    self.store.add_event(
+                        runtime.instrument.id,
+                        _now_ms(),
+                        "ERROR",
+                        "WARMUP_RETRY_FAILED",
+                        runtime.status_message,
+                        {"retries": warmup_retries},
+                    )
+                    await asyncio.sleep(min(30, 2 ** min(warmup_retries, 4)))
+                    continue
             runtime.status = "CONNECTING"
             runtime.status_message = f"Connecting to {runtime.feed.source_name}"
             try:
@@ -167,6 +198,47 @@ class PaperEngine:
                 )
                 await asyncio.sleep(min(30, 2 ** min(runtime.reconnects, 4)))
 
+    async def _warmup_runtime(self, runtime: InstrumentRuntime) -> None:
+        warehouse_fallback = False
+        try:
+            history = await runtime.feed.history(self.settings.warmup_bars)
+        except Exception:
+            stored_rows = self.store.ohlcv_bars(
+                runtime.instrument.id,
+                self.settings.strategy.bar_minutes,
+                self.settings.warmup_bars,
+            )
+            history = sorted(
+                (Bar.from_dict(row) for row in stored_rows if row["is_closed"]),
+                key=lambda bar: bar.start_ms,
+            )
+            if len(history) < runtime.strategy.period:
+                raise
+            warehouse_fallback = True
+        if len(history) < runtime.strategy.period:
+            raise RuntimeError(
+                f"insufficient warm-up bars: {len(history)} < {runtime.strategy.period}"
+            )
+        if not warehouse_fallback:
+            self.store.upsert_history_bars(
+                runtime.instrument,
+                self.settings.strategy.bar_minutes,
+                history,
+                runtime.feed.kline_source_name,
+            )
+        saved_state = self.store.strategy_state(runtime.instrument.id)
+        runtime.strategy.bootstrap(history)
+        runtime.strategy.restore_runtime(saved_state)
+        if history:
+            runtime.last_official_bar_start_ms = history[-1].start_ms
+            runtime.last_kline_verified_at_ms = _now_ms()
+            runtime.kline_validation = (
+                "WAREHOUSE_FALLBACK" if warehouse_fallback else "REST_VERIFIED"
+            )
+        runtime.strategy_ready = True
+        source = "warehouse" if warehouse_fallback else "REST"
+        runtime.status_message = f"Warm-up ready from {source}: {len(history)} x 15m bars"
+
     async def _run_klines(self, runtime: InstrumentRuntime) -> None:
         reconnects = 0
         while not self._stopping:
@@ -189,6 +261,63 @@ class PaperEngine:
                 )
                 await asyncio.sleep(min(30, 2 ** min(reconnects, 4)))
 
+    async def _run_kline_reconciliation(self, runtime: InstrumentRuntime) -> None:
+        while not self._stopping:
+            try:
+                await self._reconcile_closed_klines(runtime)
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                self.store.add_event(
+                    runtime.instrument.id,
+                    _now_ms(),
+                    "ERROR",
+                    "KLINE_RECONCILIATION_FAILED",
+                    f"{type(exc).__name__}: {exc}",
+                )
+            await asyncio.sleep(KLINE_RECONCILIATION_INTERVAL_SECONDS)
+
+    async def _reconcile_closed_klines(
+        self,
+        runtime: InstrumentRuntime,
+        *,
+        now_ms: int | None = None,
+    ) -> bool:
+        bar_ms = runtime.strategy.bar_ms
+        current_ms = now_ms if now_ms is not None else _now_ms()
+        latest_closed_start_ms = (
+            (current_ms - KLINE_CLOSE_GRACE_MS) // bar_ms * bar_ms - bar_ms
+        )
+        if runtime.last_official_bar_start_ms is None:
+            return False
+        first_missing_start_ms = runtime.last_official_bar_start_ms + bar_ms
+        if first_missing_start_ms > latest_closed_start_ms:
+            return False
+
+        async with runtime.lock:
+            first_missing_start_ms = runtime.last_official_bar_start_ms + bar_ms
+            if first_missing_start_ms > latest_closed_start_ms:
+                return False
+            synced = await self._sync_official_bars_locked(
+                runtime,
+                first_missing_start_ms,
+                latest_closed_start_ms,
+            )
+            if synced:
+                runtime.kline_validation = "REST_RECONCILED"
+                self.store.add_event(
+                    runtime.instrument.id,
+                    current_ms,
+                    "INFO",
+                    "KLINE_REST_BACKFILL",
+                    "Missing closed klines reconciled from Binance REST",
+                    {
+                        "start_ms": first_missing_start_ms,
+                        "end_ms": runtime.last_official_bar_start_ms,
+                    },
+                )
+            return synced
+
     async def _process_tick(self, runtime: InstrumentRuntime, tick: Tick) -> None:
         async with runtime.lock:
             self.store.record_market_tick(
@@ -199,6 +328,18 @@ class PaperEngine:
             runtime.last_tick = tick
             funding_applied = await self._apply_due_funding(runtime, tick)
             account_id = runtime.instrument.id
+            if not runtime.strategy_ready:
+                runtime.status = "DEGRADED"
+                runtime.status_message = "Strategy paused: warm-up unavailable"
+                snapshot_due = (
+                    tick.timestamp_ms - runtime.last_snapshot_ms
+                    >= self.settings.equity_snapshot_seconds * 1000
+                )
+                if snapshot_due or funding_applied:
+                    strategy_view = _strategy_view(asdict(runtime.strategy.view()))
+                    self.store.snapshot(account_id, tick, strategy_view)
+                    runtime.last_snapshot_ms = tick.timestamp_ms
+                return
             fill = None
             if self.trading_enabled:
                 fill = self.store.fill_pending(
@@ -434,12 +575,13 @@ class PaperEngine:
                     },
                     "status": runtime.status,
                     "status_message": runtime.status_message,
+                    "strategy_ready": runtime.strategy_ready,
                     "reconnects": runtime.reconnects,
                     "last_tick": runtime.last_tick.as_dict() if runtime.last_tick else None,
                     "strategy": _strategy_view(asdict(view)),
                     "decision": _decision_view(
                         view,
-                        trading_enabled=self.trading_enabled,
+                        trading_enabled=self.trading_enabled and runtime.strategy_ready,
                         has_position=has_position,
                         has_pending_order=has_pending,
                         bar_ms=runtime.strategy.bar_ms,

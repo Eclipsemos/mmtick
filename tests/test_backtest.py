@@ -196,3 +196,115 @@ def test_mark_tracks_tick_level_max_drawdown() -> None:
     broker.mark(Decimal("90"))
 
     assert broker.max_drawdown == Decimal("-0.25")
+
+
+def opened_candidate(
+    parameters: ReplayParameters,
+    side: Side = Side.BUY,
+) -> ReplayCandidate:
+    strategy = ReplayATRTickStrategy(2, 4, 15, 2, 0)
+    strategy.bootstrap(bars([100, 99, 98]))
+    strategy.previous_price = Decimal("100")
+    strategy.trailing_stop = Decimal("90") if side is Side.BUY else Decimal("110")
+    strategy.startup_alignment_checked = True
+    broker = ReplayBroker(
+        instrument(paper_model="futures"),
+        Decimal("10000"),
+        Decimal("0.5"),
+        Decimal("0"),
+        Decimal("0"),
+        Decimal("0"),
+    )
+    assert broker.fill(side, Decimal("100"), 1)
+    return ReplayCandidate(
+        parameters=parameters,
+        strategy=strategy,
+        broker=broker,
+        entry_atr=Decimal("1"),
+        favorable_extreme=Decimal("100"),
+    )
+
+
+def test_fixed_atr_take_profit_closes_on_next_tick() -> None:
+    candidate = opened_candidate(
+        ReplayParameters(2, 4, variant="fixed", fixed_take_profit_atr=6)
+    )
+
+    candidate.process_tick(tick("take-profit", 3 * BAR_MS, 106), [])
+
+    assert candidate.pending_signal is not None
+    assert candidate.pending_signal.reason == "fixed_atr_take_profit"
+    assert candidate.pending_signal.reduce_only
+    assert candidate.profit_exit_signals == 1
+
+    candidate.process_tick(tick("take-profit-fill", 3 * BAR_MS + 1, 106), [])
+
+    assert not candidate.broker.has_position
+    assert candidate.broker.trades[0].net_pnl > 0
+
+
+def test_profit_protection_activates_then_closes_on_retrace() -> None:
+    candidate = opened_candidate(
+        ReplayParameters(
+            2,
+            4,
+            variant="profit_protection",
+            profit_activation_atr=2,
+            profit_trailing_atr=0.5,
+        )
+    )
+
+    candidate.process_tick(tick("activate", 3 * BAR_MS, 104), [])
+    assert candidate.profit_protection_active
+    assert candidate.profit_stop is not None
+    candidate.strategy.action_this_bar = False
+    candidate.process_tick(
+        tick("retrace", 3 * BAR_MS + BAR_MS, float(candidate.profit_stop)),
+        [],
+    )
+
+    assert candidate.pending_signal is not None
+    assert candidate.pending_signal.reason == "atr_profit_protection"
+    assert candidate.profit_exit_signals == 1
+
+
+def test_fixed_atr_take_profit_is_symmetric_for_short_position() -> None:
+    candidate = opened_candidate(
+        ReplayParameters(2, 4, variant="fixed", fixed_take_profit_atr=6),
+        Side.SELL,
+    )
+
+    candidate.process_tick(tick("short-take-profit", 3 * BAR_MS, 94), [])
+
+    assert candidate.pending_signal is not None
+    assert candidate.pending_signal.side is Side.BUY
+    assert candidate.pending_signal.reason == "fixed_atr_take_profit"
+    candidate.process_tick(tick("short-take-profit-fill", 3 * BAR_MS + 1, 94), [])
+    assert not candidate.broker.has_position
+    assert candidate.broker.trades[0].net_pnl > 0
+
+
+def test_profit_protection_is_symmetric_for_short_position() -> None:
+    candidate = opened_candidate(
+        ReplayParameters(
+            2,
+            4,
+            variant="profit_protection",
+            profit_activation_atr=2,
+            profit_trailing_atr=0.5,
+        ),
+        Side.SELL,
+    )
+
+    candidate.process_tick(tick("short-activate", 3 * BAR_MS, 96), [])
+    assert candidate.profit_protection_active
+    assert candidate.profit_stop is not None
+    candidate.strategy.action_this_bar = False
+    candidate.process_tick(
+        tick("short-retrace", 3 * BAR_MS + BAR_MS, float(candidate.profit_stop)),
+        [],
+    )
+
+    assert candidate.pending_signal is not None
+    assert candidate.pending_signal.side is Side.BUY
+    assert candidate.pending_signal.reason == "atr_profit_protection"

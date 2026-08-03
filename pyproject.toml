@@ -21,7 +21,9 @@ dev = ["pytest>=8.0", "ruff>=0.6"]
 [project.scripts]
 mmtick-web = "mastermind_tick.web:main"
 mmtick-backtest = "mastermind_tick.backtest:main"
+mmtick-profit-backtest = "mastermind_tick.profit_backtest:main"
 mmtick-rebuild = "mastermind_tick.rebuild:main"
+mmtick-recover = "mastermind_tick.recovery:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mastermind_tick"]

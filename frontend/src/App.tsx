@@ -65,6 +65,7 @@ type PricePoint = {
 }
 
 type TradePoint = {
+  id: string
   timestamp: number
   price: number
   side: 'BUY' | 'SELL'
@@ -532,6 +533,7 @@ function Monitor({
         validation={account.runtime.kline_state.validation}
         bars={bars}
         fills={accountFills}
+        paperModel={account.runtime.paper_model}
         loadOlder={loadOlderOhlcv}
         loadingOlder={loadingOlderOhlcv}
         hasOlder={hasOlderOhlcv}
@@ -610,6 +612,7 @@ const PriceSignalPanel = memo(function PriceSignalPanel({
   const positionQuantity = Number(account.quantity)
   const positionSide = positionQuantity > 0 ? '多头' : positionQuantity < 0 ? '空头' : '空仓'
   const averagePrice = Number(account.average_price)
+  const currentPrice = account.last_price === null ? Number.NaN : Number(account.last_price)
   const trailingStopValue = account.runtime.strategy.trailing_stop
   const trailingStop = trailingStopValue === null ? Number.NaN : Number(trailingStopValue)
   const stopEstimate = positionQuantity !== 0
@@ -618,6 +621,14 @@ const PriceSignalPanel = memo(function PriceSignalPanel({
     ? {
         pnl: positionQuantity * (trailingStop - averagePrice),
         returnPercent: Math.sign(positionQuantity) * (trailingStop / averagePrice - 1),
+      }
+    : null
+  const currentExitEstimate = positionQuantity !== 0
+    && averagePrice > 0
+    && Number.isFinite(currentPrice)
+    ? {
+        pnl: positionQuantity * (currentPrice - averagePrice),
+        returnPercent: Math.sign(positionQuantity) * (currentPrice / averagePrice - 1),
       }
     : null
   const onBrushChange = useRafRangeChange(setPriceRange, priceChart.length)
@@ -654,8 +665,16 @@ const PriceSignalPanel = memo(function PriceSignalPanel({
           </span>
           <div><small>当前成本价</small><strong>{money(averagePrice, account.currency)}</strong></div>
           <div><small>ATR 平仓价</small><strong>{money(trailingStop, account.currency)}</strong></div>
+          {currentExitEstimate && (
+            <div>
+              <small>当前价平仓收益</small>
+              <strong className={currentExitEstimate.pnl >= 0 ? 'good-text' : 'bad-text'}>
+                {money(currentExitEstimate.pnl, account.currency)} · {percent(currentExitEstimate.returnPercent)}
+              </strong>
+            </div>
+          )}
           <div>
-            <small>预计收益</small>
+            <small>保底收益</small>
             <strong className={stopEstimate.pnl >= 0 ? 'good-text' : 'bad-text'}>
               {money(stopEstimate.pnl, account.currency)} · {percent(stopEstimate.returnPercent)}
             </strong>
@@ -900,6 +919,7 @@ const OfficialKlinePanel = memo(function OfficialKlinePanel({
   validation,
   bars,
   fills,
+  paperModel,
   loadOlder,
   loadingOlder,
   hasOlder,
@@ -907,22 +927,27 @@ const OfficialKlinePanel = memo(function OfficialKlinePanel({
   validation: string
   bars: OhlcvBar[]
   fills: Fill[]
+  paperModel: 'spot' | 'futures'
   loadOlder: () => Promise<void>
   loadingOlder: boolean
   hasOlder: boolean
 }) {
   const klineChart = useMemo(() => buildKlineChart(bars), [bars])
+  const tradeMarkers = useMemo(
+    () => buildTradeMarkers(fills, paperModel),
+    [fills, paperModel],
+  )
   const [range, setRange] = useChartRange(klineChart.length, DEFAULT_VISIBLE_KLINES)
   const visibleBars = klineChart.slice(range.startIndex, range.endIndex + 1)
   const visibleStart = visibleBars[0]
   const visibleEnd = visibleBars[visibleBars.length - 1]
-  const visibleFills = useMemo(
-    () => fills.filter((fill) => (
+  const visibleTradeMarkers = useMemo(
+    () => tradeMarkers.filter((trade) => (
       visibleStart && visibleEnd
-        ? fill.timestamp_ms >= visibleStart.timestamp && fill.timestamp_ms <= visibleEnd.endTimestamp
+        ? trade.timestamp >= visibleStart.timestamp && trade.timestamp <= visibleEnd.endTimestamp
         : true
     )),
-    [fills, visibleEnd, visibleStart],
+    [tradeMarkers, visibleEnd, visibleStart],
   )
   const pan = (direction: -1 | 1) => {
     setRange((current) => panRange(current, klineChart.length, direction))
@@ -953,14 +978,14 @@ const OfficialKlinePanel = memo(function OfficialKlinePanel({
       </div>
       <div className="kline-chart-wrap">
         {visibleBars.length > 0 ? (
-          <KlineSvg bars={visibleBars} fills={visibleFills} />
+          <KlineSvg bars={visibleBars} trades={visibleTradeMarkers} />
         ) : <div className="empty-chart">等待官方 15m K线</div>}
       </div>
     </section>
   )
 })
 
-const KlineSvg = memo(function KlineSvg({ bars, fills }: { bars: KlinePoint[]; fills: Fill[] }) {
+const KlineSvg = memo(function KlineSvg({ bars, trades }: { bars: KlinePoint[]; trades: TradePoint[] }) {
   const width = 1200
   const height = 360
   const left = 58
@@ -977,10 +1002,10 @@ const KlineSvg = memo(function KlineSvg({ bars, fills }: { bars: KlinePoint[]; f
   const y = (value: number) => top + (domainHigh - value) / (domainHigh - domainLow) * chartHeight
   const x = (index: number) => left + (bars.length <= 1 ? chartWidth / 2 : index / (bars.length - 1) * chartWidth)
   const candleWidth = Math.max(3, Math.min(14, chartWidth / Math.max(bars.length, 1) * 0.62))
-  const fillMarkers = fills.flatMap((fill) => {
-    const index = bars.findIndex((bar) => fill.timestamp_ms >= bar.timestamp && fill.timestamp_ms <= bar.endTimestamp)
+  const tradeMarkers = trades.flatMap((trade) => {
+    const index = bars.findIndex((bar) => trade.timestamp >= bar.timestamp && trade.timestamp <= bar.endTimestamp)
     if (index < 0) return []
-    return [{ fill, index }]
+    return [{ trade, index }]
   })
   const gridValues = [0, 0.25, 0.5, 0.75, 1].map((ratio) => domainHigh - ratio * (domainHigh - domainLow))
 
@@ -1006,16 +1031,20 @@ const KlineSvg = memo(function KlineSvg({ bars, fills }: { bars: KlinePoint[]; f
           </g>
         )
       })}
-      {fillMarkers.map(({ fill, index }) => {
+      {tradeMarkers.map(({ trade, index }) => {
         const center = x(index)
-        const markerY = y(Number(fill.price))
-        const buy = fill.side === 'BUY'
-        const color = buy ? CHART_COLORS.profit : CHART_COLORS.loss
+        const markerY = y(trade.price)
+        const isLong = trade.action === 'LONG'
+        const isShort = trade.action === 'SHORT'
+        const Icon = isLong ? CircleArrowUp : isShort ? CircleArrowDown : CircleX
+        const color = isLong ? CHART_COLORS.profit : isShort ? CHART_COLORS.loss : CHART_COLORS.close
+        const labelY = isLong ? markerY + 24 : markerY - 14
         return (
-          <g key={fill.id} className="kline-trade-marker" data-testid={`kline-marker-${fill.side.toLowerCase()}`}>
-            <circle cx={center} cy={markerY} r={7} fill={CHART_COLORS.canvas} stroke={color} strokeWidth={2} />
-            <path d={buy ? `M ${center - 3} ${markerY + 2} L ${center} ${markerY - 3} L ${center + 3} ${markerY + 2}` : `M ${center - 3} ${markerY - 2} L ${center} ${markerY + 3} L ${center + 3} ${markerY - 2}`} fill="none" stroke={color} strokeWidth={1.5} />
-            <text x={center} y={buy ? markerY + 21 : markerY - 12} textAnchor="middle" fill={color} className="kline-trade-label">{fill.side}</text>
+          <g key={trade.id} className="kline-trade-marker" data-testid={`kline-marker-${trade.action.toLowerCase()}`}>
+            <Icon x={center - 8} y={markerY - 8} width={16} height={16} color={color} fill={CHART_COLORS.canvas} strokeWidth={2.2} />
+            <text x={center} y={labelY} textAnchor="middle" fill={color} className="kline-trade-label">
+              {trade.action}
+            </text>
           </g>
         )
       })}
@@ -1064,6 +1093,7 @@ function buildTradeMarkers(fills: Fill[], paperModel: 'spot' | 'futures'): Trade
     }
 
     return {
+      id: fill.id,
       timestamp: fill.timestamp_ms,
       price: Number(fill.price),
       side,
@@ -1160,7 +1190,7 @@ function TradeMarker({ cx = 0, cy = 0, payload, onHover }: TradeMarkerProps) {
   const isShort = payload.action === 'SHORT'
   const Icon = isLong ? CircleArrowUp : isShort ? CircleArrowDown : CircleX
   const color = isLong ? CHART_COLORS.profit : isShort ? CHART_COLORS.loss : CHART_COLORS.close
-  const label = isLong ? '做多' : isShort ? '做空' : '平仓'
+  const label = payload.action
   const labelY = isLong ? cy + 30 : cy - 21
   return (
     <g
@@ -1218,7 +1248,7 @@ function PriceTooltip({
         <div>
           <span>交易动作</span>
           <strong className={trade.action === 'LONG' ? 'good-text' : trade.action === 'SHORT' ? 'bad-text' : ''}>
-            {trade.action === 'LONG' ? '做多' : trade.action === 'SHORT' ? '做空' : '平仓'} · {money(trade.price, currency)}
+            {trade.action} · {money(trade.price, currency)}
           </strong>
         </div>
       )}
@@ -1349,11 +1379,11 @@ function CompletedTradeTable({ rows, currency }: { rows: CompletedTrade[]; curre
   return (
     <div className="table-scroll">
       <table>
-        <thead><tr><th>方向</th><th>买卖顺序</th><th>开仓时间</th><th>平仓时间</th><th>开仓价</th><th>平仓价</th><th>数量</th><th>总手续费</th><th>资金费</th><th>净盈亏（含费）</th><th>收益率</th></tr></thead>
+        <thead><tr><th>方向</th><th>动作顺序</th><th>开仓时间</th><th>平仓时间</th><th>开仓价</th><th>平仓价</th><th>数量</th><th>总手续费</th><th>资金费</th><th>净盈亏（含费）</th><th>收益率</th></tr></thead>
         <tbody>{rows.map((row) => {
           const profitable = row.netPnl >= 0
-          const direction = row.direction === 'LONG' ? '做多' : '做空'
-          const execution = row.direction === 'LONG' ? 'BUY -> SELL' : 'SELL -> BUY'
+          const direction = row.direction
+          const execution = `${row.direction} -> CLOSE`
           return (
             <tr key={`${row.entryTimestamp}-${row.exitTimestamp}-${row.direction}`} data-testid="completed-trade-row">
               <td><span className={`position-side ${row.direction.toLowerCase()}`}>{direction}</span></td>

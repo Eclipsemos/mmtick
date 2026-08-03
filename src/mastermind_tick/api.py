@@ -105,6 +105,14 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
             _require_account(store, account_id)
         return store.orders(account_id, limit)
 
+    @app.get("/api/reconstructed-signals")
+    def reconstructed_signals(
+        account_id: str = "soxl_perp",
+        limit: Annotated[int, Query(ge=1, le=1000)] = 1000,
+    ) -> list[dict]:
+        _require_account(store, account_id)
+        return store.reconstructed_signals(account_id, limit)
+
     @app.get("/api/events")
     def events(
         account_id: str | None = None,

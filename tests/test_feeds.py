@@ -45,6 +45,39 @@ def test_futures_raw_trades_are_bucketed_without_losing_volume_or_range() -> Non
     assert tick.buyer_is_maker is None
 
 
+def test_futures_tick_discards_stale_mark_price() -> None:
+    feed = BinanceFuturesFeed("SOXLUSDT")
+    feed._update_market_state(
+        {
+            "markPrice": "99",
+            "indexPrice": "98.9",
+            "lastFundingRate": "0.001",
+            "nextFundingTime": 20_000,
+            "time": 1_000,
+        }
+    )
+    payload = {"E": 17_000, "T": 17_000, "t": 10, "p": "100", "q": "2", "m": True}
+    stale_tick = feed._bucket_tick(_append_trade(None, 68, payload))
+
+    assert stale_tick.mark_price is None
+    assert stale_tick.index_price is None
+    assert stale_tick.funding_rate == Decimal("0.001")
+
+    feed._update_market_state(
+        {
+            "markPrice": "99",
+            "indexPrice": "98.9",
+            "lastFundingRate": "0.001",
+            "nextFundingTime": 20_000,
+            "time": 16_000,
+        }
+    )
+    fresh_tick = feed._bucket_tick(_append_trade(None, 68, payload))
+
+    assert fresh_tick.mark_price == Decimal("99")
+    assert fresh_tick.index_price == Decimal("98.9")
+
+
 def test_closed_kline_message_uses_binance_final_ohlcv_fields() -> None:
     bar = _bar_from_stream_kline(
         {

@@ -136,7 +136,7 @@ journalctl --user -u mmtick.service -f
 - 可滚动、缩放的价格与交易信号图，以及独立的官方 15 分钟 K 线图；
 - 价格快照和 OHLCV 按时间游标加载历史页，价格线按图表像素密度降采样；
 - 黄色 ATR 移动止损线，以及做多、做空和平仓成交标记；
-- 持仓期间显示当前成本价、ATR 平仓价及按当前止损线估算的毛收益；
+- 持仓期间显示当前成本价、当前价平仓收益、ATR 平仓价及按当前止损线估算的毛收益；
 - 当前价格、ATR、趋势效率、K 线动作锁、反向确认和下一触发条件；
 - Futures 标记价、指数价、资金费率、保证金、可用余额和累计资金费；
 - 现金、持仓、净值、累计收益、最大回撤、胜率和年化夏普率；
@@ -201,6 +201,17 @@ PYTHONPATH=src /home/spaceaic/env/.venv/bin/python -m mastermind_tick.backtest
 回放沿用 Tick 穿越、启动对齐、趋势效率过滤、分阶段反向、单 K 线动作锁和下一
 Tick 成交语义，并计入各账户的 Taker 手续费、滑点、目标暴露和永续历史资金费。
 报告写入 `reports/`，不会修改模拟盘数据库。
+
+三个利润退出版本（当前基准、固定 6 ATR 止盈、2 ATR 激活后使用 2.5 ATR
+利润保护）的复现命令：
+
+```bash
+PYTHONPATH=src /home/spaceaic/env/.venv/bin/python -m mastermind_tick.profit_backtest \
+  --cutoff-ms 1785739041994
+```
+
+冻结至 `2026-08-03 14:37:21.994 UTC+8` 的报告见
+[reports/profit_exits/atr_profit_exit_comparison_20260803T063734Z.md](reports/profit_exits/atr_profit_exit_comparison_20260803T063734Z.md)。
 
 当前冻结参数的复现命令：
 

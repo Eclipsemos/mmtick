@@ -1,9 +1,11 @@
+from decimal import Decimal
 from math import sqrt
 from statistics import stdev
 
 import pytest
 
-from mastermind_tick.reporting import _sharpe_ratio, _trade_stats
+from mastermind_tick.config import load_settings
+from mastermind_tick.reporting import _live_account_valuation, _sharpe_ratio, _trade_stats
 
 
 def test_sharpe_uses_last_equity_in_each_strategy_bar() -> None:
@@ -105,3 +107,51 @@ def test_trade_stats_support_short_and_long_reversal_legs() -> None:
         "losing_trades": 1,
         "win_rate": 0.5,
     }
+
+
+def test_live_futures_valuation_uses_tick_and_rejects_stale_mark_price() -> None:
+    settings = load_settings("config/settings.toml")
+    instrument = next(item for item in settings.instruments if item.id == "soxl_perp")
+    account = {
+        "cash": "100000",
+        "quantity": "-10",
+        "average_price": "100",
+        "paper_model": instrument.paper_model,
+        "leverage": instrument.leverage,
+    }
+    latest = {
+        "timestamp_ms": 50_000,
+        "price": "100",
+        "equity": "100000",
+        "unrealized_pnl": "0",
+        "market_value": "1000",
+        "mark_price": "100",
+        "index_price": "100",
+        "funding_rate": "0",
+        "initial_margin": "500",
+        "available_balance": "99500",
+    }
+    runtime = {
+        "market_state": {"updated_at_ms": 60_000},
+        "last_tick": {
+            "timestamp_ms": 100_000,
+            "price": "90",
+            "mark_price": "95",
+            "index_price": "94.9",
+            "funding_rate": "0.001",
+        },
+    }
+
+    stale = _live_account_valuation(account, latest, runtime)
+
+    assert Decimal(stale["equity"]) == Decimal("100100")
+    assert stale["mark_price"] == "90"
+    assert stale["index_price"] is None
+    assert stale["timestamp_ms"] == 100_000
+
+    runtime["market_state"] = {"updated_at_ms": 99_000}
+    fresh = _live_account_valuation(account, latest, runtime)
+
+    assert Decimal(fresh["equity"]) == Decimal("100050")
+    assert fresh["mark_price"] == "95"
+    assert fresh["index_price"] == "94.9"

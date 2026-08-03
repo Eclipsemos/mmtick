@@ -153,11 +153,30 @@ CREATE TABLE IF NOT EXISTS agg_trades (
     event_time_ms INTEGER,
     timestamp_ms INTEGER NOT NULL,
     price TEXT NOT NULL,
+    open_price TEXT,
+    high_price TEXT,
+    low_price TEXT,
     quantity TEXT NOT NULL,
     notional TEXT NOT NULL,
     buyer_is_maker INTEGER,
     source TEXT NOT NULL,
     received_at_ms INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS reconstructed_signals (
+    id TEXT PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES accounts(id),
+    timestamp_ms INTEGER NOT NULL,
+    side TEXT NOT NULL,
+    action TEXT NOT NULL,
+    price TEXT NOT NULL,
+    atr TEXT NOT NULL,
+    trailing_stop TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    source TEXT NOT NULL,
+    replay_start_ms INTEGER NOT NULL,
+    replay_end_ms INTEGER NOT NULL,
+    created_at_ms INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS ohlcv_bars (
@@ -188,6 +207,8 @@ CREATE INDEX IF NOT EXISTS idx_funding_rates_instrument_time
     ON funding_rates(instrument_id, timestamp_ms DESC);
 CREATE INDEX IF NOT EXISTS idx_agg_trades_instrument_time
     ON agg_trades(instrument_id, timestamp_ms DESC);
+CREATE INDEX IF NOT EXISTS idx_reconstructed_signals_account_time
+    ON reconstructed_signals(account_id, timestamp_ms DESC);
 CREATE INDEX IF NOT EXISTS idx_ohlcv_instrument_time
     ON ohlcv_bars(instrument_id, interval_minutes, start_ms DESC);
 """
@@ -203,6 +224,7 @@ WAREHOUSE_TABLES = (
     "funding_rates",
     "ohlcv_bars",
     "agg_trades",
+    "reconstructed_signals",
 )
 
 
@@ -271,6 +293,14 @@ class PaperStore:
             connection.execute(
                 "ALTER TABLE orders ADD COLUMN reduce_only INTEGER NOT NULL DEFAULT 0"
             )
+
+        agg_trade_columns = {
+            row["name"]
+            for row in connection.execute("PRAGMA table_info(agg_trades)").fetchall()
+        }
+        for name in ("open_price", "high_price", "low_price"):
+            if name not in agg_trade_columns:
+                connection.execute(f"ALTER TABLE agg_trades ADD COLUMN {name} TEXT")
 
         connection.execute(
             """
@@ -428,8 +458,9 @@ class PaperStore:
                 INSERT OR IGNORE INTO agg_trades (
                     event_id, instrument_id, symbol, aggregate_trade_id,
                     first_trade_id, last_trade_id, event_time_ms, timestamp_ms,
-                    price, quantity, notional, buyer_is_maker, source, received_at_ms
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    price, open_price, high_price, low_price, quantity, notional,
+                    buyer_is_maker, source, received_at_ms
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     tick.event_id,
@@ -441,6 +472,9 @@ class PaperStore:
                     tick.event_time_ms,
                     tick.timestamp_ms,
                     str(tick.price),
+                    str(tick.open_price) if tick.open_price is not None else None,
+                    str(tick.high_price) if tick.high_price is not None else None,
+                    str(tick.low_price) if tick.low_price is not None else None,
                     str(tick.quantity),
                     str(tick.notional if tick.notional is not None else tick.price * tick.quantity),
                     None if tick.buyer_is_maker is None else int(tick.buyer_is_maker),
@@ -504,6 +538,21 @@ class PaperStore:
                     ),
                 )
         return True
+
+    def reconstructed_signals(
+        self,
+        account_id: str,
+        limit: int = 1000,
+    ) -> list[dict[str, Any]]:
+        with self.connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT * FROM reconstructed_signals WHERE account_id = ?
+                ORDER BY timestamp_ms DESC, id DESC LIMIT ?
+                """,
+                (account_id, limit),
+            ).fetchall()
+        return [dict(row) for row in rows]
 
     def has_pending_order(self, account_id: str) -> bool:
         with self.connection() as connection:

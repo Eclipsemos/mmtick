@@ -150,7 +150,7 @@ h1 { margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: 0; }
 .chart-summary { display: flex; align-items: center; gap: 20px; }
 .chart-summary > strong { font: 500 14px 'DM Mono', monospace; }
 .position-stop-summary {
-  min-height: 54px; padding: 8px 18px; display: grid; grid-template-columns: auto repeat(3, minmax(110px, 1fr));
+  min-height: 54px; padding: 8px 18px; display: grid; grid-template-columns: auto repeat(4, minmax(110px, 1fr));
   align-items: center; gap: 20px; border-bottom: 1px solid var(--line); background: #fbfcfd;
 }
 .position-stop-summary > div { min-width: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
@@ -332,9 +332,10 @@ footer { height: 44px; padding: 0 30px; display: flex; align-items: center; just
   .chart-summary { align-items: flex-end; flex-direction: column-reverse; gap: 7px; }
   .chart-controls { order: 3; }
   .chart-legend { gap: 8px; }
-  .position-stop-summary { padding: 10px 14px; grid-template-columns: auto 1fr 1fr; gap: 9px 14px; }
+  .position-stop-summary { padding: 10px 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px 14px; }
+  .position-stop-summary > .position-side { grid-column: 1 / -1; justify-self: start; }
   .position-stop-summary > div { align-items: flex-start; flex-direction: column; gap: 3px; }
-  .position-stop-summary > div:last-child { grid-column: 2 / -1; flex-direction: row; align-items: baseline; }
+  .position-stop-summary > div:last-child { grid-column: auto; }
   .price-chart-wrap { height: 370px; padding-left: 2px; padding-right: 5px; }
   .kline-chart-wrap { height: 350px; padding-left: 2px; padding-right: 2px; }
   .event-row { padding: 12px 0; grid-template-columns: 55px 1fr; gap: 7px; }

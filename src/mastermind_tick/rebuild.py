@@ -25,6 +25,7 @@ DERIVED_TABLES = (
     "funding_payments",
     "strategy_states",
 )
+REPLAY_EVENT_TYPES = ("SIGNAL", "FILL", "FUNDING")
 
 
 @dataclass(frozen=True)
@@ -132,7 +133,8 @@ def _rebuild_account(
     with store.connection() as connection:
         rows = connection.execute(
             """
-            SELECT event_id, timestamp_ms, price, quantity, source,
+            SELECT event_id, timestamp_ms, price, open_price, high_price, low_price,
+                   quantity, source,
                    aggregate_trade_id, first_trade_id, last_trade_id,
                    buyer_is_maker, event_time_ms, notional
             FROM agg_trades WHERE instrument_id = ?
@@ -154,6 +156,15 @@ def _rebuild_account(
                     bool(row["buyer_is_maker"]) if row["buyer_is_maker"] is not None else None
                 ),
                 event_time_ms=row["event_time_ms"],
+                open_price=(
+                    Decimal(row["open_price"]) if row["open_price"] is not None else None
+                ),
+                high_price=(
+                    Decimal(row["high_price"]) if row["high_price"] is not None else None
+                ),
+                low_price=(
+                    Decimal(row["low_price"]) if row["low_price"] is not None else None
+                ),
                 notional=Decimal(row["notional"]),
             )
             funding_applied = False
@@ -279,7 +290,14 @@ def apply_candidate(
                     )
             for account_id in account_ids:
                 for table in DERIVED_TABLES:
+                    if table == "events":
+                        continue
                     connection.execute(f"DELETE FROM {table} WHERE account_id = ?", (account_id,))
+                placeholders = ", ".join("?" for _ in REPLAY_EVENT_TYPES)
+                connection.execute(
+                    f"DELETE FROM events WHERE account_id = ? AND event_type IN ({placeholders})",
+                    (account_id, *REPLAY_EVENT_TYPES),
+                )
                 account = connection.execute(
                     "SELECT * FROM candidate.accounts WHERE id = ?", (account_id,)
                 ).fetchone()
@@ -313,7 +331,6 @@ def apply_candidate(
                     "orders",
                     "fills",
                     "equity_snapshots",
-                    "events",
                     "funding_payments",
                     "strategy_states",
                 ):
@@ -321,6 +338,10 @@ def apply_candidate(
                         f"INSERT INTO {table} SELECT * FROM candidate.{table} WHERE account_id = ?",
                         (account_id,),
                     )
+                connection.execute(
+                    "INSERT INTO events SELECT * FROM candidate.events WHERE account_id = ?",
+                    (account_id,),
+                )
             connection.commit()
         except Exception:
             connection.rollback()

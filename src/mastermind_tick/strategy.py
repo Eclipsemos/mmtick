@@ -139,13 +139,18 @@ class ATRTickStrategy:
             != self.reversal_confirmation_atr
         ):
             return
+        previous_price = _decimal_or_none(value.get("previous_price"))
+        trailing_stop = _decimal_or_none(value.get("trailing_stop"))
+        last_atr = _decimal_or_none(value.get("last_atr"))
+        if previous_price is None or trailing_stop is None or last_atr is None:
+            return
         self.last_cross = value.get("last_cross")
         self.last_cross_at_ms = value.get("last_cross_at_ms")
         self.last_cross_result = value.get("last_cross_result")
         self.last_cross_reason = value.get("last_cross_reason")
-        self.previous_price = _decimal_or_none(value.get("previous_price"))
-        self.trailing_stop = _decimal_or_none(value.get("trailing_stop"))
-        self.last_atr = _decimal_or_none(value.get("last_atr"))
+        self.previous_price = previous_price
+        self.trailing_stop = trailing_stop
+        self.last_atr = last_atr
         self.last_trend_efficiency = _decimal_or_none(value.get("last_trend_efficiency"))
         self.last_action_bar_start_ms = value.get("last_action_bar_start_ms")
         self.reversal_direction = value.get("reversal_direction")

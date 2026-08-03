@@ -50,6 +50,11 @@ class FailingOfficialBarFeed(OfficialBarFeed):
         raise ConnectionError("REST unavailable")
 
 
+class FailingWarmupFeed(OfficialBarFeed):
+    async def history(self, limit: int) -> list[Bar]:
+        raise ConnectionError("REST unavailable")
+
+
 def test_flat_account_below_stop_is_armed_for_tick_cross() -> None:
     decision = _decision_view(
         strategy_view(),
@@ -215,3 +220,139 @@ def test_rest_failure_does_not_block_original_tick_strategy(tmp_path) -> None:
     order = store.orders(instrument.id, 1)[0]
     assert order["reason"] == "price_crossed_above_atr_stop"
     assert order["status"] == "PENDING"
+
+
+def test_unready_strategy_does_not_overwrite_persisted_checkpoint(tmp_path) -> None:
+    settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
+    instrument = settings.instruments[0]
+    store = PaperStore(settings.database_path)
+    store.ensure_account(instrument, settings.initial_cash, 1)
+    persisted = ATRTickStrategy(
+        period=settings.strategy.atr_period,
+        multiplier=settings.strategy.atr_multiplier,
+        bar_minutes=settings.strategy.bar_minutes,
+        trend_efficiency_period=settings.strategy.trend_efficiency_period,
+        minimum_trend_efficiency=settings.strategy.minimum_trend_efficiency,
+        reversal_confirmation_atr=settings.strategy.reversal_confirmation_atr,
+    )
+    persisted.previous_price = Decimal("120")
+    persisted.trailing_stop = Decimal("124.50")
+    persisted.last_atr = Decimal("1.125")
+    checkpoint = persisted.runtime_state()
+    store.save_strategy_state(instrument.id, checkpoint, 2)
+
+    runtime = InstrumentRuntime(
+        instrument=instrument,
+        feed=OfficialBarFeed([]),  # type: ignore[arg-type]
+        strategy=ATRTickStrategy(
+            period=settings.strategy.atr_period,
+            multiplier=settings.strategy.atr_multiplier,
+            bar_minutes=settings.strategy.bar_minutes,
+            trend_efficiency_period=settings.strategy.trend_efficiency_period,
+            minimum_trend_efficiency=settings.strategy.minimum_trend_efficiency,
+            reversal_confirmation_atr=settings.strategy.reversal_confirmation_atr,
+        ),
+        strategy_ready=False,
+    )
+    engine = PaperEngine(settings, store)
+
+    asyncio.run(
+        engine._process_tick(
+            runtime,
+            Tick("degraded-tick", 3_600_000, Decimal("119"), Decimal("1"), "test"),
+        )
+    )
+
+    assert store.strategy_state(instrument.id) == checkpoint
+    assert store.orders(instrument.id, 1) == []
+    assert runtime.status == "DEGRADED"
+
+
+def test_warmup_uses_persisted_closed_bars_when_rest_is_unavailable(tmp_path) -> None:
+    settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
+    instrument = settings.instruments[0]
+    store = PaperStore(settings.database_path)
+    store.ensure_account(instrument, settings.initial_cash, 1)
+    bars = [
+        Bar(
+            index * 900_000,
+            (index + 1) * 900_000 - 1,
+            Decimal(100 + index),
+            Decimal(102 + index),
+            Decimal(99 + index),
+            Decimal(101 + index),
+        )
+        for index in range(settings.strategy.atr_period)
+    ]
+    store.upsert_history_bars(instrument, 15, bars, "binance_public_kline_rest")
+    strategy = ATRTickStrategy(
+        period=settings.strategy.atr_period,
+        multiplier=settings.strategy.atr_multiplier,
+        bar_minutes=settings.strategy.bar_minutes,
+        trend_efficiency_period=settings.strategy.trend_efficiency_period,
+        minimum_trend_efficiency=settings.strategy.minimum_trend_efficiency,
+        reversal_confirmation_atr=settings.strategy.reversal_confirmation_atr,
+    )
+    runtime = InstrumentRuntime(
+        instrument=instrument,
+        feed=FailingWarmupFeed([]),  # type: ignore[arg-type]
+        strategy=strategy,
+        strategy_ready=False,
+    )
+    engine = PaperEngine(settings, store)
+
+    asyncio.run(engine._warmup_runtime(runtime))
+
+    assert runtime.strategy_ready
+    assert runtime.strategy.view().ready
+    assert runtime.kline_validation == "WAREHOUSE_FALLBACK"
+    assert runtime.last_official_bar_start_ms == bars[-1].start_ms
+
+
+def test_rest_reconciliation_closes_missing_bars_but_not_current_bar(tmp_path) -> None:
+    settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
+    instrument = settings.instruments[0]
+    store = PaperStore(settings.database_path)
+    store.ensure_account(instrument, settings.initial_cash, 1)
+    bars = [
+        Bar(
+            index * 900_000,
+            (index + 1) * 900_000 - 1,
+            Decimal(100 + index),
+            Decimal(102 + index),
+            Decimal(99 + index),
+            Decimal(101 + index),
+        )
+        for index in range(4)
+    ]
+    store.upsert_history_bars(instrument, 15, [bars[0]], "test_kline_rest")
+    strategy = ATRTickStrategy(period=2, multiplier=1, bar_minutes=15)
+    strategy.bootstrap(bars[:3])
+    runtime = InstrumentRuntime(
+        instrument=instrument,
+        feed=OfficialBarFeed(bars),  # type: ignore[arg-type]
+        strategy=strategy,
+        last_official_bar_start_ms=bars[0].start_ms,
+    )
+    engine = PaperEngine(settings, store)
+
+    synced = asyncio.run(
+        engine._reconcile_closed_klines(runtime, now_ms=bars[3].start_ms + 10_000)
+    )
+
+    assert synced
+    assert runtime.last_official_bar_start_ms == bars[2].start_ms
+    assert runtime.kline_validation == "REST_RECONCILED"
+    stored = store.ohlcv_bars(instrument.id, 15, 10)
+    assert [row["start_ms"] for row in stored] == [
+        bars[2].start_ms,
+        bars[1].start_ms,
+        bars[0].start_ms,
+    ]
+    assert all(row["is_closed"] for row in stored)
+    backfill = next(
+        event for event in store.events(instrument.id, 10)
+        if event["event_type"] == "KLINE_REST_BACKFILL"
+    )
+    assert backfill["payload"]["start_ms"] == bars[1].start_ms
+    assert backfill["payload"]["end_ms"] == bars[2].start_ms

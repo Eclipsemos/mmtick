@@ -21,6 +21,7 @@ BINANCE_WS = "wss://data-stream.binance.vision/ws"
 BINANCE_FUTURES_REST = "https://fapi.binance.com/fapi/v1"
 BINANCE_FUTURES_WS = "wss://fstream.binance.com/ws"
 FUTURES_TICK_BUCKET_MS = 250
+FUTURES_MARK_PRICE_MAX_AGE_MS = 15_000
 
 
 class MarketFeed(ABC):
@@ -328,12 +329,18 @@ class BinanceFuturesFeed(MarketFeed):
         }
 
     def _bucket_tick(self, bucket: dict[str, object]) -> Tick:
+        timestamp_ms = int(bucket["timestamp_ms"])
+        market_updated_at_ms = _int_or_none(self._market_state["updated_at_ms"])
+        market_state_is_fresh = (
+            market_updated_at_ms is not None
+            and 0 <= timestamp_ms - market_updated_at_ms <= FUTURES_MARK_PRICE_MAX_AGE_MS
+        )
         return Tick(
             event_id=(
                 f"binance-futures:{self.symbol}:"
                 f"{bucket['first_trade_id']}-{bucket['last_trade_id']}"
             ),
-            timestamp_ms=int(bucket["timestamp_ms"]),
+            timestamp_ms=timestamp_ms,
             price=Decimal(str(bucket["price"])),
             quantity=Decimal(str(bucket["quantity"])),
             source=self.source_name,
@@ -341,8 +348,16 @@ class BinanceFuturesFeed(MarketFeed):
             last_trade_id=int(bucket["last_trade_id"]),
             buyer_is_maker=bucket["buyer_is_maker"],
             event_time_ms=int(bucket["event_time_ms"]),
-            mark_price=_decimal_or_none(self._market_state["mark_price"]),
-            index_price=_decimal_or_none(self._market_state["index_price"]),
+            mark_price=(
+                _decimal_or_none(self._market_state["mark_price"])
+                if market_state_is_fresh
+                else None
+            ),
+            index_price=(
+                _decimal_or_none(self._market_state["index_price"])
+                if market_state_is_fresh
+                else None
+            ),
             funding_rate=_decimal_or_none(self._market_state["funding_rate"]),
             next_funding_time_ms=_int_or_none(self._market_state["next_funding_time_ms"]),
             open_price=Decimal(str(bucket["open_price"])),

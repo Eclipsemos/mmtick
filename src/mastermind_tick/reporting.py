@@ -8,6 +8,7 @@ from decimal import Decimal
 from typing import Any
 
 from mastermind_tick.engine import PaperEngine
+from mastermind_tick.feeds import FUTURES_MARK_PRICE_MAX_AGE_MS
 from mastermind_tick.store import PaperStore
 
 
@@ -23,7 +24,9 @@ def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
         points = store.equity(account_id, 100_000)
         latest = points[-1] if points else None
         initial = Decimal(account["initial_cash"])
-        equity = Decimal(latest["equity"]) if latest else Decimal(account["cash"])
+        runtime = runtime_by_id.get(account_id, {})
+        valuation = _live_account_valuation(account, latest, runtime)
+        equity = Decimal(valuation["equity"])
         total_pnl = equity - initial
         total_return = total_pnl / initial if initial else Decimal("0")
         max_drawdown = _max_drawdown(points)
@@ -31,7 +34,6 @@ def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
         fills = store.fills(account_id, 100_000)
         funding_payments = store.funding_payments(account_id, 100_000)
         trade_stats = _trade_stats(fills, funding_payments)
-        runtime = runtime_by_id.get(account_id, {})
         accounts.append(
             {
                 **account,
@@ -40,21 +42,15 @@ def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
                 "total_return": float(total_return),
                 "max_drawdown": max_drawdown,
                 "sharpe_ratio": sharpe_ratio,
-                "last_price": latest["price"] if latest else None,
-                "last_snapshot_ms": latest["timestamp_ms"] if latest else None,
-                "unrealized_pnl": latest["unrealized_pnl"] if latest else "0",
-                "market_value": latest["market_value"] if latest else "0",
-                "mark_price": latest["mark_price"] if latest else None,
-                "index_price": latest["index_price"] if latest else None,
-                "funding_rate": latest["funding_rate"] if latest else None,
-                "initial_margin": latest["initial_margin"] if latest else "0",
-                "available_balance": (
-                    account["cash"]
-                    if account["paper_model"] == "spot"
-                    else latest["available_balance"]
-                    if latest
-                    else account["cash"]
-                ),
+                "last_price": valuation["price"],
+                "last_snapshot_ms": valuation["timestamp_ms"],
+                "unrealized_pnl": valuation["unrealized_pnl"],
+                "market_value": valuation["market_value"],
+                "mark_price": valuation["mark_price"],
+                "index_price": valuation["index_price"],
+                "funding_rate": valuation["funding_rate"],
+                "initial_margin": valuation["initial_margin"],
+                "available_balance": valuation["available_balance"],
                 "funding_count": len(funding_payments),
                 "fill_count": len(fills),
                 "round_trips": trade_stats["round_trips"],
@@ -85,6 +81,82 @@ def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
             "fee_bps": engine.settings.execution.fee_bps,
             "slippage_bps": engine.settings.execution.slippage_bps,
         },
+    }
+
+
+def _live_account_valuation(
+    account: dict[str, Any],
+    latest: dict[str, Any] | None,
+    runtime: dict[str, Any],
+) -> dict[str, str | int | None]:
+    cash = Decimal(account["cash"])
+    quantity = Decimal(account["quantity"])
+    average_price = Decimal(account["average_price"])
+    is_futures = account["paper_model"] == "futures"
+    tick = runtime.get("last_tick")
+    latest_timestamp_ms = int(latest["timestamp_ms"]) if latest else -1
+
+    if not tick or int(tick["timestamp_ms"]) < latest_timestamp_ms:
+        return {
+            "timestamp_ms": latest["timestamp_ms"] if latest else None,
+            "price": latest["price"] if latest else None,
+            "equity": latest["equity"] if latest else str(cash),
+            "unrealized_pnl": latest["unrealized_pnl"] if latest else "0",
+            "market_value": latest["market_value"] if latest else "0",
+            "mark_price": latest["mark_price"] if latest else None,
+            "index_price": latest["index_price"] if latest else None,
+            "funding_rate": latest["funding_rate"] if latest else None,
+            "initial_margin": latest["initial_margin"] if latest else "0",
+            "available_balance": (
+                latest["available_balance"]
+                if is_futures and latest
+                else str(cash)
+            ),
+        }
+
+    timestamp_ms = int(tick["timestamp_ms"])
+    price = Decimal(str(tick["price"]))
+    market_state = runtime.get("market_state") or {}
+    market_updated_at_ms = market_state.get("updated_at_ms")
+    mark_is_fresh = (
+        market_updated_at_ms is not None
+        and 0
+        <= timestamp_ms - int(market_updated_at_ms)
+        <= FUTURES_MARK_PRICE_MAX_AGE_MS
+    )
+    mark_price = (
+        Decimal(str(tick["mark_price"]))
+        if is_futures and mark_is_fresh and tick.get("mark_price") is not None
+        else price
+    )
+    unrealized = quantity * (mark_price - average_price) if quantity else Decimal("0")
+
+    if is_futures:
+        market_value = abs(quantity) * mark_price
+        equity = cash + unrealized
+        initial_margin = market_value / Decimal(int(account["leverage"]))
+        available_balance = equity - initial_margin
+    else:
+        market_value = quantity * price
+        equity = cash + market_value
+        initial_margin = Decimal("0")
+        available_balance = cash
+
+    return {
+        "timestamp_ms": timestamp_ms,
+        "price": str(price),
+        "equity": str(equity),
+        "unrealized_pnl": str(unrealized),
+        "market_value": str(market_value),
+        "mark_price": str(mark_price) if is_futures else None,
+        "index_price": (
+            str(tick["index_price"])
+            if is_futures and mark_is_fresh and tick.get("index_price") is not None
+            else None
+        ),
+        "funding_rate": tick.get("funding_rate") if is_futures else None,
+        "initial_margin": str(initial_margin),
+        "available_balance": str(available_balance),
     }
 
 

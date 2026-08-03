@@ -136,6 +136,13 @@ def test_apply_candidate_atomically_replaces_derived_rows(tmp_path) -> None:
     ):
         store.record_market_tick(instrument, 15, item)
     store.submit_order(instrument.id, _signal(), 1)
+    store.add_event(
+        instrument.id,
+        2,
+        "ERROR",
+        "FEED_DISCONNECTED",
+        "preserve operational diagnostics",
+    )
     candidate_path = tmp_path / "candidate.db"
     rebuild_candidate(settings, candidate_path)
 
@@ -143,6 +150,10 @@ def test_apply_candidate_atomically_replaces_derived_rows(tmp_path) -> None:
 
     rebuilt = PaperStore(settings.database_path)
     assert all(order["reason"] != "contaminated" for order in rebuilt.orders(instrument.id))
+    assert any(
+        event["event_type"] == "FEED_DISCONNECTED"
+        for event in rebuilt.events(instrument.id, 100)
+    )
     state = rebuilt.strategy_state(instrument.id)
     assert state is not None
     assert json.loads(json.dumps(state))["period"] == 2
