@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 
 from mastermind_tick.api import create_app
 from mastermind_tick.config import load_settings
-from mastermind_tick.models import Tick
+from mastermind_tick.models import Bar, Tick
 
 
 def test_health_and_empty_overview(tmp_path) -> None:
@@ -51,6 +51,59 @@ def test_active_strategy_uses_recommended_atr_parameters() -> None:
     assert perp.leverage == 2
     assert perp.position_fraction == 0.625
     assert perp.leverage * perp.position_fraction == 1.25
+
+
+def test_chart_endpoints_page_backwards_with_time_cursor(tmp_path) -> None:
+    settings = replace(
+        load_settings("config/settings.toml"),
+        database_path=tmp_path / "paper.db",
+        frontend_dist=tmp_path / "missing-frontend",
+    )
+    app = create_app(settings, start_engine=False)
+    instrument = next(item for item in settings.instruments if item.id == "soxlb")
+    app.state.store.ensure_account(instrument, 100_000, 1)
+    for timestamp_ms in range(1, 26):
+        app.state.store.snapshot(
+            instrument.id,
+            Tick(
+                f"tick-{timestamp_ms}",
+                timestamp_ms,
+                Decimal("100"),
+                Decimal("1"),
+                "test",
+            ),
+        )
+    app.state.store.upsert_history_bars(
+        instrument,
+        15,
+        [
+            Bar(
+                start_ms=start_ms,
+                end_ms=start_ms + 899_999,
+                open=Decimal("100"),
+                high=Decimal("101"),
+                low=Decimal("99"),
+                close=Decimal("100"),
+                volume=Decimal("1"),
+                trade_count=1,
+            )
+            for start_ms in (0, 900_000, 1_800_000)
+        ],
+        "test_history",
+    )
+
+    with TestClient(app) as client:
+        equity = client.get(
+            f"/api/accounts/{instrument.id}/equity?limit=20&before_ms=23"
+        )
+        ohlcv = client.get(
+            f"/api/market/ohlcv?instrument_id={instrument.id}&limit=2&before_ms=1800000"
+        )
+
+    assert equity.status_code == 200
+    assert [row["timestamp_ms"] for row in equity.json()] == list(range(3, 23))
+    assert ohlcv.status_code == 200
+    assert [row["start_ms"] for row in ohlcv.json()] == [900_000, 0]
 
 
 def test_return_summary_uses_period_boundary_equity(tmp_path) -> None:

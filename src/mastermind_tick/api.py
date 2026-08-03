@@ -74,9 +74,10 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     def equity(
         account_id: str,
         limit: Annotated[int, Query(ge=20, le=10000)] = 1000,
+        before_ms: Annotated[int | None, Query(gt=0)] = None,
     ) -> list[dict]:
         _require_account(store, account_id)
-        return store.equity(account_id, limit)
+        return store.equity(account_id, limit, before_ms)
 
     @app.get("/api/accounts/{account_id}/returns")
     def returns(
@@ -141,12 +142,14 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     def ohlcv(
         instrument_id: str = "soxlb",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
+        before_ms: Annotated[int | None, Query(gt=0)] = None,
     ) -> list[dict]:
         _require_instrument(resolved, instrument_id)
         return store.ohlcv_bars(
             instrument_id,
             resolved.strategy.bar_minutes,
             limit,
+            before_ms,
         )
 
     @app.get("/api/fills.csv")

@@ -117,7 +117,7 @@ Python 环境位于 `/home/spaceaic/env/.venv`，前端生产文件构建到 `fr
 ./scripts/run.sh --host 127.0.0.1 --port 8100
 ```
 
-Dashboard 地址为 `http://127.0.0.1:8100`。生产实例由 `mmtick.service` 在后台运行，
+Dashboard“实盘交易”地址为 `http://127.0.0.1:8100`。生产实例由 `mmtick.service` 在后台运行，
 网页不需要保持打开；关闭浏览器不会停止行情处理、策略执行或持久化。检查服务：
 
 ```bash
@@ -134,6 +134,7 @@ journalctl --user -u mmtick.service -f
 
 - SOXLB 与 SOXL Perpetual 账户切换、行情连接和策略运行状态；
 - 可滚动、缩放的价格与交易信号图，以及独立的官方 15 分钟 K 线图；
+- 价格快照和 OHLCV 按时间游标加载历史页，价格线按图表像素密度降采样；
 - 黄色 ATR 移动止损线，以及做多、做空和平仓成交标记；
 - 持仓期间显示当前成本价、ATR 平仓价及按当前止损线估算的毛收益；
 - 当前价格、ATR、趋势效率、K 线动作锁、反向确认和下一触发条件；
@@ -171,7 +172,7 @@ Vite 会把 `/api` 转发到 `127.0.0.1:8100`。
 ```text
 GET  /api/health
 GET  /api/overview
-GET  /api/accounts/{id}/equity
+GET  /api/accounts/{id}/equity?limit=&before_ms=
 GET  /api/accounts/{id}/returns
 GET  /api/orders
 GET  /api/fills
@@ -179,7 +180,7 @@ GET  /api/events
 GET  /api/funding
 GET  /api/fills.csv
 GET  /api/warehouse
-GET  /api/market/ohlcv
+GET  /api/market/ohlcv?instrument_id=&limit=&before_ms=
 GET  /api/market/agg-trades
 POST /api/control       {"action":"pause" | "resume"}
 ```

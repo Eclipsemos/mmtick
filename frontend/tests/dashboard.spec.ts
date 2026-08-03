@@ -7,7 +7,7 @@ test('paper console renders live state and operational views', async ({ page }) 
   })
 
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: '实时模拟盘' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '实盘交易' })).toBeVisible()
   await expect(page.getByText('SOXL/USDT PERP', { exact: true }).first()).toBeVisible()
   await expect(page.getByText('LONG / SHORT')).toBeVisible()
   await expect(page.getByText('2x isolated')).toHaveCount(0)
@@ -81,9 +81,12 @@ test('paper console renders live state and operational views', async ({ page }) 
 
 test('price chart renders clean ATR lines and semantic trade markers', async ({ page }) => {
   const pageErrors: string[] = []
+  let equityHistoryRequests = 0
+  let ohlcvHistoryRequests = 0
   page.on('pageerror', (error) => pageErrors.push(error.message))
   const now = Date.now()
   await page.route('**/api/accounts/soxlb/equity*', async (route) => {
+    if (new URL(route.request().url()).searchParams.has('before_ms')) equityHistoryRequests += 1
     await route.fulfill({
       contentType: 'application/json',
       body: JSON.stringify([
@@ -109,6 +112,7 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
     })
   })
   await page.route('**/api/market/ohlcv?*', async (route) => {
+    if (new URL(route.request().url()).searchParams.has('before_ms')) ohlcvHistoryRequests += 1
     const starts = [now - 60_000, now - 50_000, now - 40_000, now - 30_000, now - 20_000]
     await route.fulfill({
       contentType: 'application/json',
@@ -166,6 +170,8 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
   await page.getByRole('button', { name: '向右滚动价格图' }).click()
   await page.getByRole('button', { name: '显示全部价格数据' }).click()
   await expect(page.locator('.recharts-brush')).toBeVisible()
+  await page.getByRole('button', { name: '加载更早价格数据' }).click()
+  await expect.poll(() => equityHistoryRequests).toBe(1)
   await expect(page.getByTestId('official-kline-chart')).toBeVisible()
   await expect(page.locator('.kline-candle')).toHaveCount(5)
   await expect(page.getByTestId('kline-marker-buy')).toHaveCount(3)
@@ -173,4 +179,6 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
   await page.getByRole('button', { name: '放大K线' }).click()
   await page.getByRole('button', { name: '向右滚动K线' }).click()
   await page.getByRole('button', { name: '显示全部K线' }).click()
+  await page.getByRole('button', { name: '加载更早K线' }).click()
+  await expect.poll(() => ohlcvHistoryRequests).toBe(1)
 })

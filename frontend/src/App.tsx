@@ -17,6 +17,7 @@ import {
   Eye,
   EyeOff,
   Gauge,
+  History,
   ListOrdered,
   Maximize2,
   Radio,
@@ -28,7 +29,7 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Brush,
   CartesianGrid,
@@ -154,6 +155,61 @@ function time(value: number | null) {
   }).format(value)
 }
 
+function mergeTimeSeries<T>(
+  older: T[],
+  latest: T[],
+  getTimestamp: (item: T) => number,
+) {
+  const byTimestamp = new Map<number, T>()
+  for (const item of older) byTimestamp.set(getTimestamp(item), item)
+  for (const item of latest) byTimestamp.set(getTimestamp(item), item)
+  return [...byTimestamp.values()].sort((left, right) => getTimestamp(left) - getTimestamp(right))
+}
+
+function useTimePaginatedSeries<T>(
+  scope: string,
+  latest: T[],
+  getTimestamp: (item: T) => number,
+  fetchPage: (scope: string, beforeMs?: number) => Promise<T[]>,
+  pageSize: number,
+) {
+  const [olderRows, setOlderRows] = useState<T[]>([])
+  const [isLoadingOlder, setIsLoadingOlder] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const activeScope = useRef(scope)
+  const rows = useMemo(
+    () => mergeTimeSeries(olderRows, latest, getTimestamp),
+    [getTimestamp, latest, olderRows],
+  )
+
+  useEffect(() => {
+    activeScope.current = scope
+    setOlderRows([])
+    setHasMore(true)
+    setIsLoadingOlder(false)
+  }, [scope])
+
+  const loadOlder = useCallback(async () => {
+    if (isLoadingOlder || !hasMore || rows.length === 0) return
+    const requestedScope = scope
+    const beforeMs = getTimestamp(rows[0])
+    setIsLoadingOlder(true)
+    try {
+      const page = await fetchPage(requestedScope, beforeMs)
+      if (activeScope.current !== requestedScope) return
+      setOlderRows((current) => mergeTimeSeries(current, page, getTimestamp))
+      setHasMore(page.length >= pageSize)
+    } finally {
+      if (activeScope.current === requestedScope) setIsLoadingOlder(false)
+    }
+  }, [fetchPage, getTimestamp, hasMore, isLoadingOlder, pageSize, rows, scope])
+
+  return { rows, loadOlder, isLoadingOlder, hasMore }
+}
+
+const equityTimestamp = (point: EquityPoint) => point.timestamp_ms
+const ohlcvTimestamp = (bar: OhlcvBar) => bar.start_ms
+
 function App() {
   const client = useQueryClient()
   const [view, setView] = useState<View>('monitor')
@@ -185,6 +241,20 @@ function App() {
     queryFn: () => api.ohlcv(accountId),
     refetchInterval: 5000,
   })
+  const equityHistory = useTimePaginatedSeries(
+    accountId,
+    equity.data ?? [],
+    equityTimestamp,
+    api.equity,
+    2000,
+  )
+  const ohlcvHistory = useTimePaginatedSeries(
+    accountId,
+    ohlcv.data ?? [],
+    ohlcvTimestamp,
+    api.ohlcv,
+    200,
+  )
   const control = useMutation({
     mutationFn: api.control,
     onSuccess: () => client.invalidateQueries({ queryKey: ['overview'] }),
@@ -194,7 +264,7 @@ function App() {
   const account = accounts.find((item) => item.id === accountId) ?? accounts[0]
   const liveCount = overview.data?.instruments.filter((item) => item.status === 'LIVE').length ?? 0
   const instrumentCount = overview.data?.instruments.length ?? 1
-  const pageTitle = view === 'warehouse' ? '数据仓库' : view === 'returns' ? '收益明细' : '实时模拟盘'
+  const pageTitle = view === 'warehouse' ? '数据仓库' : view === 'returns' ? '收益明细' : '实盘交易'
   const pageKicker = view === 'warehouse'
     ? 'MARKET DATA / SQLITE WAL'
     : view === 'returns'
@@ -271,7 +341,19 @@ function App() {
             <button onClick={() => overview.refetch()}><RefreshCw size={15} />重试</button>
           </div>
         ) : view === 'monitor' ? (
-          <Monitor account={account} equity={equity.data ?? []} fills={fills.data ?? []} funding={funding.data ?? []} bars={ohlcv.data ?? []} />
+          <Monitor
+            account={account}
+            equity={equityHistory.rows}
+            fills={fills.data ?? []}
+            funding={funding.data ?? []}
+            bars={ohlcvHistory.rows}
+            loadOlderEquity={equityHistory.loadOlder}
+            loadingOlderEquity={equityHistory.isLoadingOlder}
+            hasOlderEquity={equityHistory.hasMore}
+            loadOlderOhlcv={ohlcvHistory.loadOlder}
+            loadingOlderOhlcv={ohlcvHistory.isLoadingOlder}
+            hasOlderOhlcv={ohlcvHistory.hasMore}
+          />
         ) : view === 'orders' ? (
           <Orders rows={orders.data ?? []} />
         ) : view === 'returns' ? (
@@ -299,57 +381,35 @@ function Monitor({
   fills,
   funding,
   bars,
+  loadOlderEquity,
+  loadingOlderEquity,
+  hasOlderEquity,
+  loadOlderOhlcv,
+  loadingOlderOhlcv,
+  hasOlderOhlcv,
 }: {
   account?: Account
   equity: EquityPoint[]
   fills: Fill[]
   funding: FundingPayment[]
   bars: OhlcvBar[]
+  loadOlderEquity: () => Promise<void>
+  loadingOlderEquity: boolean
+  hasOlderEquity: boolean
+  loadOlderOhlcv: () => Promise<void>
+  loadingOlderOhlcv: boolean
+  hasOlderOhlcv: boolean
 }) {
   const accountFills = useMemo(
     () => fills.filter((fill) => fill.account_id === account?.id),
     [fills, account?.id],
   )
-  const priceChart = useMemo(() => buildPriceChart(equity), [equity])
-  const klineChart = useMemo(() => buildKlineChart(bars), [bars])
-  const tradeMarkers = useMemo(
-    () => buildTradeMarkers(accountFills, account?.runtime.paper_model ?? 'spot'),
-    [accountFills, account?.runtime.paper_model],
-  )
   const completedTrades = useMemo(
     () => buildCompletedTrades(accountFills, funding),
     [accountFills, funding],
   )
-  const [priceRange, setPriceRange] = useChartRange(priceChart.length)
-  const [klineRange, setKlineRange] = useChartRange(
-    klineChart.length,
-    DEFAULT_VISIBLE_KLINES,
-  )
   const [showStrategyParameters, setShowStrategyParameters] = useState(false)
-  const [hoveredTradeMarker, setHoveredTradeMarker] = useState<TradePoint | null>(null)
   useEffect(() => setShowStrategyParameters(false), [account?.id])
-  useEffect(() => setHoveredTradeMarker(null), [account?.id])
-  const visibleStart = priceChart[priceRange.startIndex]
-  const visibleEnd = priceChart[priceRange.endIndex]
-  const visibleTradeMarkers = useMemo(
-    () => tradeMarkers.filter((point) => (
-      visibleStart && visibleEnd
-        ? point.timestamp >= visibleStart.timestamp && point.timestamp <= visibleEnd.timestamp
-        : true
-    )),
-    [tradeMarkers, visibleStart, visibleEnd],
-  )
-  const visibleKlines = klineChart.slice(klineRange.startIndex, klineRange.endIndex + 1)
-  const visibleKlineStart = visibleKlines[0]
-  const visibleKlineEnd = visibleKlines[visibleKlines.length - 1]
-  const visibleKlineTrades = useMemo(
-    () => accountFills.filter((fill) => (
-      visibleKlineStart && visibleKlineEnd
-        ? fill.timestamp_ms >= visibleKlineStart.timestamp && fill.timestamp_ms <= visibleKlineEnd.endTimestamp
-        : true
-    )),
-    [accountFills, visibleKlineStart, visibleKlineEnd],
-  )
   const equityChart = useMemo(
     () => equity.map((point) => ({ timestamp: point.timestamp_ms, equity: Number(point.equity) })),
     [equity],
@@ -359,27 +419,7 @@ function Monitor({
   const strategy = runtime.strategy
   const positionQuantity = Number(account.quantity)
   const positionSide = positionQuantity > 0 ? '多头' : positionQuantity < 0 ? '空头' : '空仓'
-  const averagePrice = Number(account.average_price)
-  const trailingStop = Number(strategy.trailing_stop)
-  const stopEstimate = positionQuantity !== 0
-    && averagePrice > 0
-    && Number.isFinite(trailingStop)
-    ? {
-        pnl: positionQuantity * (trailingStop - averagePrice),
-        returnPercent: Math.sign(positionQuantity) * (trailingStop / averagePrice - 1),
-      }
-    : null
   const positive = Number(account.total_pnl) >= 0
-  const periodReturn = visibleStart && visibleEnd && visibleStart.price
-    ? visibleEnd.price / visibleStart.price - 1
-    : 0
-
-  const panPriceChart = (direction: -1 | 1) => {
-    setPriceRange((current) => panRange(current, priceChart.length, direction))
-  }
-  const zoomPriceChart = (factor: number) => {
-    setPriceRange((current) => zoomRange(current, priceChart.length, factor))
-  }
 
   return (
     <>
@@ -416,120 +456,14 @@ function Monitor({
       <DecisionStatus runtime={runtime} />
 
       <section className="workspace-grid">
-        <div className="panel price-panel">
-          <div className="panel-head price-head">
-            <div><span>PRICE / ATR TRAILING STOP</span><h3>价格与交易信号</h3></div>
-            <div className="chart-summary">
-              <div className="chart-controls" aria-label="价格图时间窗口">
-                <button type="button" onClick={() => panPriceChart(-1)} title="向左滚动" aria-label="向左滚动价格图"><ChevronLeft size={15} /></button>
-                <button type="button" onClick={() => panPriceChart(1)} title="向右滚动" aria-label="向右滚动价格图"><ChevronRight size={15} /></button>
-                <button type="button" onClick={() => zoomPriceChart(0.65)} title="放大" aria-label="放大价格图"><ZoomIn size={15} /></button>
-                <button type="button" onClick={() => zoomPriceChart(1.55)} title="缩小" aria-label="缩小价格图"><ZoomOut size={15} /></button>
-                <button type="button" onClick={() => setPriceRange(fullRange(priceChart.length))} title="显示全部" aria-label="显示全部价格数据"><Maximize2 size={14} /></button>
-              </div>
-              <div className="chart-legend">
-                <span><i className="price-dot" />价格</span>
-                <span><i className="atr-dot" />ATR 止损线</span>
-              </div>
-              <strong className={periodReturn >= 0 ? 'good-text' : 'bad-text'}>{percent(periodReturn)}</strong>
-            </div>
-          </div>
-          {stopEstimate && (
-            <div
-              className="position-stop-summary"
-              role="status"
-              aria-label="当前持仓 ATR 平仓预估"
-              title="按当前 ATR 止损线估算，未计下一 Tick 滑点、平仓手续费和资金费"
-            >
-              <span className={`position-side ${positionQuantity > 0 ? 'long' : 'short'}`}>
-                {positionSide}
-              </span>
-              <div>
-                <small>当前成本价</small>
-                <strong>{money(averagePrice, account.currency)}</strong>
-              </div>
-              <div>
-                <small>ATR 平仓价</small>
-                <strong>{money(trailingStop, account.currency)}</strong>
-              </div>
-              <div>
-                <small>预计收益</small>
-                <strong className={stopEstimate.pnl >= 0 ? 'good-text' : 'bad-text'}>
-                  {money(stopEstimate.pnl, account.currency)} · {percent(stopEstimate.returnPercent)}
-                </strong>
-              </div>
-            </div>
-          )}
-          <div className="price-chart-wrap">
-            {priceChart.length > 1 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={priceChart} margin={{ top: 24, right: 24, bottom: 2, left: 2 }}>
-                  <CartesianGrid stroke={CHART_COLORS.grid} vertical={false} />
-                  <XAxis
-                    dataKey="timestamp"
-                    type="number"
-                    domain={['dataMin', 'dataMax']}
-                    stroke={CHART_COLORS.axis}
-                    tickLine={false}
-                    axisLine={false}
-                    minTickGap={70}
-                    fontSize={11}
-                    tickFormatter={(value) => time(Number(value))}
-                  />
-                  <YAxis
-                    domain={['auto', 'auto']}
-                    stroke={CHART_COLORS.axis}
-                    tickLine={false}
-                    axisLine={false}
-                    width={58}
-                    fontSize={11}
-                    tickFormatter={(value) => Number(value).toFixed(2)}
-                  />
-                  <Tooltip
-                    content={(
-                      <PriceTooltip
-                        currency={account.currency}
-                        pricePoints={priceChart}
-                        tradePoints={tradeMarkers}
-                        hoveredTrade={hoveredTradeMarker}
-                        referencePrice={visibleStart?.price ?? null}
-                      />
-                    )}
-                  />
-                  <Line dataKey="price" name="价格" type="monotone" stroke={CHART_COLORS.price} strokeWidth={2} dot={false} isAnimationActive={false} />
-                  <Line dataKey="trailingStop" name="ATR 止损线" type="stepAfter" stroke={CHART_COLORS.atr} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
-                  <Scatter
-                    data={visibleTradeMarkers}
-                    dataKey="price"
-                    name="成交"
-                    shape={(props: unknown) => (
-                      <TradeMarker
-                        {...(props as TradeMarkerProps)}
-                        onHover={setHoveredTradeMarker}
-                      />
-                    )}
-                    isAnimationActive={false}
-                  />
-                  <Brush
-                    dataKey="timestamp"
-                    startIndex={priceRange.startIndex}
-                    endIndex={priceRange.endIndex}
-                    height={25}
-                    travellerWidth={9}
-                    stroke={CHART_COLORS.brushStroke}
-                    fill={CHART_COLORS.brush}
-                    tickFormatter={(value) => time(Number(value))}
-                    onChange={(next) => {
-                      if (typeof next.startIndex === 'number' && typeof next.endIndex === 'number') {
-                        setPriceRange(clampRange(next, priceChart.length))
-                      }
-                    }}
-                  />
-                </ComposedChart>
-              </ResponsiveContainer>
-            ) : <div className="empty-chart">正在积累价格与 ATR 快照</div>}
-          </div>
-        </div>
+        <PriceSignalPanel
+          account={account}
+          equity={equity}
+          fills={accountFills}
+          loadOlder={loadOlderEquity}
+          loadingOlder={loadingOlderEquity}
+          hasOlder={hasOlderEquity}
+        />
 
         <div className="panel strategy-panel">
           <div className="panel-head">
@@ -595,11 +529,12 @@ function Monitor({
       </section>
 
       <OfficialKlinePanel
-        account={account}
-        bars={visibleKlines}
-        fills={visibleKlineTrades}
-        pointCount={klineChart.length}
-        onRangeChange={setKlineRange}
+        validation={account.runtime.kline_state.validation}
+        bars={bars}
+        fills={accountFills}
+        loadOlder={loadOlderOhlcv}
+        loadingOlder={loadingOlderOhlcv}
+        hasOlder={hasOlderOhlcv}
       />
 
       <section className="lower-grid">
@@ -629,6 +564,198 @@ function Monitor({
       </section>
     </>
   )
+}
+
+const PriceSignalPanel = memo(function PriceSignalPanel({
+  account,
+  equity,
+  fills,
+  loadOlder,
+  loadingOlder,
+  hasOlder,
+}: {
+  account: Account
+  equity: EquityPoint[]
+  fills: Fill[]
+  loadOlder: () => Promise<void>
+  loadingOlder: boolean
+  hasOlder: boolean
+}) {
+  const [panelRef, panelWidth] = useElementWidth<HTMLDivElement>()
+  const rawPriceChart = useMemo(() => buildPriceChart(equity), [equity])
+  const priceChart = useMemo(
+    () => downsamplePricePoints(rawPriceChart, Math.max(160, Math.floor(panelWidth * 1.25))),
+    [panelWidth, rawPriceChart],
+  )
+  const tradeMarkers = useMemo(
+    () => buildTradeMarkers(fills, account.runtime.paper_model),
+    [fills, account.runtime.paper_model],
+  )
+  const [priceRange, setPriceRange] = useChartRange(priceChart.length)
+  const [hoveredTradeMarker, setHoveredTradeMarker] = useState<TradePoint | null>(null)
+  useEffect(() => setHoveredTradeMarker(null), [account.id])
+  const visibleStart = priceChart[priceRange.startIndex]
+  const visibleEnd = priceChart[priceRange.endIndex]
+  const visibleTradeMarkers = useMemo(
+    () => tradeMarkers.filter((point) => (
+      visibleStart && visibleEnd
+        ? point.timestamp >= visibleStart.timestamp && point.timestamp <= visibleEnd.timestamp
+        : true
+    )),
+    [tradeMarkers, visibleEnd, visibleStart],
+  )
+  const periodReturn = visibleStart && visibleEnd && visibleStart.price
+    ? visibleEnd.price / visibleStart.price - 1
+    : 0
+  const positionQuantity = Number(account.quantity)
+  const positionSide = positionQuantity > 0 ? '多头' : positionQuantity < 0 ? '空头' : '空仓'
+  const averagePrice = Number(account.average_price)
+  const trailingStopValue = account.runtime.strategy.trailing_stop
+  const trailingStop = trailingStopValue === null ? Number.NaN : Number(trailingStopValue)
+  const stopEstimate = positionQuantity !== 0
+    && averagePrice > 0
+    && Number.isFinite(trailingStop)
+    ? {
+        pnl: positionQuantity * (trailingStop - averagePrice),
+        returnPercent: Math.sign(positionQuantity) * (trailingStop / averagePrice - 1),
+      }
+    : null
+  const onBrushChange = useRafRangeChange(setPriceRange, priceChart.length)
+
+  return (
+    <div className="panel price-panel" ref={panelRef}>
+      <div className="panel-head price-head">
+        <div><span>PRICE / ATR TRAILING STOP</span><h3>价格与交易信号</h3></div>
+        <div className="chart-summary">
+          <div className="chart-controls" aria-label="价格图时间窗口">
+            <button type="button" onClick={() => setPriceRange((current) => panRange(current, priceChart.length, -1))} title="向左滚动" aria-label="向左滚动价格图"><ChevronLeft size={15} /></button>
+            <button type="button" onClick={() => setPriceRange((current) => panRange(current, priceChart.length, 1))} title="向右滚动" aria-label="向右滚动价格图"><ChevronRight size={15} /></button>
+            <button type="button" onClick={() => setPriceRange((current) => zoomRange(current, priceChart.length, 0.65))} title="放大" aria-label="放大价格图"><ZoomIn size={15} /></button>
+            <button type="button" onClick={() => setPriceRange((current) => zoomRange(current, priceChart.length, 1.55))} title="缩小" aria-label="缩小价格图"><ZoomOut size={15} /></button>
+            <button type="button" onClick={() => setPriceRange(fullRange(priceChart.length))} title="显示全部" aria-label="显示全部价格数据"><Maximize2 size={14} /></button>
+            <button type="button" onClick={() => void loadOlder()} disabled={!hasOlder || loadingOlder} title={hasOlder ? '加载更早价格数据' : '已加载全部价格数据'} aria-label="加载更早价格数据"><History className={loadingOlder ? 'spin' : ''} size={14} /></button>
+          </div>
+          <div className="chart-legend">
+            <span><i className="price-dot" />价格</span>
+            <span><i className="atr-dot" />ATR 止损线</span>
+          </div>
+          <strong className={periodReturn >= 0 ? 'good-text' : 'bad-text'}>{percent(periodReturn)}</strong>
+        </div>
+      </div>
+      {stopEstimate && (
+        <div
+          className="position-stop-summary"
+          role="status"
+          aria-label="当前持仓 ATR 平仓预估"
+          title="按当前 ATR 止损线估算，未计下一 Tick 滑点、平仓手续费和资金费"
+        >
+          <span className={`position-side ${positionQuantity > 0 ? 'long' : 'short'}`}>
+            {positionSide}
+          </span>
+          <div><small>当前成本价</small><strong>{money(averagePrice, account.currency)}</strong></div>
+          <div><small>ATR 平仓价</small><strong>{money(trailingStop, account.currency)}</strong></div>
+          <div>
+            <small>预计收益</small>
+            <strong className={stopEstimate.pnl >= 0 ? 'good-text' : 'bad-text'}>
+              {money(stopEstimate.pnl, account.currency)} · {percent(stopEstimate.returnPercent)}
+            </strong>
+          </div>
+        </div>
+      )}
+      <PriceChartCanvas
+        currency={account.currency}
+        points={priceChart}
+        range={priceRange}
+        tradeMarkers={tradeMarkers}
+        visibleTradeMarkers={visibleTradeMarkers}
+        hoveredTradeMarker={hoveredTradeMarker}
+        setHoveredTradeMarker={setHoveredTradeMarker}
+        onBrushChange={onBrushChange}
+      />
+    </div>
+  )
+})
+
+const PriceChartCanvas = memo(function PriceChartCanvas({
+  currency,
+  points,
+  range,
+  tradeMarkers,
+  visibleTradeMarkers,
+  hoveredTradeMarker,
+  setHoveredTradeMarker,
+  onBrushChange,
+}: {
+  currency: string
+  points: PricePoint[]
+  range: ChartRange
+  tradeMarkers: TradePoint[]
+  visibleTradeMarkers: TradePoint[]
+  hoveredTradeMarker: TradePoint | null
+  setHoveredTradeMarker: (trade: TradePoint | null) => void
+  onBrushChange: (next: { startIndex?: number; endIndex?: number }) => void
+}) {
+  const visibleStart = points[range.startIndex]
+  return (
+    <div className="price-chart-wrap">
+      {points.length > 1 ? (
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={points} margin={{ top: 24, right: 24, bottom: 2, left: 2 }}>
+            <CartesianGrid stroke={CHART_COLORS.grid} vertical={false} />
+            <XAxis dataKey="timestamp" type="number" domain={['dataMin', 'dataMax']} stroke={CHART_COLORS.axis} tickLine={false} axisLine={false} minTickGap={70} fontSize={11} tickFormatter={(value) => time(Number(value))} />
+            <YAxis domain={['auto', 'auto']} stroke={CHART_COLORS.axis} tickLine={false} axisLine={false} width={58} fontSize={11} tickFormatter={(value) => Number(value).toFixed(2)} />
+            <Tooltip content={<PriceTooltip currency={currency} pricePoints={points} tradePoints={tradeMarkers} hoveredTrade={hoveredTradeMarker} referencePrice={visibleStart?.price ?? null} />} />
+            <Line dataKey="price" name="价格" type="monotone" stroke={CHART_COLORS.price} strokeWidth={2} dot={false} isAnimationActive={false} />
+            <Line dataKey="trailingStop" name="ATR 止损线" type="stepAfter" stroke={CHART_COLORS.atr} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
+            <Scatter data={visibleTradeMarkers} dataKey="price" name="成交" shape={(props: unknown) => <TradeMarker {...(props as TradeMarkerProps)} onHover={setHoveredTradeMarker} />} isAnimationActive={false} />
+            <Brush dataKey="timestamp" startIndex={range.startIndex} endIndex={range.endIndex} height={25} travellerWidth={9} stroke={CHART_COLORS.brushStroke} fill={CHART_COLORS.brush} tickFormatter={(value) => time(Number(value))} onChange={onBrushChange} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      ) : <div className="empty-chart">正在积累价格与 ATR 快照</div>}
+    </div>
+  )
+})
+
+function useElementWidth<T extends HTMLElement>() {
+  const ref = useRef<T>(null)
+  const [width, setWidth] = useState(800)
+
+  useEffect(() => {
+    const element = ref.current
+    if (!element) return
+    const observer = new ResizeObserver(([entry]) => {
+      setWidth(Math.max(1, Math.round(entry.contentRect.width)))
+    })
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+
+  return [ref, width] as const
+}
+
+function useRafRangeChange(
+  setRange: React.Dispatch<React.SetStateAction<ChartRange>>,
+  pointCount: number,
+) {
+  const frame = useRef<number | null>(null)
+  const pending = useRef<ChartRange | null>(null)
+
+  useEffect(() => () => {
+    if (frame.current !== null) cancelAnimationFrame(frame.current)
+  }, [])
+
+  return useCallback((next: { startIndex?: number; endIndex?: number }) => {
+    if (typeof next.startIndex !== 'number' || typeof next.endIndex !== 'number') return
+    pending.current = clampRange(
+      { startIndex: next.startIndex, endIndex: next.endIndex },
+      pointCount,
+    )
+    if (frame.current !== null) return
+    frame.current = requestAnimationFrame(() => {
+      frame.current = null
+      if (pending.current) setRange(pending.current)
+    })
+  }, [pointCount, setRange])
 }
 
 function useChartRange(pointCount: number, defaultVisiblePoints = DEFAULT_VISIBLE_POINTS) {
@@ -711,6 +838,38 @@ function buildPriceChart(equity: EquityPoint[]): PricePoint[] {
   }))
 }
 
+function downsamplePricePoints(points: PricePoint[], maxPoints: number) {
+  if (points.length <= maxPoints || maxPoints < 6) return points
+  const result: PricePoint[] = [points[0]]
+  const interiorCount = points.length - 2
+  const bucketCount = Math.max(1, Math.floor((maxPoints - 2) / 4))
+
+  for (let bucket = 0; bucket < bucketCount; bucket += 1) {
+    const start = 1 + Math.floor(bucket * interiorCount / bucketCount)
+    const end = 1 + Math.floor((bucket + 1) * interiorCount / bucketCount)
+    let minimumPrice = points[start]
+    let maximumPrice = points[start]
+    let minimumStop: PricePoint | null = points[start].trailingStop === null ? null : points[start]
+    let maximumStop = minimumStop
+    for (let index = start + 1; index < end; index += 1) {
+      const point = points[index]
+      if (point.price < minimumPrice.price) minimumPrice = point
+      if (point.price > maximumPrice.price) maximumPrice = point
+      if (point.trailingStop !== null) {
+        if (minimumStop === null || point.trailingStop < minimumStop.trailingStop!) minimumStop = point
+        if (maximumStop === null || point.trailingStop > maximumStop.trailingStop!) maximumStop = point
+      }
+    }
+    const candidates = new Set([minimumPrice, maximumPrice, minimumStop, maximumStop])
+    result.push(...[...candidates].filter((point): point is PricePoint => point !== null).sort(
+      (left, right) => left.timestamp - right.timestamp,
+    ))
+  }
+
+  result.push(points[points.length - 1])
+  return result
+}
+
 type KlinePoint = {
   timestamp: number
   endTimestamp: number
@@ -737,26 +896,40 @@ function buildKlineChart(bars: OhlcvBar[]): KlinePoint[] {
     }))
 }
 
-function OfficialKlinePanel({
-  account,
+const OfficialKlinePanel = memo(function OfficialKlinePanel({
+  validation,
   bars,
   fills,
-  pointCount,
-  onRangeChange,
+  loadOlder,
+  loadingOlder,
+  hasOlder,
 }: {
-  account: Account
-  bars: KlinePoint[]
+  validation: string
+  bars: OhlcvBar[]
   fills: Fill[]
-  pointCount: number
-  onRangeChange: React.Dispatch<React.SetStateAction<ChartRange>>
+  loadOlder: () => Promise<void>
+  loadingOlder: boolean
+  hasOlder: boolean
 }) {
+  const klineChart = useMemo(() => buildKlineChart(bars), [bars])
+  const [range, setRange] = useChartRange(klineChart.length, DEFAULT_VISIBLE_KLINES)
+  const visibleBars = klineChart.slice(range.startIndex, range.endIndex + 1)
+  const visibleStart = visibleBars[0]
+  const visibleEnd = visibleBars[visibleBars.length - 1]
+  const visibleFills = useMemo(
+    () => fills.filter((fill) => (
+      visibleStart && visibleEnd
+        ? fill.timestamp_ms >= visibleStart.timestamp && fill.timestamp_ms <= visibleEnd.endTimestamp
+        : true
+    )),
+    [fills, visibleEnd, visibleStart],
+  )
   const pan = (direction: -1 | 1) => {
-    onRangeChange((current) => panRange(current, pointCount, direction))
+    setRange((current) => panRange(current, klineChart.length, direction))
   }
   const zoom = (factor: number) => {
-    onRangeChange((current) => zoomRange(current, pointCount, factor))
+    setRange((current) => zoomRange(current, klineChart.length, factor))
   }
-  const validation = account.runtime.kline_state.validation
 
   return (
     <section className="panel kline-panel" data-testid="official-kline-panel">
@@ -768,7 +941,8 @@ function OfficialKlinePanel({
             <button type="button" onClick={() => pan(1)} title="向右滚动K线" aria-label="向右滚动K线"><ChevronRight size={15} /></button>
             <button type="button" onClick={() => zoom(0.65)} title="放大K线" aria-label="放大K线"><ZoomIn size={15} /></button>
             <button type="button" onClick={() => zoom(1.55)} title="缩小K线" aria-label="缩小K线"><ZoomOut size={15} /></button>
-            <button type="button" onClick={() => onRangeChange(fullRange(pointCount))} title="显示全部K线" aria-label="显示全部K线"><Maximize2 size={14} /></button>
+            <button type="button" onClick={() => setRange(fullRange(klineChart.length))} title="显示全部K线" aria-label="显示全部K线"><Maximize2 size={14} /></button>
+            <button type="button" onClick={() => void loadOlder()} disabled={!hasOlder || loadingOlder} title={hasOlder ? '加载更早K线' : '已加载全部K线'} aria-label="加载更早K线"><History className={loadingOlder ? 'spin' : ''} size={14} /></button>
           </div>
           <div className="chart-legend kline-legend">
             <span><i className="candle-up" />上涨</span>
@@ -778,15 +952,15 @@ function OfficialKlinePanel({
         </div>
       </div>
       <div className="kline-chart-wrap">
-        {bars.length > 0 ? (
-          <KlineSvg bars={bars} fills={fills} />
+        {visibleBars.length > 0 ? (
+          <KlineSvg bars={visibleBars} fills={visibleFills} />
         ) : <div className="empty-chart">等待官方 15m K线</div>}
       </div>
     </section>
   )
-}
+})
 
-function KlineSvg({ bars, fills }: { bars: KlinePoint[]; fills: Fill[] }) {
+const KlineSvg = memo(function KlineSvg({ bars, fills }: { bars: KlinePoint[]; fills: Fill[] }) {
   const width = 1200
   const height = 360
   const left = 58
@@ -849,7 +1023,7 @@ function KlineSvg({ bars, fills }: { bars: KlinePoint[]; fills: Fill[] }) {
       {bars.length > 1 && <text x={width - right} y={height - 8} textAnchor="end" className="kline-axis-label">{time(bars[bars.length - 1].timestamp)}</text>}
     </svg>
   )
-}
+})
 
 function buildTradeMarkers(fills: Fill[], paperModel: 'spot' | 'futures'): TradePoint[] {
   const ordered = [...fills].sort((left, right) => (

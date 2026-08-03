@@ -1098,20 +1098,32 @@ class PaperStore:
             "total_funding": str(total_funding),
         }
 
-    def equity(self, account_id: str, limit: int = 1000) -> list[dict[str, Any]]:
+    def equity(
+        self,
+        account_id: str,
+        limit: int = 1000,
+        before_ms: int | None = None,
+    ) -> list[dict[str, Any]]:
+        before_clause = "AND timestamp_ms < ?" if before_ms is not None else ""
+        params = (
+            (account_id, before_ms, limit)
+            if before_ms is not None
+            else (account_id, limit)
+        )
         with self.connection() as connection:
             rows = connection.execute(
-                """
+                f"""
                 SELECT * FROM (
                     SELECT timestamp_ms, price, cash, quantity, market_value, equity,
                            unrealized_pnl, realized_pnl, atr, trailing_stop, relation,
                            mark_price, index_price, funding_rate, initial_margin,
                            available_balance, total_funding, source
                     FROM equity_snapshots WHERE account_id = ?
+                    {before_clause}
                     ORDER BY timestamp_ms DESC, id DESC LIMIT ?
                 ) ORDER BY timestamp_ms
                 """,
-                (account_id, limit),
+                params,
             ).fetchall()
         return [dict(row) for row in rows]
 
@@ -1160,18 +1172,26 @@ class PaperStore:
         instrument_id: str,
         interval_minutes: int,
         limit: int = 100,
+        before_ms: int | None = None,
     ) -> list[dict[str, Any]]:
+        before_clause = "AND start_ms < ?" if before_ms is not None else ""
+        params = (
+            (instrument_id, interval_minutes, before_ms, limit)
+            if before_ms is not None
+            else (instrument_id, interval_minutes, limit)
+        )
         with self.connection() as connection:
             rows = connection.execute(
-                """
+                f"""
                 SELECT instrument_id, symbol, interval_minutes, start_ms, end_ms,
                        open, high, low, close, volume, trade_count, is_closed,
                        source, updated_at_ms
                 FROM ohlcv_bars
                 WHERE instrument_id = ? AND interval_minutes = ?
+                {before_clause}
                 ORDER BY start_ms DESC LIMIT ?
                 """,
-                (instrument_id, interval_minutes, limit),
+                params,
             ).fetchall()
         result = [dict(row) for row in rows]
         for item in result:

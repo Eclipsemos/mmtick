@@ -8,8 +8,10 @@ async function getJson<T>(url: string): Promise<T> {
 
 export const api = {
   overview: () => getJson<Overview>('/api/overview'),
-  equity: (accountId: string) =>
-    getJson<EquityPoint[]>(`/api/accounts/${accountId}/equity?limit=2000`),
+  equity: (accountId: string, beforeMs?: number) => {
+    const cursor = beforeMs === undefined ? '' : `&before_ms=${beforeMs}`
+    return getJson<EquityPoint[]>(`/api/accounts/${accountId}/equity?limit=2000${cursor}`)
+  },
   returns: (accountId: string) => {
     const offset = -new Date().getTimezoneOffset()
     return getJson<ReturnSummary>(`/api/accounts/${accountId}/returns?timezone_offset_minutes=${offset}`)
@@ -22,8 +24,10 @@ export const api = {
   warehouse: () => getJson<WarehouseSummary>('/api/warehouse'),
   aggTrades: (instrumentId = 'soxlb') =>
     getJson<AggTrade[]>(`/api/market/agg-trades?instrument_id=${instrumentId}&limit=100`),
-  ohlcv: (instrumentId = 'soxlb') =>
-    getJson<OhlcvBar[]>(`/api/market/ohlcv?instrument_id=${instrumentId}&limit=100`),
+  ohlcv: (instrumentId = 'soxlb', beforeMs?: number) => {
+    const cursor = beforeMs === undefined ? '' : `&before_ms=${beforeMs}`
+    return getJson<OhlcvBar[]>(`/api/market/ohlcv?instrument_id=${instrumentId}&limit=200${cursor}`)
+  },
   control: async (action: 'pause' | 'resume') => {
     const response = await fetch('/api/control', {
       method: 'POST',

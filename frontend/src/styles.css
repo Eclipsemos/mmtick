@@ -161,6 +161,9 @@ h1 { margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: 0; }
 .chart-controls button:first-child { border-left: 0; }
 .chart-controls button:hover { color: var(--text); background: #e8eef1; }
 .chart-controls button:active { color: var(--green); background: #e2f3ed; }
+.chart-controls button:disabled { color: #b6c0c6; background: #f7f9fa; cursor: not-allowed; }
+.spin { animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .chart-legend { display: flex; align-items: center; gap: 13px; }
 .chart-legend span { display: flex; align-items: center; gap: 6px; letter-spacing: 0; }
 .chart-legend i { width: 15px; height: 2px; display: inline-block; }

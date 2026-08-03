@@ -146,6 +146,35 @@ def test_equity_snapshot_persists_atr_chart_values(tmp_path) -> None:
     assert point["relation"] == "above"
 
 
+def test_equity_and_ohlcv_support_time_cursor_pagination(tmp_path) -> None:
+    store = PaperStore(tmp_path / "paper.db")
+    item = instrument()
+    store.ensure_account(item, 10_000, 1)
+
+    for timestamp_ms in (100, 200, 300):
+        store.snapshot(
+            item.id,
+            market_tick(f"tick-{timestamp_ms}", timestamp_ms, "100"),
+        )
+    bars = [
+        Bar(
+            start_ms=start_ms,
+            end_ms=start_ms + 899_999,
+            open=Decimal("100"),
+            high=Decimal("101"),
+            low=Decimal("99"),
+            close=Decimal("100"),
+            volume=Decimal("1"),
+            trade_count=1,
+        )
+        for start_ms in (0, 900_000, 1_800_000)
+    ]
+    store.upsert_history_bars(item, 15, bars, "test_history")
+
+    assert [row["timestamp_ms"] for row in store.equity(item.id, 20, 300)] == [100, 200]
+    assert [row["start_ms"] for row in store.ohlcv_bars(item.id, 15, 2, 1_800_000)] == [900_000, 0]
+
+
 def test_market_warehouse_deduplicates_ticks_and_updates_ohlcv(tmp_path) -> None:
     store = PaperStore(tmp_path / "paper.db")
     item = instrument()
