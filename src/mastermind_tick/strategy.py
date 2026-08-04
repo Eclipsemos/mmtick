@@ -399,6 +399,16 @@ class ATRTickStrategy:
         if self.reversal_direction is not None and self.reversal_eligible_bar_ms is None:
             self.reversal_eligible_bar_ms = fill_bar_start + self.bar_ms
 
+    def on_manual_flatten(self, timestamp_ms: int) -> None:
+        """Prevent an operator-initiated close from arming an automatic reversal."""
+        fill_bar_start = timestamp_ms // self.bar_ms * self.bar_ms
+        self.startup_alignment_checked = True
+        self.action_this_bar = True
+        self.flattened_this_bar = True
+        self.bought_this_bar = False
+        self.last_action_bar_start_ms = fill_bar_start
+        self._clear_reversal()
+
     def _confirmed_reversal_signal(
         self,
         tick: Tick,

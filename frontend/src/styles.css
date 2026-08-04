@@ -65,6 +65,7 @@ h1 { margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: 0; }
 .account-switch button { min-width: 104px; height: 34px; border: 0; border-radius: 4px; color: var(--muted); background: transparent; cursor: pointer; font: 12px 'DM Mono', monospace; }
 .account-switch button.active { color: #fff; background: var(--green); font-weight: 700; }
 .page-actions { display: flex; align-items: center; gap: 10px; }
+.live-account-actions { display: flex; align-items: center; gap: 7px; }
 .scope-chips { display: flex; align-items: center; gap: 7px; }
 .scope-chips span { height: 30px; padding: 0 9px; display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 4px; color: #63737e; background: #fff; font: 10px 'DM Mono', monospace; }
 
@@ -82,6 +83,8 @@ h1 { margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: 0; }
 .live-readiness > p { margin: 0; color: #53636e; font-size: 12px; }
 .live-readiness > small { color: #8a6266; font: 10px 'DM Mono', monospace; overflow-wrap: anywhere; }
 .live-readiness.armed > small { color: var(--green); }
+.live-action-message { min-height: 38px; margin: -4px 0 12px; padding: 8px 11px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid #b8d7cc; border-radius: 4px; color: #176c52; background: #f0faf6; font-size: 11px; }
+.live-action-message button { width: 28px; height: 28px; display: grid; place-items: center; border: 0; color: inherit; background: transparent; cursor: pointer; }
 .live-readiness-gates { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 11px; }
 .live-readiness-gates span { display: inline-flex; align-items: center; gap: 4px; color: #7e8992; font-size: 10px; white-space: nowrap; }
 .live-readiness-gates .open svg { color: var(--green); }
@@ -320,7 +323,9 @@ footer { height: 44px; padding: 0 30px; display: flex; align-items: center; just
 .unlock-dialog-actions { margin-top: 18px; display: flex; justify-content: flex-end; gap: 8px; }
 .unlock-dialog-actions button { height: 36px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: 4px; background: #fff; cursor: pointer; }
 .unlock-dialog-actions button.primary { color: #fff; border-color: var(--green); background: var(--green); }
+.unlock-dialog-actions button.danger-confirm { color: #fff; border-color: var(--red); background: var(--red); }
 .unlock-dialog-actions button:disabled { opacity: .55; cursor: wait; }
+.flatten-dialog-copy { color: #53636e; font-size: 12px; line-height: 1.7; }
 
 @media (max-width: 1050px) {
   .topbar { grid-template-columns: auto 1fr; backdrop-filter: none; }
@@ -350,6 +355,8 @@ footer { height: 44px; padding: 0 30px; display: flex; align-items: center; just
   .page-head { align-items: stretch; flex-direction: column; }
   .scope-chips { overflow-x: auto; }
   .page-actions { align-items: stretch; flex-direction: column; }
+  .live-account-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .live-account-actions .control { justify-content: center; }
   .live-readiness { margin-top: -8px; grid-template-columns: 1fr; gap: 9px; }
   .live-readiness-gates { grid-column: auto; }
   .scope-chips span { flex: 1; justify-content: center; white-space: nowrap; }

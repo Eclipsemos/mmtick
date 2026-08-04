@@ -2,16 +2,28 @@ import type { AggTrade, EquityPoint, EventItem, Fill, FundingPayment, LiveReadin
 
 export class ApiError extends Error {
   status: number
+  detail: unknown
 
-  constructor(status: number) {
+  constructor(status: number, detail?: unknown) {
     super(`API ${status}`)
     this.status = status
+    this.detail = detail
   }
+}
+
+async function apiError(response: Response) {
+  let detail: unknown
+  try {
+    detail = (await response.json() as { detail?: unknown }).detail
+  } catch {
+    detail = undefined
+  }
+  return new ApiError(response.status, detail)
 }
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url, { credentials: 'same-origin' })
-  if (!response.ok) throw new ApiError(response.status)
+  if (!response.ok) throw await apiError(response)
   return response.json() as Promise<T>
 }
 
@@ -22,7 +34,7 @@ async function postJson<T>(url: string, body?: unknown): Promise<T> {
     headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
     body: body === undefined ? undefined : JSON.stringify(body),
   })
-  if (!response.ok) throw new ApiError(response.status)
+  if (!response.ok) throw await apiError(response)
   return response.json() as Promise<T>
 }
 
@@ -45,6 +57,23 @@ export const api = {
   liveFills: () => getJson<Fill[]>('/api/live/fills?limit=200'),
   liveOrders: () => getJson<Order[]>('/api/live/orders?limit=200'),
   liveFunding: () => getJson<FundingPayment[]>('/api/live/funding?limit=1000'),
+  stopLiveStrategy: () =>
+    postJson<{ ok: boolean; strategy_paused: boolean; order_submission_ready: boolean }>(
+      '/api/live/control',
+      { action: 'stop' },
+    ),
+  liveFlatten: () => postJson<{
+    ok: boolean
+    already_flat: boolean
+    flat_confirmed: boolean
+    orders: Array<{
+      client_order_id: string
+      side: string
+      position_side: string
+      quantity: string
+      status: string
+    }>
+  }>('/api/live/flatten', { confirm: 'FLATTEN_SOXLUSDT' }),
   equity: (accountId: string, beforeMs?: number) => {
     const cursor = beforeMs === undefined ? '' : `&before_ms=${beforeMs}`
     return getJson<EquityPoint[]>(`/api/accounts/${accountId}/equity?limit=2000${cursor}`)

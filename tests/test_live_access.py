@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from mastermind_tick.api import create_app
 from mastermind_tick.config import load_settings
 from mastermind_tick.live_access import COOKIE_NAME, LiveAccess
+from mastermind_tick.live_futures import LiveOperationError
 from mastermind_tick.live_store import LiveStore
 
 
@@ -116,6 +117,70 @@ def test_loopback_can_establish_live_session_without_entering_token(tmp_path) ->
     assert fills.json() == []
     assert events.status_code == 200
     assert events.json() == []
+
+
+def test_live_operator_actions_require_session_and_explicit_flatten_confirmation(
+    tmp_path, monkeypatch
+) -> None:
+    token = "c" * 48
+    app = _live_app(tmp_path, token)
+    flatten_calls = 0
+
+    async def fake_flatten() -> dict:
+        nonlocal flatten_calls
+        flatten_calls += 1
+        return {
+            "ok": True,
+            "already_flat": False,
+            "flat_confirmed": True,
+            "orders": [{"status": "FILLED"}],
+        }
+
+    monkeypatch.setattr(app.state.live_trader, "manual_flatten", fake_flatten)
+    with TestClient(app, client=("203.0.113.10", 4321)) as client:
+        unauthorized_control = client.post("/api/live/control", json={"action": "stop"})
+        unauthorized_flatten = client.post(
+            "/api/live/flatten", json={"confirm": "FLATTEN_SOXLUSDT"}
+        )
+        assert client.post("/api/live/unlock", json={"token": token}).status_code == 200
+        invalid_confirmation = client.post(
+            "/api/live/flatten", json={"confirm": "not-confirmed"}
+        )
+        invalid_resume = client.post("/api/live/control", json={"action": "resume"})
+        stopped = client.post("/api/live/control", json={"action": "stop"})
+        flattened = client.post(
+            "/api/live/flatten", json={"confirm": "FLATTEN_SOXLUSDT"}
+        )
+
+    assert unauthorized_control.status_code == 401
+    assert unauthorized_flatten.status_code == 401
+    assert invalid_confirmation.status_code == 422
+    assert invalid_resume.status_code == 422
+    assert stopped.json()["strategy_paused"] is True
+    assert app.state.live_store.metadata("trading_paused") == "true"
+    assert flattened.status_code == 200
+    assert flattened.json()["orders"][0]["status"] == "FILLED"
+    assert flatten_calls == 1
+
+
+def test_live_flatten_conflict_is_returned_as_safe_api_error(tmp_path, monkeypatch) -> None:
+    app = _live_app(tmp_path)
+
+    async def reject_flatten() -> dict:
+        raise LiveOperationError("OPEN_ORDER_PRESENT", "Open order present")
+
+    monkeypatch.setattr(app.state.live_trader, "manual_flatten", reject_flatten)
+    with TestClient(app) as client:
+        assert client.post("/api/live/unlock-local").status_code == 200
+        response = client.post(
+            "/api/live/flatten", json={"confirm": "FLATTEN_SOXLUSDT"}
+        )
+
+    assert response.status_code == 409
+    assert response.json()["detail"] == {
+        "code": "OPEN_ORDER_PRESENT",
+        "message": "Open order present",
+    }
 
 
 def test_live_performance_excludes_deposits_but_keeps_actual_equity(tmp_path) -> None:

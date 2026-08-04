@@ -18,7 +18,7 @@ from pydantic import BaseModel
 from mastermind_tick.config import InstrumentSettings, Settings, load_settings
 from mastermind_tick.engine import PaperEngine
 from mastermind_tick.live_access import COOKIE_NAME, LiveAccess
-from mastermind_tick.live_futures import LiveFuturesTrader
+from mastermind_tick.live_futures import LiveFuturesTrader, LiveOperationError
 from mastermind_tick.live_futures_reporting import (
     build_live_futures_overview,
     build_live_futures_return_summary,
@@ -36,8 +36,16 @@ class ControlRequest(BaseModel):
     action: Literal["pause", "resume"]
 
 
+class LiveControlRequest(BaseModel):
+    action: Literal["stop"]
+
+
 class LiveUnlockRequest(BaseModel):
     token: str
+
+
+class LiveFlattenRequest(BaseModel):
+    confirm: Literal["FLATTEN_SOXLUSDT"]
 
 
 def create_app(settings: Settings | None = None, *, start_engine: bool = True) -> FastAPI:
@@ -128,6 +136,22 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     def live_logout(response: Response) -> dict:
         response.delete_cookie(COOKIE_NAME, path="/api/live", samesite="strict")
         return {"ok": True, "authenticated": False}
+
+    @app.post("/api/live/control")
+    async def live_control(payload: LiveControlRequest, request: Request) -> dict:
+        live_access.require(request)
+        return await live_trader.set_strategy_paused(True)
+
+    @app.post("/api/live/flatten")
+    async def live_flatten(payload: LiveFlattenRequest, request: Request) -> dict:
+        live_access.require(request)
+        try:
+            return await live_trader.manual_flatten()
+        except LiveOperationError as exc:
+            raise HTTPException(
+                status_code=409,
+                detail={"code": exc.code, "message": exc.message},
+            ) from exc
 
     @app.get("/api/live/overview")
     def live_overview(request: Request) -> dict:

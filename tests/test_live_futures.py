@@ -2,9 +2,11 @@ import asyncio
 from dataclasses import replace
 from decimal import Decimal
 
+import pytest
+
 from mastermind_tick.binance_futures import BinanceFuturesAPIError, FuturesSymbolRules
 from mastermind_tick.config import load_settings
-from mastermind_tick.live_futures import LiveFuturesTrader
+from mastermind_tick.live_futures import LiveFuturesTrader, LiveOperationError
 from mastermind_tick.live_preflight import run as run_live_preflight
 from mastermind_tick.live_store import LiveStore
 from mastermind_tick.models import Side, StrategySignal, Tick
@@ -353,6 +355,109 @@ def test_futures_close_short_uses_full_position_and_short_side(
     order = store.orders(settings.live_futures.account_id)[0]
     assert order["reduce_only"] == 1
     assert order["position_side"] == "SHORT"
+
+
+def test_operator_can_persistently_stop_and_resume_live_strategy(
+    tmp_path, monkeypatch
+) -> None:
+    settings = futures_settings(tmp_path, allow_orders=True)
+    monkeypatch.setenv(
+        settings.live_futures.activation_env, settings.live_futures.activation_value
+    )
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
+    trader = LiveFuturesTrader(
+        settings, store, client=FakeFuturesClient()  # type: ignore[arg-type]
+    )
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+    assert trader.order_submission_ready
+
+    stopped = asyncio.run(trader.set_strategy_paused(True))
+
+    assert stopped["strategy_paused"] is True
+    assert not trader.order_submission_ready
+    assert trader.status_message == "Live Futures strategy stopped by operator"
+    assert store.events(settings.live_futures.account_id)[0]["code"] == "STRATEGY_STOPPED"
+
+    resumed = asyncio.run(trader.set_strategy_paused(False))
+
+    assert resumed["strategy_paused"] is False
+    assert trader.order_submission_ready
+    assert store.events(settings.live_futures.account_id)[0]["code"] == "STRATEGY_RESUMED"
+
+
+def test_operator_flatten_closes_fresh_long_position_while_strategy_is_stopped(
+    tmp_path,
+) -> None:
+    settings = futures_settings(tmp_path)
+    client = FakeFuturesClient(long_quantity="1.23")
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("trading_paused", "true", 1_700_000_000_000)
+    trader = LiveFuturesTrader(
+        settings, store, client=client  # type: ignore[arg-type]
+    )
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+
+    result = asyncio.run(trader.manual_flatten())
+
+    assert result["ok"] is True
+    assert result["already_flat"] is False
+    assert result["flat_confirmed"] is True
+    assert len(client.market_order_calls) == 1
+    call = client.market_order_calls[0]
+    assert call["side"] == "SELL"
+    assert call["position_side"] == "LONG"
+    assert call["quantity"] == Decimal("1.23")
+    order = store.orders(settings.live_futures.account_id)[0]
+    assert order["reason"] == "operator_manual_flatten"
+    assert order["reduce_only"] == 1
+    assert trader.strategy.flattened_this_bar
+    assert trader.strategy.reversal_direction is None
+    assert store.events(settings.live_futures.account_id)[0]["code"] == (
+        "MANUAL_FLATTEN_SUBMITTED"
+    )
+
+
+def test_operator_flatten_is_noop_when_exchange_position_is_flat(tmp_path) -> None:
+    settings = futures_settings(tmp_path)
+    client = FakeFuturesClient()
+    store = LiveStore(settings.live_futures.database_path)
+    trader = LiveFuturesTrader(
+        settings, store, client=client  # type: ignore[arg-type]
+    )
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+
+    result = asyncio.run(trader.manual_flatten())
+
+    assert result == {
+        "ok": True,
+        "already_flat": True,
+        "flat_confirmed": True,
+        "orders": [],
+    }
+    assert client.market_order_calls == []
+
+
+def test_operator_flatten_rejects_when_exchange_has_open_order(tmp_path) -> None:
+    settings = futures_settings(tmp_path)
+    client = FakeFuturesClient(
+        long_quantity="1.23", open_orders=[{"clientOrderId": "manual-order"}]
+    )
+    store = LiveStore(settings.live_futures.database_path)
+    trader = LiveFuturesTrader(
+        settings, store, client=client  # type: ignore[arg-type]
+    )
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+
+    with pytest.raises(LiveOperationError, match="open orders") as raised:
+        asyncio.run(trader.manual_flatten())
+
+    assert raised.value.code == "OPEN_ORDER_PRESENT"
+    assert client.market_order_calls == []
 
 
 def test_futures_daily_order_limit_blocks_new_entry(tmp_path, monkeypatch) -> None:

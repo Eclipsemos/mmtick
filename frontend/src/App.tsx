@@ -224,6 +224,9 @@ function App() {
   const [unlockToken, setUnlockToken] = useState('')
   const [unlockError, setUnlockError] = useState('')
   const [switchingMode, setSwitchingMode] = useState(false)
+  const [flattenOpen, setFlattenOpen] = useState(false)
+  const [flattenError, setFlattenError] = useState('')
+  const [liveActionMessage, setLiveActionMessage] = useState('')
   const accountId = mode === 'live' ? 'soxl_perp_live' : paperAccountId
   const marketInstrumentId = mode === 'live' ? 'soxl_perp' : accountId
   const overview = useQuery({
@@ -306,6 +309,42 @@ function App() {
     mutationFn: api.control,
     onSuccess: () => client.invalidateQueries({ queryKey: ['overview', 'paper'] }),
   })
+  const refreshLiveAccount = useCallback(() => {
+    void client.invalidateQueries({ queryKey: ['overview', 'live'] })
+    void client.invalidateQueries({ queryKey: ['live-readiness'] })
+    void client.invalidateQueries({ queryKey: ['orders', 'live'] })
+    void client.invalidateQueries({ queryKey: ['fills', 'live'] })
+    void client.invalidateQueries({ queryKey: ['equity', 'live'] })
+  }, [client])
+  const liveStrategyControl = useMutation({
+    mutationFn: api.stopLiveStrategy,
+    onSuccess: () => {
+      setLiveActionMessage('策略已停止，重启服务后仍保持停止。')
+      refreshLiveAccount()
+    },
+    onError: () => setLiveActionMessage('策略控制失败，请检查 LIVE 会话和服务状态。'),
+  })
+  const liveFlatten = useMutation({
+    mutationFn: api.liveFlatten,
+    onSuccess: (result) => {
+      setFlattenOpen(false)
+      setFlattenError('')
+      setLiveActionMessage(
+        result.already_flat
+          ? 'Binance 当前已无持仓。'
+          : result.flat_confirmed
+            ? '平仓已成交，正在刷新账户状态。'
+            : '平仓指令已提交，请等待账户对账。',
+      )
+      refreshLiveAccount()
+    },
+    onError: (error) => {
+      const detail = error instanceof ApiError && error.detail && typeof error.detail === 'object'
+        ? (error.detail as { message?: string }).message
+        : undefined
+      setFlattenError(detail ?? '平仓失败；请检查是否存在挂单、未决订单或账户权限异常。')
+    },
+  })
 
   const showLiveUnlock = useCallback((message = '') => {
     setUnlockToken('')
@@ -375,6 +414,8 @@ function App() {
 
   const accounts = overview.data?.accounts ?? []
   const account = accounts.find((item) => item.id === accountId) ?? accounts[0]
+  const liveHasPosition = Number(account?.quantity ?? 0) !== 0
+    || Boolean(liveReadiness.data?.block_reasons.includes('SIMULTANEOUS_LONG_SHORT_POSITION'))
   const liveCount = overview.data?.instruments.filter((item) => item.status === 'LIVE').length ?? 0
   const instrumentCount = overview.data?.instruments.length ?? 1
   const feedConnected = mode === 'live'
@@ -461,6 +502,29 @@ function App() {
                 </button>
               ))}
             </div>
+            {mode === 'live' && (
+              <div className="live-account-actions" aria-label="SOXL 合约实盘操作">
+                <button
+                  type="button"
+                  className="control danger"
+                  disabled={!liveHasPosition || liveFlatten.isPending}
+                  onClick={() => { setFlattenError(''); setFlattenOpen(true) }}
+                  title={liveHasPosition ? '按 Binance 实时仓位市价平仓' : '当前没有可平仓持仓'}
+                >
+                  <CircleX size={16} />平仓
+                </button>
+                <button
+                  type="button"
+                  className="control danger"
+                  disabled={Boolean(liveReadiness.data?.persisted_paused) || liveStrategyControl.isPending}
+                  onClick={() => liveStrategyControl.mutate()}
+                  title={liveReadiness.data?.persisted_paused ? '策略已经持久停止' : '持久停止策略信号执行'}
+                >
+                  <CirclePause size={16} />
+                  {liveReadiness.data?.persisted_paused ? '策略已停止' : '停止策略'}
+                </button>
+              </div>
+            )}
             <div className="scope-chips">
               <span>{account?.symbol ?? 'INITIALIZING'}</span><span>15m</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : view === 'returns' ? 'PERFORMANCE' : account?.runtime.allow_short ? 'LONG / SHORT' : 'LONG ONLY'}</span>
             </div>
@@ -468,6 +532,12 @@ function App() {
         </section>
 
         {mode === 'live' && <LiveReadinessBand readiness={liveReadiness.data} />}
+        {mode === 'live' && liveActionMessage && (
+          <div className="live-action-message" role="status">
+            <span>{liveActionMessage}</span>
+            <button type="button" aria-label="关闭操作提示" onClick={() => setLiveActionMessage('')}><CircleX size={15} /></button>
+          </div>
+        )}
 
         {overview.isError ? (
           <div className="error-state">
@@ -517,6 +587,48 @@ function App() {
           onSubmit={() => void submitLiveUnlock()}
         />
       )}
+      {flattenOpen && (
+        <LiveFlattenDialog
+          error={flattenError}
+          pending={liveFlatten.isPending}
+          onCancel={() => { if (!liveFlatten.isPending) { setFlattenOpen(false); setFlattenError('') } }}
+          onConfirm={() => liveFlatten.mutate()}
+        />
+      )}
+    </div>
+  )
+}
+
+function LiveFlattenDialog({
+  error,
+  pending,
+  onCancel,
+  onConfirm,
+}: {
+  error: string
+  pending: boolean
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  return (
+    <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && !pending && onCancel()}>
+      <div className="unlock-dialog flatten-dialog" role="dialog" aria-modal="true" aria-labelledby="live-flatten-title">
+        <div className="unlock-dialog-head">
+          <div><span>MARKET CLOSE / REAL ACCOUNT</span><h2 id="live-flatten-title">确认平仓</h2></div>
+          <button type="button" disabled={pending} onClick={onCancel} title="关闭" aria-label="关闭"><CircleX size={19} /></button>
+        </div>
+        <form onSubmit={(event) => { event.preventDefault(); onConfirm() }}>
+          <div className="flatten-dialog-copy">
+            将按 Binance 实时查询到的数量，以市价平掉 SOXLUSDT 全部现有仓位。
+            平仓可能产生滑点和手续费，并且不会自动停止策略。
+          </div>
+          {error && <p role="alert">{error}</p>}
+          <div className="unlock-dialog-actions">
+            <button type="button" disabled={pending} onClick={onCancel}>取消</button>
+            <button className="danger-confirm" type="submit" disabled={pending}>{pending ? '平仓中' : '确认平仓'}</button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }
@@ -568,14 +680,16 @@ function LiveReadinessBand({ readiness }: { readiness?: LiveReadiness }) {
   const ready = readiness?.order_submission_ready ?? false
   const status = readiness?.status ?? 'STARTING'
   const reasons = readiness?.block_reasons ?? []
-  const statusMessage = {
+  const statusMessage = readiness?.persisted_paused
+    ? '策略已由操作员持久停止；行情和签名对账继续运行'
+    : {
     STARTING: '正在检查 Binance USD-M Futures 实盘执行条件',
     DISABLED: '实盘运行时已关闭，不会发送真实订单',
     BLOCKED: '签名对账未就绪，真实订单已阻断',
     OBSERVE_ONLY: '合约签名对账运行中，真实订单保持关闭',
     ARMED: '实盘执行已启用',
     STOPPED: '实盘运行时已停止',
-  }[status]
+    }[status]
   const blockLabels: Record<string, string> = {
     IP_RESTRICTION_DISABLED: '未启用 IP 白名单',
     SPOT_TRADING_PERMISSION_MISSING: 'API 仅有读取权限',
@@ -613,6 +727,7 @@ function LiveReadinessBand({ readiness }: { readiness?: LiveReadiness }) {
         <Gate open={!(readiness?.withdrawals_enabled ?? true)} label="提现关闭" />
         <Gate open={readiness?.activation_confirmed ?? false} label="启动确认" />
         <Gate open={readiness?.allow_order_submission ?? false} label="订单开关" />
+        <Gate open={!(readiness?.persisted_paused ?? false)} label="策略未停止" />
       </div>
       <small title={reasons.join(', ')}>{ready ? '真实订单已启用' : `${syncText}${reasonText.length ? ` · ${reasonText.join(' · ')}` : ''}`}</small>
     </section>

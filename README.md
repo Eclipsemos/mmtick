@@ -213,6 +213,8 @@ journalctl --user -u mmtick.service -f
   `SOXL/USDT PERP LIVE` Binance USD-M Futures 多空账户；
 - LIVE 模式复用监控、订单、收益和仓库组件，真实账户余额与成交使用受保护接口，
   OHLCV 和 aggTrade 继续使用共享的 Binance 公共行情仓库；
+- `SOXL/USDT PERP LIVE` 提供持久停止策略按钮，以及带二次确认的人工平仓按钮；
+  人工平仓会重新读取 Binance 实际仓位，只减仓且在存在挂单或未决订单时拒绝执行；
 - SOXLB、SOXL Perpetual 多空及 SOXL Perpetual Long Only 账户切换、行情连接
   和策略运行状态；
 - 可滚动、缩放的价格与交易信号图，以及独立的官方 15 分钟 K 线图；
@@ -262,6 +264,8 @@ GET  /api/live/session
 POST /api/live/unlock
 POST /api/live/unlock-local
 POST /api/live/logout
+POST /api/live/control       {"action":"stop"}
+POST /api/live/flatten       {"confirm":"FLATTEN_SOXLUSDT"}
 GET  /api/live/overview
 GET  /api/live/equity?limit=&before_ms=
 GET  /api/live/returns

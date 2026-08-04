@@ -183,6 +183,7 @@ export type LiveReadiness = {
   ip_restricted: boolean
   allow_order_submission: boolean
   activation_confirmed: boolean
+  test_order_passed?: boolean
   order_submission_ready: boolean
   persisted_paused: boolean
   reconciliation_ok: boolean

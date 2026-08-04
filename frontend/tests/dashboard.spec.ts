@@ -73,6 +73,8 @@ test('paper console renders operational views and switches to the protected live
   await expect(page.getByRole('button', { name: 'LIVE', exact: true })).toHaveClass(/active/)
   await expect(page.getByRole('button', { name: 'SOXL/USDT PERP LIVE', exact: true })).toHaveCount(1)
   await expect(page.locator('.account-switch button')).toHaveCount(1)
+  await expect(page.getByRole('button', { name: '平仓', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: '停止策略', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: '锁定' })).toBeVisible()
   await expect(page.getByText('Binance 实际成交')).toBeVisible()
   await expect(page.getByText('LONG / SHORT', { exact: true })).toBeVisible()
@@ -96,6 +98,51 @@ test('paper console renders operational views and switches to the protected live
   )
   expect(hasHorizontalOverflow).toBe(false)
   expect(consoleErrors).toEqual([])
+})
+
+test('live market close requires a second explicit confirmation', async ({ page }) => {
+  let flattenCalls = 0
+  await page.route('**/api/live/overview', async (route) => {
+    const response = await route.fetch()
+    const body = await response.json()
+    body.accounts[0].quantity = '1'
+    await route.fulfill({ response, json: body })
+  })
+  await page.route('**/api/live/flatten', async (route) => {
+    flattenCalls += 1
+    expect(route.request().postDataJSON()).toEqual({ confirm: 'FLATTEN_SOXLUSDT' })
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        already_flat: false,
+        flat_confirmed: true,
+        orders: [{
+          client_order_id: 'mmt-close-l-test',
+          side: 'SELL',
+          position_side: 'LONG',
+          quantity: '1',
+          status: 'FILLED',
+        }],
+      }),
+    })
+  })
+
+  await page.goto('/')
+  await page.getByRole('button', { name: 'LIVE', exact: true }).click()
+  const flatten = page.getByRole('button', { name: '平仓', exact: true })
+  await expect(flatten).toBeEnabled()
+  await flatten.click()
+  const dialog = page.getByRole('dialog', { name: '确认平仓' })
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByText('不会自动停止策略')).toBeVisible()
+  await dialog.getByRole('button', { name: '取消' }).click()
+  expect(flattenCalls).toBe(0)
+
+  await flatten.click()
+  await page.getByRole('dialog', { name: '确认平仓' }).getByRole('button', { name: '确认平仓' }).click()
+  await expect.poll(() => flattenCalls).toBe(1)
+  await expect(page.getByRole('status')).toContainText('平仓已成交')
 })
 
 test('price chart renders clean ATR lines and semantic trade markers', async ({ page }) => {

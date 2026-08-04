@@ -26,6 +26,15 @@ TERMINAL_ORDER_STATES = {"FILLED", "CANCELED", "REJECTED", "EXPIRED"}
 AMBIGUOUS_BINANCE_CODES = {-1006, -1007}
 
 
+class LiveOperationError(RuntimeError):
+    """A safe operator action could not be completed."""
+
+    def __init__(self, code: str, message: str):
+        super().__init__(message)
+        self.code = code
+        self.message = message
+
+
 class LiveFuturesTrader:
     """Run the ATR long/short strategy against the actual USD-M account."""
 
@@ -189,6 +198,191 @@ class LiveFuturesTrader:
         await self.client.close()
         self.status = "STOPPED"
         self.status_message = "Live Futures runtime stopped"
+
+    async def set_strategy_paused(self, paused: bool) -> dict[str, Any]:
+        """Persistently stop or resume strategy-driven order submission."""
+        async with self._lock:
+            now_ms = _now_ms()
+            self.store.set_metadata(
+                "trading_paused", "true" if paused else "false", now_ms
+            )
+            self._event(
+                "WARN" if paused else "INFO",
+                "STRATEGY_STOPPED" if paused else "STRATEGY_RESUMED",
+                "Live Futures strategy stopped by operator"
+                if paused
+                else "Live Futures strategy resumed by operator",
+                timestamp_ms=now_ms,
+            )
+            self._refresh_status()
+            return {
+                "ok": True,
+                "strategy_paused": self.persisted_paused,
+                "order_submission_ready": self.order_submission_ready,
+            }
+
+    async def manual_flatten(self) -> dict[str, Any]:
+        """Close every SOXL leg found by a fresh signed position query."""
+        async with self._lock:
+            if not self.config.enabled:
+                raise LiveOperationError("LIVE_RUNTIME_DISABLED", "LIVE runtime is disabled")
+            if not self.client.has_credentials or not self.signed_account_verified:
+                raise LiveOperationError(
+                    "SIGNED_ACCOUNT_UNAVAILABLE", "Signed Futures account is unavailable"
+                )
+            if not self.public_capability or not self.futures_trading_permitted:
+                raise LiveOperationError(
+                    "FUTURES_TRADING_UNAVAILABLE", "Futures trading is unavailable"
+                )
+            if not self.ip_restricted:
+                raise LiveOperationError(
+                    "IP_RESTRICTION_DISABLED", "API key IP restriction is disabled"
+                )
+            if self.store.pending_orders(self.config.account_id):
+                raise LiveOperationError(
+                    "PENDING_ORDER_PRESENT", "A managed order is still pending"
+                )
+
+            positions, open_orders = await asyncio.gather(
+                self.client.position_risk(self.instrument.symbol),
+                self.client.open_orders(self.instrument.symbol),
+            )
+            if open_orders:
+                raise LiveOperationError(
+                    "OPEN_ORDER_PRESENT", "Cancel or reconcile open orders before flattening"
+                )
+            legs: list[tuple[str, str, Decimal]] = []
+            for row in positions:
+                quantity = Decimal(str(row.get("positionAmt", "0")))
+                if quantity == 0:
+                    continue
+                position_side = str(row.get("positionSide", "BOTH"))
+                if position_side == "LONG":
+                    side = "SELL"
+                elif position_side == "SHORT":
+                    side = "BUY"
+                else:
+                    side = "SELL" if quantity > 0 else "BUY"
+                legs.append((side, position_side, abs(quantity)))
+
+            if not legs:
+                return {
+                    "ok": True,
+                    "already_flat": True,
+                    "flat_confirmed": True,
+                    "orders": [],
+                }
+
+            book = await self.client.book_ticker(self.instrument.symbol)
+            results: list[dict[str, Any]] = []
+            for index, (side, position_side, quantity) in enumerate(legs):
+                now_ms = _now_ms()
+                signal_price = Decimal(
+                    str(book["bidPrice"] if side == "SELL" else book["askPrice"])
+                )
+                client_order_id = _manual_close_client_order_id(
+                    position_side, now_ms, index
+                )
+                created = self.store.create_order(
+                    client_order_id=client_order_id,
+                    account_id=self.config.account_id,
+                    symbol=self.instrument.symbol,
+                    side=side,
+                    position_side=position_side,
+                    reduce_only=True,
+                    reason="operator_manual_flatten",
+                    signal_price=str(signal_price),
+                    signal_at_ms=now_ms,
+                    requested_quantity=str(quantity),
+                    requested_quote_quantity=None,
+                )
+                if not created:
+                    raise LiveOperationError(
+                        "DUPLICATE_CLOSE_ORDER", "Could not create a unique close order"
+                    )
+                self.store.update_order(
+                    client_order_id,
+                    status="SUBMITTING",
+                    updated_at_ms=now_ms,
+                    submitted_at_ms=now_ms,
+                )
+                try:
+                    payload = await self.client.market_order(
+                        symbol=self.instrument.symbol,
+                        side=side,
+                        position_side=position_side,
+                        quantity=quantity,
+                        client_order_id=client_order_id,
+                    )
+                except BinanceFuturesAPIError as exc:
+                    if exc.code in AMBIGUOUS_BINANCE_CODES:
+                        self._event(
+                            "ERROR",
+                            "MANUAL_CLOSE_RESULT_UNKNOWN",
+                            "Manual close result requires reconciliation",
+                        )
+                        raise LiveOperationError(
+                            "MANUAL_CLOSE_RESULT_UNKNOWN",
+                            "Close order result is unknown; do not retry before reconciliation",
+                        ) from exc
+                    self.store.update_order(
+                        client_order_id,
+                        status="REJECTED",
+                        updated_at_ms=_now_ms(),
+                        payload={"code": exc.code, "msg": exc.message},
+                    )
+                    self._event("ERROR", "MANUAL_CLOSE_REJECTED", exc.message)
+                    raise LiveOperationError(
+                        "MANUAL_CLOSE_REJECTED", exc.message
+                    ) from exc
+
+                status = str(payload["status"])
+                self.store.update_order(
+                    client_order_id,
+                    status=status,
+                    updated_at_ms=_now_ms(),
+                    payload=payload,
+                )
+                await self._ingest_order_trades(
+                    client_order_id, int(payload["orderId"])
+                )
+                if status in TERMINAL_ORDER_STATES:
+                    self._apply_terminal_strategy_result(client_order_id, _now_ms())
+                results.append(
+                    {
+                        "client_order_id": client_order_id,
+                        "side": side,
+                        "position_side": position_side,
+                        "quantity": str(quantity),
+                        "status": status,
+                    }
+                )
+
+            flat_confirmed = all(row["status"] == "FILLED" for row in results)
+            completed_at_ms = _now_ms()
+            if flat_confirmed:
+                self.position_quantity = Decimal("0")
+                self.entry_price = Decimal("0")
+                self.unrealized_pnl = Decimal("0")
+                self.strategy.on_manual_flatten(completed_at_ms)
+                self.store.save_strategy_state(
+                    self.config.account_id,
+                    self.strategy.runtime_state(),
+                    completed_at_ms,
+                )
+            self._event(
+                "WARN",
+                "MANUAL_FLATTEN_SUBMITTED",
+                "Operator submitted market close for all SOXL Futures legs",
+                timestamp_ms=completed_at_ms,
+                details={"flat_confirmed": flat_confirmed, "orders": results},
+            )
+            return {
+                "ok": True,
+                "already_flat": False,
+                "flat_confirmed": flat_confirmed,
+                "orders": results,
+            }
 
     async def public_preflight(self) -> dict[str, Any]:
         try:
@@ -724,6 +918,9 @@ class LiveFuturesTrader:
         if self.order_submission_ready:
             self.status = "ARMED"
             self.status_message = "Live Futures execution is armed"
+        elif self.config.enabled and self.signed_account_verified and self.persisted_paused:
+            self.status = "OBSERVE_ONLY"
+            self.status_message = "Live Futures strategy stopped by operator"
         elif self.config.enabled and self.signed_account_verified:
             self.status = "OBSERVE_ONLY"
             self.status_message = "Signed Futures reconciliation active; orders remain closed"
@@ -773,6 +970,13 @@ def _client_order_id(
     )
     digest = hashlib.sha256(raw.encode()).hexdigest()[:18]
     return f"mmt-{signal.side.value.lower()}-{digest}"[:36]
+
+
+def _manual_close_client_order_id(
+    position_side: str, timestamp_ms: int, index: int
+) -> str:
+    side = position_side[:1].lower() or "x"
+    return f"mmt-close-{side}-{timestamp_ms}-{index}"
 
 
 def _instrument(settings: Settings, instrument_id: str) -> InstrumentSettings:
