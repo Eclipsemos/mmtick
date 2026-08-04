@@ -59,6 +59,25 @@ def test_live_access_rejects_insecure_token_file(tmp_path) -> None:
     assert not access.verify_token("a" * 48)
 
 
+def test_cloudflare_http_is_redirected_and_https_sets_hsts(tmp_path) -> None:
+    app = _live_app(tmp_path)
+
+    with TestClient(app) as client:
+        redirected = client.get(
+            "/api/health",
+            headers={"x-forwarded-proto": "http"},
+            follow_redirects=False,
+        )
+        secured = client.get(
+            "/api/health", headers={"x-forwarded-proto": "https"}
+        )
+
+    assert redirected.status_code == 308
+    assert redirected.headers["location"].startswith("https://")
+    assert secured.status_code == 200
+    assert secured.headers["strict-transport-security"] == "max-age=31536000"
+
+
 def test_live_data_requires_operator_session_and_remote_token(tmp_path) -> None:
     token = "b" * 48
     app = _live_app(tmp_path, token)

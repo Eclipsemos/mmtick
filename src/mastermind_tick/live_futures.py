@@ -595,47 +595,66 @@ class LiveFuturesTrader:
             self.client.user_trades(self.instrument.symbol),
             self.client.income_history(self.instrument.symbol),
         )
+        trades_by_order: dict[int, list[dict[str, Any]]] = {}
         for trade in trades:
-            side = str(trade["side"])
-            position_side = str(trade.get("positionSide", "BOTH"))
+            trades_by_order.setdefault(int(trade["orderId"]), []).append(trade)
+        for order_id, order_trades in trades_by_order.items():
+            first_trade = min(order_trades, key=lambda item: int(item["time"]))
+            side = str(first_trade["side"])
+            position_side = str(first_trade.get("positionSide", "BOTH"))
             is_close = (position_side == "LONG" and side == "SELL") or (
                 position_side == "SHORT" and side == "BUY"
             )
-            order_id = int(trade["orderId"])
-            client_order_id = f"binance-futures-sync-{order_id}"
-            self.store.create_order(
-                client_order_id=client_order_id,
-                account_id=self.config.account_id,
-                symbol=self.instrument.symbol,
-                side=side,
-                position_side=position_side,
-                reduce_only=is_close,
-                reason="binance_futures_readonly_sync",
-                signal_price=str(trade["price"]),
-                signal_at_ms=int(trade["time"]),
-                requested_quantity=str(trade["qty"]),
-                requested_quote_quantity=None,
+            existing = self.store.order_by_exchange_id(self.config.account_id, order_id)
+            client_order_id = (
+                str(existing["client_order_id"])
+                if existing
+                else f"binance-futures-sync-{order_id}"
             )
+            executed_quantity = sum(
+                (Decimal(str(trade["qty"])) for trade in order_trades), Decimal("0")
+            )
+            cumulative_quote = sum(
+                (Decimal(str(trade["quoteQty"])) for trade in order_trades), Decimal("0")
+            )
+            if existing is None:
+                self.store.create_order(
+                    client_order_id=client_order_id,
+                    account_id=self.config.account_id,
+                    symbol=self.instrument.symbol,
+                    side=side,
+                    position_side=position_side,
+                    reduce_only=is_close,
+                    reason="binance_futures_readonly_sync",
+                    signal_price=str(first_trade["price"]),
+                    signal_at_ms=int(first_trade["time"]),
+                    requested_quantity=str(executed_quantity),
+                    requested_quote_quantity=None,
+                )
             self.store.update_order(
                 client_order_id,
                 status="FILLED",
                 updated_at_ms=now_ms,
-                submitted_at_ms=int(trade["time"]),
+                submitted_at_ms=int(first_trade["time"]),
                 payload={
                     "orderId": order_id,
-                    "executedQty": str(trade["qty"]),
-                    "cummulativeQuoteQty": str(trade["quoteQty"]),
+                    "executedQty": str(executed_quantity),
+                    "cummulativeQuoteQty": str(cumulative_quote),
                     "positionSide": position_side,
                     "source": "binance_futures_user_trades",
                 },
             )
-            self.store.upsert_fill(
-                account_id=self.config.account_id,
-                symbol=self.instrument.symbol,
-                side=side,
-                client_order_id=client_order_id,
-                payload=trade,
+            self.store.merge_synced_order_duplicates(
+                self.config.account_id, order_id, client_order_id
             )
+            for trade in order_trades:
+                self.store.upsert_fill(
+                    account_id=self.config.account_id,
+                    symbol=self.instrument.symbol,
+                    side=side,
+                    client_order_id=client_order_id,
+                    payload=trade,
+                )
         for row in income:
             self.store.upsert_income(
                 account_id=self.config.account_id,
@@ -706,12 +725,16 @@ class LiveFuturesTrader:
         else:
             side = signal.side.value
             position_side = "LONG" if signal.side is Side.BUY else "SHORT"
-            target_notional = min(
+            target_notional = (
                 self.margin_balance
                 * Decimal(str(self.config.position_fraction))
-                * Decimal(self.config.leverage),
-                Decimal(str(self.config.max_order_notional)),
+                * Decimal(self.config.leverage)
             )
+            if self.config.max_order_notional > 0:
+                target_notional = min(
+                    target_notional,
+                    Decimal(str(self.config.max_order_notional)),
+                )
             quantity = self.rules.floor_quantity(target_notional / tick.price)
         if (
             quantity < self.rules.minimum_quantity
@@ -779,15 +802,17 @@ class LiveFuturesTrader:
             return "LIVE_TRADING_PAUSED"
         if not signal.reduce_only:
             day_start_ms = tick.timestamp_ms // 86_400_000 * 86_400_000
-            if self.store.order_count_since(
-                self.config.account_id, day_start_ms
-            ) >= self.config.max_orders_per_day:
+            if (
+                self.config.max_orders_per_day > 0
+                and self.store.order_count_since(self.config.account_id, day_start_ms)
+                >= self.config.max_orders_per_day
+            ):
                 return "DAILY_ORDER_LIMIT"
             initial = self.store.day_start_futures_equity(
                 self.config.account_id, day_start_ms
             )
             latest = self.store.latest_futures_snapshot(self.config.account_id)
-            if initial and latest:
+            if self.config.max_daily_loss > 0 and initial and latest:
                 loss = Decimal(initial) - Decimal(latest["margin_balance"])
                 if loss >= Decimal(str(self.config.max_daily_loss)):
                     return "DAILY_LOSS_ENTRY_LIMIT"

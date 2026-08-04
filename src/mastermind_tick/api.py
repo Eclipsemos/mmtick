@@ -11,9 +11,10 @@ from typing import Annotated, Literal
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from starlette.middleware.base import RequestResponseEndpoint
 
 from mastermind_tick.config import InstrumentSettings, Settings, load_settings
 from mastermind_tick.engine import PaperEngine
@@ -84,6 +85,20 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         allow_methods=["GET", "POST"],
         allow_headers=["*"],
     )
+
+    @app.middleware("http")
+    async def enforce_external_https(
+        request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
+        forwarded_proto = request.headers.get("x-forwarded-proto", "").split(",", 1)[0]
+        if forwarded_proto == "http":
+            return RedirectResponse(str(request.url.replace(scheme="https")), status_code=308)
+        response = await call_next(request)
+        if forwarded_proto == "https":
+            response.headers.setdefault(
+                "Strict-Transport-Security", "max-age=31536000"
+            )
+        return response
 
     @app.get("/api/health")
     def health() -> dict:

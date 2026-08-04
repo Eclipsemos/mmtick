@@ -247,12 +247,12 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         raise ValueError("live_futures currently requires hedge position mode")
     if not 0 < live_futures.position_fraction <= 1:
         raise ValueError("live_futures.position_fraction must be in (0, 1]")
-    if live_futures.max_order_notional <= 0 or live_futures.max_daily_loss <= 0:
-        raise ValueError("live_futures risk limits must be positive")
+    if live_futures.max_order_notional < 0 or live_futures.max_daily_loss < 0:
+        raise ValueError("live_futures risk limits cannot be negative")
     if live_futures.max_slippage_bps < 0:
         raise ValueError("live_futures slippage limit cannot be negative")
     if (
-        live_futures.max_orders_per_day < 1
+        live_futures.max_orders_per_day < 0
         or live_futures.reconcile_seconds < 1
         or live_futures.trade_sync_seconds < live_futures.reconcile_seconds
     ):

@@ -156,6 +156,9 @@ def futures_settings(tmp_path, *, allow_orders: bool = False):
         allow_order_submission=allow_orders,
         database_path=tmp_path / "live-futures.db",
         credentials_path=None,
+        max_order_notional=100.0,
+        max_daily_loss=50.0,
+        max_orders_per_day=6,
     )
     return replace(settings, live_futures=live)
 
@@ -511,6 +514,48 @@ def test_futures_daily_order_limit_blocks_new_entry(tmp_path, monkeypatch) -> No
     assert rejection == "DAILY_ORDER_LIMIT"
 
 
+def test_zero_futures_entry_limits_disable_external_risk_caps(
+    tmp_path, monkeypatch
+) -> None:
+    settings = futures_settings(tmp_path, allow_orders=True)
+    settings = replace(
+        settings,
+        live_futures=replace(
+            settings.live_futures,
+            max_order_notional=0,
+            max_daily_loss=0,
+            max_orders_per_day=0,
+        ),
+    )
+    monkeypatch.setenv(
+        settings.live_futures.activation_env, settings.live_futures.activation_value
+    )
+    client = FakeFuturesClient()
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
+    trader = LiveFuturesTrader(
+        settings, store, client=client  # type: ignore[arg-type]
+    )
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+    tick = Tick("uncapped", 1_700_000_000_000, Decimal("120"), Decimal("1"), "test")
+    signal = StrategySignal(
+        side=Side.BUY,
+        reason="entry",
+        signal_price=tick.price,
+        trailing_stop=Decimal("115"),
+        atr=Decimal("2"),
+        bar_start_ms=tick.timestamp_ms // 900_000 * 900_000,
+        tick_id=tick.event_id,
+        signal_at_ms=tick.timestamp_ms,
+    )
+
+    assert asyncio.run(trader._risk_rejection(signal, tick)) is None
+    asyncio.run(trader._submit_signal(signal, tick))
+
+    assert client.market_order_calls[0]["quantity"] == Decimal("16.66")
+
+
 def test_futures_ambiguous_submission_waits_for_reconciliation(
     tmp_path, monkeypatch
 ) -> None:
@@ -547,6 +592,138 @@ def test_futures_ambiguous_submission_waits_for_reconciliation(
     assert len(client.market_order_calls) == 1
     assert store.orders(settings.live_futures.account_id)[0]["status"] == "SUBMITTING"
     assert store.events(settings.live_futures.account_id)[0]["code"] == "ORDER_RESULT_UNKNOWN"
+
+
+def test_futures_history_reuses_managed_order_and_merges_legacy_sync_duplicate(
+    tmp_path,
+) -> None:
+    class HistoryClient(FakeFuturesClient):
+        async def user_trades(self, symbol: str, *, order_id: int | None = None):
+            assert symbol == "SOXLUSDT"
+            assert order_id is None
+            return [
+                {
+                    "symbol": symbol,
+                    "id": 101,
+                    "orderId": 71,
+                    "time": 1_700_000_000_100,
+                    "side": "BUY",
+                    "positionSide": "LONG",
+                    "price": "120",
+                    "qty": "0.03",
+                    "quoteQty": "3.6",
+                    "commission": "0.01",
+                    "commissionAsset": "USDT",
+                    "realizedPnl": "0",
+                },
+                {
+                    "symbol": symbol,
+                    "id": 102,
+                    "orderId": 71,
+                    "time": 1_700_000_000_200,
+                    "side": "BUY",
+                    "positionSide": "LONG",
+                    "price": "120",
+                    "qty": "0.04",
+                    "quoteQty": "4.8",
+                    "commission": "0.01",
+                    "commissionAsset": "USDT",
+                    "realizedPnl": "0",
+                },
+            ]
+
+    settings = futures_settings(tmp_path)
+    store = LiveStore(settings.live_futures.database_path)
+    for client_order_id, reason in (
+        ("managed-order", "strategy_entry"),
+        ("binance-futures-sync-71", "binance_futures_readonly_sync"),
+    ):
+        store.create_order(
+            client_order_id=client_order_id,
+            account_id=settings.live_futures.account_id,
+            symbol="SOXLUSDT",
+            side="BUY",
+            position_side="LONG",
+            reason=reason,
+            signal_price="120",
+            signal_at_ms=1_700_000_000_000,
+            requested_quantity="0.07",
+            requested_quote_quantity=None,
+        )
+        store.update_order(
+            client_order_id,
+            status="FILLED",
+            updated_at_ms=1_700_000_000_000,
+            submitted_at_ms=1_700_000_000_000,
+            payload={"orderId": 71, "executedQty": "0.07", "cumQuote": "0"},
+        )
+    store.upsert_fill(
+        account_id=settings.live_futures.account_id,
+        symbol="SOXLUSDT",
+        side="BUY",
+        client_order_id="binance-futures-sync-71",
+        payload={
+            "id": 101,
+            "orderId": 71,
+            "time": 1_700_000_000_100,
+            "price": "120",
+            "qty": "0.03",
+            "quoteQty": "3.6",
+            "commission": "0.01",
+            "commissionAsset": "USDT",
+        },
+    )
+    trader = LiveFuturesTrader(
+        settings, store, client=HistoryClient()  # type: ignore[arg-type]
+    )
+
+    asyncio.run(trader._sync_account_history(1_700_000_001_000))
+
+    orders = store.orders(settings.live_futures.account_id)
+    assert [order["client_order_id"] for order in orders] == ["managed-order"]
+    assert orders[0]["executed_quantity"] == "0.07"
+    assert orders[0]["cumulative_quote_quantity"] == "8.4"
+    fills = store.fills(settings.live_futures.account_id)
+    assert len(fills) == 2
+    assert {fill["client_order_id"] for fill in fills} == {"managed-order"}
+
+
+def test_futures_history_creates_sync_order_for_unknown_exchange_order(tmp_path) -> None:
+    class ExternalHistoryClient(FakeFuturesClient):
+        async def user_trades(self, symbol: str, *, order_id: int | None = None):
+            return [
+                {
+                    "symbol": symbol,
+                    "id": 201,
+                    "orderId": 72,
+                    "time": 1_700_000_000_100,
+                    "side": "SELL",
+                    "positionSide": "LONG",
+                    "price": "121",
+                    "qty": "0.07",
+                    "quoteQty": "8.47",
+                    "commission": "0.01",
+                    "commissionAsset": "USDT",
+                    "realizedPnl": "0.07",
+                }
+            ]
+
+    settings = futures_settings(tmp_path)
+    store = LiveStore(settings.live_futures.database_path)
+    trader = LiveFuturesTrader(
+        settings, store, client=ExternalHistoryClient()  # type: ignore[arg-type]
+    )
+
+    asyncio.run(trader._sync_account_history(1_700_000_001_000))
+
+    orders = store.orders(settings.live_futures.account_id)
+    assert [order["client_order_id"] for order in orders] == [
+        "binance-futures-sync-72"
+    ]
+    assert orders[0]["reduce_only"] == 1
+    assert store.fills(settings.live_futures.account_id)[0]["client_order_id"] == (
+        "binance-futures-sync-72"
+    )
 
 
 def test_futures_preflight_uses_test_endpoint_without_real_order(

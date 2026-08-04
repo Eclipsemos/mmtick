@@ -326,6 +326,53 @@ class LiveStore:
             ).fetchone()
         return _row(row, json_fields=("raw_json",)) if row else None
 
+    def order_by_exchange_id(
+        self, account_id: str, exchange_order_id: int
+    ) -> dict[str, Any] | None:
+        with self.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT * FROM live_orders
+                WHERE account_id = ? AND exchange_order_id = ?
+                ORDER BY client_order_id LIKE 'binance-futures-sync-%', updated_at_ms
+                LIMIT 1
+                """,
+                (account_id, exchange_order_id),
+            ).fetchone()
+        return _row(row, json_fields=("raw_json",)) if row else None
+
+    def merge_synced_order_duplicates(
+        self,
+        account_id: str,
+        exchange_order_id: int,
+        canonical_client_order_id: str,
+    ) -> int:
+        """Remove synthetic sync rows after a managed order identity is known."""
+        with self.connection() as connection:
+            duplicates = connection.execute(
+                """
+                SELECT client_order_id FROM live_orders
+                WHERE account_id = ? AND exchange_order_id = ?
+                  AND client_order_id != ?
+                  AND client_order_id LIKE 'binance-futures-sync-%'
+                """,
+                (account_id, exchange_order_id, canonical_client_order_id),
+            ).fetchall()
+            for duplicate in duplicates:
+                duplicate_id = str(duplicate["client_order_id"])
+                connection.execute(
+                    """
+                    UPDATE live_fills SET client_order_id = ?
+                    WHERE account_id = ? AND client_order_id = ?
+                    """,
+                    (canonical_client_order_id, account_id, duplicate_id),
+                )
+                connection.execute(
+                    "DELETE FROM live_orders WHERE client_order_id = ?",
+                    (duplicate_id,),
+                )
+        return len(duplicates)
+
     def orders(self, account_id: str, limit: int = 100) -> list[dict[str, Any]]:
         with self.connection() as connection:
             rows = connection.execute(
