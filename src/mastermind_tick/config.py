@@ -58,6 +58,30 @@ class InstrumentSettings:
 
 
 @dataclass(frozen=True)
+class LiveSpotSettings:
+    enabled: bool = False
+    instrument_id: str = "soxlb"
+    account_id: str = "soxlb_live"
+    database_path: Path = Path("data/live.db")
+    api_base_url: str = "https://api.binance.com"
+    api_key_env: str = "BINANCE_API_KEY"
+    api_secret_env: str = "BINANCE_API_SECRET"
+    activation_env: str = "MMTICK_LIVE_CONFIRM"
+    activation_value: str = "SOXLBUSDT_LIVE"
+    allow_order_submission: bool = False
+    adopt_existing_position: bool = False
+    position_fraction: float = 0.05
+    max_order_notional: float = 100.0
+    quote_reserve: float = 10.0
+    max_slippage_bps: float = 30.0
+    max_daily_loss: float = 50.0
+    max_orders_per_day: int = 6
+    reconcile_seconds: int = 5
+    order_timeout_seconds: int = 30
+    recv_window_ms: int = 5000
+
+
+@dataclass(frozen=True)
 class Settings:
     project_root: Path
     app_name: str
@@ -70,6 +94,7 @@ class Settings:
     execution: ExecutionSettings
     warmup_bars: int
     instruments: tuple[InstrumentSettings, ...]
+    live_spot: LiveSpotSettings = LiveSpotSettings()
 
 
 def load_settings(path: str | Path = "config/settings.toml") -> Settings:
@@ -82,6 +107,9 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
     strategy = StrategySettings(**raw["strategy"])
     execution = ExecutionSettings(**raw["execution"])
     instruments = tuple(InstrumentSettings(**value) for value in raw["instruments"])
+    live_raw = dict(raw.get("live_spot", {}))
+    live_database_path = project_root / live_raw.pop("database_path", "data/live.db")
+    live_spot = LiveSpotSettings(database_path=live_database_path, **live_raw)
 
     if strategy.bar_minutes <= 0 or 60 % strategy.bar_minutes != 0:
         raise ValueError("strategy.bar_minutes must be a positive divisor of 60")
@@ -124,6 +152,21 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
             )
         if instrument.allow_short and instrument.paper_model != "futures":
             raise ValueError(f"allow_short requires futures paper_model for {instrument.id}")
+    live_instrument = instrument_by_id.get(live_spot.instrument_id)
+    if live_instrument is None:
+        raise ValueError(f"unknown live_spot instrument_id: {live_spot.instrument_id}")
+    if live_instrument.paper_model != "spot":
+        raise ValueError("live_spot instrument must use the spot paper model")
+    if not 0 < live_spot.position_fraction <= 1:
+        raise ValueError("live_spot.position_fraction must be in (0, 1]")
+    if live_spot.max_order_notional <= 0 or live_spot.quote_reserve < 0:
+        raise ValueError("live_spot order limits must be positive")
+    if live_spot.max_slippage_bps < 0 or live_spot.max_daily_loss <= 0:
+        raise ValueError("live_spot risk limits are invalid")
+    if live_spot.max_orders_per_day < 1 or live_spot.reconcile_seconds < 1:
+        raise ValueError("live_spot frequency limits are invalid")
+    if live_spot.order_timeout_seconds < 1 or live_spot.recv_window_ms < 1000:
+        raise ValueError("live_spot timing limits are invalid")
 
     database_path = project_root / app["database_path"]
     frontend_dist = project_root / app["frontend_dist"]
@@ -139,4 +182,5 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         execution=execution,
         warmup_bars=int(raw["history"]["warmup_bars"]),
         instruments=instruments,
+        live_spot=live_spot,
     )

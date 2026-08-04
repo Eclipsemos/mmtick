@@ -1,7 +1,8 @@
 # mastermind:tick
 
 Mastermind 旗下短线策略产品。系统使用 Binance 生产环境的公开行情驱动三个相互
-隔离的本地模拟账户，持续记录行情、策略状态、订单、成交、费用与账户绩效。
+隔离的本地模拟账户，并包含一条独立、默认关闭的 SOXLB Binance Spot 实盘执行
+路径，持续记录行情、策略状态、订单、成交、费用与账户绩效。
 
 当前策略版本为 `atr_tick_v3_startup_alignment`。从 **2026-08-02 至
 2026-08-09** 保持当前策略和仓位参数不变，连续运行一周后再做样本外评估。
@@ -15,8 +16,10 @@ Mastermind 旗下短线策略产品。系统使用 Binance 生产环境的公开
   只平掉已有多头，空仓时不会开空。
 - `soxlb`、`soxl_perp` 与 `soxl_perp_long` 各自拥有独立的 100,000 USDT 初始
   资金、订单、持仓、费用和绩效序列。
-- 当前是本地 paper broker，只使用 Binance 公共行情，不提交真实订单，也不需要
-  API Key。
+- 三个绩效账户仍由本地 paper broker 驱动。另有 `soxlb_live` 实盘账户，使用独立的
+  `data/live.db`，不会把真实余额、订单或成交混入 `data/paper.db`。
+- 当前提交真实订单的配置保持关闭，不需要 API Key 也可继续运行模拟盘和公开接口
+  预检。
 - Binance Testnet/Demo 暂不提供这两个标的，因此模拟成交使用生产公共行情和本地
   撮合。
 - 本项目不读取 `~/mm` 的数据；Mastermind 长线 Alpha 研究和真实基金账户与本项目
@@ -115,6 +118,48 @@ SOXL 永续的反向确认机会成本需要单独审查。
 账户、订单、成交、持仓、策略运行状态和净值快照均持久化。当前没有自动清理策略，
 聚合成交数据和 SQLite WAL/索引占用需要持续监控。
 
+## SOXLB Spot 实盘接入
+
+`soxlb_live` 复用现有 SOXLB 公共 Tick 行情，但使用独立 ATR 策略状态和实盘账本。
+真实余额、持仓、挂单和订单状态以 Binance 签名接口为准；系统不会用下一 Tick
+伪造实盘成交。每个信号生成确定性的 `clientOrderId`，网络超时后按该 ID 查询订单，
+不会直接重发。
+
+默认配置必须同时满足以下三项才可能提交真实订单：
+
+```text
+live_spot.enabled = true
+live_spot.allow_order_submission = true
+MMTICK_LIVE_CONFIRM=SOXLBUSDT_LIVE
+```
+
+此外还必须有通过签名校验的 Binance Spot API 凭证、`canTrade` 权限、完整对账，且
+不存在人工挂单、未接管的 SOXLB 持仓、持久暂停或风控阻断。新实盘账户首次启动只
+等待新的 ATR 穿越，不会按启动时所处趋势立即追单。
+
+当前初始风控值为单次使用可用 USDT 的 5%、单笔不超过 100 USDT、保留 10 USDT、
+盘口偏离不超过 30 bps、每日最多 6 单、当日损失达到 50 USDT 后停止新开仓（已有
+仓位仍允许退出）。上线前应按实际账户规模复核这些数值。
+
+无凭证公开预检：
+
+```bash
+PYTHONPATH=src /home/spaceaic/env/.venv/bin/python -m mastermind_tick.live_preflight
+```
+
+凭证准备好后，通过服务环境注入 `BINANCE_API_KEY` 和 `BINANCE_API_SECRET`，不要写入
+聊天、仓库、`settings.toml` 或提交记录。API Key 只开放 Spot Read 与 Spot Trading，
+关闭提现，并将本机出口公网 IP 加入 Binance 白名单。签名预检及不会创建真实订单的
+测试接口：
+
+```bash
+PYTHONPATH=src /home/spaceaic/env/.venv/bin/python -m mastermind_tick.live_preflight --test-order
+```
+
+部署顺序为：公开预检、签名账户/挂单检查、`/api/v3/order/test`、小额 USDT 入金、
+观察模式对账，最后才打开配置和启动确认。任何一步失败都不得进入下一步。切换开关
+或注入凭证需要重启后台服务；网页没有启用真实下单的控制入口。
+
 ## 后台运行
 
 Python 环境位于 `/home/spaceaic/env/.venv`，前端生产文件构建到 `frontend/dist`。
@@ -180,6 +225,7 @@ Vite 会把 `/api` 转发到 `127.0.0.1:8100`。
 ```text
 GET  /api/health
 GET  /api/overview
+GET  /api/live/readiness
 GET  /api/accounts/{id}/equity?limit=&before_ms=
 GET  /api/accounts/{id}/returns
 GET  /api/orders

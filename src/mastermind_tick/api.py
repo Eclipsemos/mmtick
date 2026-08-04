@@ -17,6 +17,8 @@ from pydantic import BaseModel
 
 from mastermind_tick.config import InstrumentSettings, Settings, load_settings
 from mastermind_tick.engine import PaperEngine
+from mastermind_tick.live_spot import LiveSpotTrader
+from mastermind_tick.live_store import LiveStore
 from mastermind_tick.reporting import build_overview, build_return_summary
 from mastermind_tick.store import PaperStore
 
@@ -29,13 +31,17 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     resolved = settings or load_settings(os.getenv("MMTICK_CONFIG", "config/settings.toml"))
     store = PaperStore(resolved.database_path)
     engine = PaperEngine(resolved, store)
+    live_store = LiveStore(resolved.live_spot.database_path)
+    live_trader = LiveSpotTrader(resolved, live_store)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         if start_engine:
             await engine.start()
+            await live_trader.start(engine)
         yield
         if start_engine:
+            await live_trader.stop()
             await engine.stop()
 
     app = FastAPI(
@@ -46,6 +52,8 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     app.state.settings = resolved
     app.state.store = store
     app.state.engine = engine
+    app.state.live_store = live_store
+    app.state.live_trader = live_trader
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -64,7 +72,16 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
             "service": "mastermind-tick",
             "environment": resolved.environment,
             "database": str(resolved.database_path),
+            "live_spot": {
+                "status": live_trader.status,
+                "order_submission_ready": live_trader.order_submission_ready,
+            },
         }
+
+    @app.get("/api/live/readiness")
+    def live_readiness() -> dict:
+        """Expose gates and health only; balances and order details stay private."""
+        return live_trader.readiness()
 
     @app.get("/api/overview")
     def overview() -> dict:

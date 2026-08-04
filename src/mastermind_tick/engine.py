@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import time
+from collections.abc import Awaitable, Callable
 from dataclasses import asdict, dataclass, field
 from decimal import Decimal
 from typing import Any
@@ -51,6 +52,23 @@ class PaperEngine:
         self.started_at_ms: int | None = None
         self._stopping = False
         self._instrument_by_id = {item.id: item for item in settings.instruments}
+        self._tick_listeners: dict[str, list[Callable[[Tick], Awaitable[None]]]] = {}
+
+    def add_tick_listener(
+        self,
+        market_id: str,
+        listener: Callable[[Tick], Awaitable[None]],
+    ) -> None:
+        self._tick_listeners.setdefault(market_id, []).append(listener)
+
+    def remove_tick_listener(
+        self,
+        market_id: str,
+        listener: Callable[[Tick], Awaitable[None]],
+    ) -> None:
+        listeners = self._tick_listeners.get(market_id, [])
+        if listener in listeners:
+            listeners.remove(listener)
 
     def _market_instrument(self, instrument: InstrumentSettings) -> InstrumentSettings:
         return self._instrument_by_id[instrument.market_id]
@@ -368,6 +386,17 @@ class PaperEngine:
             runtimes = [market_runtime]
         for runtime in runtimes:
             await self._process_tick(runtime, tick, record_market=False)
+        for listener in tuple(self._tick_listeners.get(market_runtime.instrument.market_id, ())):
+            try:
+                await listener(tick)
+            except Exception as exc:
+                self.store.add_event(
+                    market_runtime.instrument.id,
+                    tick.timestamp_ms,
+                    "ERROR",
+                    "TICK_LISTENER_FAILED",
+                    f"{type(exc).__name__}: {exc}",
+                )
 
     async def _process_tick(
         self,

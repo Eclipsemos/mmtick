@@ -163,6 +163,33 @@ export type Overview = {
   }
 }
 
+export type LiveReadiness = {
+  account_id: string
+  symbol: string
+  enabled: boolean
+  status: 'STARTING' | 'DISABLED' | 'BLOCKED' | 'OBSERVE_ONLY' | 'ARMED' | 'STOPPED'
+  status_message: string
+  public_capability: boolean
+  credentials_present: boolean
+  signed_account_verified: boolean
+  allow_order_submission: boolean
+  activation_confirmed: boolean
+  order_submission_ready: boolean
+  persisted_paused: boolean
+  reconciliation_ok: boolean
+  last_reconciled_at_ms: number | null
+  block_reasons: string[]
+  database: string
+  risk_limits: {
+    position_fraction: number
+    max_order_notional: number
+    quote_reserve: number
+    max_slippage_bps: number
+    max_daily_loss: number
+    max_orders_per_day: number
+  }
+}
+
 export type EquityPoint = {
   timestamp_ms: number
   price: string

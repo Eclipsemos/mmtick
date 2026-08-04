@@ -10,10 +10,12 @@ from mastermind_tick.models import Bar, Tick
 
 
 def test_health_and_empty_overview(tmp_path) -> None:
+    base_settings = load_settings("config/settings.toml")
     settings = replace(
-        load_settings("config/settings.toml"),
+        base_settings,
         database_path=tmp_path / "paper.db",
         frontend_dist=tmp_path / "missing-frontend",
+        live_spot=replace(base_settings.live_spot, database_path=tmp_path / "live.db"),
     )
     app = create_app(settings, start_engine=False)
     now_ms = 1_700_000_000_000
@@ -24,6 +26,7 @@ def test_health_and_empty_overview(tmp_path) -> None:
         health = client.get("/api/health")
         overview = client.get("/api/overview")
         warehouse = client.get("/api/warehouse")
+        live_readiness = client.get("/api/live/readiness")
 
     assert health.status_code == 200
     assert health.json()["service"] == "mastermind-tick"
@@ -41,6 +44,10 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert warehouse.json()["instruments"][0]["symbol"] == "SOXLBUSDT"
     assert warehouse.json()["instruments"][1]["symbol"] == "SOXLUSDT"
     assert warehouse.json()["instruments"][2]["market_data_id"] == "soxl_perp"
+    assert live_readiness.status_code == 200
+    assert live_readiness.json()["status"] == "STARTING"
+    assert live_readiness.json()["order_submission_ready"] is False
+    assert live_readiness.json()["credentials_present"] is False
 
     funding = client.get("/api/funding?account_id=soxl_perp")
     assert funding.status_code == 200

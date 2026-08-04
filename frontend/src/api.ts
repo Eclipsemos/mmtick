@@ -1,4 +1,4 @@
-import type { AggTrade, EquityPoint, EventItem, Fill, FundingPayment, OhlcvBar, Order, Overview, ReturnSummary, WarehouseSummary } from './types'
+import type { AggTrade, EquityPoint, EventItem, Fill, FundingPayment, LiveReadiness, OhlcvBar, Order, Overview, ReturnSummary, WarehouseSummary } from './types'
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url)
@@ -8,6 +8,7 @@ async function getJson<T>(url: string): Promise<T> {
 
 export const api = {
   overview: () => getJson<Overview>('/api/overview'),
+  liveReadiness: () => getJson<LiveReadiness>('/api/live/readiness'),
   equity: (accountId: string, beforeMs?: number) => {
     const cursor = beforeMs === undefined ? '' : `&before_ms=${beforeMs}`
     return getJson<EquityPoint[]>(`/api/accounts/${accountId}/equity?limit=2000${cursor}`)

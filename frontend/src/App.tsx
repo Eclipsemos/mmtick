@@ -22,6 +22,7 @@ import {
   Maximize2,
   Radio,
   RefreshCw,
+  ShieldCheck,
   Target,
   TrendingDown,
   TrendingUp,
@@ -54,6 +55,7 @@ import type {
   ReturnPeriod,
   ReturnSummary,
   WarehouseSummary,
+  LiveReadiness,
 } from './types'
 
 type View = 'monitor' | 'orders' | 'returns' | 'warehouse'
@@ -216,6 +218,11 @@ function App() {
   const [view, setView] = useState<View>('monitor')
   const [accountId, setAccountId] = useState('soxl_perp')
   const overview = useQuery({ queryKey: ['overview'], queryFn: api.overview, refetchInterval: 1000 })
+  const liveReadiness = useQuery({
+    queryKey: ['live-readiness'],
+    queryFn: api.liveReadiness,
+    refetchInterval: 5000,
+  })
   const equity = useQuery({ queryKey: ['equity', accountId], queryFn: () => api.equity(accountId), refetchInterval: 5000 })
   const fills = useQuery({ queryKey: ['fills', accountId], queryFn: () => api.fills(accountId), refetchInterval: 5000 })
   const funding = useQuery({ queryKey: ['funding', accountId], queryFn: () => api.funding(accountId), refetchInterval: 5000 })
@@ -336,6 +343,8 @@ function App() {
           </div>
         </section>
 
+        <LiveReadinessBand readiness={liveReadiness.data} />
+
         {overview.isError ? (
           <div className="error-state">
             API 无法连接
@@ -373,6 +382,29 @@ function App() {
         <span>本地模拟撮合 · 非真实账户</span>
       </footer>
     </div>
+  )
+}
+
+function LiveReadinessBand({ readiness }: { readiness?: LiveReadiness }) {
+  const ready = readiness?.order_submission_ready ?? false
+  const status = readiness?.status ?? 'STARTING'
+  const reasons = readiness?.block_reasons ?? []
+  return (
+    <section className={`live-readiness ${ready ? 'armed' : ''}`} aria-label="SOXLB 实盘就绪状态">
+      <div className="live-readiness-state">
+        <ShieldCheck size={18} />
+        <div><span>SOXLB LIVE SPOT</span><strong>{status}</strong></div>
+      </div>
+      <p>{readiness?.status_message ?? '正在检查 Binance Spot 实盘执行条件'}</p>
+      <div className="live-readiness-gates">
+        <Gate open={readiness?.public_capability ?? false} label="公开接口" />
+        <Gate open={readiness?.credentials_present ?? false} label="API 凭证" />
+        <Gate open={readiness?.signed_account_verified ?? false} label="账户校验" />
+        <Gate open={readiness?.activation_confirmed ?? false} label="启动确认" />
+        <Gate open={readiness?.allow_order_submission ?? false} label="订单开关" />
+      </div>
+      <small title={reasons.join(', ')}>{ready ? '真实订单已启用' : reasons.length ? reasons.join(' · ') : '真实订单未启用'}</small>
+    </section>
   )
 }
 
