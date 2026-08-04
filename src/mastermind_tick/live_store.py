@@ -65,6 +65,9 @@ CREATE TABLE IF NOT EXISTS live_balance_snapshots (
     quote_locked TEXT NOT NULL,
     reference_price TEXT,
     equity_quote TEXT,
+    atr TEXT,
+    trailing_stop TEXT,
+    relation TEXT,
     source TEXT NOT NULL
 );
 
@@ -106,6 +109,19 @@ class LiveStore:
         self.path.chmod(0o600)
         with self.connection() as connection:
             connection.executescript(SCHEMA)
+            self._ensure_balance_columns(connection)
+
+    @staticmethod
+    def _ensure_balance_columns(connection: sqlite3.Connection) -> None:
+        existing = {
+            row["name"]
+            for row in connection.execute("PRAGMA table_info(live_balance_snapshots)")
+        }
+        for name in ("atr", "trailing_stop", "relation"):
+            if name not in existing:
+                connection.execute(
+                    f"ALTER TABLE live_balance_snapshots ADD COLUMN {name} TEXT"
+                )
 
     @contextmanager
     def connection(self) -> Iterator[sqlite3.Connection]:
@@ -338,6 +354,9 @@ class LiveStore:
         quote_locked: str,
         reference_price: str | None,
         equity_quote: str | None,
+        atr: str | None = None,
+        trailing_stop: str | None = None,
+        relation: str | None = None,
         source: str = "binance_spot_account",
     ) -> None:
         with self.connection() as connection:
@@ -345,8 +364,9 @@ class LiveStore:
                 """
                 INSERT INTO live_balance_snapshots (
                     account_id, timestamp_ms, base_free, base_locked, quote_free,
-                    quote_locked, reference_price, equity_quote, source
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    quote_locked, reference_price, equity_quote, atr,
+                    trailing_stop, relation, source
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     account_id,
@@ -357,6 +377,9 @@ class LiveStore:
                     quote_locked,
                     reference_price,
                     equity_quote,
+                    atr,
+                    trailing_stop,
+                    relation,
                     source,
                 ),
             )
@@ -371,6 +394,62 @@ class LiveStore:
                 (account_id,),
             ).fetchone()
         return dict(row) if row else None
+
+    def balance_snapshots(
+        self,
+        account_id: str,
+        limit: int = 1000,
+        before_ms: int | None = None,
+    ) -> list[dict[str, Any]]:
+        before_clause = "AND timestamp_ms < ?" if before_ms is not None else ""
+        params = (
+            (account_id, before_ms, limit)
+            if before_ms is not None
+            else (account_id, limit)
+        )
+        with self.connection() as connection:
+            rows = connection.execute(
+                f"""
+                SELECT * FROM (
+                    SELECT * FROM live_balance_snapshots
+                    WHERE account_id = ? {before_clause}
+                    ORDER BY timestamp_ms DESC, id DESC LIMIT ?
+                ) ORDER BY timestamp_ms, id
+                """,
+                params,
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def first_balance(self, account_id: str) -> dict[str, Any] | None:
+        with self.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT * FROM live_balance_snapshots WHERE account_id = ?
+                ORDER BY timestamp_ms, id LIMIT 1
+                """,
+                (account_id,),
+            ).fetchone()
+        return dict(row) if row else None
+
+    def balance_at_boundaries(
+        self,
+        account_id: str,
+        boundaries_ms: list[int],
+    ) -> dict[int, dict[str, Any] | None]:
+        result: dict[int, dict[str, Any] | None] = {}
+        with self.connection() as connection:
+            for boundary_ms in sorted(set(boundaries_ms)):
+                row = connection.execute(
+                    """
+                    SELECT timestamp_ms, equity_quote AS equity
+                    FROM live_balance_snapshots
+                    WHERE account_id = ? AND timestamp_ms < ?
+                    ORDER BY timestamp_ms DESC, id DESC LIMIT 1
+                    """,
+                    (account_id, boundary_ms),
+                ).fetchone()
+                result[boundary_ms] = dict(row) if row else None
+        return result
 
     def day_start_equity(self, account_id: str, timestamp_ms: int) -> str | None:
         with self.connection() as connection:

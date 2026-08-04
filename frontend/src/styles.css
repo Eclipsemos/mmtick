@@ -41,7 +41,11 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--blue); outline-
 .nav-tabs button:hover { color: var(--text); background: #edf2f5; }
 .nav-tabs button.active { color: #075b42; background: #e2f3ed; box-shadow: inset 0 -2px var(--green); }
 .top-actions { justify-self: end; display: flex; align-items: center; gap: 12px; }
-.paper-badge { padding: 4px 7px; border: 1px solid #d7b96d; border-radius: 4px; color: #855b08; background: #fff9e9; font: 11px 'DM Mono', monospace; }
+.mode-switch { height: 34px; padding: 3px; display: flex; border: 1px solid var(--line-strong); border-radius: 5px; background: #edf2f4; }
+.mode-switch button { min-width: 54px; padding: 0 8px; border: 0; border-radius: 3px; color: #73818a; background: transparent; font: 700 10px 'DM Mono', monospace; cursor: pointer; }
+.mode-switch button.active.paper { color: #855b08; background: #fff9e9; box-shadow: 0 0 0 1px #d7b96d; }
+.mode-switch button.active.live { color: #fff; background: var(--green); box-shadow: 0 0 0 1px var(--green); }
+.mode-switch button:disabled { opacity: .55; cursor: wait; }
 .feed-state { display: flex; align-items: center; gap: 7px; color: var(--muted); font: 11px 'DM Mono', monospace; }
 .feed-state i { width: 7px; height: 7px; border-radius: 50%; background: #9aa6ae; }
 .feed-state.live i { background: var(--green); box-shadow: 0 0 8px rgba(7, 138, 97, .28); }
@@ -298,6 +302,26 @@ td { height: 43px; padding: 0 14px; border-top: 1px solid #e8edf0; color: #3e4e5
 .error-state button { display: flex; align-items: center; gap: 6px; border: 1px solid var(--line-strong); border-radius: 4px; padding: 7px 10px; background: var(--surface); cursor: pointer; }
 footer { height: 44px; padding: 0 30px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); color: #71818b; background: #fff; font: 9px 'DM Mono', monospace; }
 
+.dialog-backdrop {
+  position: fixed; inset: 0; z-index: 100; padding: 20px; display: grid; place-items: center;
+  background: rgba(20, 31, 39, .42);
+}
+.unlock-dialog { width: min(430px, 100%); border: 1px solid var(--line-strong); border-radius: 6px; background: #fff; box-shadow: 0 24px 70px rgba(21, 33, 42, .24); }
+.unlock-dialog-head { min-height: 76px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.unlock-dialog-head span { color: var(--muted); font: 9px 'DM Mono', monospace; letter-spacing: .08em; }
+.unlock-dialog-head h2 { margin: 5px 0 0; font-size: 18px; }
+.unlock-dialog-head > button { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 4px; color: var(--muted); background: transparent; cursor: pointer; }
+.unlock-dialog-head > button:hover { color: var(--red); background: #fff3f3; }
+.unlock-dialog form { padding: 20px 18px 18px; }
+.unlock-dialog label { display: block; margin-bottom: 8px; color: #53636e; font-size: 12px; }
+.unlock-dialog input { width: 100%; height: 42px; padding: 0 11px; border: 1px solid var(--line-strong); border-radius: 4px; color: var(--text); background: #fbfcfd; font: 12px 'DM Mono', monospace; }
+.unlock-dialog input:focus { border-color: var(--blue); outline: 2px solid rgba(40, 120, 184, .12); }
+.unlock-dialog form > p { margin: 10px 0 0; color: var(--red); font-size: 11px; }
+.unlock-dialog-actions { margin-top: 18px; display: flex; justify-content: flex-end; gap: 8px; }
+.unlock-dialog-actions button { height: 36px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: 4px; background: #fff; cursor: pointer; }
+.unlock-dialog-actions button.primary { color: #fff; border-color: var(--green); background: var(--green); }
+.unlock-dialog-actions button:disabled { opacity: .55; cursor: wait; }
+
 @media (max-width: 1050px) {
   .topbar { grid-template-columns: auto 1fr; backdrop-filter: none; }
   .nav-tabs { z-index: 30; order: 3; position: fixed; left: 0; right: 0; bottom: 0; height: 54px; justify-content: center; border-top: 1px solid var(--line); background: #fff; }
@@ -319,7 +343,8 @@ footer { height: 44px; padding: 0 30px; display: flex; align-items: center; just
 
 @media (max-width: 680px) {
   .topbar { height: 58px; padding: 0 15px; }
-  .paper-badge, .feed-state { display: none; }
+  .feed-state { display: none; }
+  .mode-switch button { min-width: 48px; padding: 0 6px; }
   .nav-tabs button { padding: 0 8px; font-size: 12px; }
   main { padding: 23px 14px 72px; }
   .page-head { align-items: stretch; flex-direction: column; }

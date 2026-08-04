@@ -19,7 +19,8 @@ Mastermind 旗下短线策略产品。系统使用 Binance 生产环境的公开
 - 三个绩效账户仍由本地 paper broker 驱动。另有 `soxlb_live` 实盘账户，使用独立的
   `data/live.db`，不会把真实余额、订单或成交混入 `data/paper.db`。
 - `soxlb_live` 当前以只读观察模式运行；签名账户对账已启用，但提交真实订单的配置
-  保持关闭。
+  保持关闭。Dashboard 顶部的 `PAPER / LIVE` 分段按钮可在模拟账户和这个独立实盘
+  账户之间切换。
 - Binance Testnet/Demo 暂不提供这两个标的，因此模拟成交使用生产公共行情和本地
   撮合。
 - 本项目不读取 `~/mm` 的数据；Mastermind 长线 Alpha 研究和真实基金账户与本项目
@@ -149,8 +150,15 @@ PYTHONPATH=src /home/spaceaic/env/.venv/bin/python -m mastermind_tick.live_prefl
 
 当前只读凭证从被 Git 忽略的项目根目录 `.env` 读取 `API_KEY` 与 `SECRET_KEY`，文件
 权限必须为 `600`；程序不会记录或通过 API 返回密钥。当前权限审计结果为读取开启、
-Spot Trading 关闭、提现关闭、IP 白名单关闭，因此只能进行签名对账。Dashboard 只
-公开同步健康和权限状态，不公开实盘余额、仓位或成交明细。
+Spot Trading 关闭、提现关闭、IP 白名单关闭，因此只能进行签名对账。Dashboard
+公开接口只包含同步健康和权限状态；实盘余额、仓位、订单、成交和收益必须先建立
+独立的操作员会话才能读取。
+
+操作员令牌位于被 Git 忽略的 `data/operator.token`，权限必须为 `600`，不得使用
+Binance API Secret 代替。浏览器从本机 `127.0.0.1` 访问时点击 `LIVE` 可自动建立
+会话；从其他机器访问时首次点击需要输入操作员令牌。会话使用 HttpOnly、
+SameSite=Strict Cookie，8 小时后失效，之后 `PAPER / LIVE` 切换均为一键操作。
+远程访问应在 HTTPS 反向代理之后提供，避免在明文 HTTP 链路上传输会话。
 
 不要把密钥写入聊天、仓库、`settings.toml` 或提交记录。未来准备固定出口 IP 后，
 API Key 才开放 Spot Trading 并启用 IP 白名单；提现权限始终关闭。届时再运行不会
@@ -189,6 +197,10 @@ journalctl --user -u mmtick.service -f
 
 页面提供：
 
+- 顶部 `PAPER / LIVE` 一键模式切换；PAPER 保留三个模拟账户，LIVE 只显示独立的
+  `SOXLB/USDT LIVE` Binance Spot 账户；
+- LIVE 模式复用监控、订单、收益和仓库组件，真实账户余额与成交使用受保护接口，
+  OHLCV 和 aggTrade 继续使用共享的 Binance 公共行情仓库；
 - SOXLB、SOXL Perpetual 多空及 SOXL Perpetual Long Only 账户切换、行情连接
   和策略运行状态；
 - 可滚动、缩放的价格与交易信号图，以及独立的官方 15 分钟 K 线图；
@@ -231,6 +243,16 @@ Vite 会把 `/api` 转发到 `127.0.0.1:8100`。
 GET  /api/health
 GET  /api/overview
 GET  /api/live/readiness
+GET  /api/live/session
+POST /api/live/unlock
+POST /api/live/unlock-local
+POST /api/live/logout
+GET  /api/live/overview
+GET  /api/live/equity?limit=&before_ms=
+GET  /api/live/returns
+GET  /api/live/orders
+GET  /api/live/fills
+GET  /api/live/fills.csv
 GET  /api/accounts/{id}/equity?limit=&before_ms=
 GET  /api/accounts/{id}/returns
 GET  /api/orders

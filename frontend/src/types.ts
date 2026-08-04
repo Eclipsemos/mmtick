@@ -76,7 +76,7 @@ export type Runtime = {
     startup_alignment: boolean
     futures_reversal_mode: 'close_then_confirm'
     signal_confirmation: 'tick'
-    fill_timing: 'next_tick'
+    fill_timing: 'next_tick' | 'binance_actual'
   }
   feed: string
   market_state: {
@@ -156,7 +156,7 @@ export type Overview = {
     startup_alignment: boolean
     futures_reversal_mode: 'close_then_confirm'
     signal_confirmation: 'tick'
-    fill_timing: 'next_tick'
+    fill_timing: 'next_tick' | 'binance_actual'
     position_fraction: number
     fee_bps: number
     slippage_bps: number
@@ -195,6 +195,12 @@ export type LiveReadiness = {
     max_daily_loss: number
     max_orders_per_day: number
   }
+}
+
+export type LiveSession = {
+  authenticated: boolean
+  configured: boolean
+  local_unlock_available: boolean
 }
 
 export type EquityPoint = {
@@ -279,8 +285,8 @@ export type Order = {
   status: string
   reason: string
   signal_price: string
-  atr: string
-  trailing_stop: string
+  atr: string | null
+  trailing_stop: string | null
   submitted_at_ms: number
   filled_at_ms: number | null
   fill_price: string | null

@@ -67,6 +67,7 @@ class LiveSpotSettings:
     api_key_env: str = "BINANCE_API_KEY"
     api_secret_env: str = "BINANCE_API_SECRET"
     credentials_path: Path | None = None
+    operator_token_path: Path | None = None
     activation_env: str = "MMTICK_LIVE_CONFIRM"
     activation_value: str = "SOXLBUSDT_LIVE"
     allow_order_submission: bool = False
@@ -113,9 +114,14 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
     live_database_path = project_root / live_raw.pop("database_path", "data/live.db")
     credentials_value = live_raw.pop("credentials_path", None)
     credentials_path = project_root / credentials_value if credentials_value else None
+    operator_token_value = live_raw.pop("operator_token_path", None)
+    operator_token_path = (
+        project_root / operator_token_value if operator_token_value else None
+    )
     live_spot = LiveSpotSettings(
         database_path=live_database_path,
         credentials_path=credentials_path,
+        operator_token_path=operator_token_path,
         **live_raw,
     )
 

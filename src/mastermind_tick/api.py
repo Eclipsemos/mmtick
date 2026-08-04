@@ -9,7 +9,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Annotated, Literal
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -17,6 +17,14 @@ from pydantic import BaseModel
 
 from mastermind_tick.config import InstrumentSettings, Settings, load_settings
 from mastermind_tick.engine import PaperEngine
+from mastermind_tick.live_access import COOKIE_NAME, LiveAccess
+from mastermind_tick.live_reporting import (
+    build_live_overview,
+    build_live_return_summary,
+    live_equity,
+    live_fills,
+    live_orders,
+)
 from mastermind_tick.live_spot import LiveSpotTrader
 from mastermind_tick.live_store import LiveStore
 from mastermind_tick.reporting import build_overview, build_return_summary
@@ -27,12 +35,17 @@ class ControlRequest(BaseModel):
     action: Literal["pause", "resume"]
 
 
+class LiveUnlockRequest(BaseModel):
+    token: str
+
+
 def create_app(settings: Settings | None = None, *, start_engine: bool = True) -> FastAPI:
     resolved = settings or load_settings(os.getenv("MMTICK_CONFIG", "config/settings.toml"))
     store = PaperStore(resolved.database_path)
     engine = PaperEngine(resolved, store)
     live_store = LiveStore(resolved.live_spot.database_path)
     live_trader = LiveSpotTrader(resolved, live_store)
+    live_access = LiveAccess(resolved.live_spot.operator_token_path)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -54,6 +67,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     app.state.engine = engine
     app.state.live_store = live_store
     app.state.live_trader = live_trader
+    app.state.live_access = live_access
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -82,6 +96,88 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     def live_readiness() -> dict:
         """Expose gates and health only; balances and order details stay private."""
         return live_trader.readiness()
+
+    @app.get("/api/live/session")
+    def live_session(request: Request) -> dict:
+        return {
+            "authenticated": live_access.authorized(request),
+            "configured": live_access.configured,
+            "local_unlock_available": live_access.is_loopback(request),
+        }
+
+    @app.post("/api/live/unlock")
+    def live_unlock(payload: LiveUnlockRequest, request: Request, response: Response) -> dict:
+        if not live_access.configured:
+            raise HTTPException(status_code=503, detail="LIVE operator access is not configured")
+        if not live_access.verify_token(payload.token):
+            raise HTTPException(status_code=401, detail="Invalid LIVE operator token")
+        live_access.establish(response, request)
+        return {"ok": True, "authenticated": True}
+
+    @app.post("/api/live/unlock-local")
+    def live_unlock_local(request: Request, response: Response) -> dict:
+        if not live_access.is_loopback(request):
+            raise HTTPException(status_code=403, detail="Local LIVE unlock is unavailable")
+        if not live_access.configured:
+            raise HTTPException(status_code=503, detail="LIVE operator access is not configured")
+        live_access.establish(response, request)
+        return {"ok": True, "authenticated": True}
+
+    @app.post("/api/live/logout")
+    def live_logout(response: Response) -> dict:
+        response.delete_cookie(COOKIE_NAME, path="/api/live", samesite="strict")
+        return {"ok": True, "authenticated": False}
+
+    @app.get("/api/live/overview")
+    def live_overview(request: Request) -> dict:
+        live_access.require(request)
+        return build_live_overview(resolved, engine, live_store, live_trader)
+
+    @app.get("/api/live/equity")
+    def live_account_equity(
+        request: Request,
+        limit: Annotated[int, Query(ge=20, le=10000)] = 1000,
+        before_ms: Annotated[int | None, Query(gt=0)] = None,
+    ) -> list[dict]:
+        live_access.require(request)
+        return live_equity(live_store, resolved.live_spot.account_id, limit, before_ms)
+
+    @app.get("/api/live/returns")
+    def live_account_returns(
+        request: Request,
+        timezone_offset_minutes: Annotated[int, Query(ge=-720, le=840)] = 0,
+    ) -> dict:
+        live_access.require(request)
+        try:
+            return build_live_return_summary(
+                live_store,
+                resolved.live_spot.account_id,
+                timezone_offset_minutes,
+            )
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail="No LIVE balance snapshots") from exc
+
+    @app.get("/api/live/fills")
+    def live_account_fills(
+        request: Request,
+        limit: Annotated[int, Query(ge=1, le=1000)] = 100,
+    ) -> list[dict]:
+        live_access.require(request)
+        return live_fills(live_store, resolved.live_spot.account_id, limit)
+
+    @app.get("/api/live/orders")
+    def live_account_orders(
+        request: Request,
+        limit: Annotated[int, Query(ge=1, le=1000)] = 100,
+    ) -> list[dict]:
+        live_access.require(request)
+        return live_orders(live_store, resolved.live_spot.account_id, limit)
+
+    @app.get("/api/live/fills.csv")
+    def export_live_fills(request: Request) -> Response:
+        live_access.require(request)
+        rows = live_fills(live_store, resolved.live_spot.account_id, 100_000)
+        return _fills_csv(rows, "mmtick-live-fills.csv")
 
     @app.get("/api/overview")
     def overview() -> dict:
@@ -182,32 +278,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         if account_id:
             _require_account(store, account_id)
         rows = store.fills(account_id, 100_000)
-        output = io.StringIO()
-        fieldnames = (
-            list(rows[0])
-            if rows
-            else [
-                "id",
-                "order_id",
-                "account_id",
-                "side",
-                "timestamp_ms",
-                "price",
-                "quantity",
-                "notional",
-                "fee",
-                "reason",
-                "source",
-            ]
-        )
-        writer = csv.DictWriter(output, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
-        return Response(
-            output.getvalue(),
-            media_type="text/csv",
-            headers={"Content-Disposition": "attachment; filename=mmtick-fills.csv"},
-        )
+        return _fills_csv(rows, "mmtick-fills.csv")
 
     @app.post("/api/control")
     async def control(request: ControlRequest) -> dict:
@@ -245,6 +316,34 @@ def _require_instrument(settings: Settings, instrument_id: str) -> InstrumentSet
     if instrument is None:
         raise HTTPException(status_code=404, detail=f"unknown instrument: {instrument_id}")
     return instrument
+
+
+def _fills_csv(rows: list[dict], filename: str) -> Response:
+    output = io.StringIO()
+    fieldnames = (
+        list(rows[0])
+        if rows
+        else [
+            "id",
+            "account_id",
+            "side",
+            "timestamp_ms",
+            "price",
+            "quantity",
+            "notional",
+            "fee",
+            "reason",
+            "source",
+        ]
+    )
+    writer = csv.DictWriter(output, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(rows)
+    return Response(
+        output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
 
 
 app = create_app()

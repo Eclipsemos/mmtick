@@ -33,6 +33,7 @@ api_base_url = "https://api.binance.com"
 api_key_env = "API_KEY"
 api_secret_env = "SECRET_KEY"
 credentials_path = ".env"
+operator_token_path = "data/operator.token"
 activation_env = "MMTICK_LIVE_CONFIRM"
 activation_value = "SOXLBUSDT_LIVE"
 allow_order_submission = false

@@ -293,6 +293,7 @@ class LiveSpotTrader:
                 + (self.base_free + self.base_locked) * reference_price
             )
             now_ms = _now_ms()
+            strategy_view = self.strategy.view()
             self.store.save_balance_snapshot(
                 account_id=self.config.account_id,
                 timestamp_ms=now_ms,
@@ -302,6 +303,13 @@ class LiveSpotTrader:
                 quote_locked=str(self.quote_locked),
                 reference_price=str(reference_price),
                 equity_quote=str(equity),
+                atr=str(strategy_view.atr) if strategy_view.atr is not None else None,
+                trailing_stop=(
+                    str(strategy_view.trailing_stop)
+                    if strategy_view.trailing_stop is not None
+                    else None
+                ),
+                relation=strategy_view.relation,
             )
 
             known_ids = {

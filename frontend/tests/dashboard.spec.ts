@@ -1,13 +1,14 @@
 import { expect, test } from '@playwright/test'
 
-test('paper console renders live state and operational views', async ({ page }) => {
+test('paper console renders operational views and switches to the protected live account', async ({ page }) => {
   const consoleErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text())
   })
 
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: '实盘交易' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '模拟交易' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'PAPER' })).toHaveClass(/active/)
   const liveReadiness = page.getByRole('region', { name: 'SOXLB 实盘就绪状态' })
   await expect(liveReadiness.locator('.live-readiness-state strong')).toHaveText(/OBSERVE_ONLY|BLOCKED|DISABLED/)
   await expect(liveReadiness.getByText('公开接口')).toBeVisible()
@@ -78,6 +79,17 @@ test('paper console renders live state and operational views', async ({ page }) 
   await page.getByRole('button', { name: /监控/ }).click()
 
   await expect(page.getByRole('button', { name: '暂停' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'LIVE', exact: true }).click()
+  await expect(page.getByRole('heading', { name: '实盘交易' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'LIVE', exact: true })).toHaveClass(/active/)
+  await expect(page.getByRole('button', { name: 'SOXLB/USDT LIVE', exact: true })).toHaveCount(1)
+  await expect(page.locator('.account-switch button')).toHaveCount(1)
+  await expect(page.getByRole('button', { name: '锁定' })).toBeVisible()
+  await expect(page.getByText('Binance 实际成交')).toBeVisible()
+  await page.getByRole('button', { name: 'PAPER', exact: true }).click()
+  await expect(page.getByRole('heading', { name: '模拟交易' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'SOXL/USDT PERP', exact: true })).toBeVisible()
 
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
@@ -189,4 +201,29 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
   await page.getByRole('button', { name: '显示全部K线' }).click()
   await page.getByRole('button', { name: '加载更早K线' }).click()
   await expect.poll(() => ohlcvHistoryRequests).toBe(1)
+})
+
+test('remote live access requests the independent operator token', async ({ page }) => {
+  await page.route('**/api/live/session', (route) => route.fulfill({
+    contentType: 'application/json',
+    body: JSON.stringify({
+      authenticated: false,
+      configured: true,
+      local_unlock_available: false,
+    }),
+  }))
+  await page.route('**/api/live/unlock', (route) => route.fulfill({
+    status: 401,
+    contentType: 'application/json',
+    body: JSON.stringify({ detail: 'Invalid LIVE operator token' }),
+  }))
+
+  await page.goto('/')
+  await page.getByRole('button', { name: 'LIVE', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: '验证实盘访问' })
+  await expect(dialog).toBeVisible()
+  await dialog.getByLabel('操作员令牌').fill('not-the-operator-token')
+  await dialog.getByRole('button', { name: '进入 LIVE' }).click()
+  await expect(dialog.getByRole('alert')).toHaveText('操作员令牌不正确。')
+  await expect(page.getByRole('button', { name: 'PAPER', exact: true })).toHaveClass(/active/)
 })

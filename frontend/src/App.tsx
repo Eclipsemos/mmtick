@@ -19,6 +19,7 @@ import {
   Gauge,
   History,
   ListOrdered,
+  LockKeyhole,
   Maximize2,
   Radio,
   RefreshCw,
@@ -43,7 +44,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { api } from './api'
+import { api, ApiError } from './api'
 import type {
   Account,
   AggTrade,
@@ -59,6 +60,7 @@ import type {
 } from './types'
 
 type View = 'monitor' | 'orders' | 'returns' | 'warehouse'
+type AccountMode = 'paper' | 'live'
 
 type PricePoint = {
   timestamp: number
@@ -216,63 +218,176 @@ const ohlcvTimestamp = (bar: OhlcvBar) => bar.start_ms
 function App() {
   const client = useQueryClient()
   const [view, setView] = useState<View>('monitor')
-  const [accountId, setAccountId] = useState('soxl_perp')
-  const overview = useQuery({ queryKey: ['overview'], queryFn: api.overview, refetchInterval: 1000 })
+  const [mode, setMode] = useState<AccountMode>('paper')
+  const [paperAccountId, setPaperAccountId] = useState('soxl_perp')
+  const [unlockOpen, setUnlockOpen] = useState(false)
+  const [unlockToken, setUnlockToken] = useState('')
+  const [unlockError, setUnlockError] = useState('')
+  const [switchingMode, setSwitchingMode] = useState(false)
+  const accountId = mode === 'live' ? 'soxlb_live' : paperAccountId
+  const marketInstrumentId = mode === 'live' ? 'soxlb' : accountId
+  const overview = useQuery({
+    queryKey: ['overview', mode],
+    queryFn: mode === 'live' ? api.liveOverview : api.overview,
+    refetchInterval: 1000,
+  })
   const liveReadiness = useQuery({
     queryKey: ['live-readiness'],
     queryFn: api.liveReadiness,
     refetchInterval: 5000,
   })
-  const equity = useQuery({ queryKey: ['equity', accountId], queryFn: () => api.equity(accountId), refetchInterval: 5000 })
-  const fills = useQuery({ queryKey: ['fills', accountId], queryFn: () => api.fills(accountId), refetchInterval: 5000 })
-  const funding = useQuery({ queryKey: ['funding', accountId], queryFn: () => api.funding(accountId), refetchInterval: 5000 })
-  const orders = useQuery({ queryKey: ['orders', accountId], queryFn: () => api.orders(accountId), refetchInterval: 5000 })
+  const equityPage = useCallback(
+    (_scope: string, beforeMs?: number) => mode === 'live'
+      ? api.liveEquity(accountId, beforeMs)
+      : api.equity(accountId, beforeMs),
+    [accountId, mode],
+  )
+  const ohlcvPage = useCallback(
+    (_scope: string, beforeMs?: number) => api.ohlcv(marketInstrumentId, beforeMs),
+    [marketInstrumentId],
+  )
+  const equity = useQuery({
+    queryKey: ['equity', mode, accountId],
+    queryFn: () => equityPage(accountId),
+    refetchInterval: 5000,
+  })
+  const fills = useQuery({
+    queryKey: ['fills', mode, accountId],
+    queryFn: () => mode === 'live' ? api.liveFills() : api.fills(accountId),
+    refetchInterval: 5000,
+  })
+  const funding = useQuery({
+    queryKey: ['funding', mode, accountId],
+    queryFn: () => mode === 'live' ? Promise.resolve([] as FundingPayment[]) : api.funding(accountId),
+    refetchInterval: 5000,
+  })
+  const orders = useQuery({
+    queryKey: ['orders', mode, accountId],
+    queryFn: () => mode === 'live' ? api.liveOrders() : api.orders(accountId),
+    refetchInterval: 5000,
+  })
   const returns = useQuery({
-    queryKey: ['returns', accountId],
-    queryFn: () => api.returns(accountId),
+    queryKey: ['returns', mode, accountId],
+    queryFn: () => mode === 'live' ? api.liveReturns(accountId) : api.returns(accountId),
     enabled: view === 'returns',
     refetchInterval: 60_000,
   })
   const warehouse = useQuery({
-    queryKey: ['warehouse'],
+    queryKey: ['warehouse', mode],
     queryFn: api.warehouse,
     enabled: view === 'warehouse',
     refetchInterval: 5000,
   })
   const aggTrades = useQuery({
-    queryKey: ['agg-trades', accountId],
-    queryFn: () => api.aggTrades(accountId),
+    queryKey: ['agg-trades', mode, marketInstrumentId],
+    queryFn: () => api.aggTrades(marketInstrumentId),
     enabled: view === 'warehouse',
   })
   const ohlcv = useQuery({
-    queryKey: ['ohlcv', accountId],
-    queryFn: () => api.ohlcv(accountId),
+    queryKey: ['ohlcv', mode, marketInstrumentId],
+    queryFn: () => api.ohlcv(marketInstrumentId),
     refetchInterval: 5000,
   })
   const equityHistory = useTimePaginatedSeries(
-    accountId,
+    `${mode}:${accountId}`,
     equity.data ?? [],
     equityTimestamp,
-    api.equity,
+    equityPage,
     2000,
   )
   const ohlcvHistory = useTimePaginatedSeries(
-    accountId,
+    `${mode}:${marketInstrumentId}`,
     ohlcv.data ?? [],
     ohlcvTimestamp,
-    api.ohlcv,
+    ohlcvPage,
     200,
   )
   const control = useMutation({
     mutationFn: api.control,
-    onSuccess: () => client.invalidateQueries({ queryKey: ['overview'] }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['overview', 'paper'] }),
   })
+
+  const showLiveUnlock = useCallback((message = '') => {
+    setUnlockToken('')
+    setUnlockError(message)
+    setUnlockOpen(true)
+  }, [])
+
+  const switchToLive = useCallback(async () => {
+    if (mode === 'live' || switchingMode) return
+    setSwitchingMode(true)
+    try {
+      const session = await api.liveSession()
+      if (session.authenticated) {
+        setMode('live')
+        return
+      }
+      if (!session.configured) {
+        showLiveUnlock('服务端尚未配置 LIVE 操作员令牌。')
+        return
+      }
+      if (session.local_unlock_available) {
+        await api.unlockLiveLocal()
+        setMode('live')
+        return
+      }
+      showLiveUnlock()
+    } catch {
+      showLiveUnlock('无法建立 LIVE 会话，请检查服务状态。')
+    } finally {
+      setSwitchingMode(false)
+    }
+  }, [mode, showLiveUnlock, switchingMode])
+
+  const submitLiveUnlock = useCallback(async () => {
+    if (!unlockToken || switchingMode) return
+    setSwitchingMode(true)
+    setUnlockError('')
+    try {
+      await api.unlockLive(unlockToken)
+      setUnlockToken('')
+      setUnlockOpen(false)
+      setMode('live')
+    } catch (error) {
+      setUnlockError(error instanceof ApiError && error.status === 401
+        ? '操作员令牌不正确。'
+        : 'LIVE 会话建立失败。')
+    } finally {
+      setSwitchingMode(false)
+    }
+  }, [switchingMode, unlockToken])
+
+  const lockLive = useCallback(async () => {
+    try {
+      await api.logoutLive()
+    } finally {
+      setMode('paper')
+      client.removeQueries({ queryKey: ['overview', 'live'] })
+    }
+  }, [client])
+
+  useEffect(() => {
+    if (mode === 'live' && overview.error instanceof ApiError && overview.error.status === 401) {
+      setMode('paper')
+      showLiveUnlock('LIVE 会话已过期，请重新验证。')
+    }
+  }, [mode, overview.error, showLiveUnlock])
 
   const accounts = overview.data?.accounts ?? []
   const account = accounts.find((item) => item.id === accountId) ?? accounts[0]
   const liveCount = overview.data?.instruments.filter((item) => item.status === 'LIVE').length ?? 0
   const instrumentCount = overview.data?.instruments.length ?? 1
-  const pageTitle = view === 'warehouse' ? '数据仓库' : view === 'returns' ? '收益明细' : '实盘交易'
+  const feedConnected = mode === 'live'
+    ? Boolean(liveReadiness.data?.last_reconciled_at_ms)
+    : liveCount > 0
+  const feedLabel = mode === 'live'
+    ? liveReadiness.data?.status ?? 'STARTING'
+    : `${liveCount}/${instrumentCount} LIVE`
+  const pageTitle = view === 'warehouse'
+    ? '数据仓库'
+    : view === 'returns'
+      ? '收益明细'
+      : mode === 'live' ? '实盘交易' : '模拟交易'
   const pageKicker = view === 'warehouse'
     ? 'MARKET DATA / SQLITE WAL'
     : view === 'returns'
@@ -302,19 +417,28 @@ function App() {
           </button>
         </nav>
         <div className="top-actions">
-          <span className="paper-badge">PAPER</span>
-          <span className={`feed-state ${liveCount ? 'live' : ''}`}>
-            <i />{liveCount}/{instrumentCount} LIVE
+          <div className="mode-switch" aria-label="账户模式">
+            <button type="button" className={mode === 'paper' ? 'active paper' : ''} onClick={() => setMode('paper')}>PAPER</button>
+            <button type="button" className={mode === 'live' ? 'active live' : ''} disabled={switchingMode} onClick={() => void switchToLive()}>LIVE</button>
+          </div>
+          <span className={`feed-state ${feedConnected ? 'live' : ''}`}>
+            <i />{feedLabel}
           </span>
-          <button
-            className={overview.data?.trading_enabled ? 'control danger' : 'control resume'}
-            disabled={control.isPending}
-            onClick={() => control.mutate(overview.data?.trading_enabled ? 'pause' : 'resume')}
-            title={overview.data?.trading_enabled ? '暂停策略' : '恢复策略'}
-          >
-            {overview.data?.trading_enabled ? <CirclePause size={17} /> : <CirclePlay size={17} />}
-            {overview.data?.trading_enabled ? '暂停' : '恢复'}
-          </button>
+          {mode === 'paper' ? (
+            <button
+              className={overview.data?.trading_enabled ? 'control danger' : 'control resume'}
+              disabled={control.isPending}
+              onClick={() => control.mutate(overview.data?.trading_enabled ? 'pause' : 'resume')}
+              title={overview.data?.trading_enabled ? '暂停策略' : '恢复策略'}
+            >
+              {overview.data?.trading_enabled ? <CirclePause size={17} /> : <CirclePlay size={17} />}
+              {overview.data?.trading_enabled ? '暂停' : '恢复'}
+            </button>
+          ) : (
+            <button className="control" type="button" onClick={() => void lockLive()} title="锁定实盘账户信息">
+              <LockKeyhole size={16} />锁定
+            </button>
+          )}
         </div>
       </header>
 
@@ -325,13 +449,13 @@ function App() {
             <h1>{pageTitle}</h1>
           </div>
           <div className="page-actions">
-            <div className="account-switch" aria-label="模拟账户">
+            <div className="account-switch" aria-label={mode === 'live' ? '实盘账户' : '模拟账户'}>
               {accounts.map((item) => (
                 <button
                   type="button"
                   key={item.id}
                   className={item.id === account?.id ? 'active' : ''}
-                  onClick={() => setAccountId(item.id)}
+                  onClick={() => mode === 'paper' && setPaperAccountId(item.id)}
                 >
                   {item.display_symbol}
                 </button>
@@ -353,6 +477,7 @@ function App() {
         ) : view === 'monitor' ? (
           <Monitor
             account={account}
+            fillsExportUrl={mode === 'live' ? '/api/live/fills.csv' : `/api/fills.csv?account_id=${account?.id ?? ''}`}
             equity={equityHistory.rows}
             fills={fills.data ?? []}
             funding={funding.data ?? []}
@@ -373,14 +498,67 @@ function App() {
             summary={warehouse.data}
             bars={ohlcv.data ?? []}
             trades={aggTrades.data ?? []}
-            instrumentId={account?.id}
+            instrumentId={marketInstrumentId}
           />
         )}
       </main>
       <footer>
         <span>mastermind:tick v0.1</span>
-        <span>本地模拟撮合 · 非真实账户</span>
+        <span>{mode === 'live' ? 'Binance Spot 实盘账户 · 当前只读观察' : '本地模拟撮合 · 非真实账户'}</span>
       </footer>
+      {unlockOpen && (
+        <LiveUnlockDialog
+          token={unlockToken}
+          error={unlockError}
+          pending={switchingMode}
+          onTokenChange={setUnlockToken}
+          onCancel={() => { setUnlockOpen(false); setUnlockToken(''); setUnlockError('') }}
+          onSubmit={() => void submitLiveUnlock()}
+        />
+      )}
+    </div>
+  )
+}
+
+function LiveUnlockDialog({
+  token,
+  error,
+  pending,
+  onTokenChange,
+  onCancel,
+  onSubmit,
+}: {
+  token: string
+  error: string
+  pending: boolean
+  onTokenChange: (value: string) => void
+  onCancel: () => void
+  onSubmit: () => void
+}) {
+  return (
+    <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onCancel()}>
+      <div className="unlock-dialog" role="dialog" aria-modal="true" aria-labelledby="live-unlock-title">
+        <div className="unlock-dialog-head">
+          <div><span>PROTECTED ACCOUNT</span><h2 id="live-unlock-title">验证实盘访问</h2></div>
+          <button type="button" onClick={onCancel} title="关闭" aria-label="关闭"><CircleX size={19} /></button>
+        </div>
+        <form onSubmit={(event) => { event.preventDefault(); onSubmit() }}>
+          <label htmlFor="live-operator-token">操作员令牌</label>
+          <input
+            id="live-operator-token"
+            type="password"
+            value={token}
+            autoFocus
+            autoComplete="off"
+            onChange={(event) => onTokenChange(event.target.value)}
+          />
+          {error && <p role="alert">{error}</p>}
+          <div className="unlock-dialog-actions">
+            <button type="button" onClick={onCancel}>取消</button>
+            <button className="primary" type="submit" disabled={!token || pending}>{pending ? '验证中' : '进入 LIVE'}</button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }
@@ -434,6 +612,7 @@ function LiveReadinessBand({ readiness }: { readiness?: LiveReadiness }) {
 
 function Monitor({
   account,
+  fillsExportUrl,
   equity,
   fills,
   funding,
@@ -446,6 +625,7 @@ function Monitor({
   hasOlderOhlcv,
 }: {
   account?: Account
+  fillsExportUrl: string
   equity: EquityPoint[]
   fills: Fill[]
   funding: FundingPayment[]
@@ -565,7 +745,7 @@ function Monitor({
             <div><dt>K 线开始</dt><dd>{time(strategy.bar_start_ms)}</dd></div>
             <div><dt>K 线状态</dt><dd>形成中，Tick 实时交易</dd></div>
             <div><dt>信号检测</dt><dd>每个成交 Tick</dd></div>
-            <div><dt>成交时点</dt><dd>下一成交 Tick</dd></div>
+            <div><dt>成交时点</dt><dd>{runtime.strategy_config.fill_timing === 'binance_actual' ? 'Binance 实际成交' : '下一成交 Tick'}</dd></div>
             <div><dt>趋势效率比</dt><dd>{number(strategy.trend_efficiency, 3)}</dd></div>
             <div><dt>趋势过滤</dt><dd>{strategy.trend_filter_passed ? 'PASS' : 'BLOCKED'}</dd></div>
             <div><dt>本 K 线动作锁</dt><dd>{strategy.action_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
@@ -599,7 +779,7 @@ function Monitor({
         <div className="panel fills-panel">
           <div className="panel-head">
             <div><span>ROUND TRIPS</span><h3>最近成交</h3></div>
-            <a className="export" href={`/api/fills.csv?account_id=${account.id}`}><ArrowDownToLine size={15} />成交 CSV</a>
+            <a className="export" href={fillsExportUrl}><ArrowDownToLine size={15} />成交 CSV</a>
           </div>
           <CompletedTradeTable rows={[...completedTrades].reverse().slice(0, 8)} currency={account.currency} />
         </div>

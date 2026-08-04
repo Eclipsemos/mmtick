@@ -1,0 +1,138 @@
+import sqlite3
+from dataclasses import replace
+
+from fastapi.testclient import TestClient
+
+from mastermind_tick.api import create_app
+from mastermind_tick.config import load_settings
+from mastermind_tick.live_access import COOKIE_NAME, LiveAccess
+from mastermind_tick.live_store import LiveStore
+
+
+def _live_app(tmp_path, token: str = "a" * 48):
+    token_path = tmp_path / "operator.token"
+    token_path.write_text(token)
+    token_path.chmod(0o600)
+    base = load_settings("config/settings.toml")
+    settings = replace(
+        base,
+        database_path=tmp_path / "paper.db",
+        frontend_dist=tmp_path / "missing-frontend",
+        live_spot=replace(
+            base.live_spot,
+            database_path=tmp_path / "live.db",
+            credentials_path=None,
+            operator_token_path=token_path,
+        ),
+    )
+    app = create_app(settings, start_engine=False)
+    app.state.live_store.save_balance_snapshot(
+        account_id=settings.live_spot.account_id,
+        timestamp_ms=1_700_000_000_000,
+        base_free="1.5",
+        base_locked="0",
+        quote_free="250",
+        quote_locked="0",
+        reference_price="100",
+        equity_quote="400",
+        atr="2.5",
+        trailing_stop="96",
+        relation="above",
+    )
+    return app
+
+
+def test_live_access_rejects_insecure_token_file(tmp_path) -> None:
+    token_path = tmp_path / "operator.token"
+    token_path.write_text("a" * 48)
+    token_path.chmod(0o644)
+
+    access = LiveAccess(token_path)
+
+    assert not access.configured
+    assert not access.verify_token("a" * 48)
+
+
+def test_live_data_requires_operator_session_and_remote_token(tmp_path) -> None:
+    token = "b" * 48
+    app = _live_app(tmp_path, token)
+
+    with TestClient(app, client=("203.0.113.10", 4321)) as client:
+        session = client.get("/api/live/session")
+        unauthorized = client.get("/api/live/overview")
+        local_unlock = client.post("/api/live/unlock-local")
+        invalid = client.post("/api/live/unlock", json={"token": "wrong"})
+        unlocked = client.post("/api/live/unlock", json={"token": token})
+        overview = client.get("/api/live/overview")
+        equity = client.get("/api/live/equity")
+        logout = client.post("/api/live/logout")
+        locked_again = client.get("/api/live/overview")
+
+    assert session.json() == {
+        "authenticated": False,
+        "configured": True,
+        "local_unlock_available": False,
+    }
+    assert unauthorized.status_code == 401
+    assert local_unlock.status_code == 403
+    assert invalid.status_code == 401
+    assert unlocked.status_code == 200
+    cookie = unlocked.headers["set-cookie"]
+    assert COOKIE_NAME in cookie
+    assert "HttpOnly" in cookie
+    assert "SameSite=strict" in cookie
+    assert overview.status_code == 200
+    assert [account["id"] for account in overview.json()["accounts"]] == ["soxlb_live"]
+    assert overview.json()["accounts"][0]["equity"] == "400"
+    assert equity.json()[0]["atr"] == "2.5"
+    assert logout.status_code == 200
+    assert locked_again.status_code == 401
+
+    serialized = overview.text.lower()
+    assert "api_key" not in serialized
+    assert "secret_key" not in serialized
+    assert token not in overview.text
+
+
+def test_loopback_can_establish_live_session_without_entering_token(tmp_path) -> None:
+    app = _live_app(tmp_path)
+
+    with TestClient(app) as client:
+        unlocked = client.post("/api/live/unlock-local")
+        session = client.get("/api/live/session")
+        fills = client.get("/api/live/fills")
+
+    assert unlocked.status_code == 200
+    assert session.json()["authenticated"] is True
+    assert fills.status_code == 200
+    assert fills.json() == []
+
+
+def test_live_store_migrates_balance_indicator_columns(tmp_path) -> None:
+    path = tmp_path / "legacy-live.db"
+    with sqlite3.connect(path) as connection:
+        connection.execute(
+            """
+            CREATE TABLE live_balance_snapshots (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                account_id TEXT NOT NULL,
+                timestamp_ms INTEGER NOT NULL,
+                base_free TEXT NOT NULL,
+                base_locked TEXT NOT NULL,
+                quote_free TEXT NOT NULL,
+                quote_locked TEXT NOT NULL,
+                reference_price TEXT,
+                equity_quote TEXT,
+                source TEXT NOT NULL
+            )
+            """
+        )
+
+    store = LiveStore(path)
+    with store.connection() as connection:
+        columns = {
+            row["name"]
+            for row in connection.execute("PRAGMA table_info(live_balance_snapshots)")
+        }
+
+    assert {"atr", "trailing_stop", "relation"} <= columns
