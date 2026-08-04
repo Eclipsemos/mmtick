@@ -477,6 +477,7 @@ function App() {
         ) : view === 'monitor' ? (
           <Monitor
             account={account}
+            allowStrategyParameters={mode === 'live'}
             fillsExportUrl={mode === 'live' ? '/api/live/fills.csv' : `/api/fills.csv?account_id=${account?.id ?? ''}`}
             equity={equityHistory.rows}
             fills={fills.data ?? []}
@@ -612,6 +613,7 @@ function LiveReadinessBand({ readiness }: { readiness?: LiveReadiness }) {
 
 function Monitor({
   account,
+  allowStrategyParameters,
   fillsExportUrl,
   equity,
   fills,
@@ -625,6 +627,7 @@ function Monitor({
   hasOlderOhlcv,
 }: {
   account?: Account
+  allowStrategyParameters: boolean
   fillsExportUrl: string
   equity: EquityPoint[]
   fills: Fill[]
@@ -707,21 +710,23 @@ function Monitor({
           <div className="panel-head">
             <div><span>STRATEGY STATE</span><h3>ATR 实时状态</h3></div>
             <div className="strategy-head-actions">
-              <button
-                type="button"
-                className="strategy-parameter-toggle"
-                aria-label={showStrategyParameters ? '隐藏策略参数' : '显示策略参数'}
-                aria-expanded={showStrategyParameters}
-                aria-controls="strategy-parameters"
-                title={showStrategyParameters ? '隐藏策略参数' : '显示策略参数'}
-                onClick={() => setShowStrategyParameters((current) => !current)}
-              >
-                {showStrategyParameters ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+              {allowStrategyParameters && (
+                <button
+                  type="button"
+                  className="strategy-parameter-toggle"
+                  aria-label={showStrategyParameters ? '隐藏策略参数' : '显示策略参数'}
+                  aria-expanded={showStrategyParameters}
+                  aria-controls="strategy-parameters"
+                  title={showStrategyParameters ? '隐藏策略参数' : '显示策略参数'}
+                  onClick={() => setShowStrategyParameters((current) => !current)}
+                >
+                  {showStrategyParameters ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              )}
               <span className={`relation ${strategy.relation}`}>{strategy.relation.toUpperCase()}</span>
             </div>
           </div>
-          {showStrategyParameters && (
+          {allowStrategyParameters && showStrategyParameters && (
             <dl id="strategy-parameters" className="strategy-parameters" role="group" aria-label="当前策略参数">
               <div><dt>算法版本</dt><dd>{runtime.strategy_config.algorithm_version}</dd></div>
               <div><dt>K 线周期</dt><dd>{runtime.strategy_config.bar_minutes}m</dd></div>
