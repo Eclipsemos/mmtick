@@ -1,4 +1,4 @@
-"""Recover missing Futures market data and isolated chart artifacts."""
+"""Recover missing Binance market data and isolated chart artifacts."""
 
 from __future__ import annotations
 
@@ -16,12 +16,15 @@ import httpx
 
 from mastermind_tick.backtest import ReplayATRTickStrategy, _load_warmup_bars
 from mastermind_tick.config import InstrumentSettings, Settings, load_settings
-from mastermind_tick.feeds import BINANCE_FUTURES_REST, FUTURES_TICK_BUCKET_MS
+from mastermind_tick.feeds import BINANCE_FUTURES_REST, BINANCE_REST, FUTURES_TICK_BUCKET_MS
 from mastermind_tick.models import Side, StrategySignal, Tick
 from mastermind_tick.rebuild import backup_database
 from mastermind_tick.store import PaperStore
 
-BACKFILL_SOURCE = "binance_futures_aggtrade_rest_backfill"
+FUTURES_BACKFILL_SOURCE = "binance_futures_aggtrade_rest_backfill"
+SPOT_BACKFILL_SOURCE = "binance_public_aggtrade_rest_backfill"
+BACKFILL_SOURCE = FUTURES_BACKFILL_SOURCE
+BACKFILL_SOURCES = (FUTURES_BACKFILL_SOURCE, SPOT_BACKFILL_SOURCE)
 RECONSTRUCTED_SOURCE = "reconstructed_aggtrade_rest"
 DEFAULT_GAP_MS = 60_000
 REST_MAX_ATTEMPTS = 6
@@ -86,7 +89,7 @@ def detect_trade_gaps(
         if int(right["timestamp_ms"]) - int(left["timestamp_ms"]) <= minimum_gap_ms:
             continue
         if left["last_trade_id"] is None or right["first_trade_id"] is None:
-            raise ValueError("cannot recover a gap without raw Futures trade IDs")
+            raise ValueError("cannot recover a gap without raw trade IDs")
         first_missing = int(left["last_trade_id"]) + 1
         last_missing = int(right["first_trade_id"]) - 1
         if first_missing <= last_missing:
@@ -105,8 +108,10 @@ def fetch_gap_agg_trades(
     client: httpx.Client,
     symbol: str,
     gap: TradeGap,
+    *,
+    rest_base_url: str = BINANCE_FUTURES_REST,
 ) -> list[dict[str, Any]]:
-    url = f"{BINANCE_FUTURES_REST}/aggTrades"
+    url = f"{rest_base_url}/aggTrades"
     payload: list[dict[str, Any]] = []
     next_aggregate_id: int | None = None
     while True:
@@ -123,7 +128,7 @@ def fetch_gap_agg_trades(
         response = _get_with_retry(client, url, params)
         page = response.json()
         if not isinstance(page, list):
-            raise RuntimeError(f"Binance Futures aggTrade error: {page}")
+            raise RuntimeError(f"Binance aggTrade error: {page}")
         if not page:
             break
         payload.extend(page)
@@ -223,7 +228,7 @@ def bucket_agg_trades(symbol: str, trades: list[dict[str, Any]]) -> list[Tick]:
                 timestamp_ms=int(bucket[-1]["T"]),
                 price=prices[-1],
                 quantity=sum(quantities, Decimal("0")),
-                source=BACKFILL_SOURCE,
+                source=FUTURES_BACKFILL_SOURCE,
                 aggregate_trade_id=last_aggregate_id,
                 first_trade_id=int(bucket[0]["f"]),
                 last_trade_id=int(bucket[-1]["l"]),
@@ -241,6 +246,24 @@ def bucket_agg_trades(symbol: str, trades: list[dict[str, Any]]) -> list[Tick]:
     return result
 
 
+def spot_agg_trades(symbol: str, trades: list[dict[str, Any]]) -> list[Tick]:
+    return [
+        Tick(
+            event_id=f"binance-spot-rest:{symbol}:{item['a']}",
+            timestamp_ms=int(item["T"]),
+            price=Decimal(str(item["p"])),
+            quantity=Decimal(str(item["q"])),
+            source=SPOT_BACKFILL_SOURCE,
+            aggregate_trade_id=int(item["a"]),
+            first_trade_id=int(item["f"]),
+            last_trade_id=int(item["l"]),
+            buyer_is_maker=bool(item["m"]),
+            event_time_ms=int(item["T"]),
+        )
+        for item in sorted(trades, key=lambda item: (int(item["T"]), int(item["a"])))
+    ]
+
+
 def recover_candidate(
     settings: Settings,
     candidate_path: Path,
@@ -254,14 +277,15 @@ def recover_candidate(
     if start_ms >= end_ms:
         raise ValueError("recovery start must be before end")
     instrument = _instrument(settings, account_id)
-    if instrument.paper_model != "futures":
-        raise ValueError("aggTrade recovery currently supports Futures accounts only")
+    market_instrument = _instrument(settings, instrument.market_id)
+    if market_instrument.feed not in {"binance", "binance_futures"}:
+        raise ValueError("aggTrade recovery requires a Binance Spot or Futures feed")
     backup_database(settings.database_path, candidate_path)
     store = PaperStore(candidate_path)
     with store.connection() as connection:
         gaps = detect_trade_gaps(
             connection,
-            account_id,
+            market_instrument.id,
             start_ms,
             end_ms,
             minimum_gap_ms,
@@ -270,17 +294,35 @@ def recover_candidate(
         raise ValueError("no recoverable aggTrade gaps found in requested range")
 
     owns_client = client is None
-    active_client = client or httpx.Client(timeout=20, trust_env=True)
+    active_client = client or httpx.Client(
+        timeout=20,
+        trust_env=market_instrument.feed == "binance_futures",
+    )
     fetched = 0
     inserted = 0
     try:
         for gap in gaps:
-            trades = fetch_gap_agg_trades(active_client, instrument.symbol, gap)
+            rest_base_url = (
+                BINANCE_FUTURES_REST
+                if market_instrument.feed == "binance_futures"
+                else BINANCE_REST
+            )
+            trades = fetch_gap_agg_trades(
+                active_client,
+                market_instrument.symbol,
+                gap,
+                rest_base_url=rest_base_url,
+            )
             fetched += len(trades)
-            for tick in bucket_agg_trades(instrument.symbol, trades):
+            ticks = (
+                bucket_agg_trades(market_instrument.symbol, trades)
+                if market_instrument.feed == "binance_futures"
+                else spot_agg_trades(market_instrument.symbol, trades)
+            )
+            for tick in ticks:
                 inserted += int(
                     store.record_market_tick(
-                        instrument,
+                        market_instrument,
                         settings.strategy.bar_minutes,
                         tick,
                     )
@@ -293,6 +335,7 @@ def recover_candidate(
         settings,
         store,
         instrument,
+        market_instrument.id,
         start_ms,
         end_ms,
         gaps,
@@ -315,6 +358,7 @@ def _reconstruct_gap_artifacts(
     settings: Settings,
     store: PaperStore,
     instrument: InstrumentSettings,
+    market_id: str,
     start_ms: int,
     end_ms: int,
     gaps: list[TradeGap],
@@ -350,7 +394,7 @@ def _reconstruct_gap_artifacts(
             raise RuntimeError("no equity checkpoint before recovery range")
         warmup = _load_warmup_bars(
             connection,
-            instrument.id,
+            market_id,
             replay_start_ms,
             settings.warmup_bars,
         )
@@ -362,7 +406,7 @@ def _reconstruct_gap_artifacts(
             FROM agg_trades WHERE instrument_id = ? AND timestamp_ms BETWEEN ? AND ?
             ORDER BY timestamp_ms, received_at_ms, event_id
             """,
-            (instrument.id, replay_start_ms, end_ms),
+            (market_id, replay_start_ms, end_ms),
         ).fetchall()
         average_price = _position_average_price(
             connection,
@@ -424,7 +468,7 @@ def _reconstruct_gap_artifacts(
             tick,
             has_position=shadow_quantity != 0,
             has_pending_order=pending_signal is not None,
-            allow_short=True,
+            allow_short=instrument.short_enabled,
             is_short=shadow_quantity < 0,
         )
         in_reconstruction_range = start_ms <= tick.timestamp_ms <= end_ms
@@ -574,12 +618,18 @@ def _reconstructed_snapshot(
     total_funding: Decimal,
     strategy: ReplayATRTickStrategy,
 ) -> dict[str, Any]:
+    is_futures = instrument.paper_model == "futures"
     mark_price = tick.price
-    market_value = abs(quantity) * mark_price
+    market_value = abs(quantity) * mark_price if is_futures else quantity * tick.price
     unrealized = quantity * (mark_price - average_price) if quantity else Decimal("0")
-    equity = cash + unrealized
-    initial_margin = market_value / Decimal(instrument.leverage)
-    available_balance = equity - initial_margin
+    if is_futures:
+        equity = cash + unrealized
+        initial_margin = market_value / Decimal(instrument.leverage)
+        available_balance = equity - initial_margin
+    else:
+        equity = cash + market_value
+        initial_margin = Decimal("0")
+        available_balance = cash
     view = strategy.view()
     return {
         "account_id": instrument.id,
@@ -594,7 +644,7 @@ def _reconstructed_snapshot(
         "atr": str(view.atr) if view.atr is not None else None,
         "trailing_stop": str(view.trailing_stop) if view.trailing_stop is not None else None,
         "relation": view.relation,
-        "mark_price": str(mark_price),
+        "mark_price": str(mark_price) if is_futures else None,
         "initial_margin": str(initial_margin),
         "available_balance": str(available_balance),
         "total_funding": str(total_funding),
@@ -610,9 +660,11 @@ def apply_recovery_candidate(
     end_ms: int,
     *,
     market_start_ms: int | None = None,
+    market_id: str | None = None,
 ) -> dict[str, int]:
     PaperStore(production_path)
     trade_start_ms = market_start_ms if market_start_ms is not None else start_ms
+    resolved_market_id = market_id or account_id
     with sqlite3.connect(production_path, timeout=30) as connection:
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA foreign_keys=ON")
@@ -632,10 +684,10 @@ def apply_recovery_candidate(
                     first_trade_id, last_trade_id, event_time_ms, timestamp_ms,
                     price, open_price, high_price, low_price, quantity, notional,
                     buyer_is_maker, source, received_at_ms
-                FROM candidate.agg_trades WHERE instrument_id = ? AND source = ?
+                FROM candidate.agg_trades WHERE instrument_id = ? AND source IN (?, ?)
                   AND timestamp_ms BETWEEN ? AND ?
                 """,
-                (account_id, BACKFILL_SOURCE, trade_start_ms, end_ms),
+                (resolved_market_id, *BACKFILL_SOURCES, trade_start_ms, end_ms),
             )
             inserted_trades = connection.total_changes - before_trades
             connection.execute(
@@ -737,6 +789,7 @@ def main() -> None:
             args.start_ms,
             args.end_ms,
             market_start_ms=report.replay_start_ms,
+            market_id=_instrument(settings, args.account_id).market_id,
         )
         output["backup_path"] = str(backup_path)
     print(json.dumps(output, indent=2, ensure_ascii=False))

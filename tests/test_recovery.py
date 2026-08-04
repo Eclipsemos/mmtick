@@ -3,12 +3,15 @@ from dataclasses import replace
 from decimal import Decimal
 
 import httpx
+import pytest
 
 from mastermind_tick.config import load_settings
 from mastermind_tick.models import Bar, Side, StrategySignal, Tick
 from mastermind_tick.recovery import (
     BACKFILL_SOURCE,
+    FUTURES_BACKFILL_SOURCE,
     RECONSTRUCTED_SOURCE,
+    SPOT_BACKFILL_SOURCE,
     TradeGap,
     apply_recovery_candidate,
     detect_trade_gaps,
@@ -251,3 +254,142 @@ def test_futures_gap_recovery_backfills_market_and_chart_without_touching_ledger
             "AND account_id = ? AND timestamp_ms BETWEEN ? AND ?",
             (instrument.id, replay_start + 1_001, replay_start + 130_999),
         ).fetchone()[0] == 0
+
+
+@pytest.mark.parametrize(
+    ("account_id", "expected_path", "expected_source"),
+    [
+        ("soxlb", "/api/v3/aggTrades", SPOT_BACKFILL_SOURCE),
+        ("soxl_perp_long", "/fapi/v1/aggTrades", FUTURES_BACKFILL_SOURCE),
+    ],
+)
+def test_gap_recovery_supports_spot_and_shared_futures_market_data(
+    tmp_path,
+    account_id: str,
+    expected_path: str,
+    expected_source: str,
+) -> None:
+    base = load_settings("config/settings.toml")
+    account_instrument = next(item for item in base.instruments if item.id == account_id)
+    market_instrument = next(
+        item for item in base.instruments if item.id == account_instrument.market_id
+    )
+    instruments = tuple(
+        item
+        for item in base.instruments
+        if item.id in {account_instrument.id, market_instrument.id}
+    )
+    settings = replace(
+        base,
+        database_path=tmp_path / f"{account_id}.db",
+        warmup_bars=30,
+        instruments=instruments,
+    )
+    store = PaperStore(settings.database_path)
+    replay_start = 30 * BAR_MS
+    store.ensure_account(account_instrument, settings.initial_cash, 1)
+    store.upsert_history_bars(
+        market_instrument,
+        15,
+        [
+            Bar(
+                start_ms=index * BAR_MS,
+                end_ms=(index + 1) * BAR_MS - 1,
+                open=Decimal(100 + index),
+                high=Decimal(102 + index),
+                low=Decimal(99 + index),
+                close=Decimal(101 + index),
+                volume=Decimal("10"),
+            )
+            for index in range(30)
+        ],
+        "test_kline_rest",
+    )
+    checkpoint = Tick(
+        "checkpoint",
+        replay_start - 10,
+        Decimal("130"),
+        Decimal("1"),
+        "test",
+    )
+    store.snapshot(
+        account_instrument.id,
+        checkpoint,
+        {"atr": "2", "trailing_stop": "135", "relation": "below"},
+    )
+    store.record_market_tick(
+        market_instrument,
+        15,
+        Tick(
+            "left",
+            replay_start + 1_000,
+            Decimal("129"),
+            Decimal("1"),
+            "test",
+            first_trade_id=10,
+            last_trade_id=10,
+        ),
+    )
+    store.record_market_tick(
+        market_instrument,
+        15,
+        Tick(
+            "right",
+            replay_start + 131_000,
+            Decimal("127"),
+            Decimal("1"),
+            "test",
+            first_trade_id=20,
+            last_trade_id=20,
+        ),
+    )
+    payload = [
+        {
+            "a": 100 + index,
+            "p": str(Decimal("129") - Decimal(index) / 10),
+            "q": "1",
+            "f": 11 + index,
+            "l": 11 + index,
+            "T": replay_start + 10_000 + index * 10_000,
+            "m": bool(index % 2),
+        }
+        for index in range(9)
+    ]
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == expected_path
+        return httpx.Response(200, json=payload)
+
+    candidate_path = tmp_path / f"{account_id}-candidate.db"
+    report = recover_candidate(
+        settings,
+        candidate_path,
+        account_instrument.id,
+        replay_start + 1_001,
+        replay_start + 130_999,
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+
+    assert report.fetched_agg_trades == 9
+    assert report.reconstructed_snapshots > 0
+    with sqlite3.connect(candidate_path) as connection:
+        assert connection.execute(
+            "SELECT COUNT(*) FROM agg_trades WHERE instrument_id = ? AND source = ?",
+            (market_instrument.id, expected_source),
+        ).fetchone()[0] == 9
+        assert connection.execute(
+            "SELECT COUNT(*) FROM equity_snapshots WHERE account_id = ? AND source = ?",
+            (account_instrument.id, RECONSTRUCTED_SOURCE),
+        ).fetchone()[0] == report.reconstructed_snapshots
+
+    applied = apply_recovery_candidate(
+        settings.database_path,
+        candidate_path,
+        account_instrument.id,
+        replay_start + 1_001,
+        replay_start + 130_999,
+        market_start_ms=report.replay_start_ms,
+        market_id=market_instrument.id,
+    )
+    assert applied["agg_trade_buckets"] == 9
+    assert applied["snapshots"] == report.reconstructed_snapshots
