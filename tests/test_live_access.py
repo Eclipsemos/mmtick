@@ -108,11 +108,14 @@ def test_loopback_can_establish_live_session_without_entering_token(tmp_path) ->
         unlocked = client.post("/api/live/unlock-local")
         session = client.get("/api/live/session")
         fills = client.get("/api/live/fills")
+        events = client.get("/api/live/events")
 
     assert unlocked.status_code == 200
     assert session.json()["authenticated"] is True
     assert fills.status_code == 200
     assert fills.json() == []
+    assert events.status_code == 200
+    assert events.json() == []
 
 
 def test_live_performance_excludes_deposits_but_keeps_actual_equity(tmp_path) -> None:

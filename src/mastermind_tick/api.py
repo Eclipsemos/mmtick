@@ -184,6 +184,14 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         live_access.require(request)
         return live_futures_funding(live_store, resolved.live_futures.account_id, limit)
 
+    @app.get("/api/live/events")
+    def live_events(
+        request: Request,
+        limit: Annotated[int, Query(ge=1, le=1000)] = 200,
+    ) -> list[dict]:
+        live_access.require(request)
+        return live_store.events(resolved.live_futures.account_id, limit)
+
     @app.get("/api/live/fills.csv")
     def export_live_fills(request: Request) -> Response:
         live_access.require(request)

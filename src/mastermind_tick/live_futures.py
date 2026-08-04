@@ -106,6 +106,10 @@ class LiveFuturesTrader:
         return self.store.metadata("trading_paused") == "true"
 
     @property
+    def test_order_passed(self) -> bool:
+        return self.store.metadata("futures_test_order_passed") == "true"
+
+    @property
     def order_submission_ready(self) -> bool:
         return (
             self.config.enabled
@@ -119,6 +123,7 @@ class LiveFuturesTrader:
             and not self.withdrawals_enabled
             and self.ip_restricted
             and self.reconciliation_ok
+            and self.test_order_passed
             and not self.persisted_paused
             and not self.block_reasons
         )
@@ -280,6 +285,7 @@ class LiveFuturesTrader:
                 self.current_position_mode != self.config.position_mode,
             )
             self._set_gate("MULTI_ASSET_MODE_ENABLED", self.multi_assets_enabled)
+            self._set_gate("FUTURES_TEST_ORDER_REQUIRED", not self.test_order_passed)
             other_positions = [
                 row
                 for row in account.get("positions", [])
@@ -448,17 +454,43 @@ class LiveFuturesTrader:
         async with self._lock:
             self.last_tick = tick
             pending = bool(self.store.pending_orders(self.config.account_id))
+            execution_ready = self.order_submission_ready
+            previous_cross_at_ms = self.strategy.last_cross_at_ms
             signal = self.strategy.on_tick(
                 tick,
                 has_position=self.position_quantity != 0,
                 has_pending_order=pending,
                 allow_short=True,
                 is_short=self.position_quantity < 0,
-                emit_signals=self.order_submission_ready,
+                emit_signals=execution_ready,
             )
             self.store.save_strategy_state(
                 self.config.account_id, self.strategy.runtime_state(), tick.timestamp_ms
             )
+            if (
+                not execution_ready
+                and self.strategy.last_cross_at_ms is not None
+                and self.strategy.last_cross_at_ms != previous_cross_at_ms
+            ):
+                view = self.strategy.view()
+                self._event(
+                    "INFO",
+                    "SHADOW_CROSS",
+                    "Live Futures ATR crossing observed while execution is disabled",
+                    timestamp_ms=self.strategy.last_cross_at_ms,
+                    details={
+                        "direction": self.strategy.last_cross,
+                        "result": self.strategy.last_cross_result,
+                        "reason": self.strategy.last_cross_reason,
+                        "price": str(tick.price),
+                        "atr": str(view.atr) if view.atr is not None else None,
+                        "trailing_stop": (
+                            str(view.trailing_stop)
+                            if view.trailing_stop is not None
+                            else None
+                        ),
+                    },
+                )
             if signal is not None:
                 await self._submit_signal(signal, tick)
 
@@ -662,6 +694,7 @@ class LiveFuturesTrader:
             "ip_restricted": self.ip_restricted,
             "allow_order_submission": self.config.allow_order_submission,
             "activation_confirmed": self.activation_confirmed,
+            "test_order_passed": self.test_order_passed,
             "order_submission_ready": self.order_submission_ready,
             "persisted_paused": self.persisted_paused,
             "reconciliation_ok": self.reconciliation_ok,
@@ -712,9 +745,22 @@ class LiveFuturesTrader:
         if reason in self.block_reasons:
             self.block_reasons.remove(reason)
 
-    def _event(self, level: str, code: str, message: str) -> None:
+    def _event(
+        self,
+        level: str,
+        code: str,
+        message: str,
+        *,
+        timestamp_ms: int | None = None,
+        details: dict[str, Any] | None = None,
+    ) -> None:
         self.store.add_event(
-            self.config.account_id, _now_ms(), level, code, message
+            self.config.account_id,
+            timestamp_ms if timestamp_ms is not None else _now_ms(),
+            level,
+            code,
+            message,
+            details,
         )
 
 

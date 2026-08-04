@@ -2,9 +2,10 @@ import asyncio
 from dataclasses import replace
 from decimal import Decimal
 
-from mastermind_tick.binance_futures import FuturesSymbolRules
+from mastermind_tick.binance_futures import BinanceFuturesAPIError, FuturesSymbolRules
 from mastermind_tick.config import load_settings
 from mastermind_tick.live_futures import LiveFuturesTrader
+from mastermind_tick.live_preflight import run as run_live_preflight
 from mastermind_tick.live_store import LiveStore
 from mastermind_tick.models import Side, StrategySignal, Tick
 
@@ -29,6 +30,7 @@ class FakeFuturesClient:
         self.short_quantity = short_quantity
         self._open_orders = open_orders or []
         self.market_order_calls: list[dict] = []
+        self.tradfi_contract_calls = 0
 
     async def close(self) -> None:
         return None
@@ -77,6 +79,10 @@ class FakeFuturesClient:
 
     async def multi_assets_mode(self) -> dict:
         return {"multiAssetsMargin": self.multi_assets}
+
+    async def sign_tradfi_perps_contract(self) -> dict:
+        self.tradfi_contract_calls += 1
+        return {"msg": "SUCCESS"}
 
     async def api_restrictions(self) -> dict:
         return {
@@ -170,6 +176,7 @@ def test_futures_readonly_reconciliation_persists_actual_account(tmp_path) -> No
     assert trader.status == "OBSERVE_ONLY"
     assert not trader.order_submission_ready
     assert trader.readiness()["symbol"] == "SOXLUSDT"
+    assert "FUTURES_TEST_ORDER_REQUIRED" in trader.block_reasons
 
 
 def test_futures_account_mode_mismatches_block_execution(tmp_path, monkeypatch) -> None:
@@ -203,6 +210,7 @@ def test_futures_long_order_uses_hedge_position_side_and_actual_fill(
     )
     client = FakeFuturesClient()
     store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
     trader = LiveFuturesTrader(
         settings, store, client=client  # type: ignore[arg-type]
     )
@@ -239,6 +247,7 @@ def test_futures_short_order_uses_hedge_position_side(tmp_path, monkeypatch) -> 
     )
     client = FakeFuturesClient()
     store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
     trader = LiveFuturesTrader(
         settings, store, client=client  # type: ignore[arg-type]
     )
@@ -274,6 +283,7 @@ def test_futures_close_long_uses_full_position_and_long_side(
     )
     client = FakeFuturesClient(long_quantity="1.23")
     store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
     store.set_metadata("managed_position", "true", 1_700_000_000_000)
     trader = LiveFuturesTrader(
         settings, store, client=client  # type: ignore[arg-type]
@@ -303,3 +313,211 @@ def test_futures_close_long_uses_full_position_and_long_side(
     order = store.orders(settings.live_futures.account_id)[0]
     assert order["reduce_only"] == 1
     assert order["position_side"] == "LONG"
+
+
+def test_futures_close_short_uses_full_position_and_short_side(
+    tmp_path, monkeypatch
+) -> None:
+    settings = futures_settings(tmp_path, allow_orders=True)
+    monkeypatch.setenv(
+        settings.live_futures.activation_env, settings.live_futures.activation_value
+    )
+    client = FakeFuturesClient(short_quantity="-1.23")
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
+    store.set_metadata("managed_position", "true", 1_700_000_000_000)
+    trader = LiveFuturesTrader(
+        settings, store, client=client  # type: ignore[arg-type]
+    )
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+    tick = Tick("close-short", 1_700_000_000_000, Decimal("120"), Decimal("1"), "test")
+    signal = StrategySignal(
+        side=Side.BUY,
+        reason="price_crossed_above_atr_stop",
+        signal_price=tick.price,
+        trailing_stop=Decimal("115"),
+        atr=Decimal("2"),
+        bar_start_ms=tick.timestamp_ms // 900_000 * 900_000,
+        tick_id=tick.event_id,
+        signal_at_ms=tick.timestamp_ms,
+        reduce_only=True,
+    )
+
+    asyncio.run(trader._submit_signal(signal, tick))
+
+    call = client.market_order_calls[0]
+    assert call["side"] == "BUY"
+    assert call["position_side"] == "SHORT"
+    assert call["quantity"] == Decimal("1.23")
+    order = store.orders(settings.live_futures.account_id)[0]
+    assert order["reduce_only"] == 1
+    assert order["position_side"] == "SHORT"
+
+
+def test_futures_daily_order_limit_blocks_new_entry(tmp_path, monkeypatch) -> None:
+    settings = futures_settings(tmp_path, allow_orders=True)
+    monkeypatch.setenv(
+        settings.live_futures.activation_env, settings.live_futures.activation_value
+    )
+    client = FakeFuturesClient()
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
+    trader = LiveFuturesTrader(
+        settings, store, client=client  # type: ignore[arg-type]
+    )
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+    timestamp_ms = 1_700_000_000_000
+    day_start_ms = timestamp_ms // 86_400_000 * 86_400_000
+    for index in range(settings.live_futures.max_orders_per_day):
+        order_id = f"daily-{index}"
+        store.create_order(
+            client_order_id=order_id,
+            account_id=settings.live_futures.account_id,
+            symbol="SOXLUSDT",
+            side="BUY",
+            position_side="LONG",
+            reason="test",
+            signal_price="120",
+            signal_at_ms=day_start_ms + index,
+            requested_quantity="0.1",
+            requested_quote_quantity=None,
+        )
+        store.update_order(
+            order_id,
+            status="FILLED",
+            updated_at_ms=day_start_ms + index,
+            submitted_at_ms=day_start_ms + index,
+        )
+    signal = StrategySignal(
+        side=Side.BUY,
+        reason="entry",
+        signal_price=Decimal("120"),
+        trailing_stop=Decimal("115"),
+        atr=Decimal("2"),
+        bar_start_ms=day_start_ms,
+        tick_id="risk",
+    )
+    tick = Tick("risk", timestamp_ms, Decimal("120"), Decimal("1"), "test")
+
+    rejection = asyncio.run(trader._risk_rejection(signal, tick))
+
+    assert rejection == "DAILY_ORDER_LIMIT"
+
+
+def test_futures_ambiguous_submission_waits_for_reconciliation(
+    tmp_path, monkeypatch
+) -> None:
+    class AmbiguousClient(FakeFuturesClient):
+        async def market_order(self, **kwargs) -> dict:
+            self.market_order_calls.append(kwargs)
+            raise BinanceFuturesAPIError(503, -1007, "execution status unknown")
+
+    settings = futures_settings(tmp_path, allow_orders=True)
+    monkeypatch.setenv(
+        settings.live_futures.activation_env, settings.live_futures.activation_value
+    )
+    client = AmbiguousClient()
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
+    trader = LiveFuturesTrader(
+        settings, store, client=client  # type: ignore[arg-type]
+    )
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+    tick = Tick("ambiguous", 1_700_000_000_000, Decimal("120"), Decimal("1"), "test")
+    signal = StrategySignal(
+        side=Side.BUY,
+        reason="entry",
+        signal_price=tick.price,
+        trailing_stop=Decimal("115"),
+        atr=Decimal("2"),
+        bar_start_ms=tick.timestamp_ms // 900_000 * 900_000,
+        tick_id=tick.event_id,
+    )
+
+    asyncio.run(trader._submit_signal(signal, tick))
+
+    assert len(client.market_order_calls) == 1
+    assert store.orders(settings.live_futures.account_id)[0]["status"] == "SUBMITTING"
+    assert store.events(settings.live_futures.account_id)[0]["code"] == "ORDER_RESULT_UNKNOWN"
+
+
+def test_futures_preflight_uses_test_endpoint_without_real_order(
+    tmp_path, capsys
+) -> None:
+    client = FakeFuturesClient()
+
+    exit_code = asyncio.run(
+        run_live_preflight("config/settings.toml", test_order=True, client=client)  # type: ignore[arg-type]
+    )
+
+    output = capsys.readouterr().out
+    assert exit_code == 0
+    assert '"endpoint": "/fapi/v1/order/test"' in output
+    assert '"real_orders_sent": false' in output
+    assert len(client.market_order_calls) == 1
+    assert client.market_order_calls[0]["test"] is True
+    assert client.market_order_calls[0]["position_side"] == "LONG"
+    assert client.market_order_calls[0]["quantity"] == Decimal("0.05")
+
+
+def test_futures_preflight_can_sign_tradfi_contract(capsys) -> None:
+    client = FakeFuturesClient()
+
+    exit_code = asyncio.run(
+        run_live_preflight(
+            "config/settings.toml",
+            test_order=False,
+            sign_tradfi_contract=True,
+            client=client,  # type: ignore[arg-type]
+        )
+    )
+
+    output = capsys.readouterr().out
+    assert exit_code == 0
+    assert '"endpoint": "/fapi/v1/stock/contract"' in output
+    assert '"ok": true' in output
+    assert client.tradfi_contract_calls == 1
+    assert client.market_order_calls == []
+
+
+def test_observe_only_cross_is_persisted_as_shadow_event(tmp_path) -> None:
+    class ShadowStrategy:
+        last_cross_at_ms = None
+        last_cross = None
+        last_cross_result = None
+        last_cross_reason = None
+
+        def on_tick(self, tick, **_kwargs):
+            self.last_cross_at_ms = tick.timestamp_ms
+            self.last_cross = "UP"
+            self.last_cross_result = "BLOCKED"
+            self.last_cross_reason = "TRADING_PAUSED"
+            return None
+
+        def runtime_state(self):
+            return {}
+
+        def view(self):
+            class View:
+                atr = Decimal("2")
+                trailing_stop = Decimal("115")
+
+            return View()
+
+    settings = futures_settings(tmp_path)
+    store = LiveStore(settings.live_futures.database_path)
+    trader = LiveFuturesTrader(
+        settings, store, client=FakeFuturesClient()  # type: ignore[arg-type]
+    )
+    trader.strategy = ShadowStrategy()  # type: ignore[assignment]
+    tick = Tick("shadow", 1_700_000_000_000, Decimal("120"), Decimal("1"), "test")
+
+    asyncio.run(trader.process_tick(tick))
+
+    event = store.events(settings.live_futures.account_id)[0]
+    assert event["code"] == "SHADOW_CROSS"
+    assert event["timestamp_ms"] == tick.timestamp_ms
+    assert event["details_json"]["direction"] == "UP"

@@ -138,6 +138,23 @@ live_futures.allow_order_submission = true
 MMTICK_LIVE_CONFIRM=SOXLUSDT_PERP_LIVE
 ```
 
+运行时还要求 Futures test order 已成功并记录在独立实盘库中。测试命令只调用
+Binance `/fapi/v1/order/test`，不会创建订单或持仓：
+
+```bash
+.venv/bin/mmtick-live-preflight --test-order
+```
+
+如果返回 `-4411`，在确认已经阅读并同意 Binance TradFi-Perps 协议后，可通过签名
+接口接受协议并紧接着重新执行无成交测试订单：
+
+```bash
+.venv/bin/mmtick-live-preflight --sign-tradfi-contract --test-order
+```
+
+`--sign-tradfi-contract` 会调用 `/fapi/v1/stock/contract` 并改变账户的协议接受状态，
+不得在账户所有者未明确同意协议时使用。
+
 此外还必须有通过签名校验的 Binance Futures `canTrade` 权限、IP 白名单、Hedge
 Mode、目标 `2x isolated`、完整对账，且不存在人工挂单、其他合约持仓、未接管的
 SOXL 持仓、持久暂停或风控阻断。新实盘账户首次启动只等待新的 ATR 穿越，不会按
@@ -148,9 +165,10 @@ SOXL 持仓、持久暂停或风控阻断。新实盘账户首次启动只等待
 50 USDT 后停止新开仓，已有仓位仍允许退出。上线前必须按实际账户规模复核这些值。
 
 当前只读凭证从被 Git 忽略的项目根目录 `.env` 读取 `API_KEY` 与 `SECRET_KEY`，文件
-权限必须为 `600`；程序不会记录或通过 API 返回密钥。当前权限审计结果为 Futures
-读取及交易权限开启、提现关闭、IP 白名单关闭；配置订单开关和启动确认均关闭，因此
-只能进行签名对账。Dashboard
+权限必须为 `600`；程序不会记录或通过 API 返回密钥。截至 2026-08-04，权限审计结果为
+Futures 读取及交易权限开启、提现关闭、IP 白名单开启；账户为 Single-Asset、Hedge
+Mode，`SOXLUSDT` 为 2x isolated，TradFi-Perps 协议和 Futures test order 均已通过。
+账户仍未注资，配置订单开关和启动确认也均关闭，因此只能进行签名对账。Dashboard
 公开接口只包含同步健康和权限状态；实盘余额、仓位、订单、成交和收益必须先建立
 独立的操作员会话才能读取。
 
@@ -162,13 +180,14 @@ SameSite=Strict Cookie，8 小时后失效，之后 `PAPER / LIVE` 切换均为�
 
 不要把密钥写入聊天、仓库、`settings.toml` 或提交记录。部署顺序为：只读签名账户、
 持仓、挂单、成交和资金费同步；固定出口 IP；切换为 Single-Asset Margin；将
-`SOXLUSDT` 调整为 Hedge Mode 下的 2x isolated；运行 Futures test order；小额观察；
+`SOXLUSDT` 调整为 Hedge Mode 下的 2x isolated；签署 TradFi Perpetuals 协议；
+运行 Futures test order；小额观察；
 最后才打开配置订单开关和独立启动确认。任何一步失败都不得进入下一步，网页没有
 启用真实下单的控制入口。
 
 ## 后台运行
 
-Python 环境位于 `/home/spaceaic/env/.venv`，前端生产文件构建到 `frontend/dist`。
+Python 环境位于项目根目录 `.venv`，前端生产文件构建到 `frontend/dist`。
 本地启动命令：
 
 ```bash
@@ -217,8 +236,8 @@ journalctl --user -u mmtick.service -f
 
 ```bash
 export PYTHONPATH="$PWD/src"
-/home/spaceaic/env/.venv/bin/pytest
-/home/spaceaic/env/.venv/bin/ruff check src tests
+.venv/bin/pytest
+.venv/bin/ruff check src tests
 
 cd frontend
 npm run build
@@ -249,6 +268,7 @@ GET  /api/live/returns
 GET  /api/live/orders
 GET  /api/live/fills
 GET  /api/live/funding
+GET  /api/live/events
 GET  /api/live/fills.csv
 GET  /api/accounts/{id}/equity?limit=&before_ms=
 GET  /api/accounts/{id}/returns
@@ -273,7 +293,7 @@ POST /api/control       {"action":"pause" | "resume"}
 可使用仓库中已持久化的 `agg_trades` 做无未来数据的 Tick 级参数回放：
 
 ```bash
-PYTHONPATH=src /home/spaceaic/env/.venv/bin/python -m mastermind_tick.backtest
+PYTHONPATH=src .venv/bin/python -m mastermind_tick.backtest
 ```
 
 回放沿用 Tick 穿越、启动对齐、趋势效率过滤、分阶段反向、单 K 线动作锁和下一
@@ -284,7 +304,7 @@ Tick 成交语义，并计入各账户的 Taker 手续费、滑点、目标暴�
 利润保护）的复现命令：
 
 ```bash
-PYTHONPATH=src /home/spaceaic/env/.venv/bin/python -m mastermind_tick.profit_backtest \
+PYTHONPATH=src .venv/bin/python -m mastermind_tick.profit_backtest \
   --cutoff-ms 1785739041994
 ```
 
@@ -294,7 +314,7 @@ PYTHONPATH=src /home/spaceaic/env/.venv/bin/python -m mastermind_tick.profit_bac
 当前冻结参数的复现命令：
 
 ```bash
-PYTHONPATH=src /home/spaceaic/env/.venv/bin/python -m mastermind_tick.backtest \
+PYTHONPATH=src .venv/bin/python -m mastermind_tick.backtest \
   --periods 21 \
   --multipliers 4.0 \
   --end-ms 1785652557073 \

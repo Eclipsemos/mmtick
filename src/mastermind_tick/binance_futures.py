@@ -120,6 +120,10 @@ class BinanceFuturesClient:
     async def multi_assets_mode(self) -> dict[str, Any]:
         return await self._signed_request("GET", "/fapi/v1/multiAssetsMargin")
 
+    async def sign_tradfi_perps_contract(self) -> dict[str, Any]:
+        """Accept Binance's TradFi-Perps agreement for this Futures account."""
+        return await self._signed_request("POST", "/fapi/v1/stock/contract")
+
     async def api_restrictions(self) -> dict[str, Any]:
         return await self._signed_request(
             "GET", "/sapi/v1/account/apiRestrictions", base_url=self.spot_api_base_url
