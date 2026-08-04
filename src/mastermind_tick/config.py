@@ -85,6 +85,36 @@ class LiveSpotSettings:
 
 
 @dataclass(frozen=True)
+class LiveFuturesSettings:
+    enabled: bool = False
+    instrument_id: str = "soxl_perp"
+    account_id: str = "soxl_perp_live"
+    database_path: Path = Path("data/live_futures.db")
+    api_base_url: str = "https://fapi.binance.com"
+    spot_api_base_url: str = "https://api.binance.com"
+    api_key_env: str = "BINANCE_API_KEY"
+    api_secret_env: str = "BINANCE_API_SECRET"
+    credentials_path: Path | None = None
+    operator_token_path: Path | None = None
+    activation_env: str = "MMTICK_LIVE_CONFIRM"
+    activation_value: str = "SOXLUSDT_PERP_LIVE"
+    allow_order_submission: bool = False
+    adopt_existing_position: bool = False
+    leverage: int = 2
+    margin_mode: str = "isolated"
+    position_mode: str = "hedge"
+    position_fraction: float = 0.625
+    max_order_notional: float = 100.0
+    max_slippage_bps: float = 30.0
+    max_daily_loss: float = 50.0
+    max_orders_per_day: int = 6
+    reconcile_seconds: int = 5
+    trade_sync_seconds: int = 60
+    order_timeout_seconds: int = 30
+    recv_window_ms: int = 5000
+
+
+@dataclass(frozen=True)
 class Settings:
     project_root: Path
     app_name: str
@@ -98,6 +128,7 @@ class Settings:
     warmup_bars: int
     instruments: tuple[InstrumentSettings, ...]
     live_spot: LiveSpotSettings = LiveSpotSettings()
+    live_futures: LiveFuturesSettings = LiveFuturesSettings()
 
 
 def load_settings(path: str | Path = "config/settings.toml") -> Settings:
@@ -123,6 +154,24 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         credentials_path=credentials_path,
         operator_token_path=operator_token_path,
         **live_raw,
+    )
+    futures_raw = dict(raw.get("live_futures", {}))
+    futures_database_path = project_root / futures_raw.pop(
+        "database_path", "data/live_futures.db"
+    )
+    futures_credentials_value = futures_raw.pop("credentials_path", None)
+    futures_credentials_path = (
+        project_root / futures_credentials_value if futures_credentials_value else None
+    )
+    futures_token_value = futures_raw.pop("operator_token_path", None)
+    futures_token_path = (
+        project_root / futures_token_value if futures_token_value else None
+    )
+    live_futures = LiveFuturesSettings(
+        database_path=futures_database_path,
+        credentials_path=futures_credentials_path,
+        operator_token_path=futures_token_path,
+        **futures_raw,
     )
 
     if strategy.bar_minutes <= 0 or 60 % strategy.bar_minutes != 0:
@@ -185,6 +234,31 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         raise ValueError("live_spot frequency limits are invalid")
     if live_spot.order_timeout_seconds < 1 or live_spot.recv_window_ms < 1000:
         raise ValueError("live_spot timing limits are invalid")
+    live_futures_instrument = instrument_by_id.get(live_futures.instrument_id)
+    if live_futures_instrument is None:
+        raise ValueError(
+            f"unknown live_futures instrument_id: {live_futures.instrument_id}"
+        )
+    if live_futures_instrument.paper_model != "futures":
+        raise ValueError("live_futures instrument must use the futures paper model")
+    if live_futures.leverage < 1 or live_futures.margin_mode not in {"isolated", "cross"}:
+        raise ValueError("live_futures leverage or margin mode is invalid")
+    if live_futures.position_mode not in {"hedge"}:
+        raise ValueError("live_futures currently requires hedge position mode")
+    if not 0 < live_futures.position_fraction <= 1:
+        raise ValueError("live_futures.position_fraction must be in (0, 1]")
+    if live_futures.max_order_notional <= 0 or live_futures.max_daily_loss <= 0:
+        raise ValueError("live_futures risk limits must be positive")
+    if live_futures.max_slippage_bps < 0:
+        raise ValueError("live_futures slippage limit cannot be negative")
+    if (
+        live_futures.max_orders_per_day < 1
+        or live_futures.reconcile_seconds < 1
+        or live_futures.trade_sync_seconds < live_futures.reconcile_seconds
+    ):
+        raise ValueError("live_futures frequency limits are invalid")
+    if live_futures.order_timeout_seconds < 1 or live_futures.recv_window_ms < 1000:
+        raise ValueError("live_futures timing limits are invalid")
 
     database_path = project_root / app["database_path"]
     frontend_dist = project_root / app["frontend_dist"]
@@ -201,4 +275,5 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         warmup_bars=int(raw["history"]["warmup_bars"]),
         instruments=instruments,
         live_spot=live_spot,
+        live_futures=live_futures,
     )

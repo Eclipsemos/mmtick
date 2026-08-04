@@ -25,7 +25,7 @@ minimum_notional = 5.0
 warmup_bars = 200
 
 [live_spot]
-enabled = true
+enabled = false
 instrument_id = "soxlb"
 account_id = "soxlb_live"
 database_path = "data/live.db"
@@ -41,6 +41,34 @@ adopt_existing_position = false
 position_fraction = 0.05
 max_order_notional = 100.0
 quote_reserve = 10.0
+max_slippage_bps = 30.0
+max_daily_loss = 50.0
+max_orders_per_day = 6
+reconcile_seconds = 5
+trade_sync_seconds = 60
+order_timeout_seconds = 30
+recv_window_ms = 5000
+
+[live_futures]
+enabled = true
+instrument_id = "soxl_perp"
+account_id = "soxl_perp_live"
+database_path = "data/live_futures.db"
+api_base_url = "https://fapi.binance.com"
+spot_api_base_url = "https://api.binance.com"
+api_key_env = "API_KEY"
+api_secret_env = "SECRET_KEY"
+credentials_path = ".env"
+operator_token_path = "data/operator.token"
+activation_env = "MMTICK_LIVE_CONFIRM"
+activation_value = "SOXLUSDT_PERP_LIVE"
+allow_order_submission = false
+adopt_existing_position = false
+leverage = 2
+margin_mode = "isolated"
+position_mode = "hedge"
+position_fraction = 0.625
+max_order_notional = 100.0
 max_slippage_bps = 30.0
 max_daily_loss = 50.0
 max_orders_per_day = 6

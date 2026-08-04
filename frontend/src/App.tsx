@@ -224,8 +224,8 @@ function App() {
   const [unlockToken, setUnlockToken] = useState('')
   const [unlockError, setUnlockError] = useState('')
   const [switchingMode, setSwitchingMode] = useState(false)
-  const accountId = mode === 'live' ? 'soxlb_live' : paperAccountId
-  const marketInstrumentId = mode === 'live' ? 'soxlb' : accountId
+  const accountId = mode === 'live' ? 'soxl_perp_live' : paperAccountId
+  const marketInstrumentId = mode === 'live' ? 'soxl_perp' : accountId
   const overview = useQuery({
     queryKey: ['overview', mode],
     queryFn: mode === 'live' ? api.liveOverview : api.overview,
@@ -258,7 +258,7 @@ function App() {
   })
   const funding = useQuery({
     queryKey: ['funding', mode, accountId],
-    queryFn: () => mode === 'live' ? Promise.resolve([] as FundingPayment[]) : api.funding(accountId),
+    queryFn: () => mode === 'live' ? api.liveFunding() : api.funding(accountId),
     refetchInterval: 5000,
   })
   const orders = useQuery({
@@ -505,7 +505,7 @@ function App() {
       </main>
       <footer>
         <span>mastermind:tick v0.1</span>
-        <span>{mode === 'live' ? 'Binance Spot 实盘账户 · 当前只读观察' : '本地模拟撮合 · 非真实账户'}</span>
+        <span>{mode === 'live' ? 'Binance USD-M Futures 实盘账户 · 当前只读观察' : '本地模拟撮合 · 非真实账户'}</span>
       </footer>
       {unlockOpen && (
         <LiveUnlockDialog
@@ -569,31 +569,38 @@ function LiveReadinessBand({ readiness }: { readiness?: LiveReadiness }) {
   const status = readiness?.status ?? 'STARTING'
   const reasons = readiness?.block_reasons ?? []
   const statusMessage = {
-    STARTING: '正在检查 Binance Spot 实盘执行条件',
+    STARTING: '正在检查 Binance USD-M Futures 实盘执行条件',
     DISABLED: '实盘运行时已关闭，不会发送真实订单',
     BLOCKED: '签名对账未就绪，真实订单已阻断',
-    OBSERVE_ONLY: '只读签名对账运行中，真实订单保持关闭',
+    OBSERVE_ONLY: '合约签名对账运行中，真实订单保持关闭',
     ARMED: '实盘执行已启用',
     STOPPED: '实盘运行时已停止',
   }[status]
   const blockLabels: Record<string, string> = {
     IP_RESTRICTION_DISABLED: '未启用 IP 白名单',
     SPOT_TRADING_PERMISSION_MISSING: 'API 仅有读取权限',
+    FUTURES_TRADING_PERMISSION_MISSING: '缺少合约交易权限',
     WITHDRAWAL_PERMISSION_ENABLED: '必须关闭提现权限',
     UNKNOWN_OPEN_ORDERS: '存在未接管挂单',
     UNMANAGED_EXISTING_POSITION: '存在未接管 SOXLB 持仓',
     CREDENTIALS_MISSING: '缺少 API 凭证',
     CREDENTIAL_FILE_PERMISSIONS_INSECURE: '凭证文件权限不安全',
+    LEVERAGE_MISMATCH: `当前 ${readiness?.current_leverage ?? '--'}x，目标 ${readiness?.target_leverage ?? '--'}x`,
+    MARGIN_MODE_MISMATCH: `当前 ${readiness?.current_margin_mode ?? '--'}，目标 ${readiness?.target_margin_mode ?? '--'}`,
+    POSITION_MODE_MISMATCH: '持仓模式不匹配',
+    MULTI_ASSET_MODE_ENABLED: 'Multi-Assets 模式已启用',
+    SIMULTANEOUS_LONG_SHORT_POSITION: '同时存在多空持仓',
+    OTHER_OPEN_POSITIONS: '账户存在其他合约持仓',
   }
   const reasonText = reasons.map((reason) => blockLabels[reason] ?? reason)
   const syncText = readiness?.last_reconciled_at_ms
     ? `最近对账 ${time(readiness.last_reconciled_at_ms)} · 已同步 ${readiness.synced_trade_count} 笔成交`
     : '等待签名账户对账'
   return (
-    <section className={`live-readiness ${ready ? 'armed' : ''}`} aria-label="SOXLB 实盘就绪状态">
+    <section className={`live-readiness ${ready ? 'armed' : ''}`} aria-label="SOXL 合约实盘就绪状态">
       <div className="live-readiness-state">
         <ShieldCheck size={18} />
-        <div><span>SOXLB LIVE SPOT</span><strong>{status}</strong></div>
+        <div><span>{readiness?.display_symbol ?? 'SOXL PERP LIVE'}</span><strong>{status}</strong></div>
       </div>
       <p>{statusMessage}</p>
       <div className="live-readiness-gates">
@@ -601,6 +608,7 @@ function LiveReadinessBand({ readiness }: { readiness?: LiveReadiness }) {
         <Gate open={readiness?.credentials_present ?? false} label="API 凭证" />
         <Gate open={readiness?.api_reading_enabled ?? false} label="只读权限" />
         <Gate open={readiness?.signed_account_verified ?? false} label="签名对账" />
+        <Gate open={readiness?.trading_permitted ?? false} label="合约权限" />
         <Gate open={readiness?.ip_restricted ?? false} label="IP 白名单" />
         <Gate open={!(readiness?.withdrawals_enabled ?? true)} label="提现关闭" />
         <Gate open={readiness?.activation_confirmed ?? false} label="启动确认" />

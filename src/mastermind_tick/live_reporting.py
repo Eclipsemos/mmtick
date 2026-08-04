@@ -345,11 +345,29 @@ def build_live_return_summary(
     if first is None:
         raise LookupError(account_id)
     raw_points = live_equity(store, account_id, 1_000_000)
-    performance_points = _performance_equity_points(
-        raw_points, store.cash_flows(account_id)
+    return build_cash_flow_return_summary(
+        account_id=account_id,
+        initial_equity=str(first["equity_quote"]),
+        created_at_ms=int(first["timestamp_ms"]),
+        raw_points=raw_points,
+        cash_flows=store.cash_flows(account_id),
+        timezone_offset_minutes=timezone_offset_minutes,
     )
-    initial = Decimal(first["equity_quote"])
-    created_at_ms = int(first["timestamp_ms"])
+
+
+def build_cash_flow_return_summary(
+    *,
+    account_id: str,
+    initial_equity: str,
+    created_at_ms: int,
+    raw_points: list[dict[str, Any]],
+    cash_flows: list[dict[str, Any]],
+    timezone_offset_minutes: int,
+) -> dict[str, Any]:
+    performance_points = _performance_equity_points(
+        raw_points, cash_flows
+    )
+    initial = Decimal(initial_equity)
     latest_raw = raw_points[-1] if raw_points else None
     latest_performance = performance_points[-1] if performance_points else None
     as_of_ms = int(latest_raw["timestamp_ms"]) if latest_raw else created_at_ms

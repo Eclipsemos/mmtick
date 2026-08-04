@@ -1,8 +1,8 @@
 # mastermind:tick
 
 Mastermind 旗下短线策略产品。系统使用 Binance 生产环境的公开行情驱动三个相互
-隔离的本地模拟账户，并包含一条独立、默认关闭的 SOXLB Binance Spot 实盘执行
-路径，持续记录行情、策略状态、订单、成交、费用与账户绩效。
+隔离的本地模拟账户，并包含一条独立、默认关闭下单的 SOXL USD-M Futures 多空
+实盘路径，持续记录行情、策略状态、订单、成交、资金费与账户绩效。
 
 当前策略版本为 `atr_tick_v3_startup_alignment`。从 **2026-08-02 至
 2026-08-09** 保持当前策略和仓位参数不变，连续运行一周后再做样本外评估。
@@ -16,11 +16,12 @@ Mastermind 旗下短线策略产品。系统使用 Binance 生产环境的公开
   只平掉已有多头，空仓时不会开空。
 - `soxlb`、`soxl_perp` 与 `soxl_perp_long` 各自拥有独立的 100,000 USDT 初始
   资金、订单、持仓、费用和绩效序列。
-- 三个绩效账户仍由本地 paper broker 驱动。另有 `soxlb_live` 实盘账户，使用独立的
-  `data/live.db`，不会把真实余额、订单或成交混入 `data/paper.db`。
-- `soxlb_live` 当前以只读观察模式运行；签名账户对账已启用，但提交真实订单的配置
-  保持关闭。Dashboard 顶部的 `PAPER / LIVE` 分段按钮可在模拟账户和这个独立实盘
-  账户之间切换。
+- 三个绩效账户仍由本地 paper broker 驱动。另有 `soxl_perp_live` 多空实盘账户，
+  使用独立的 `data/live_futures.db`，不会把真实余额、订单或成交混入
+  `data/paper.db`。
+- `soxl_perp_live` 当前以只读观察模式运行；签名账户、持仓、挂单、成交和资金费
+  对账已启用，但提交真实订单的配置保持关闭。旧 SOXLB LIVE 运行时已停用，历史
+  `data/live.db` 仅保留审计，不再通过 Dashboard 提供。
 - Binance Testnet/Demo 暂不提供这两个标的，因此模拟成交使用生产公共行情和本地
   撮合。
 - 本项目不读取 `~/mm` 的数据；Mastermind 长线 Alpha 研究和真实基金账户与本项目
@@ -110,8 +111,9 @@ SOXL 永续的反向确认机会成本需要单独审查。
   `agg_trades`、`ohlcv_bars`、`funding_rates` 市场仓库；Tick 只存一次，再分别
   驱动两个独立策略状态和账户账本。
 - 主数据库：`data/paper.db`，SQLite WAL 模式。
-- 实盘数据库：`data/live.db`；`live_cash_flows` 单独保存经确认的入金和出金，账户余额
-  保持 Binance 实际值，策略收益使用资金流调整后的时间加权收益。
+- 实盘数据库：`data/live_futures.db`；保存 USD-M 账户净值、保证金、实际多空持仓、
+  订单、成交、手续费、资金费和 ATR 状态。`live_cash_flows` 单独保存经确认的入金和
+  出金，策略收益使用资金流调整后的时间加权收益。
 - `agg_trades`：保存事件时间、成交时间、价格、数量、名义金额、maker 方向和交易
   ID；Futures 保存 250 ms 聚合批次及底层 ID 范围。
 - `ohlcv_bars`：保存历史和实时 15 分钟 OHLCV；官方最终值覆盖当前 K 线临时值。
@@ -121,38 +123,34 @@ SOXL 永续的反向确认机会成本需要单独审查。
 账户、订单、成交、持仓、策略运行状态和净值快照均持久化。当前没有自动清理策略，
 聚合成交数据和 SQLite WAL/索引占用需要持续监控。
 
-## SOXLB Spot 实盘接入
+## SOXL Futures 实盘接入
 
-`soxlb_live` 复用现有 SOXLB 公共 Tick 行情，但使用独立 ATR 策略状态和实盘账本。
-真实余额、持仓、挂单和订单状态以 Binance 签名接口为准；系统不会用下一 Tick
-伪造实盘成交。每个信号生成确定性的 `clientOrderId`，网络超时后按该 ID 查询订单，
-不会直接重发。
+`soxl_perp_live` 复用现有 SOXL Futures 公共 Tick、标记价和官方 15 分钟 K 线，
+但使用独立 ATR 策略状态和实盘账本。余额、保证金、LONG/SHORT 持仓、挂单、订单、
+成交和资金费以 Binance USD-M 签名接口为准；系统不会用下一 Tick 伪造实盘成交。
+每个信号生成确定性的 `clientOrderId`，网络结果不明确时按该 ID 对账，不直接重发。
 
 真实订单必须同时满足以下三项配置才可能提交：
 
 ```text
-live_spot.enabled = true                  # 当前已开启只读运行时
-live_spot.allow_order_submission = true
-MMTICK_LIVE_CONFIRM=SOXLBUSDT_LIVE
+live_futures.enabled = true               # 当前已开启只读运行时
+live_futures.allow_order_submission = true
+MMTICK_LIVE_CONFIRM=SOXLUSDT_PERP_LIVE
 ```
 
-此外还必须有通过签名校验的 Binance Spot API 凭证、`canTrade` 权限、完整对账，且
-不存在人工挂单、未接管的 SOXLB 持仓、持久暂停或风控阻断。新实盘账户首次启动只
-等待新的 ATR 穿越，不会按启动时所处趋势立即追单。
+此外还必须有通过签名校验的 Binance Futures `canTrade` 权限、IP 白名单、Hedge
+Mode、目标 `2x isolated`、完整对账，且不存在人工挂单、其他合约持仓、未接管的
+SOXL 持仓、持久暂停或风控阻断。新实盘账户首次启动只等待新的 ATR 穿越，不会按
+启动时所处趋势立即追单。
 
-当前初始风控值为单次使用可用 USDT 的 5%、单笔不超过 100 USDT、保留 10 USDT、
-盘口偏离不超过 30 bps、每日最多 6 单、当日损失达到 50 USDT 后停止新开仓（已有
-仓位仍允许退出）。上线前应按实际账户规模复核这些数值。
-
-无凭证公开预检：
-
-```bash
-PYTHONPATH=src /home/spaceaic/env/.venv/bin/python -m mastermind_tick.live_preflight
-```
+目标杠杆为 2x、仓位预算为净值的 62.5%，目标名义暴露为 1.25x；初始安全上限仍将
+单笔名义价值限制在 100 USDT。盘口偏离不超过 30 bps、每日最多 6 单、当日损失达到
+50 USDT 后停止新开仓，已有仓位仍允许退出。上线前必须按实际账户规模复核这些值。
 
 当前只读凭证从被 Git 忽略的项目根目录 `.env` 读取 `API_KEY` 与 `SECRET_KEY`，文件
-权限必须为 `600`；程序不会记录或通过 API 返回密钥。当前权限审计结果为读取开启、
-Spot Trading 关闭、提现关闭、IP 白名单关闭，因此只能进行签名对账。Dashboard
+权限必须为 `600`；程序不会记录或通过 API 返回密钥。当前权限审计结果为 Futures
+读取及交易权限开启、提现关闭、IP 白名单关闭；配置订单开关和启动确认均关闭，因此
+只能进行签名对账。Dashboard
 公开接口只包含同步健康和权限状态；实盘余额、仓位、订单、成交和收益必须先建立
 独立的操作员会话才能读取。
 
@@ -162,18 +160,11 @@ Binance API Secret 代替。浏览器从本机 `127.0.0.1` 访问时点击 `LIVE
 SameSite=Strict Cookie，8 小时后失效，之后 `PAPER / LIVE` 切换均为一键操作。
 远程访问应在 HTTPS 反向代理之后提供，避免在明文 HTTP 链路上传输会话。
 
-不要把密钥写入聊天、仓库、`settings.toml` 或提交记录。未来准备固定出口 IP 后，
-API Key 才开放 Spot Trading 并启用 IP 白名单；提现权限始终关闭。届时再运行不会
-创建真实订单的测试接口：
-
-```bash
-PYTHONPATH=src /home/spaceaic/env/.venv/bin/python -m mastermind_tick.live_preflight --test-order
-```
-
-部署顺序为：公开预检、只读签名账户/挂单/成交同步、固定出口 IP、交易权限及白名单、
-`/api/v3/order/test`、小额 USDT 入金、
-观察模式对账，最后才打开配置和启动确认。任何一步失败都不得进入下一步。切换开关
-或注入凭证需要重启后台服务；网页没有启用真实下单的控制入口。
+不要把密钥写入聊天、仓库、`settings.toml` 或提交记录。部署顺序为：只读签名账户、
+持仓、挂单、成交和资金费同步；固定出口 IP；切换为 Single-Asset Margin；将
+`SOXLUSDT` 调整为 Hedge Mode 下的 2x isolated；运行 Futures test order；小额观察；
+最后才打开配置订单开关和独立启动确认。任何一步失败都不得进入下一步，网页没有
+启用真实下单的控制入口。
 
 ## 后台运行
 
@@ -200,7 +191,7 @@ journalctl --user -u mmtick.service -f
 页面提供：
 
 - 顶部 `PAPER / LIVE` 一键模式切换；PAPER 保留三个模拟账户，LIVE 只显示独立的
-  `SOXLB/USDT LIVE` Binance Spot 账户；
+  `SOXL/USDT PERP LIVE` Binance USD-M Futures 多空账户；
 - LIVE 模式复用监控、订单、收益和仓库组件，真实账户余额与成交使用受保护接口，
   OHLCV 和 aggTrade 继续使用共享的 Binance 公共行情仓库；
 - SOXLB、SOXL Perpetual 多空及 SOXL Perpetual Long Only 账户切换、行情连接
@@ -219,7 +210,8 @@ journalctl --user -u mmtick.service -f
 - OHLCV/aggTrade 的覆盖时间、记录数和磁盘占用；
 - 信号暂停/恢复和成交 CSV 导出。
 
-策略参数在 `STRATEGY STATE` 中默认隐藏，用户点击后才显示。
+策略参数只在 LIVE 的 `STRATEGY STATE` 中默认隐藏，用户点击后才显示；PAPER 不展示
+这组隐藏参数。
 
 ## 开发与验证
 
@@ -256,6 +248,7 @@ GET  /api/live/equity?limit=&before_ms=
 GET  /api/live/returns
 GET  /api/live/orders
 GET  /api/live/fills
+GET  /api/live/funding
 GET  /api/live/fills.csv
 GET  /api/accounts/{id}/equity?limit=&before_ms=
 GET  /api/accounts/{id}/returns

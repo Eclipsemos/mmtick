@@ -18,14 +18,15 @@ from pydantic import BaseModel
 from mastermind_tick.config import InstrumentSettings, Settings, load_settings
 from mastermind_tick.engine import PaperEngine
 from mastermind_tick.live_access import COOKIE_NAME, LiveAccess
-from mastermind_tick.live_reporting import (
-    build_live_overview,
-    build_live_return_summary,
-    live_equity,
-    live_fills,
-    live_orders,
+from mastermind_tick.live_futures import LiveFuturesTrader
+from mastermind_tick.live_futures_reporting import (
+    build_live_futures_overview,
+    build_live_futures_return_summary,
+    live_futures_equity,
+    live_futures_fills,
+    live_futures_funding,
+    live_futures_orders,
 )
-from mastermind_tick.live_spot import LiveSpotTrader
 from mastermind_tick.live_store import LiveStore
 from mastermind_tick.reporting import build_overview, build_return_summary
 from mastermind_tick.store import PaperStore
@@ -43,9 +44,9 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     resolved = settings or load_settings(os.getenv("MMTICK_CONFIG", "config/settings.toml"))
     store = PaperStore(resolved.database_path)
     engine = PaperEngine(resolved, store)
-    live_store = LiveStore(resolved.live_spot.database_path)
-    live_trader = LiveSpotTrader(resolved, live_store)
-    live_access = LiveAccess(resolved.live_spot.operator_token_path)
+    live_store = LiveStore(resolved.live_futures.database_path)
+    live_trader = LiveFuturesTrader(resolved, live_store)
+    live_access = LiveAccess(resolved.live_futures.operator_token_path)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -86,7 +87,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
             "service": "mastermind-tick",
             "environment": resolved.environment,
             "database": str(resolved.database_path),
-            "live_spot": {
+            "live_futures": {
                 "status": live_trader.status,
                 "order_submission_ready": live_trader.order_submission_ready,
             },
@@ -131,7 +132,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     @app.get("/api/live/overview")
     def live_overview(request: Request) -> dict:
         live_access.require(request)
-        return build_live_overview(resolved, engine, live_store, live_trader)
+        return build_live_futures_overview(resolved, engine, live_store, live_trader)
 
     @app.get("/api/live/equity")
     def live_account_equity(
@@ -140,7 +141,9 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         before_ms: Annotated[int | None, Query(gt=0)] = None,
     ) -> list[dict]:
         live_access.require(request)
-        return live_equity(live_store, resolved.live_spot.account_id, limit, before_ms)
+        return live_futures_equity(
+            live_store, resolved.live_futures.account_id, limit, before_ms
+        )
 
     @app.get("/api/live/returns")
     def live_account_returns(
@@ -149,9 +152,9 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     ) -> dict:
         live_access.require(request)
         try:
-            return build_live_return_summary(
+            return build_live_futures_return_summary(
                 live_store,
-                resolved.live_spot.account_id,
+                resolved.live_futures.account_id,
                 timezone_offset_minutes,
             )
         except LookupError as exc:
@@ -163,7 +166,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     ) -> list[dict]:
         live_access.require(request)
-        return live_fills(live_store, resolved.live_spot.account_id, limit)
+        return live_futures_fills(live_store, resolved.live_futures.account_id, limit)
 
     @app.get("/api/live/orders")
     def live_account_orders(
@@ -171,12 +174,20 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     ) -> list[dict]:
         live_access.require(request)
-        return live_orders(live_store, resolved.live_spot.account_id, limit)
+        return live_futures_orders(live_store, resolved.live_futures.account_id, limit)
+
+    @app.get("/api/live/funding")
+    def live_account_funding(
+        request: Request,
+        limit: Annotated[int, Query(ge=1, le=1000)] = 1000,
+    ) -> list[dict]:
+        live_access.require(request)
+        return live_futures_funding(live_store, resolved.live_futures.account_id, limit)
 
     @app.get("/api/live/fills.csv")
     def export_live_fills(request: Request) -> Response:
         live_access.require(request)
-        rows = live_fills(live_store, resolved.live_spot.account_id, 100_000)
+        rows = live_futures_fills(live_store, resolved.live_futures.account_id, 100_000)
         return _fills_csv(rows, "mmtick-live-fills.csv")
 
     @app.get("/api/overview")

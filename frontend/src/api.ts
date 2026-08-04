@@ -44,6 +44,7 @@ export const api = {
   },
   liveFills: () => getJson<Fill[]>('/api/live/fills?limit=200'),
   liveOrders: () => getJson<Order[]>('/api/live/orders?limit=200'),
+  liveFunding: () => getJson<FundingPayment[]>('/api/live/funding?limit=1000'),
   equity: (accountId: string, beforeMs?: number) => {
     const cursor = beforeMs === undefined ? '' : `&before_ms=${beforeMs}`
     return getJson<EquityPoint[]>(`/api/accounts/${accountId}/equity?limit=2000${cursor}`)

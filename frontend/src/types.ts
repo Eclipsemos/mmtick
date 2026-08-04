@@ -167,6 +167,8 @@ export type Overview = {
 export type LiveReadiness = {
   account_id: string
   symbol: string
+  display_symbol?: string
+  product?: string
   enabled: boolean
   status: 'STARTING' | 'DISABLED' | 'BLOCKED' | 'OBSERVE_ONLY' | 'ARMED' | 'STOPPED'
   status_message: string
@@ -176,6 +178,7 @@ export type LiveReadiness = {
   signed_account_verified: boolean
   api_reading_enabled: boolean
   spot_trading_permitted: boolean
+  trading_permitted?: boolean
   withdrawals_enabled: boolean
   ip_restricted: boolean
   allow_order_submission: boolean
@@ -187,6 +190,12 @@ export type LiveReadiness = {
   last_trade_sync_at_ms: number | null
   synced_trade_count: number
   block_reasons: string[]
+  current_leverage?: number
+  target_leverage?: number
+  current_margin_mode?: string
+  target_margin_mode?: string
+  current_position_mode?: string
+  multi_assets_enabled?: boolean
   database: string
   risk_limits: {
     position_fraction: number

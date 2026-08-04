@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS live_orders (
     account_id TEXT NOT NULL,
     symbol TEXT NOT NULL,
     side TEXT NOT NULL,
+    position_side TEXT,
+    reduce_only INTEGER NOT NULL DEFAULT 0,
     status TEXT NOT NULL,
     reason TEXT NOT NULL,
     signal_price TEXT NOT NULL,
@@ -74,6 +76,46 @@ CREATE TABLE IF NOT EXISTS live_balance_snapshots (
 CREATE INDEX IF NOT EXISTS idx_live_balances_account_time
 ON live_balance_snapshots(account_id, timestamp_ms);
 
+CREATE TABLE IF NOT EXISTS live_futures_snapshots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id TEXT NOT NULL,
+    timestamp_ms INTEGER NOT NULL,
+    wallet_balance TEXT NOT NULL,
+    margin_balance TEXT NOT NULL,
+    available_balance TEXT NOT NULL,
+    unrealized_pnl TEXT NOT NULL,
+    position_quantity TEXT NOT NULL,
+    entry_price TEXT NOT NULL,
+    mark_price TEXT NOT NULL,
+    liquidation_price TEXT,
+    leverage INTEGER NOT NULL,
+    margin_type TEXT NOT NULL,
+    position_side TEXT NOT NULL,
+    atr TEXT,
+    trailing_stop TEXT,
+    relation TEXT,
+    source TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_live_futures_snapshots_account_time
+ON live_futures_snapshots(account_id, timestamp_ms);
+
+CREATE TABLE IF NOT EXISTS live_income (
+    transaction_id INTEGER NOT NULL,
+    account_id TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    income_type TEXT NOT NULL,
+    timestamp_ms INTEGER NOT NULL,
+    income TEXT NOT NULL,
+    asset TEXT NOT NULL,
+    info TEXT,
+    raw_json TEXT NOT NULL,
+    PRIMARY KEY(account_id, transaction_id, income_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_live_income_account_time
+ON live_income(account_id, timestamp_ms);
+
 CREATE TABLE IF NOT EXISTS live_cash_flows (
     flow_id TEXT PRIMARY KEY,
     account_id TEXT NOT NULL,
@@ -124,6 +166,7 @@ class LiveStore:
         with self.connection() as connection:
             connection.executescript(SCHEMA)
             self._ensure_balance_columns(connection)
+            self._ensure_order_columns(connection)
 
     @staticmethod
     def _ensure_balance_columns(connection: sqlite3.Connection) -> None:
@@ -136,6 +179,18 @@ class LiveStore:
                 connection.execute(
                     f"ALTER TABLE live_balance_snapshots ADD COLUMN {name} TEXT"
                 )
+
+    @staticmethod
+    def _ensure_order_columns(connection: sqlite3.Connection) -> None:
+        existing = {
+            row["name"] for row in connection.execute("PRAGMA table_info(live_orders)")
+        }
+        if "position_side" not in existing:
+            connection.execute("ALTER TABLE live_orders ADD COLUMN position_side TEXT")
+        if "reduce_only" not in existing:
+            connection.execute(
+                "ALTER TABLE live_orders ADD COLUMN reduce_only INTEGER NOT NULL DEFAULT 0"
+            )
 
     @contextmanager
     def connection(self) -> Iterator[sqlite3.Connection]:
@@ -196,21 +251,26 @@ class LiveStore:
         signal_at_ms: int,
         requested_quantity: str | None,
         requested_quote_quantity: str | None,
+        position_side: str | None = None,
+        reduce_only: bool = False,
     ) -> bool:
         with self.connection() as connection:
             cursor = connection.execute(
                 """
                 INSERT OR IGNORE INTO live_orders (
-                    client_order_id, account_id, symbol, side, status, reason,
+                    client_order_id, account_id, symbol, side, position_side,
+                    reduce_only, status, reason,
                     signal_price, requested_quantity, requested_quote_quantity,
                     signal_at_ms, updated_at_ms
-                ) VALUES (?, ?, ?, ?, 'CREATED', ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, 'CREATED', ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     client_order_id,
                     account_id,
                     symbol,
                     side,
+                    position_side,
+                    int(reduce_only),
                     reason,
                     signal_price,
                     requested_quantity,
@@ -248,7 +308,9 @@ class LiveStore:
                     payload.get("orderId"),
                     status,
                     _optional_text(payload.get("executedQty")),
-                    _optional_text(payload.get("cummulativeQuoteQty")),
+                    _optional_text(
+                        payload.get("cummulativeQuoteQty") or payload.get("cumQuote")
+                    ),
                     submitted_at_ms,
                     updated_at_ms,
                     json.dumps(payload, separators=(",", ":")) if payload else None,
@@ -408,6 +470,157 @@ class LiveStore:
                 (account_id,),
             ).fetchone()
         return dict(row) if row else None
+
+    def save_futures_snapshot(
+        self,
+        *,
+        account_id: str,
+        timestamp_ms: int,
+        wallet_balance: str,
+        margin_balance: str,
+        available_balance: str,
+        unrealized_pnl: str,
+        position_quantity: str,
+        entry_price: str,
+        mark_price: str,
+        liquidation_price: str | None,
+        leverage: int,
+        margin_type: str,
+        position_side: str,
+        atr: str | None = None,
+        trailing_stop: str | None = None,
+        relation: str | None = None,
+        source: str = "binance_usdm_account",
+    ) -> None:
+        with self.connection() as connection:
+            connection.execute(
+                """
+                INSERT INTO live_futures_snapshots (
+                    account_id, timestamp_ms, wallet_balance, margin_balance,
+                    available_balance, unrealized_pnl, position_quantity,
+                    entry_price, mark_price, liquidation_price, leverage,
+                    margin_type, position_side, atr, trailing_stop, relation, source
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    account_id,
+                    timestamp_ms,
+                    wallet_balance,
+                    margin_balance,
+                    available_balance,
+                    unrealized_pnl,
+                    position_quantity,
+                    entry_price,
+                    mark_price,
+                    liquidation_price,
+                    leverage,
+                    margin_type,
+                    position_side,
+                    atr,
+                    trailing_stop,
+                    relation,
+                    source,
+                ),
+            )
+
+    def futures_snapshots(
+        self,
+        account_id: str,
+        limit: int = 1000,
+        before_ms: int | None = None,
+    ) -> list[dict[str, Any]]:
+        before_clause = "AND timestamp_ms < ?" if before_ms is not None else ""
+        params = (
+            (account_id, before_ms, limit)
+            if before_ms is not None
+            else (account_id, limit)
+        )
+        with self.connection() as connection:
+            rows = connection.execute(
+                f"""
+                SELECT * FROM (
+                    SELECT * FROM live_futures_snapshots
+                    WHERE account_id = ? {before_clause}
+                    ORDER BY timestamp_ms DESC, id DESC LIMIT ?
+                ) ORDER BY timestamp_ms, id
+                """,
+                params,
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def first_futures_snapshot(self, account_id: str) -> dict[str, Any] | None:
+        with self.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT * FROM live_futures_snapshots WHERE account_id = ?
+                ORDER BY timestamp_ms, id LIMIT 1
+                """,
+                (account_id,),
+            ).fetchone()
+        return dict(row) if row else None
+
+    def latest_futures_snapshot(self, account_id: str) -> dict[str, Any] | None:
+        with self.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT * FROM live_futures_snapshots WHERE account_id = ?
+                ORDER BY timestamp_ms DESC, id DESC LIMIT 1
+                """,
+                (account_id,),
+            ).fetchone()
+        return dict(row) if row else None
+
+    def day_start_futures_equity(self, account_id: str, timestamp_ms: int) -> str | None:
+        with self.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT margin_balance FROM live_futures_snapshots
+                WHERE account_id = ? AND timestamp_ms >= ?
+                ORDER BY timestamp_ms, id LIMIT 1
+                """,
+                (account_id, timestamp_ms),
+            ).fetchone()
+        return str(row["margin_balance"]) if row else None
+
+    def upsert_income(
+        self,
+        *,
+        account_id: str,
+        symbol: str,
+        payload: dict[str, Any],
+    ) -> bool:
+        with self.connection() as connection:
+            cursor = connection.execute(
+                """
+                INSERT OR IGNORE INTO live_income (
+                    transaction_id, account_id, symbol, income_type, timestamp_ms,
+                    income, asset, info, raw_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    int(payload["tranId"]),
+                    account_id,
+                    symbol,
+                    str(payload["incomeType"]),
+                    int(payload["time"]),
+                    str(payload["income"]),
+                    str(payload["asset"]),
+                    str(payload.get("info", "")),
+                    json.dumps(payload, separators=(",", ":")),
+                ),
+            )
+            return cursor.rowcount == 1
+
+    def income(self, account_id: str, limit: int = 1000) -> list[dict[str, Any]]:
+        with self.connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT * FROM live_income WHERE account_id = ?
+                ORDER BY timestamp_ms DESC, transaction_id DESC LIMIT ?
+                """,
+                (account_id, limit),
+            ).fetchall()
+        return [_row(row, json_fields=("raw_json",)) for row in rows]
 
     def balance_snapshots(
         self,

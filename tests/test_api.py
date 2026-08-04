@@ -15,9 +15,9 @@ def test_health_and_empty_overview(tmp_path) -> None:
         base_settings,
         database_path=tmp_path / "paper.db",
         frontend_dist=tmp_path / "missing-frontend",
-        live_spot=replace(
-            base_settings.live_spot,
-            database_path=tmp_path / "live.db",
+        live_futures=replace(
+            base_settings.live_futures,
+            database_path=tmp_path / "live-futures.db",
             credentials_path=None,
         ),
     )

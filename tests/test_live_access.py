@@ -18,23 +18,28 @@ def _live_app(tmp_path, token: str = "a" * 48):
         base,
         database_path=tmp_path / "paper.db",
         frontend_dist=tmp_path / "missing-frontend",
-        live_spot=replace(
-            base.live_spot,
-            database_path=tmp_path / "live.db",
+        live_futures=replace(
+            base.live_futures,
+            database_path=tmp_path / "live-futures.db",
             credentials_path=None,
             operator_token_path=token_path,
         ),
     )
     app = create_app(settings, start_engine=False)
-    app.state.live_store.save_balance_snapshot(
-        account_id=settings.live_spot.account_id,
+    app.state.live_store.save_futures_snapshot(
+        account_id=settings.live_futures.account_id,
         timestamp_ms=1_700_000_000_000,
-        base_free="1.5",
-        base_locked="0",
-        quote_free="250",
-        quote_locked="0",
-        reference_price="100",
-        equity_quote="400",
+        wallet_balance="400",
+        margin_balance="400",
+        available_balance="400",
+        unrealized_pnl="0",
+        position_quantity="0",
+        entry_price="0",
+        mark_price="100",
+        liquidation_price=None,
+        leverage=2,
+        margin_type="isolated",
+        position_side="FLAT",
         atr="2.5",
         trailing_stop="96",
         relation="above",
@@ -82,7 +87,9 @@ def test_live_data_requires_operator_session_and_remote_token(tmp_path) -> None:
     assert "HttpOnly" in cookie
     assert "SameSite=strict" in cookie
     assert overview.status_code == 200
-    assert [account["id"] for account in overview.json()["accounts"]] == ["soxlb_live"]
+    assert [account["id"] for account in overview.json()["accounts"]] == [
+        "soxl_perp_live"
+    ]
     assert overview.json()["accounts"][0]["equity"] == "400"
     assert equity.json()[0]["atr"] == "2.5"
     assert logout.status_code == 200
@@ -111,19 +118,24 @@ def test_loopback_can_establish_live_session_without_entering_token(tmp_path) ->
 def test_live_performance_excludes_deposits_but_keeps_actual_equity(tmp_path) -> None:
     app = _live_app(tmp_path)
     store = app.state.live_store
-    store.save_balance_snapshot(
-        account_id="soxlb_live",
+    store.save_futures_snapshot(
+        account_id="soxl_perp_live",
         timestamp_ms=1_700_000_005_000,
-        base_free="1.5",
-        base_locked="0",
-        quote_free="1850",
-        quote_locked="0",
-        reference_price="100",
-        equity_quote="2000",
+        wallet_balance="2000",
+        margin_balance="2000",
+        available_balance="2000",
+        unrealized_pnl="0",
+        position_quantity="0",
+        entry_price="0",
+        mark_price="100",
+        liquidation_price=None,
+        leverage=2,
+        margin_type="isolated",
+        position_side="FLAT",
     )
     store.record_cash_flow(
         flow_id="confirmed-deposit",
-        account_id="soxlb_live",
+        account_id="soxl_perp_live",
         timestamp_ms=1_700_000_005_000,
         amount_quote="1600",
         flow_type="DEPOSIT",
@@ -131,15 +143,20 @@ def test_live_performance_excludes_deposits_but_keeps_actual_equity(tmp_path) ->
         source="operator_adjustment",
         created_at_ms=1_700_000_006_000,
     )
-    store.save_balance_snapshot(
-        account_id="soxlb_live",
+    store.save_futures_snapshot(
+        account_id="soxl_perp_live",
         timestamp_ms=1_700_000_010_000,
-        base_free="1.5",
-        base_locked="0",
-        quote_free="1870",
-        quote_locked="0",
-        reference_price="100",
-        equity_quote="2020",
+        wallet_balance="2020",
+        margin_balance="2020",
+        available_balance="2020",
+        unrealized_pnl="0",
+        position_quantity="0",
+        entry_price="0",
+        mark_price="100",
+        liquidation_price=None,
+        leverage=2,
+        margin_type="isolated",
+        position_side="FLAT",
     )
 
     with TestClient(app) as client:
