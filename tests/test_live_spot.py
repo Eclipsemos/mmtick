@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from mastermind_tick.binance_spot import SpotSymbolRules
 from mastermind_tick.config import load_settings
-from mastermind_tick.live_spot import LiveSpotTrader
+from mastermind_tick.live_spot import LiveSpotTrader, load_live_credentials
 from mastermind_tick.live_store import LiveStore
 from mastermind_tick.models import Side, StrategySignal, Tick
 
@@ -12,10 +12,17 @@ from mastermind_tick.models import Side, StrategySignal, Tick
 class FakeSpotClient:
     has_credentials = True
 
-    def __init__(self, *, base_free: str = "0", open_orders: list[dict] | None = None):
+    def __init__(
+        self,
+        *,
+        base_free: str = "0",
+        open_orders: list[dict] | None = None,
+        historical_trades: list[dict] | None = None,
+    ):
         self.base_free = base_free
         self._open_orders = open_orders or []
         self.buy_calls: list[tuple] = []
+        self.historical_trades = historical_trades or []
 
     async def close(self) -> None:
         return None
@@ -49,6 +56,14 @@ class FakeSpotClient:
             ],
         }
 
+    async def api_restrictions(self) -> dict:
+        return {
+            "enableReading": True,
+            "enableSpotAndMarginTrading": True,
+            "enableWithdrawals": False,
+            "ipRestrict": True,
+        }
+
     async def open_orders(self, symbol: str) -> list[dict]:
         return self._open_orders
 
@@ -63,6 +78,8 @@ class FakeSpotClient:
         }
 
     async def my_trades(self, symbol: str, *, order_id: int | None = None) -> list[dict]:
+        if order_id is None:
+            return self.historical_trades
         return [
             {
                 "symbol": symbol,
@@ -232,3 +249,48 @@ def test_entry_risk_limits_do_not_block_spot_exit(tmp_path) -> None:
     )
 
     assert asyncio.run(trader._risk_rejection(signal, tick)) is None
+
+
+def test_readonly_reconciliation_imports_actual_binance_trades(tmp_path) -> None:
+    settings = live_settings(tmp_path)
+    trade = {
+        "id": 91,
+        "orderId": 71,
+        "time": 1_700_000_001_000,
+        "price": "100",
+        "qty": "0.1",
+        "quoteQty": "10",
+        "commission": "0.0001",
+        "commissionAsset": "SOXLB",
+        "isBuyer": True,
+    }
+    store = LiveStore(settings.live_spot.database_path)
+    trader = LiveSpotTrader(
+        settings,
+        store,
+        client=FakeSpotClient(historical_trades=[trade]),  # type: ignore[arg-type]
+    )
+
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+
+    assert trader.reconciliation_ok
+    assert trader.last_trade_sync_at_ms is not None
+    assert store.fill_count(settings.live_spot.account_id) == 1
+    assert store.fills(settings.live_spot.account_id)[0]["trade_id"] == 91
+    assert store.orders(settings.live_spot.account_id)[0]["reason"] == "binance_readonly_sync"
+
+
+def test_credential_file_must_not_be_group_or_world_readable(tmp_path) -> None:
+    path = tmp_path / ".env"
+    path.write_text("API_KEY=test-key\nSECRET_KEY=test-secret\n")
+    path.chmod(0o600)
+
+    key, secret, error = load_live_credentials(path, "API_KEY", "SECRET_KEY")
+    assert (key, secret, error) == ("test-key", "test-secret", None)
+
+    path.chmod(0o640)
+    key, secret, error = load_live_credentials(path, "API_KEY", "SECRET_KEY")
+    assert key is None
+    assert secret is None
+    assert error == "CREDENTIAL_FILE_PERMISSIONS_INSECURE"

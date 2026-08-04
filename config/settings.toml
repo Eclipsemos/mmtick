@@ -25,13 +25,14 @@ minimum_notional = 5.0
 warmup_bars = 200
 
 [live_spot]
-enabled = false
+enabled = true
 instrument_id = "soxlb"
 account_id = "soxlb_live"
 database_path = "data/live.db"
 api_base_url = "https://api.binance.com"
-api_key_env = "BINANCE_API_KEY"
-api_secret_env = "BINANCE_API_SECRET"
+api_key_env = "API_KEY"
+api_secret_env = "SECRET_KEY"
+credentials_path = ".env"
 activation_env = "MMTICK_LIVE_CONFIRM"
 activation_value = "SOXLBUSDT_LIVE"
 allow_order_submission = false
@@ -43,6 +44,7 @@ max_slippage_bps = 30.0
 max_daily_loss = 50.0
 max_orders_per_day = 6
 reconcile_seconds = 5
+trade_sync_seconds = 60
 order_timeout_seconds = 30
 recv_window_ms = 5000
 

@@ -18,8 +18,8 @@ Mastermind 旗下短线策略产品。系统使用 Binance 生产环境的公开
   资金、订单、持仓、费用和绩效序列。
 - 三个绩效账户仍由本地 paper broker 驱动。另有 `soxlb_live` 实盘账户，使用独立的
   `data/live.db`，不会把真实余额、订单或成交混入 `data/paper.db`。
-- 当前提交真实订单的配置保持关闭，不需要 API Key 也可继续运行模拟盘和公开接口
-  预检。
+- `soxlb_live` 当前以只读观察模式运行；签名账户对账已启用，但提交真实订单的配置
+  保持关闭。
 - Binance Testnet/Demo 暂不提供这两个标的，因此模拟成交使用生产公共行情和本地
   撮合。
 - 本项目不读取 `~/mm` 的数据；Mastermind 长线 Alpha 研究和真实基金账户与本项目
@@ -125,10 +125,10 @@ SOXL 永续的反向确认机会成本需要单独审查。
 伪造实盘成交。每个信号生成确定性的 `clientOrderId`，网络超时后按该 ID 查询订单，
 不会直接重发。
 
-默认配置必须同时满足以下三项才可能提交真实订单：
+真实订单必须同时满足以下三项配置才可能提交：
 
 ```text
-live_spot.enabled = true
+live_spot.enabled = true                  # 当前已开启只读运行时
 live_spot.allow_order_submission = true
 MMTICK_LIVE_CONFIRM=SOXLBUSDT_LIVE
 ```
@@ -147,16 +147,21 @@ MMTICK_LIVE_CONFIRM=SOXLBUSDT_LIVE
 PYTHONPATH=src /home/spaceaic/env/.venv/bin/python -m mastermind_tick.live_preflight
 ```
 
-凭证准备好后，通过服务环境注入 `BINANCE_API_KEY` 和 `BINANCE_API_SECRET`，不要写入
-聊天、仓库、`settings.toml` 或提交记录。API Key 只开放 Spot Read 与 Spot Trading，
-关闭提现，并将本机出口公网 IP 加入 Binance 白名单。签名预检及不会创建真实订单的
-测试接口：
+当前只读凭证从被 Git 忽略的项目根目录 `.env` 读取 `API_KEY` 与 `SECRET_KEY`，文件
+权限必须为 `600`；程序不会记录或通过 API 返回密钥。当前权限审计结果为读取开启、
+Spot Trading 关闭、提现关闭、IP 白名单关闭，因此只能进行签名对账。Dashboard 只
+公开同步健康和权限状态，不公开实盘余额、仓位或成交明细。
+
+不要把密钥写入聊天、仓库、`settings.toml` 或提交记录。未来准备固定出口 IP 后，
+API Key 才开放 Spot Trading 并启用 IP 白名单；提现权限始终关闭。届时再运行不会
+创建真实订单的测试接口：
 
 ```bash
 PYTHONPATH=src /home/spaceaic/env/.venv/bin/python -m mastermind_tick.live_preflight --test-order
 ```
 
-部署顺序为：公开预检、签名账户/挂单检查、`/api/v3/order/test`、小额 USDT 入金、
+部署顺序为：公开预检、只读签名账户/挂单/成交同步、固定出口 IP、交易权限及白名单、
+`/api/v3/order/test`、小额 USDT 入金、
 观察模式对账，最后才打开配置和启动确认。任何一步失败都不得进入下一步。切换开关
 或注入凭证需要重启后台服务；网页没有启用真实下单的控制入口。
 

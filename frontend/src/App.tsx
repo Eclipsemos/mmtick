@@ -389,21 +389,45 @@ function LiveReadinessBand({ readiness }: { readiness?: LiveReadiness }) {
   const ready = readiness?.order_submission_ready ?? false
   const status = readiness?.status ?? 'STARTING'
   const reasons = readiness?.block_reasons ?? []
+  const statusMessage = {
+    STARTING: '正在检查 Binance Spot 实盘执行条件',
+    DISABLED: '实盘运行时已关闭，不会发送真实订单',
+    BLOCKED: '签名对账未就绪，真实订单已阻断',
+    OBSERVE_ONLY: '只读签名对账运行中，真实订单保持关闭',
+    ARMED: '实盘执行已启用',
+    STOPPED: '实盘运行时已停止',
+  }[status]
+  const blockLabels: Record<string, string> = {
+    IP_RESTRICTION_DISABLED: '未启用 IP 白名单',
+    SPOT_TRADING_PERMISSION_MISSING: 'API 仅有读取权限',
+    WITHDRAWAL_PERMISSION_ENABLED: '必须关闭提现权限',
+    UNKNOWN_OPEN_ORDERS: '存在未接管挂单',
+    UNMANAGED_EXISTING_POSITION: '存在未接管 SOXLB 持仓',
+    CREDENTIALS_MISSING: '缺少 API 凭证',
+    CREDENTIAL_FILE_PERMISSIONS_INSECURE: '凭证文件权限不安全',
+  }
+  const reasonText = reasons.map((reason) => blockLabels[reason] ?? reason)
+  const syncText = readiness?.last_reconciled_at_ms
+    ? `最近对账 ${time(readiness.last_reconciled_at_ms)} · 已同步 ${readiness.synced_trade_count} 笔成交`
+    : '等待签名账户对账'
   return (
     <section className={`live-readiness ${ready ? 'armed' : ''}`} aria-label="SOXLB 实盘就绪状态">
       <div className="live-readiness-state">
         <ShieldCheck size={18} />
         <div><span>SOXLB LIVE SPOT</span><strong>{status}</strong></div>
       </div>
-      <p>{readiness?.status_message ?? '正在检查 Binance Spot 实盘执行条件'}</p>
+      <p>{statusMessage}</p>
       <div className="live-readiness-gates">
         <Gate open={readiness?.public_capability ?? false} label="公开接口" />
         <Gate open={readiness?.credentials_present ?? false} label="API 凭证" />
-        <Gate open={readiness?.signed_account_verified ?? false} label="账户校验" />
+        <Gate open={readiness?.api_reading_enabled ?? false} label="只读权限" />
+        <Gate open={readiness?.signed_account_verified ?? false} label="签名对账" />
+        <Gate open={readiness?.ip_restricted ?? false} label="IP 白名单" />
+        <Gate open={!(readiness?.withdrawals_enabled ?? true)} label="提现关闭" />
         <Gate open={readiness?.activation_confirmed ?? false} label="启动确认" />
         <Gate open={readiness?.allow_order_submission ?? false} label="订单开关" />
       </div>
-      <small title={reasons.join(', ')}>{ready ? '真实订单已启用' : reasons.length ? reasons.join(' · ') : '真实订单未启用'}</small>
+      <small title={reasons.join(', ')}>{ready ? '真实订单已启用' : `${syncText}${reasonText.length ? ` · ${reasonText.join(' · ')}` : ''}`}</small>
     </section>
   )
 }

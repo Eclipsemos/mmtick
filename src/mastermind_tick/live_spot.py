@@ -8,6 +8,7 @@ import os
 import time
 from dataclasses import asdict
 from decimal import Decimal
+from pathlib import Path
 from typing import Any
 
 from mastermind_tick.binance_spot import (
@@ -39,12 +40,21 @@ class LiveSpotTrader:
         self.config = settings.live_spot
         self.store = store
         self.instrument = _instrument(settings, self.config.instrument_id)
+        if client is None:
+            api_key, api_secret, credential_error = load_live_credentials(
+                self.config.credentials_path,
+                self.config.api_key_env,
+                self.config.api_secret_env,
+            )
+        else:
+            api_key, api_secret, credential_error = None, None, None
         self.client = client or BinanceSpotClient(
             self.config.api_base_url,
-            os.getenv(self.config.api_key_env),
-            os.getenv(self.config.api_secret_env),
+            api_key,
+            api_secret,
             recv_window_ms=self.config.recv_window_ms,
         )
+        self.credential_error = None if client is not None else credential_error
         self.strategy = ATRTickStrategy(
             period=settings.strategy.atr_period,
             multiplier=settings.strategy.atr_multiplier,
@@ -58,9 +68,14 @@ class LiveSpotTrader:
         self.status_message = "Live Spot preflight has not run"
         self.public_capability = False
         self.signed_account_verified = False
+        self.api_reading_enabled = False
+        self.spot_trading_permitted = False
+        self.withdrawals_enabled = False
+        self.ip_restricted = False
         self.reconciliation_ok = False
         self.block_reasons: list[str] = []
         self.last_reconciled_at_ms: int | None = None
+        self.last_trade_sync_at_ms: int | None = None
         self.last_tick: Tick | None = None
         self.base_free = Decimal("0")
         self.base_locked = Decimal("0")
@@ -90,6 +105,10 @@ class LiveSpotTrader:
             and self.client.has_credentials
             and self.public_capability
             and self.signed_account_verified
+            and self.api_reading_enabled
+            and self.spot_trading_permitted
+            and not self.withdrawals_enabled
+            and self.ip_restricted
             and self.reconciliation_ok
             and not self.persisted_paused
             and not self.block_reasons
@@ -122,7 +141,7 @@ class LiveSpotTrader:
         self._tick_task = asyncio.create_task(self._run_ticks(), name="soxlb-live-ticks")
 
         if not self.client.has_credentials:
-            self._block("CREDENTIALS_MISSING")
+            self._block(self.credential_error or "CREDENTIALS_MISSING")
             self.status = "BLOCKED"
             self.status_message = "Binance Spot credentials are missing"
             return
@@ -229,15 +248,35 @@ class LiveSpotTrader:
         if self.rules is None:
             raise RuntimeError("public symbol rules are unavailable")
         async with self._lock:
-            account, open_orders = await asyncio.gather(
-                self.client.account(), self.client.open_orders(self.instrument.symbol)
+            account, open_orders, restrictions = await asyncio.gather(
+                self.client.account(),
+                self.client.open_orders(self.instrument.symbol),
+                self.client.api_restrictions(),
             )
-            self.signed_account_verified = bool(account.get("canTrade", False))
-            if not self.signed_account_verified:
+            self.signed_account_verified = True
+            self.api_reading_enabled = bool(restrictions.get("enableReading", False))
+            self.spot_trading_permitted = bool(
+                restrictions.get("enableSpotAndMarginTrading", False)
+            )
+            self.withdrawals_enabled = bool(restrictions.get("enableWithdrawals", False))
+            self.ip_restricted = bool(restrictions.get("ipRestrict", False))
+            if not self.api_reading_enabled:
+                self._block("READ_PERMISSION_MISSING")
+            else:
+                self._unblock("READ_PERMISSION_MISSING")
+                self._unblock("SIGNED_PREFLIGHT_FAILED")
+            if not self.spot_trading_permitted:
                 self._block("SPOT_TRADING_PERMISSION_MISSING")
             else:
                 self._unblock("SPOT_TRADING_PERMISSION_MISSING")
-                self._unblock("SIGNED_PREFLIGHT_FAILED")
+            if self.withdrawals_enabled:
+                self._block("WITHDRAWAL_PERMISSION_ENABLED")
+            else:
+                self._unblock("WITHDRAWAL_PERMISSION_ENABLED")
+            if not self.ip_restricted:
+                self._block("IP_RESTRICTION_DISABLED")
+            else:
+                self._unblock("IP_RESTRICTION_DISABLED")
 
             balances = {item["asset"]: item for item in account.get("balances", [])}
             base = balances.get(self.rules.base_asset, {})
@@ -296,10 +335,62 @@ class LiveSpotTrader:
 
             for pending in self.store.pending_orders(self.config.account_id):
                 await self._reconcile_order(pending, now_ms)
+            if (
+                self.last_trade_sync_at_ms is None
+                or now_ms - self.last_trade_sync_at_ms
+                >= self.config.trade_sync_seconds * 1000
+            ):
+                await self._sync_account_trades(now_ms)
             self.last_reconciled_at_ms = now_ms
-            self.reconciliation_ok = self.signed_account_verified and not unknown
+            self.reconciliation_ok = (
+                self.signed_account_verified
+                and self.api_reading_enabled
+                and not unknown
+            )
             self._unblock("RECONCILIATION_FAILED")
             self._refresh_status()
+
+    async def _sync_account_trades(self, now_ms: int) -> None:
+        trades = await self.client.my_trades(self.instrument.symbol)
+        for trade in trades:
+            order_id = int(trade["orderId"])
+            client_order_id = f"binance-sync-{order_id}"
+            side = Side.BUY.value if bool(trade.get("isBuyer", False)) else Side.SELL.value
+            quote_quantity = str(
+                trade.get("quoteQty")
+                or Decimal(str(trade["price"])) * Decimal(str(trade["qty"]))
+            )
+            self.store.create_order(
+                client_order_id=client_order_id,
+                account_id=self.config.account_id,
+                symbol=self.instrument.symbol,
+                side=side,
+                reason="binance_readonly_sync",
+                signal_price=str(trade["price"]),
+                signal_at_ms=int(trade["time"]),
+                requested_quantity=str(trade["qty"]),
+                requested_quote_quantity=None,
+            )
+            self.store.update_order(
+                client_order_id,
+                status="FILLED",
+                updated_at_ms=now_ms,
+                submitted_at_ms=int(trade["time"]),
+                payload={
+                    "orderId": order_id,
+                    "executedQty": str(trade["qty"]),
+                    "cummulativeQuoteQty": quote_quantity,
+                    "source": "binance_my_trades",
+                },
+            )
+            self.store.upsert_fill(
+                account_id=self.config.account_id,
+                symbol=self.instrument.symbol,
+                side=side,
+                client_order_id=client_order_id,
+                payload=trade,
+            )
+        self.last_trade_sync_at_ms = now_ms
 
     async def _reconcile_order(self, order: dict[str, Any], now_ms: int) -> None:
         client_order_id = order["client_order_id"]
@@ -540,13 +631,20 @@ class LiveSpotTrader:
             "status_message": self.status_message,
             "public_capability": self.public_capability,
             "credentials_present": self.client.has_credentials,
+            "credential_file_secure": self.credential_error is None,
             "signed_account_verified": self.signed_account_verified,
+            "api_reading_enabled": self.api_reading_enabled,
+            "spot_trading_permitted": self.spot_trading_permitted,
+            "withdrawals_enabled": self.withdrawals_enabled,
+            "ip_restricted": self.ip_restricted,
             "allow_order_submission": self.config.allow_order_submission,
             "activation_confirmed": self.activation_confirmed,
             "order_submission_ready": self.order_submission_ready,
             "persisted_paused": self.persisted_paused,
             "reconciliation_ok": self.reconciliation_ok,
             "last_reconciled_at_ms": self.last_reconciled_at_ms,
+            "last_trade_sync_at_ms": self.last_trade_sync_at_ms,
+            "synced_trade_count": self.store.fill_count(self.config.account_id),
             "block_reasons": sorted(self.block_reasons),
             "strategy": _json_decimals(asdict(self.strategy.view())),
             "database": str(self.config.database_path),
@@ -600,6 +698,39 @@ def _instrument(settings: Settings, instrument_id: str) -> InstrumentSettings:
         if instrument.id == instrument_id:
             return instrument
     raise LookupError(instrument_id)
+
+
+def load_live_credentials(
+    credentials_path: Path | None,
+    api_key_name: str,
+    api_secret_name: str,
+) -> tuple[str | None, str | None, str | None]:
+    api_key = os.getenv(api_key_name)
+    api_secret = os.getenv(api_secret_name)
+    if api_key and api_secret:
+        return api_key, api_secret, None
+    if credentials_path is None or not credentials_path.exists():
+        return api_key, api_secret, None
+    mode = credentials_path.stat().st_mode & 0o777
+    if mode & 0o077:
+        return None, None, "CREDENTIAL_FILE_PERMISSIONS_INSECURE"
+    values: dict[str, str] = {}
+    for raw_line in credentials_path.read_text().splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+            value = value[1:-1]
+        if key in {api_key_name, api_secret_name}:
+            values[key] = value
+    return (
+        api_key or values.get(api_key_name),
+        api_secret or values.get(api_secret_name),
+        None,
+    )
 
 
 def _json_decimals(value: Any) -> Any:

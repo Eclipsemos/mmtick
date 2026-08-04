@@ -115,6 +115,9 @@ class BinanceSpotClient:
     async def account(self) -> dict[str, Any]:
         return await self._signed_request("GET", "/api/v3/account", {"omitZeroBalances": "true"})
 
+    async def api_restrictions(self) -> dict[str, Any]:
+        return await self._signed_request("GET", "/sapi/v1/account/apiRestrictions")
+
     async def open_orders(self, symbol: str) -> list[dict[str, Any]]:
         payload = await self._signed_request("GET", "/api/v3/openOrders", {"symbol": symbol})
         return list(payload)

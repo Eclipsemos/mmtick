@@ -66,6 +66,7 @@ class LiveSpotSettings:
     api_base_url: str = "https://api.binance.com"
     api_key_env: str = "BINANCE_API_KEY"
     api_secret_env: str = "BINANCE_API_SECRET"
+    credentials_path: Path | None = None
     activation_env: str = "MMTICK_LIVE_CONFIRM"
     activation_value: str = "SOXLBUSDT_LIVE"
     allow_order_submission: bool = False
@@ -77,6 +78,7 @@ class LiveSpotSettings:
     max_daily_loss: float = 50.0
     max_orders_per_day: int = 6
     reconcile_seconds: int = 5
+    trade_sync_seconds: int = 60
     order_timeout_seconds: int = 30
     recv_window_ms: int = 5000
 
@@ -109,7 +111,13 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
     instruments = tuple(InstrumentSettings(**value) for value in raw["instruments"])
     live_raw = dict(raw.get("live_spot", {}))
     live_database_path = project_root / live_raw.pop("database_path", "data/live.db")
-    live_spot = LiveSpotSettings(database_path=live_database_path, **live_raw)
+    credentials_value = live_raw.pop("credentials_path", None)
+    credentials_path = project_root / credentials_value if credentials_value else None
+    live_spot = LiveSpotSettings(
+        database_path=live_database_path,
+        credentials_path=credentials_path,
+        **live_raw,
+    )
 
     if strategy.bar_minutes <= 0 or 60 % strategy.bar_minutes != 0:
         raise ValueError("strategy.bar_minutes must be a positive divisor of 60")
@@ -163,7 +171,11 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         raise ValueError("live_spot order limits must be positive")
     if live_spot.max_slippage_bps < 0 or live_spot.max_daily_loss <= 0:
         raise ValueError("live_spot risk limits are invalid")
-    if live_spot.max_orders_per_day < 1 or live_spot.reconcile_seconds < 1:
+    if (
+        live_spot.max_orders_per_day < 1
+        or live_spot.reconcile_seconds < 1
+        or live_spot.trade_sync_seconds < live_spot.reconcile_seconds
+    ):
         raise ValueError("live_spot frequency limits are invalid")
     if live_spot.order_timeout_seconds < 1 or live_spot.recv_window_ms < 1000:
         raise ValueError("live_spot timing limits are invalid")

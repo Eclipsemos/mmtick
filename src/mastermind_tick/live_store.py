@@ -102,6 +102,8 @@ class LiveStore:
     def __init__(self, path: Path):
         self.path = path
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.touch(mode=0o600, exist_ok=True)
+        self.path.chmod(0o600)
         with self.connection() as connection:
             connection.executescript(SCHEMA)
 
@@ -264,6 +266,14 @@ class LiveStore:
                 WHERE account_id = ? AND submitted_at_ms >= ?
                 """,
                 (account_id, timestamp_ms),
+            ).fetchone()
+        return int(row["count"])
+
+    def fill_count(self, account_id: str) -> int:
+        with self.connection() as connection:
+            row = connection.execute(
+                "SELECT COUNT(*) AS count FROM live_fills WHERE account_id = ?",
+                (account_id,),
             ).fetchone()
         return int(row["count"])
 

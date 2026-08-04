@@ -171,13 +171,20 @@ export type LiveReadiness = {
   status_message: string
   public_capability: boolean
   credentials_present: boolean
+  credential_file_secure: boolean
   signed_account_verified: boolean
+  api_reading_enabled: boolean
+  spot_trading_permitted: boolean
+  withdrawals_enabled: boolean
+  ip_restricted: boolean
   allow_order_submission: boolean
   activation_confirmed: boolean
   order_submission_ready: boolean
   persisted_paused: boolean
   reconciliation_ok: boolean
   last_reconciled_at_ms: number | null
+  last_trade_sync_at_ms: number | null
+  synced_trade_count: number
   block_reasons: string[]
   database: string
   risk_limits: {

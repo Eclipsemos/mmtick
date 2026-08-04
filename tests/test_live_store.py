@@ -82,3 +82,4 @@ def test_live_store_persists_strategy_and_balance_state(tmp_path) -> None:
     assert reopened.strategy_state("soxlb_live") == {"trailing_stop": "99"}
     assert reopened.latest_balance("soxlb_live")["equity_quote"] == "150"
     assert reopened.metadata("managed_position") == "true"
+    assert (tmp_path / "live.db").stat().st_mode & 0o777 == 0o600
