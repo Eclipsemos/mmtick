@@ -467,7 +467,7 @@ function App() {
           </div>
         </section>
 
-        <LiveReadinessBand readiness={liveReadiness.data} />
+        {mode === 'live' && <LiveReadinessBand readiness={liveReadiness.data} />}
 
         {overview.isError ? (
           <div className="error-state">
