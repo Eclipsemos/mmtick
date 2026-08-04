@@ -74,6 +74,20 @@ CREATE TABLE IF NOT EXISTS live_balance_snapshots (
 CREATE INDEX IF NOT EXISTS idx_live_balances_account_time
 ON live_balance_snapshots(account_id, timestamp_ms);
 
+CREATE TABLE IF NOT EXISTS live_cash_flows (
+    flow_id TEXT PRIMARY KEY,
+    account_id TEXT NOT NULL,
+    timestamp_ms INTEGER NOT NULL,
+    amount_quote TEXT NOT NULL,
+    flow_type TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    source TEXT NOT NULL,
+    created_at_ms INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_live_cash_flows_account_time
+ON live_cash_flows(account_id, timestamp_ms);
+
 CREATE TABLE IF NOT EXISTS live_strategy_state (
     account_id TEXT PRIMARY KEY,
     state_json TEXT NOT NULL,
@@ -430,6 +444,50 @@ class LiveStore:
                 (account_id,),
             ).fetchone()
         return dict(row) if row else None
+
+    def record_cash_flow(
+        self,
+        *,
+        flow_id: str,
+        account_id: str,
+        timestamp_ms: int,
+        amount_quote: str,
+        flow_type: str,
+        reason: str,
+        source: str,
+        created_at_ms: int,
+    ) -> bool:
+        with self.connection() as connection:
+            cursor = connection.execute(
+                """
+                INSERT OR IGNORE INTO live_cash_flows (
+                    flow_id, account_id, timestamp_ms, amount_quote, flow_type,
+                    reason, source, created_at_ms
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    flow_id,
+                    account_id,
+                    timestamp_ms,
+                    amount_quote,
+                    flow_type,
+                    reason,
+                    source,
+                    created_at_ms,
+                ),
+            )
+            return cursor.rowcount == 1
+
+    def cash_flows(self, account_id: str) -> list[dict[str, Any]]:
+        with self.connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT * FROM live_cash_flows WHERE account_id = ?
+                ORDER BY timestamp_ms, flow_id
+                """,
+                (account_id,),
+            ).fetchall()
+        return [dict(row) for row in rows]
 
     def balance_at_boundaries(
         self,

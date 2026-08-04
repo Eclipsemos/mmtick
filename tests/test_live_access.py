@@ -108,6 +108,54 @@ def test_loopback_can_establish_live_session_without_entering_token(tmp_path) ->
     assert fills.json() == []
 
 
+def test_live_performance_excludes_deposits_but_keeps_actual_equity(tmp_path) -> None:
+    app = _live_app(tmp_path)
+    store = app.state.live_store
+    store.save_balance_snapshot(
+        account_id="soxlb_live",
+        timestamp_ms=1_700_000_005_000,
+        base_free="1.5",
+        base_locked="0",
+        quote_free="1850",
+        quote_locked="0",
+        reference_price="100",
+        equity_quote="2000",
+    )
+    store.record_cash_flow(
+        flow_id="confirmed-deposit",
+        account_id="soxlb_live",
+        timestamp_ms=1_700_000_005_000,
+        amount_quote="1600",
+        flow_type="DEPOSIT",
+        reason="operator_confirmed_deposit",
+        source="operator_adjustment",
+        created_at_ms=1_700_000_006_000,
+    )
+    store.save_balance_snapshot(
+        account_id="soxlb_live",
+        timestamp_ms=1_700_000_010_000,
+        base_free="1.5",
+        base_locked="0",
+        quote_free="1870",
+        quote_locked="0",
+        reference_price="100",
+        equity_quote="2020",
+    )
+
+    with TestClient(app) as client:
+        assert client.post("/api/live/unlock-local").status_code == 200
+        account = client.get("/api/live/overview").json()["accounts"][0]
+        returns = client.get("/api/live/returns?timezone_offset_minutes=0").json()
+
+    assert account["equity"] == "2020"
+    assert account["net_cash_flow"] == "1600"
+    assert account["total_pnl"] == "20"
+    assert account["total_return"] == 0.01
+    assert returns["current_equity"] == "2020"
+    assert returns["total_return"] == 0.01
+    assert returns["daily"][-1]["equity"] == "2020"
+
+
 def test_live_store_migrates_balance_indicator_columns(tmp_path) -> None:
     path = tmp_path / "legacy-live.db"
     with sqlite3.connect(path) as connection:

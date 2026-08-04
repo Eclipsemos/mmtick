@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from calendar import monthrange
 from dataclasses import asdict
+from datetime import UTC, date, datetime, time, timedelta, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -14,7 +16,6 @@ from mastermind_tick.reporting import (
     _max_drawdown,
     _sharpe_ratio,
     _trade_stats,
-    build_return_summary,
 )
 
 
@@ -63,12 +64,32 @@ def build_live_account(
     first = store.first_balance(account_id)
     latest = store.latest_balance(account_id)
     points = live_equity(store, account_id, 100_000)
+    flows = store.cash_flows(account_id)
+    performance_points = _performance_equity_points(points, flows)
     fills = live_fills(store, account_id, 100_000)
     ledger = _spot_ledger(fills)
     initial_equity = Decimal(first["equity_quote"]) if first else Decimal("0")
     current_equity = Decimal(latest["equity_quote"]) if latest else initial_equity
-    total_pnl = current_equity - initial_equity
-    total_return = total_pnl / initial_equity if initial_equity else Decimal("0")
+    first_timestamp_ms = int(first["timestamp_ms"]) if first else 0
+    net_cash_flow = sum(
+        (
+            Decimal(flow["amount_quote"])
+            for flow in flows
+            if int(flow["timestamp_ms"]) > first_timestamp_ms
+        ),
+        Decimal("0"),
+    )
+    total_pnl = current_equity - initial_equity - net_cash_flow
+    performance_equity = (
+        Decimal(performance_points[-1]["equity"])
+        if performance_points
+        else initial_equity
+    )
+    total_return = (
+        performance_equity / initial_equity - Decimal("1")
+        if initial_equity
+        else Decimal("0")
+    )
     quote_total = (
         Decimal(latest["quote_free"]) + Decimal(latest["quote_locked"])
         if latest
@@ -178,8 +199,11 @@ def build_live_account(
         "equity": str(current_equity),
         "total_pnl": str(total_pnl),
         "total_return": float(total_return),
-        "max_drawdown": _max_drawdown(points),
-        "sharpe_ratio": _sharpe_ratio(points, settings.strategy.bar_minutes),
+        "net_cash_flow": str(net_cash_flow),
+        "max_drawdown": _max_drawdown(performance_points),
+        "sharpe_ratio": _sharpe_ratio(
+            performance_points, settings.strategy.bar_minutes
+        ),
         "win_rate": stats["win_rate"],
         "winning_trades": stats["winning_trades"],
         "losing_trades": stats["losing_trades"],
@@ -317,31 +341,201 @@ def live_orders(
 def build_live_return_summary(
     store: LiveStore, account_id: str, timezone_offset_minutes: int
 ) -> dict[str, Any]:
-    return build_return_summary(
-        _LiveReturnStore(store), account_id, timezone_offset_minutes
+    first = store.first_balance(account_id)
+    if first is None:
+        raise LookupError(account_id)
+    raw_points = live_equity(store, account_id, 1_000_000)
+    performance_points = _performance_equity_points(
+        raw_points, store.cash_flows(account_id)
+    )
+    initial = Decimal(first["equity_quote"])
+    created_at_ms = int(first["timestamp_ms"])
+    latest_raw = raw_points[-1] if raw_points else None
+    latest_performance = performance_points[-1] if performance_points else None
+    as_of_ms = int(latest_raw["timestamp_ms"]) if latest_raw else created_at_ms
+    current_equity = Decimal(latest_raw["equity"]) if latest_raw else initial
+    current_performance = (
+        Decimal(latest_performance["equity"]) if latest_performance else initial
+    )
+    local_timezone = timezone(timedelta(minutes=timezone_offset_minutes))
+    as_of_date = datetime.fromtimestamp(as_of_ms / 1000, local_timezone).date()
+
+    daily_dates = [as_of_date - timedelta(days=offset) for offset in range(29, -1, -1)]
+    current_week = as_of_date - timedelta(days=as_of_date.weekday())
+    weekly_dates = [current_week - timedelta(weeks=offset) for offset in range(11, -1, -1)]
+    current_month = as_of_date.replace(day=1)
+    monthly_dates = [_shift_month(current_month, -offset) for offset in range(11, -1, -1)]
+
+    daily = [
+        _live_return_period(
+            value,
+            value + timedelta(days=1),
+            local_timezone,
+            created_at_ms,
+            as_of_ms,
+            initial,
+            raw_points,
+            performance_points,
+            label=value.isoformat(),
+        )
+        for value in daily_dates
+    ]
+    weekly = [
+        _live_return_period(
+            value,
+            value + timedelta(days=7),
+            local_timezone,
+            created_at_ms,
+            as_of_ms,
+            initial,
+            raw_points,
+            performance_points,
+            label=f"{value.isocalendar().year} W{value.isocalendar().week:02d}",
+        )
+        for value in weekly_dates
+    ]
+    monthly = [
+        _live_return_period(
+            value,
+            _shift_month(value, 1),
+            local_timezone,
+            created_at_ms,
+            as_of_ms,
+            initial,
+            raw_points,
+            performance_points,
+            label=value.strftime("%Y-%m"),
+        )
+        for value in monthly_dates
+    ]
+
+    elapsed_days = max(0.0, (as_of_ms - created_at_ms) / 86_400_000)
+    total_return = (
+        current_performance / initial - Decimal("1") if initial else Decimal("0")
+    )
+    thirty_day_start_ms = _date_start_ms(daily_dates[0], local_timezone)
+    thirty_day_start = _point_before(performance_points, thirty_day_start_ms)
+    thirty_day_start_equity = (
+        Decimal(thirty_day_start["equity"]) if thirty_day_start else initial
+    )
+    return_30d = (
+        float(current_performance / thirty_day_start_equity - Decimal("1"))
+        if thirty_day_start_equity
+        else None
+    )
+    annualized_return = None
+    if elapsed_days >= 1 and initial > 0 and current_performance > 0:
+        annualized_return = float(
+            (current_performance / initial)
+            ** (Decimal("365.2425") / Decimal(str(elapsed_days)))
+            - Decimal("1")
+        )
+    return {
+        "account_id": account_id,
+        "generated_at_ms": int(datetime.now(UTC).timestamp() * 1000),
+        "as_of_ms": as_of_ms,
+        "timezone_offset_minutes": timezone_offset_minutes,
+        "initial_equity": str(initial),
+        "current_equity": str(current_equity),
+        "total_return": float(total_return),
+        "annualized_return": annualized_return,
+        "elapsed_days": elapsed_days,
+        "return_30d": return_30d,
+        "current_week_return": weekly[-1]["return"],
+        "current_month_return": monthly[-1]["return"],
+        "daily": daily,
+        "weekly": [period for period in weekly if period["return"] is not None],
+        "monthly": [period for period in monthly if period["return"] is not None],
+    }
+
+
+def _performance_equity_points(
+    raw_points: list[dict[str, Any]],
+    cash_flows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    if not raw_points:
+        return []
+    ordered = sorted(raw_points, key=lambda point: int(point["timestamp_ms"]))
+    first_equity = Decimal(ordered[0]["equity"])
+    performance_equity = first_equity
+    previous_raw = first_equity
+    previous_timestamp = int(ordered[0]["timestamp_ms"])
+    flow_index = 0
+    flows = sorted(cash_flows, key=lambda flow: int(flow["timestamp_ms"]))
+    while flow_index < len(flows) and int(flows[flow_index]["timestamp_ms"]) <= previous_timestamp:
+        flow_index += 1
+    result = [{**ordered[0], "equity": str(performance_equity)}]
+    for point in ordered[1:]:
+        timestamp_ms = int(point["timestamp_ms"])
+        interval_flow = Decimal("0")
+        while flow_index < len(flows) and int(flows[flow_index]["timestamp_ms"]) <= timestamp_ms:
+            interval_flow += Decimal(flows[flow_index]["amount_quote"])
+            flow_index += 1
+        current_raw = Decimal(point["equity"])
+        if previous_raw:
+            performance_equity *= (current_raw - interval_flow) / previous_raw
+        previous_raw = current_raw
+        previous_timestamp = timestamp_ms
+        result.append({**point, "equity": str(performance_equity)})
+    return result
+
+
+def _live_return_period(
+    start: date,
+    end: date,
+    local_timezone: timezone,
+    created_at_ms: int,
+    as_of_ms: int,
+    initial: Decimal,
+    raw_points: list[dict[str, Any]],
+    performance_points: list[dict[str, Any]],
+    *,
+    label: str,
+) -> dict[str, Any]:
+    start_ms = _date_start_ms(start, local_timezone)
+    end_ms = _date_start_ms(end, local_timezone)
+    effective_end_ms = min(end_ms, as_of_ms + 1)
+    if created_at_ms >= effective_end_ms:
+        period_return = None
+        closing_equity = None
+    else:
+        start_point = _point_before(performance_points, start_ms)
+        end_point = _point_before(performance_points, effective_end_ms)
+        raw_end_point = _point_before(raw_points, effective_end_ms)
+        start_equity = Decimal(start_point["equity"]) if start_point else initial
+        end_equity = Decimal(end_point["equity"]) if end_point else initial
+        closing_equity = Decimal(raw_end_point["equity"]) if raw_end_point else initial
+        period_return = (
+            float(end_equity / start_equity - Decimal("1")) if start_equity else None
+        )
+    return {
+        "key": label,
+        "label": label,
+        "start_ms": start_ms,
+        "end_ms": end_ms,
+        "equity": str(closing_equity) if closing_equity is not None else None,
+        "return": period_return,
+    }
+
+
+def _point_before(
+    points: list[dict[str, Any]], boundary_ms: int
+) -> dict[str, Any] | None:
+    return next(
+        (point for point in reversed(points) if int(point["timestamp_ms"]) < boundary_ms),
+        None,
     )
 
 
-class _LiveReturnStore:
-    def __init__(self, store: LiveStore):
-        self.store = store
+def _date_start_ms(value: date, local_timezone: timezone) -> int:
+    return int(datetime.combine(value, time.min, local_timezone).timestamp() * 1000)
 
-    def account(self, account_id: str) -> dict[str, Any]:
-        first = self.store.first_balance(account_id)
-        if first is None:
-            raise LookupError(account_id)
-        return {
-            "initial_cash": first["equity_quote"],
-            "created_at_ms": first["timestamp_ms"],
-        }
 
-    def equity(self, account_id: str, limit: int) -> list[dict[str, Any]]:
-        return live_equity(self.store, account_id, limit)
-
-    def equity_at_boundaries(
-        self, account_id: str, boundaries_ms: list[int]
-    ) -> dict[int, dict[str, Any] | None]:
-        return self.store.balance_at_boundaries(account_id, boundaries_ms)
+def _shift_month(value: date, months: int) -> date:
+    month_index = value.year * 12 + value.month - 1 + months
+    year, month_zero = divmod(month_index, 12)
+    month = month_zero + 1
+    return date(year, month, min(value.day, monthrange(year, month)[1]))
 
 
 def _spot_ledger(fills: list[dict[str, Any]]) -> dict[str, Decimal]:

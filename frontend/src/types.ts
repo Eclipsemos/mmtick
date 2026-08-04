@@ -117,6 +117,7 @@ export type Account = {
   equity: string
   total_pnl: string
   total_return: number
+  net_cash_flow?: string
   max_drawdown: number
   sharpe_ratio: number | null
   win_rate: number | null

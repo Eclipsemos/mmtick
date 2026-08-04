@@ -87,6 +87,7 @@ test('paper console renders operational views and switches to the protected live
   await expect(page.locator('.account-switch button')).toHaveCount(1)
   await expect(page.getByRole('button', { name: '锁定' })).toBeVisible()
   await expect(page.getByText('Binance 实际成交')).toBeVisible()
+  await expect(page.getByText(/净入金/)).toBeVisible()
   await page.getByRole('button', { name: 'PAPER', exact: true }).click()
   await expect(page.getByRole('heading', { name: '模拟交易' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'SOXL/USDT PERP', exact: true })).toBeVisible()

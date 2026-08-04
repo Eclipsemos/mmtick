@@ -83,3 +83,21 @@ def test_live_store_persists_strategy_and_balance_state(tmp_path) -> None:
     assert reopened.latest_balance("soxlb_live")["equity_quote"] == "150"
     assert reopened.metadata("managed_position") == "true"
     assert (tmp_path / "live.db").stat().st_mode & 0o777 == 0o600
+
+
+def test_live_store_records_external_cash_flows_idempotently(tmp_path) -> None:
+    store = LiveStore(tmp_path / "live.db")
+    values = {
+        "flow_id": "deposit-one",
+        "account_id": "soxlb_live",
+        "timestamp_ms": 2000,
+        "amount_quote": "1600",
+        "flow_type": "DEPOSIT",
+        "reason": "operator_confirmed_deposit",
+        "source": "operator_adjustment",
+        "created_at_ms": 3000,
+    }
+
+    assert store.record_cash_flow(**values)
+    assert not store.record_cash_flow(**values)
+    assert store.cash_flows("soxlb_live")[0]["amount_quote"] == "1600"

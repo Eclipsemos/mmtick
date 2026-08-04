@@ -657,6 +657,7 @@ function Monitor({
   const positionQuantity = Number(account.quantity)
   const positionSide = positionQuantity > 0 ? '多头' : positionQuantity < 0 ? '空头' : '空仓'
   const positive = Number(account.total_pnl) >= 0
+  const netCashFlow = Number(account.net_cash_flow ?? 0)
 
   return (
     <>
@@ -682,7 +683,7 @@ function Monitor({
       </section>
 
       <section className="metrics-grid">
-        <Metric label="账户净值" value={money(account.equity, account.currency)} sub={`初始 ${money(account.initial_cash, account.currency)}`} icon={<WalletCards />} />
+        <Metric label="账户净值" value={money(account.equity, account.currency)} sub={`初始 ${money(account.initial_cash, account.currency)}${netCashFlow ? ` · 净入金 ${money(netCashFlow, account.currency)}` : ''}`} icon={<WalletCards />} />
         <Metric label="累计收益" value={percent(account.total_return)} sub={money(account.total_pnl, account.currency)} tone={positive ? 'good' : 'bad'} icon={positive ? <TrendingUp /> : <TrendingDown />} />
         <Metric label="当前持仓" value={number(Math.abs(positionQuantity))} sub={`${positionSide} · 均价 ${money(account.average_price, account.currency)}`} icon={<Activity />} />
         <Metric label="最大回撤" value={percent(account.max_drawdown)} sub={`${account.round_trips} 次完整交易`} tone="bad" icon={<TrendingDown />} />
