@@ -462,3 +462,34 @@ def test_futures_funding_is_idempotent_and_updates_equity(tmp_path) -> None:
     account = store.account(item.id)
     assert Decimal(account["total_funding"]) == Decimal("-9.500")
     assert len(store.funding_payments(item.id)) == 1
+
+
+def test_shared_market_funding_is_not_backfilled_under_long_only_account(tmp_path) -> None:
+    path = tmp_path / "paper.db"
+    store = PaperStore(path)
+    market = futures_instrument()
+    long_only = replace(
+        market,
+        id="soxl_perp_long",
+        market_data_id=market.id,
+        allow_short=False,
+    )
+    execution = ExecutionSettings(fee_bps=10, slippage_bps=0, minimum_notional=5)
+    for item in (market, long_only):
+        store.ensure_account(item, 10_000, 1)
+    store.submit_order(long_only.id, signal(Side.BUY, "buy-signal"), 1)
+    store.fill_pending(
+        long_only.id,
+        market_tick("buy-fill", 2, "100"),
+        long_only,
+        execution,
+        0.95,
+    )
+    funding = FundingRate(28_800_000, Decimal("0.001"), Decimal("100"))
+    store.apply_funding(long_only.id, funding, market_data_id=market.id)
+
+    reopened = PaperStore(path)
+
+    assert len(reopened.funding_rates(market.id)) == 1
+    assert reopened.funding_rates(long_only.id) == []
+    assert len(reopened.funding_payments(long_only.id)) == 1

@@ -15,7 +15,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from mastermind_tick.config import Settings, load_settings
+from mastermind_tick.config import InstrumentSettings, Settings, load_settings
 from mastermind_tick.engine import PaperEngine
 from mastermind_tick.reporting import build_overview, build_return_summary
 from mastermind_tick.store import PaperStore
@@ -143,8 +143,8 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         instrument_id: str = "soxlb",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     ) -> list[dict]:
-        _require_instrument(resolved, instrument_id)
-        return store.agg_trades(instrument_id, limit)
+        instrument = _require_instrument(resolved, instrument_id)
+        return store.agg_trades(instrument.market_id, limit)
 
     @app.get("/api/market/ohlcv")
     def ohlcv(
@@ -152,9 +152,9 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
         before_ms: Annotated[int | None, Query(gt=0)] = None,
     ) -> list[dict]:
-        _require_instrument(resolved, instrument_id)
+        instrument = _require_instrument(resolved, instrument_id)
         return store.ohlcv_bars(
-            instrument_id,
+            instrument.market_id,
             resolved.strategy.bar_minutes,
             limit,
             before_ms,
@@ -223,9 +223,11 @@ def _require_account(store: PaperStore, account_id: str) -> None:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
-def _require_instrument(settings: Settings, instrument_id: str) -> None:
-    if not any(item.id == instrument_id for item in settings.instruments):
+def _require_instrument(settings: Settings, instrument_id: str) -> InstrumentSettings:
+    instrument = next((item for item in settings.instruments if item.id == instrument_id), None)
+    if instrument is None:
         raise HTTPException(status_code=404, detail=f"unknown instrument: {instrument_id}")
+    return instrument
 
 
 app = create_app()

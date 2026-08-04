@@ -8,7 +8,11 @@ from mastermind_tick.config import (
     StrategySettings,
 )
 from mastermind_tick.models import Bar, Side, StrategySignal, Tick
-from mastermind_tick.rebuild import apply_candidate, rebuild_candidate
+from mastermind_tick.rebuild import (
+    apply_candidate,
+    rebuild_candidate,
+    replay_candidate_tail,
+)
 from mastermind_tick.store import PaperStore
 
 BAR_MS = 900_000
@@ -157,3 +161,102 @@ def test_apply_candidate_atomically_replaces_derived_rows(tmp_path) -> None:
     state = rebuilt.strategy_state(instrument.id)
     assert state is not None
     assert json.loads(json.dumps(state))["period"] == 2
+
+
+def test_selected_long_only_account_replays_shared_futures_market(tmp_path) -> None:
+    base = _settings(tmp_path)
+    market = InstrumentSettings(
+        **{
+            **_instrument().__dict__,
+            "id": "perp",
+            "paper_model": "futures",
+            "leverage": 2,
+            "margin_mode": "isolated",
+        }
+    )
+    long_only = InstrumentSettings(
+        **{
+            **market.__dict__,
+            "id": "perp_long",
+            "display_symbol": "TEST/USDT PERP LONG ONLY",
+            "market_data_id": market.id,
+            "allow_short": False,
+        }
+    )
+    settings = Settings(**{**base.__dict__, "instruments": (market, long_only)})
+    store = PaperStore(settings.database_path)
+    store.upsert_history_bars(market, 15, [_bar(0, "10"), _bar(1, "9")], "test")
+    for item in (
+        _tick("tick-1", 2 * BAR_MS, "10"),
+        _tick("tick-2", 2 * BAR_MS + 1, "10.1"),
+        _tick("tick-3", 3 * BAR_MS, "8"),
+        _tick("tick-4", 3 * BAR_MS + 1, "7.9"),
+    ):
+        store.record_market_tick(market, 15, item)
+
+    candidate_path = tmp_path / "long-only.db"
+    report = rebuild_candidate(settings, candidate_path, (long_only.id,))
+
+    candidate = PaperStore(candidate_path)
+    account = candidate.account(long_only.id)
+    fills = candidate.fills(long_only.id, 100)
+    assert report["accounts"][0]["account_id"] == long_only.id
+    assert not candidate.agg_trades(long_only.id, 100)
+    assert len(candidate.agg_trades(market.id, 100)) == 4
+    assert Decimal(account["quantity"]) >= 0
+    assert all(Decimal(fill["position_after"] or "0") >= 0 for fill in fills)
+
+
+def test_new_account_apply_replays_append_only_market_tail(tmp_path) -> None:
+    base = _settings(tmp_path)
+    market = InstrumentSettings(
+        **{
+            **_instrument().__dict__,
+            "id": "perp",
+            "paper_model": "futures",
+            "leverage": 2,
+            "margin_mode": "isolated",
+        }
+    )
+    long_only = InstrumentSettings(
+        **{
+            **market.__dict__,
+            "id": "perp_long",
+            "market_data_id": market.id,
+            "allow_short": False,
+        }
+    )
+    settings = Settings(**{**base.__dict__, "instruments": (market, long_only)})
+    store = PaperStore(settings.database_path)
+    store.ensure_account(market, settings.initial_cash, 1)
+    store.upsert_history_bars(market, 15, [_bar(0, "10"), _bar(1, "9")], "test")
+    for item in (
+        _tick("tick-1", 2 * BAR_MS, "10"),
+        _tick("tick-2", 2 * BAR_MS + 1, "10.1"),
+    ):
+        store.record_market_tick(market, 15, item)
+    preserved_order_id = store.submit_order(market.id, _signal(), 1)
+
+    candidate_path = tmp_path / "candidate.db"
+    rebuild_candidate(settings, candidate_path, (long_only.id,))
+
+    tail = (
+        _tick("tick-3", 3 * BAR_MS, "8"),
+        _tick("tick-4", 3 * BAR_MS + 1, "7.9"),
+    )
+    for item in tail:
+        store.record_market_tick(market, 15, item)
+
+    apply_candidate(settings.database_path, candidate_path, (long_only.id,))
+    replayed = replay_candidate_tail(settings, candidate_path, (long_only.id,))
+
+    rebuilt = PaperStore(settings.database_path)
+    assert replayed == {long_only.id: len(tail)}
+    assert rebuilt.orders(market.id, 10)[0]["id"] == preserved_order_id
+    assert Decimal(rebuilt.account(long_only.id)["quantity"]) >= 0
+    assert all(
+        Decimal(fill["position_after"] or "0") >= 0
+        for fill in rebuilt.fills(long_only.id, 100)
+    )
+    assert rebuilt.strategy_state(long_only.id) is not None
+    assert rebuilt.equity(long_only.id, 1)[0]["timestamp_ms"] == tail[-1].timestamp_ms

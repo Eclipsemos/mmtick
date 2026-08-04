@@ -1,6 +1,6 @@
 # mastermind:tick
 
-Mastermind 旗下短线策略产品。系统使用 Binance 生产环境的公开行情驱动两个相互
+Mastermind 旗下短线策略产品。系统使用 Binance 生产环境的公开行情驱动三个相互
 隔离的本地模拟账户，持续记录行情、策略状态、订单、成交、费用与账户绩效。
 
 当前策略版本为 `atr_tick_v3_startup_alignment`。从 **2026-08-02 至
@@ -11,8 +11,10 @@ Mastermind 旗下短线策略产品。系统使用 Binance 生产环境的公开
 - `SOXLB/USDT`：Binance SOXL bStocks 代币化现货，模拟账户仅做多。
 - `SOXL/USDT PERP`：Binance USDⓈ-M `TRADIFI_PERPETUAL`，模拟账户可做多、
   做空。
-- `soxlb` 与 `soxl_perp` 各自拥有独立的 100,000 USDT 初始资金、订单、持仓、
-  费用和绩效序列。
+- `SOXL/USDT PERP LONG ONLY`：同一永续市场的独立仅做多模拟账户，卖出信号
+  只平掉已有多头，空仓时不会开空。
+- `soxlb`、`soxl_perp` 与 `soxl_perp_long` 各自拥有独立的 100,000 USDT 初始
+  资金、订单、持仓、费用和绩效序列。
 - 当前是本地 paper broker，只使用 Binance 公共行情，不提交真实订单，也不需要
   API Key。
 - Binance Testnet/Demo 暂不提供这两个标的，因此模拟成交使用生产公共行情和本地
@@ -57,11 +59,13 @@ K 线只有一个全局交易动作名额，以避免同一根 K 线内来回成
 |---|---|---:|---:|---:|
 | SOXLB Spot | 仅做多 | 无 | 100% | 1.00x |
 | SOXL Perpetual | 多空 | 2x | 62.5% | 1.25x |
+| SOXL Perpetual Long Only | 仅做多 | 2x | 62.5% | 1.25x |
 
 永续的 `2x` 是保证金杠杆档位，不代表每次使用 2 倍账户净值。当前仓位预算为
 62.5%，因此多头和空头的目标名义暴露均为 **1.25x**。
 
-SOXLB 下穿 ATR 线时平掉现货多头。SOXL 永续发生反向穿越时先以 `reduce_only`
+SOXLB 与 Long Only 永续下穿 ATR 线时只平掉已有多头。多空 SOXL 永续发生反向
+穿越时先以 `reduce_only`
 平仓，不在同一个信号内立即反手；平仓成交后的下一根 15 分钟 K 线，价格相对
 平仓信号锚点继续向目标方向突破 `0.25 ATR`，才建立反向仓位。确认机会只在该根
 K 线内有效。
@@ -82,11 +86,11 @@ K 线内有效。
 
 - 服务和 Binance 行情连接状态，是否存在长期未成交的 pending 订单；
 - OHLCV、聚合成交、净值快照和资金费是否连续持久化；
-- 两账户净收益、最大回撤、完整交易数、胜率和手续费；
+- 三账户净收益、最大回撤、完整交易数、胜率和手续费；
 - 单 K 线动作锁的拦截是否符合预期；
 - 下跌行情中的平仓延迟，以及永续反向确认是否触发或过期。
 
-2026-08-09 复评时，重点比较两个账户的净收益、最大回撤、完整交易数、胜率、
+2026-08-09 复评时，重点比较三个账户的净收益、最大回撤、完整交易数、胜率、
 手续费占毛收益比例，并按上涨、下跌和震荡区间拆分结果。SOXLB 的离场速度和
 SOXL 永续的反向确认机会成本需要单独审查。
 
@@ -98,6 +102,9 @@ SOXL 永续的反向确认机会成本需要单独审查。
 - 官方 15 分钟 K 线：Spot/Futures `@kline_15m`，每根收盘后分别通过 Binance
   Spot/Futures REST `/klines` 校验。
 - 永续标记价、指数价和资金费率来自 Binance Futures 公共接口。
+- `soxl_perp` 与 `soxl_perp_long` 复用同一条实时 Futures 行情流以及同一份
+  `agg_trades`、`ohlcv_bars`、`funding_rates` 市场仓库；Tick 只存一次，再分别
+  驱动两个独立策略状态和账户账本。
 - 主数据库：`data/paper.db`，SQLite WAL 模式。
 - `agg_trades`：保存事件时间、成交时间、价格、数量、名义金额、maker 方向和交易
   ID；Futures 保存 250 ms 聚合批次及底层 ID 范围。
@@ -132,7 +139,8 @@ journalctl --user -u mmtick.service -f
 
 页面提供：
 
-- SOXLB 与 SOXL Perpetual 账户切换、行情连接和策略运行状态；
+- SOXLB、SOXL Perpetual 多空及 SOXL Perpetual Long Only 账户切换、行情连接
+  和策略运行状态；
 - 可滚动、缩放的价格与交易信号图，以及独立的官方 15 分钟 K 线图；
 - 价格快照和 OHLCV 按时间游标加载历史页，价格线按图表像素密度降采样；
 - 黄色 ATR 移动止损线，以及做多、做空和平仓成交标记；

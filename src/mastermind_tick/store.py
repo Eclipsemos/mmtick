@@ -308,7 +308,12 @@ class PaperStore:
                 instrument_id, symbol, timestamp_ms, rate, mark_price, source, created_at_ms
             )
             SELECT account_id, symbol, timestamp_ms, rate, mark_price, source, created_at_ms
-            FROM funding_payments
+            FROM funding_payments AS payment
+            WHERE NOT EXISTS (
+                SELECT 1 FROM funding_rates AS rate
+                WHERE rate.symbol = payment.symbol
+                  AND rate.timestamp_ms = payment.timestamp_ms
+            )
             """
         )
 
@@ -897,6 +902,7 @@ class PaperStore:
         funding: FundingRate,
         *,
         source: str = "binance_futures_funding",
+        market_data_id: str | None = None,
     ) -> dict[str, str | int] | None:
         with self.connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
@@ -909,7 +915,11 @@ class PaperStore:
                 return None
 
             self._record_funding_rate(
-                connection, account_id, account["symbol"], funding, source
+                connection,
+                market_data_id or account_id,
+                account["symbol"],
+                funding,
+                source,
             )
 
             quantity = Decimal(account["quantity"])
@@ -1287,6 +1297,7 @@ class PaperStore:
 
             ingestion = []
             for instrument in instruments:
+                market_id = instrument.market_id
                 trades = connection.execute(
                     """
                     SELECT COUNT(*) AS row_count,
@@ -1303,7 +1314,7 @@ class PaperStore:
                            ), 0) AS raw_trade_count
                     FROM agg_trades WHERE instrument_id = ?
                     """,
-                    (instrument.id,),
+                    (market_id,),
                 ).fetchone()
                 bars = connection.execute(
                     """
@@ -1315,11 +1326,12 @@ class PaperStore:
                     FROM ohlcv_bars
                     WHERE instrument_id = ? AND interval_minutes = ?
                     """,
-                    (instrument.id, interval_minutes),
+                    (market_id, interval_minutes),
                 ).fetchone()
                 ingestion.append(
                     {
                         "instrument_id": instrument.id,
+                        "market_data_id": market_id,
                         "symbol": instrument.symbol,
                         "agg_trades": dict(trades),
                         "ohlcv": {

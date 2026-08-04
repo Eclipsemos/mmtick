@@ -127,6 +127,43 @@ def test_startup_alignment_never_opens_a_spot_short() -> None:
     assert strategy.startup_alignment_checked is True
 
 
+def test_long_only_down_cross_closes_long_without_arming_short_reversal() -> None:
+    strategy = warmed_strategy()
+    strategy.previous_price = Decimal("12")
+    strategy.trailing_stop = Decimal("10")
+    strategy.startup_alignment_checked = True
+
+    signal = strategy.on_tick(
+        tick("long-only-close", 3 * BAR_MS, 9),
+        has_position=True,
+        has_pending_order=False,
+        allow_short=False,
+        is_short=False,
+    )
+
+    assert signal is not None
+    assert signal.side is Side.SELL
+    assert signal.reduce_only
+    assert strategy.reversal_direction is None
+
+
+def test_long_only_down_cross_does_not_open_short_while_flat() -> None:
+    strategy = warmed_strategy()
+    strategy.previous_price = Decimal("12")
+    strategy.trailing_stop = Decimal("10")
+    strategy.startup_alignment_checked = True
+
+    signal = strategy.on_tick(
+        tick("long-only-flat", 3 * BAR_MS, 9),
+        has_position=False,
+        has_pending_order=False,
+        allow_short=False,
+        is_short=False,
+    )
+
+    assert signal is None
+
+
 def test_paused_startup_alignment_waits_until_trading_resumes() -> None:
     strategy = warmed_strategy()
     strategy.previous_price = Decimal("12")

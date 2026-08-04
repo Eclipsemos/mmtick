@@ -331,7 +331,7 @@ function App() {
               ))}
             </div>
             <div className="scope-chips">
-              <span>{account?.symbol ?? 'INITIALIZING'}</span><span>15m</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : view === 'returns' ? 'PERFORMANCE' : account?.runtime.paper_model === 'futures' ? 'LONG / SHORT' : 'LONG ONLY'}</span>
+              <span>{account?.symbol ?? 'INITIALIZING'}</span><span>15m</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : view === 'returns' ? 'PERFORMANCE' : account?.runtime.allow_short ? 'LONG / SHORT' : 'LONG ONLY'}</span>
             </div>
           </div>
         </section>
@@ -495,7 +495,7 @@ function Monitor({
               <div><dt>反向确认距离</dt><dd>{number(runtime.strategy_config.reversal_confirmation_atr, 2)} ATR</dd></div>
               <div><dt>单 K 线动作</dt><dd>{runtime.strategy_config.one_action_per_bar ? '最多 1 次' : '--'}</dd></div>
               <div><dt>启动趋势对齐</dt><dd>{runtime.strategy_config.startup_alignment ? '启用' : '--'}</dd></div>
-              <div><dt>永续反向模式</dt><dd>{runtime.paper_model === 'futures' ? '先平仓，再确认' : '仅做多'}</dd></div>
+              <div><dt>永续反向模式</dt><dd>{runtime.allow_short ? '先平仓，再确认' : '仅做多，不开空'}</dd></div>
               <div><dt>仓位比例</dt><dd>{(runtime.position_fraction * 100).toFixed(0)}%</dd></div>
               <div><dt>杠杆 / 模式</dt><dd>{runtime.paper_model === 'futures' ? `${runtime.leverage}x ${runtime.margin_mode} · ${number(runtime.target_exposure, 2)}x 目标暴露` : '1x SPOT'}</dd></div>
               <div><dt>Taker 手续费</dt><dd>{number(runtime.fee_bps, 2)} bps</dd></div>

@@ -45,7 +45,7 @@ def shared_cutoff(settings: Settings, instruments: list[InstrumentSettings]) -> 
         for instrument in instruments:
             row = connection.execute(
                 "SELECT MAX(timestamp_ms) FROM agg_trades WHERE instrument_id = ?",
-                (instrument.id,),
+                (instrument.market_id,),
             ).fetchone()
             if row is None or row[0] is None:
                 raise ValueError(f"no aggTrade data for {instrument.id}")
@@ -77,7 +77,7 @@ def data_gap_summary(
                 FROM ordered
                 WHERE previous_last IS NOT NULL AND first_trade_id > previous_last + 1
                 """,
-                (instrument.id, start_ms, end_ms),
+                (instrument.market_id, start_ms, end_ms),
             ).fetchone()
         else:
             row = connection.execute(
@@ -96,7 +96,7 @@ def data_gap_summary(
                 FROM ordered
                 WHERE previous_id IS NOT NULL AND aggregate_trade_id > previous_id + 1
                 """,
-                (instrument.id, start_ms, end_ms),
+                (instrument.market_id, start_ms, end_ms),
             ).fetchone()
     return {"gap_count": int(row[0]), "missing_trade_ids": int(row[1])}
 

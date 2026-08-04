@@ -54,3 +54,24 @@ position_fraction = 0.625
 fee_bps = 5.0
 slippage_bps = 2.0
 minimum_notional = 5.0
+
+[[instruments]]
+id = "soxl_perp_long"
+symbol = "SOXLUSDT"
+display_symbol = "SOXL/USDT PERP LONG ONLY"
+name = "Direxion Semiconductor Bull 3X TradFi Perpetual Long Only"
+asset_type = "tradifi_perpetual"
+venue = "Binance USD-M Futures"
+currency = "USDT"
+feed = "binance_futures"
+quantity_step = 0.01
+reference_symbol = "SOXL"
+paper_model = "futures"
+leverage = 2
+margin_mode = "isolated"
+position_fraction = 0.625
+fee_bps = 5.0
+slippage_bps = 2.0
+minimum_notional = 5.0
+market_data_id = "soxl_perp"
+allow_short = false

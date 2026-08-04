@@ -56,6 +56,8 @@ export type Runtime = {
   asset_type: string
   reference_symbol: string
   paper_model: 'spot' | 'futures'
+  market_data_id: string
+  allow_short: boolean
   leverage: number
   margin_mode: string
   position_fraction: number
@@ -279,6 +281,7 @@ export type WarehouseSummary = {
   tables: WarehouseTable[]
   instruments: Array<{
     instrument_id: string
+    market_data_id: string
     symbol: string
     agg_trades: {
       row_count: number

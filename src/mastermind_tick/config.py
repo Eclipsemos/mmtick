@@ -45,6 +45,16 @@ class InstrumentSettings:
     fee_bps: float | None = None
     slippage_bps: float | None = None
     minimum_notional: float | None = None
+    market_data_id: str | None = None
+    allow_short: bool | None = None
+
+    @property
+    def market_id(self) -> str:
+        return self.market_data_id or self.id
+
+    @property
+    def short_enabled(self) -> bool:
+        return self.paper_model == "futures" and self.allow_short is not False
 
 
 @dataclass(frozen=True)
@@ -91,6 +101,9 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         raise ValueError("execution costs cannot be negative")
     if not instruments:
         raise ValueError("at least one instrument is required")
+    instrument_by_id = {instrument.id: instrument for instrument in instruments}
+    if len(instrument_by_id) != len(instruments):
+        raise ValueError("instrument ids must be unique")
     for instrument in instruments:
         if instrument.paper_model not in {"spot", "futures"}:
             raise ValueError(f"invalid paper_model for {instrument.id}")
@@ -102,6 +115,15 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
             raise ValueError(f"invalid fee_bps for {instrument.id}")
         if instrument.slippage_bps is not None and instrument.slippage_bps < 0:
             raise ValueError(f"invalid slippage_bps for {instrument.id}")
+        market = instrument_by_id.get(instrument.market_id)
+        if market is None:
+            raise ValueError(f"unknown market_data_id for {instrument.id}: {instrument.market_id}")
+        if (market.symbol, market.feed) != (instrument.symbol, instrument.feed):
+            raise ValueError(
+                f"shared market data must use the same symbol and feed for {instrument.id}"
+            )
+        if instrument.allow_short and instrument.paper_model != "futures":
+            raise ValueError(f"allow_short requires futures paper_model for {instrument.id}")
 
     database_path = project_root / app["database_path"]
     frontend_dist = project_root / app["frontend_dist"]

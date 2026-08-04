@@ -28,7 +28,11 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert health.status_code == 200
     assert health.json()["service"] == "mastermind-tick"
     assert overview.status_code == 200
-    assert {item["id"] for item in overview.json()["accounts"]} == {"soxlb", "soxl_perp"}
+    assert {item["id"] for item in overview.json()["accounts"]} == {
+        "soxlb",
+        "soxl_perp",
+        "soxl_perp_long",
+    }
     assert overview.json()["instruments"] == []
     assert overview.json()["environment"] == "paper"
     assert overview.json()["accounts"][0]["sharpe_ratio"] is None
@@ -36,6 +40,7 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert warehouse.status_code == 200
     assert warehouse.json()["instruments"][0]["symbol"] == "SOXLBUSDT"
     assert warehouse.json()["instruments"][1]["symbol"] == "SOXLUSDT"
+    assert warehouse.json()["instruments"][2]["market_data_id"] == "soxl_perp"
 
     funding = client.get("/api/funding?account_id=soxl_perp")
     assert funding.status_code == 200
@@ -51,6 +56,9 @@ def test_active_strategy_uses_recommended_atr_parameters() -> None:
     assert perp.leverage == 2
     assert perp.position_fraction == 0.625
     assert perp.leverage * perp.position_fraction == 1.25
+    long_only = next(item for item in settings.instruments if item.id == "soxl_perp_long")
+    assert long_only.market_id == perp.id
+    assert not long_only.short_enabled
 
 
 def test_chart_endpoints_page_backwards_with_time_cursor(tmp_path) -> None:

@@ -365,7 +365,7 @@ class ReplayCandidate:
             tick,
             has_position=self.broker.has_position,
             has_pending_order=self.pending_signal is not None,
-            allow_short=self.broker.instrument.paper_model == "futures",
+            allow_short=self.broker.instrument.short_enabled,
             is_short=self.broker.is_short,
         )
         if signal is None:
@@ -496,6 +496,7 @@ def run_parameter_grid(
     database_uri = f"file:{settings.database_path}?mode=ro"
     with sqlite3.connect(database_uri, uri=True) as connection:
         connection.row_factory = sqlite3.Row
+        market_id = instrument.market_id
         available = connection.execute(
             """
             SELECT MIN(timestamp_ms) AS first_ms, MAX(timestamp_ms) AS last_ms,
@@ -506,7 +507,7 @@ def run_parameter_grid(
                    ), 0) AS raw_trade_count
             FROM agg_trades WHERE instrument_id = ?
             """,
-            (instrument.id,),
+            (market_id,),
         ).fetchone()
         if available is None or available["first_ms"] is None:
             raise ValueError(f"no aggTrade data for {instrument.id}")
@@ -516,11 +517,11 @@ def run_parameter_grid(
             raise ValueError(f"invalid replay range for {instrument.id}")
 
         warmup_bars = _load_warmup_bars(
-            connection, instrument.id, replay_start, settings.warmup_bars
+            connection, market_id, replay_start, settings.warmup_bars
         )
         if not warmup_bars:
             raise ValueError(f"no pre-replay OHLCV warmup for {instrument.id}")
-        funding_rates = _load_funding_rates(connection, instrument.id, replay_start, replay_end)
+        funding_rates = _load_funding_rates(connection, market_id, replay_start, replay_end)
 
         position_fraction = Decimal(str(
             instrument.position_fraction
@@ -580,7 +581,7 @@ def run_parameter_grid(
             WHERE instrument_id = ? AND timestamp_ms BETWEEN ? AND ?
             ORDER BY timestamp_ms, received_at_ms, event_id
             """,
-            (instrument.id, replay_start, replay_end),
+            (market_id, replay_start, replay_end),
         )
         for row in rows:
             tick = Tick(
@@ -629,6 +630,8 @@ def run_parameter_grid(
     ]
     metadata = {
         "instrument_id": instrument.id,
+        "market_data_id": market_id,
+        "allow_short": instrument.short_enabled,
         "symbol": instrument.symbol,
         "paper_model": instrument.paper_model,
         "start_ms": replay_start,

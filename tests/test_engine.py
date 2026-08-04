@@ -44,6 +44,9 @@ class OfficialBarFeed:
     async def official_bars(self, start_ms: int, end_ms: int) -> list[Bar]:
         return [bar for bar in self.bars if start_ms <= bar.start_ms <= end_ms]
 
+    async def funding_rates(self, start_ms: int, end_ms: int) -> list:
+        return []
+
 
 class FailingOfficialBarFeed(OfficialBarFeed):
     async def official_bars(self, start_ms: int, end_ms: int) -> list[Bar]:
@@ -172,6 +175,54 @@ def test_tick_signal_is_submitted_then_filled_on_next_tick(tmp_path) -> None:
         if bar["start_ms"] == official.start_ms
     )
     assert stored["source"] == "test_kline_rest"
+
+
+def test_shared_market_tick_is_stored_once_and_fanned_out_to_both_accounts(
+    tmp_path,
+) -> None:
+    settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
+    market = next(item for item in settings.instruments if item.id == "soxl_perp")
+    long_only = next(item for item in settings.instruments if item.id == "soxl_perp_long")
+    store = PaperStore(settings.database_path)
+    engine = PaperEngine(settings, store)
+    feed = OfficialBarFeed([])
+    bars = [
+        Bar(
+            index * 900_000,
+            (index + 1) * 900_000 - 1,
+            Decimal(100 + index),
+            Decimal(102 + index),
+            Decimal(99 + index),
+            Decimal(101 + index),
+        )
+        for index in range(settings.strategy.atr_period)
+    ]
+    for instrument in (market, long_only):
+        store.ensure_account(instrument, settings.initial_cash, 1)
+        strategy = ATRTickStrategy(
+            period=settings.strategy.atr_period,
+            multiplier=settings.strategy.atr_multiplier,
+            bar_minutes=settings.strategy.bar_minutes,
+            trend_efficiency_period=settings.strategy.trend_efficiency_period,
+            minimum_trend_efficiency=settings.strategy.minimum_trend_efficiency,
+            reversal_confirmation_atr=settings.strategy.reversal_confirmation_atr,
+        )
+        strategy.bootstrap(bars)
+        engine.runtimes[instrument.id] = InstrumentRuntime(
+            instrument=instrument,
+            feed=feed,  # type: ignore[arg-type]
+            strategy=strategy,
+        )
+    tick = Tick("shared-tick", 30 * 900_000, Decimal("130"), Decimal("1"), "test")
+
+    asyncio.run(engine._process_market_tick(engine.runtimes[market.id], tick))
+
+    assert len(store.agg_trades(market.id, 10)) == 1
+    assert store.agg_trades(long_only.id, 10) == []
+    assert engine.runtimes[market.id].last_tick == tick
+    assert engine.runtimes[long_only.id].last_tick == tick
+    assert store.equity(market.id, 1)[0]["timestamp_ms"] == tick.timestamp_ms
+    assert store.equity(long_only.id, 1)[0]["timestamp_ms"] == tick.timestamp_ms
 
 
 def test_rest_failure_does_not_block_original_tick_strategy(tmp_path) -> None:

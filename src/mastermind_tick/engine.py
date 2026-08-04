@@ -50,13 +50,24 @@ class PaperEngine:
         self.trading_enabled = True
         self.started_at_ms: int | None = None
         self._stopping = False
+        self._instrument_by_id = {item.id: item for item in settings.instruments}
+
+    def _market_instrument(self, instrument: InstrumentSettings) -> InstrumentSettings:
+        return self._instrument_by_id[instrument.market_id]
 
     async def start(self) -> None:
         self.started_at_ms = _now_ms()
         self._stopping = False
+        feeds: dict[str, MarketFeed] = {}
         for instrument in self.settings.instruments:
             self.store.ensure_account(instrument, self.settings.initial_cash, self.started_at_ms)
-            feed = build_feed(instrument.feed, instrument.symbol)
+            market_instrument = self._market_instrument(instrument)
+            if instrument.market_id not in feeds:
+                feeds[instrument.market_id] = build_feed(
+                    market_instrument.feed,
+                    market_instrument.symbol,
+                )
+            feed = feeds[instrument.market_id]
             strategy = ATRTickStrategy(
                 period=self.settings.strategy.atr_period,
                 multiplier=self.settings.strategy.atr_multiplier,
@@ -91,15 +102,18 @@ class PaperEngine:
                     "WARMUP_FAILED",
                     runtime.status_message,
                 )
+        for market_id, runtime in self.runtimes.items():
+            if market_id != runtime.instrument.market_id:
+                continue
             runtime.task = asyncio.create_task(
-                self._run_instrument(runtime), name=f"feed-{instrument.id}"
+                self._run_instrument(runtime), name=f"feed-{market_id}"
             )
             runtime.kline_task = asyncio.create_task(
-                self._run_klines(runtime), name=f"klines-{instrument.id}"
+                self._run_klines(runtime), name=f"klines-{market_id}"
             )
             runtime.kline_reconciliation_task = asyncio.create_task(
                 self._run_kline_reconciliation(runtime),
-                name=f"kline-reconciliation-{instrument.id}",
+                name=f"kline-reconciliation-{market_id}",
             )
 
     async def stop(self) -> None:
@@ -151,51 +165,65 @@ class PaperEngine:
     async def _run_instrument(self, runtime: InstrumentRuntime) -> None:
         warmup_retries = 0
         while not self._stopping:
-            if not runtime.strategy_ready:
-                runtime.status = "CONNECTING"
-                runtime.status_message = "Retrying strategy warm-up"
+            unready = [
+                item
+                for item in self._market_runtimes(runtime.instrument.market_id)
+                if not item.strategy_ready
+            ]
+            if unready:
+                for item in unready:
+                    item.status = "CONNECTING"
+                    item.status_message = "Retrying strategy warm-up"
                 try:
-                    await self._warmup_runtime(runtime)
+                    for item in unready:
+                        await self._warmup_runtime(item)
                     warmup_retries = 0
                 except asyncio.CancelledError:
                     raise
                 except Exception as exc:
                     warmup_retries += 1
-                    runtime.status = "DEGRADED"
-                    runtime.status_message = (
-                        f"Warm-up retry failed: {type(exc).__name__}: {exc}"
-                    )
-                    self.store.add_event(
-                        runtime.instrument.id,
-                        _now_ms(),
-                        "ERROR",
-                        "WARMUP_RETRY_FAILED",
-                        runtime.status_message,
-                        {"retries": warmup_retries},
-                    )
+                    for item in unready:
+                        if item.strategy_ready:
+                            continue
+                        item.status = "DEGRADED"
+                        item.status_message = (
+                            f"Warm-up retry failed: {type(exc).__name__}: {exc}"
+                        )
+                        self.store.add_event(
+                            item.instrument.id,
+                            _now_ms(),
+                            "ERROR",
+                            "WARMUP_RETRY_FAILED",
+                            item.status_message,
+                            {"retries": warmup_retries},
+                        )
                     await asyncio.sleep(min(30, 2 ** min(warmup_retries, 4)))
                     continue
-            runtime.status = "CONNECTING"
-            runtime.status_message = f"Connecting to {runtime.feed.source_name}"
+            for item in self._market_runtimes(runtime.instrument.market_id):
+                item.status = "CONNECTING"
+                item.status_message = f"Connecting to {runtime.feed.source_name}"
             try:
                 async for tick in runtime.feed.ticks():
-                    runtime.status = "LIVE"
-                    runtime.status_message = f"Receiving {tick.source}"
-                    await self._process_tick(runtime, tick)
+                    for item in self._market_runtimes(runtime.instrument.market_id):
+                        item.status = "LIVE"
+                        item.status_message = f"Receiving {tick.source}"
+                    await self._process_market_tick(runtime, tick)
             except asyncio.CancelledError:
                 raise
             except Exception as exc:
                 runtime.reconnects += 1
-                runtime.status = "DEGRADED"
-                runtime.status_message = f"{type(exc).__name__}: {exc}"
-                self.store.add_event(
-                    runtime.instrument.id,
-                    _now_ms(),
-                    "ERROR",
-                    "FEED_DISCONNECTED",
-                    runtime.status_message,
-                    {"reconnects": runtime.reconnects},
-                )
+                for item in self._market_runtimes(runtime.instrument.market_id):
+                    item.reconnects = runtime.reconnects
+                    item.status = "DEGRADED"
+                    item.status_message = f"{type(exc).__name__}: {exc}"
+                    self.store.add_event(
+                        item.instrument.id,
+                        _now_ms(),
+                        "ERROR",
+                        "FEED_DISCONNECTED",
+                        item.status_message,
+                        {"reconnects": item.reconnects},
+                    )
                 await asyncio.sleep(min(30, 2 ** min(runtime.reconnects, 4)))
 
     async def _warmup_runtime(self, runtime: InstrumentRuntime) -> None:
@@ -204,7 +232,7 @@ class PaperEngine:
             history = await runtime.feed.history(self.settings.warmup_bars)
         except Exception:
             stored_rows = self.store.ohlcv_bars(
-                runtime.instrument.id,
+                runtime.instrument.market_id,
                 self.settings.strategy.bar_minutes,
                 self.settings.warmup_bars,
             )
@@ -221,7 +249,7 @@ class PaperEngine:
             )
         if not warehouse_fallback:
             self.store.upsert_history_bars(
-                runtime.instrument,
+                self._market_instrument(runtime.instrument),
                 self.settings.strategy.bar_minutes,
                 history,
                 runtime.feed.kline_source_name,
@@ -318,13 +346,43 @@ class PaperEngine:
                 )
             return synced
 
-    async def _process_tick(self, runtime: InstrumentRuntime, tick: Tick) -> None:
+    def _market_runtimes(self, market_id: str) -> list[InstrumentRuntime]:
+        return [
+            runtime
+            for runtime in self.runtimes.values()
+            if runtime.instrument.market_id == market_id
+        ]
+
+    async def _process_market_tick(
+        self,
+        market_runtime: InstrumentRuntime,
+        tick: Tick,
+    ) -> None:
+        self.store.record_market_tick(
+            self._market_instrument(market_runtime.instrument),
+            self.settings.strategy.bar_minutes,
+            tick,
+        )
+        runtimes = self._market_runtimes(market_runtime.instrument.market_id)
+        if not runtimes:
+            runtimes = [market_runtime]
+        for runtime in runtimes:
+            await self._process_tick(runtime, tick, record_market=False)
+
+    async def _process_tick(
+        self,
+        runtime: InstrumentRuntime,
+        tick: Tick,
+        *,
+        record_market: bool = True,
+    ) -> None:
         async with runtime.lock:
-            self.store.record_market_tick(
-                runtime.instrument,
-                self.settings.strategy.bar_minutes,
-                tick,
-            )
+            if record_market:
+                self.store.record_market_tick(
+                    self._market_instrument(runtime.instrument),
+                    self.settings.strategy.bar_minutes,
+                    tick,
+                )
             runtime.last_tick = tick
             funding_applied = await self._apply_due_funding(runtime, tick)
             account_id = runtime.instrument.id
@@ -358,7 +416,7 @@ class PaperEngine:
             position_quantity = Decimal(account["quantity"])
             has_position = position_quantity != 0
             is_short = position_quantity < 0
-            allow_short = runtime.instrument.paper_model == "futures"
+            allow_short = runtime.instrument.short_enabled
             has_pending = self.store.has_pending_order(account_id)
             signal = runtime.strategy.on_tick(
                 tick,
@@ -473,7 +531,7 @@ class PaperEngine:
             runtime.last_official_bar_start_ms = official_bar.start_ms
             runtime.last_kline_verified_at_ms = _now_ms()
             self.store.upsert_history_bars(
-                runtime.instrument,
+                self._market_instrument(runtime.instrument),
                 self.settings.strategy.bar_minutes,
                 [official_bar],
                 runtime.feed.kline_source_name,
@@ -504,7 +562,11 @@ class PaperEngine:
 
         applied = False
         for funding in rates:
-            payment = self.store.apply_funding(runtime.instrument.id, funding)
+            payment = self.store.apply_funding(
+                runtime.instrument.id,
+                funding,
+                market_data_id=runtime.instrument.market_id,
+            )
             applied = payment is not None or applied
         runtime.funding_cursor_ms = tick.timestamp_ms
         return applied
@@ -517,7 +579,7 @@ class PaperEngine:
             position_quantity = Decimal(account["quantity"])
             has_position = position_quantity != 0
             is_short = position_quantity < 0
-            allow_short = runtime.instrument.paper_model == "futures"
+            allow_short = runtime.instrument.short_enabled
             has_pending = self.store.has_pending_order(runtime.instrument.id)
             latest_orders = self.store.orders(runtime.instrument.id, 1)
             values.append(
@@ -530,6 +592,8 @@ class PaperEngine:
                     "asset_type": runtime.instrument.asset_type,
                     "reference_symbol": runtime.instrument.reference_symbol,
                     "paper_model": runtime.instrument.paper_model,
+                    "market_data_id": runtime.instrument.market_id,
+                    "allow_short": allow_short,
                     "leverage": runtime.instrument.leverage,
                     "margin_mode": runtime.instrument.margin_mode,
                     "position_fraction": _position_fraction(runtime.instrument, self.settings),

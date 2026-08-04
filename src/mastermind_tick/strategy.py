@@ -335,7 +335,7 @@ class ATRTickStrategy:
                     bar_start,
                     Side.SELL,
                     "price_crossed_below_atr_stop",
-                    reduce_only=allow_short and reduce_only,
+                    reduce_only=reduce_only,
                     reversal_after="SHORT" if allow_short and reduce_only else None,
                 )
             self._record_cross("DOWN", tick.timestamp_ms, "BLOCKED", blocked_reason)
