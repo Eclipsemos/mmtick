@@ -31,6 +31,142 @@ def wilder_atr(bars: list[Bar], period: int) -> Decimal | None:
     return atr
 
 
+class ATRProfitProtection:
+    """One-way ATR profit stop shared by replay and live Futures execution."""
+
+    STATE_VERSION = 1
+
+    def __init__(self, activation_atr: float, trailing_atr: float):
+        if activation_atr <= 0 or trailing_atr <= 0:
+            raise ValueError("profit protection ATR parameters must be positive")
+        self.activation_atr = Decimal(str(activation_atr))
+        self.trailing_atr = Decimal(str(trailing_atr))
+        self.entry_price: Decimal | None = None
+        self.entry_atr: Decimal | None = None
+        self.favorable_extreme: Decimal | None = None
+        self.stop: Decimal | None = None
+        self.position_side: str | None = None
+        self.active = False
+
+    def reset(self) -> None:
+        self.entry_price = None
+        self.entry_atr = None
+        self.favorable_extreme = None
+        self.stop = None
+        self.position_side = None
+        self.active = False
+
+    def open(
+        self,
+        *,
+        entry_price: Decimal,
+        entry_atr: Decimal,
+        is_short: bool,
+    ) -> None:
+        self.entry_price = entry_price
+        self.entry_atr = entry_atr
+        self.favorable_extreme = entry_price
+        self.stop = None
+        self.position_side = "SHORT" if is_short else "LONG"
+        self.active = False
+
+    def sync_position(
+        self,
+        *,
+        quantity: Decimal,
+        entry_price: Decimal,
+        current_atr: Decimal,
+    ) -> None:
+        if quantity == 0:
+            self.reset()
+            return
+        side = "SHORT" if quantity < 0 else "LONG"
+        if (
+            self.position_side != side
+            or self.entry_price != entry_price
+            or self.entry_atr is None
+        ):
+            self.open(
+                entry_price=entry_price,
+                entry_atr=current_atr,
+                is_short=quantity < 0,
+            )
+
+    def observe(
+        self, price: Decimal, current_atr: Decimal, *, action_locked: bool
+    ) -> Decimal | None:
+        if (
+            self.entry_price is None
+            or self.entry_atr is None
+            or self.position_side is None
+        ):
+            return None
+        is_short = self.position_side == "SHORT"
+        self.favorable_extreme = (
+            min(self.favorable_extreme or self.entry_price, price)
+            if is_short
+            else max(self.favorable_extreme or self.entry_price, price)
+        )
+        if action_locked:
+            return None
+
+        favorable_move = (
+            self.entry_price - self.favorable_extreme
+            if is_short
+            else self.favorable_extreme - self.entry_price
+        )
+        trailing_distance = current_atr * self.trailing_atr
+        if not self.active:
+            if favorable_move < self.entry_atr * self.activation_atr:
+                return None
+            self.active = True
+            self.stop = price + trailing_distance if is_short else price - trailing_distance
+            return None
+
+        if self.stop is None:
+            return None
+        crossed = price >= self.stop if is_short else price <= self.stop
+        if crossed:
+            return self.stop
+        candidate = price + trailing_distance if is_short else price - trailing_distance
+        self.stop = min(self.stop, candidate) if is_short else max(self.stop, candidate)
+        return None
+
+    def runtime_state(self) -> dict[str, Any]:
+        return {
+            "version": self.STATE_VERSION,
+            "activation_atr": str(self.activation_atr),
+            "trailing_atr": str(self.trailing_atr),
+            "entry_price": _string_or_none(self.entry_price),
+            "entry_atr": _string_or_none(self.entry_atr),
+            "favorable_extreme": _string_or_none(self.favorable_extreme),
+            "stop": _string_or_none(self.stop),
+            "position_side": self.position_side,
+            "active": self.active,
+        }
+
+    def restore_runtime(self, value: dict[str, Any] | None) -> None:
+        if (
+            not value
+            or value.get("version") != self.STATE_VERSION
+            or Decimal(str(value.get("activation_atr", "0"))) != self.activation_atr
+            or Decimal(str(value.get("trailing_atr", "0"))) != self.trailing_atr
+        ):
+            return
+        side = value.get("position_side")
+        entry_price = _decimal_or_none(value.get("entry_price"))
+        entry_atr = _decimal_or_none(value.get("entry_atr"))
+        extreme = _decimal_or_none(value.get("favorable_extreme"))
+        if side not in {"LONG", "SHORT"} or entry_price is None or entry_atr is None:
+            return
+        self.position_side = side
+        self.entry_price = entry_price
+        self.entry_atr = entry_atr
+        self.favorable_extreme = extreme or entry_price
+        self.stop = _decimal_or_none(value.get("stop"))
+        self.active = bool(value.get("active", False))
+
+
 @dataclass
 class StrategyView:
     ready: bool
@@ -578,6 +714,49 @@ class ATRTickStrategy:
             self.trailing_stop = price - distance
         else:
             self.trailing_stop = price + distance
+
+
+def atr_profit_protection_signal(
+    protection: ATRProfitProtection | None,
+    strategy: ATRTickStrategy,
+    tick: Tick,
+    *,
+    position_quantity: Decimal,
+    entry_price: Decimal,
+    has_pending_order: bool,
+    emit_signals: bool,
+) -> StrategySignal | None:
+    """Update shared profit protection and emit a reduce-only exit when crossed."""
+    atr = getattr(strategy, "last_atr", None)
+    if protection is None or atr is None:
+        return None
+    protection.sync_position(
+        quantity=position_quantity,
+        entry_price=entry_price,
+        current_atr=atr,
+    )
+    crossed_stop = protection.observe(
+        tick.price,
+        atr,
+        action_locked=strategy.action_this_bar,
+    )
+    if (
+        crossed_stop is None
+        or not emit_signals
+        or has_pending_order
+        or position_quantity == 0
+    ):
+        return None
+    return StrategySignal(
+        side=Side.BUY if position_quantity < 0 else Side.SELL,
+        reason="atr_profit_protection",
+        signal_price=tick.price,
+        trailing_stop=crossed_stop,
+        atr=atr,
+        bar_start_ms=tick.timestamp_ms // strategy.bar_ms * strategy.bar_ms,
+        tick_id=tick.event_id,
+        reduce_only=True,
+    )
 
 
 def _decimal_or_none(value: Any) -> Decimal | None:

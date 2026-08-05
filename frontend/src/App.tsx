@@ -858,6 +858,8 @@ function Monitor({
               <div><dt>效率比周期</dt><dd>{runtime.strategy_config.trend_efficiency_period} 根</dd></div>
               <div><dt>最低趋势效率</dt><dd>{number(runtime.strategy_config.minimum_trend_efficiency, 2)}</dd></div>
               <div><dt>反向确认距离</dt><dd>{number(runtime.strategy_config.reversal_confirmation_atr, 2)} ATR</dd></div>
+              {runtime.paper_model === 'futures' && <div><dt>利润保护激活</dt><dd>{number(runtime.strategy_config.profit_activation_atr ?? null, 2)} ATR</dd></div>}
+              {runtime.paper_model === 'futures' && <div><dt>利润跟踪距离</dt><dd>{number(runtime.strategy_config.profit_trailing_atr ?? null, 2)} ATR</dd></div>}
               <div><dt>单 K 线动作</dt><dd>{runtime.strategy_config.one_action_per_bar ? '最多 1 次' : '--'}</dd></div>
               <div><dt>启动趋势对齐</dt><dd>{runtime.strategy_config.startup_alignment ? '启用' : '--'}</dd></div>
               <div><dt>永续反向模式</dt><dd>{runtime.allow_short ? '先平仓，再确认' : '仅做多，不开空'}</dd></div>
@@ -870,6 +872,7 @@ function Monitor({
           <dl className="strategy-values">
             <div><dt>实时 ATR</dt><dd>{number(strategy.atr, 4)}</dd></div>
             <div><dt>ATR 止损线</dt><dd>{money(strategy.trailing_stop, account.currency)}</dd></div>
+            {runtime.paper_model === 'futures' && <div><dt>利润保护线</dt><dd>{strategy.profit_protection_active ? money(strategy.profit_stop ?? null, account.currency) : '未激活'}</dd></div>}
             <div><dt>价格距离</dt><dd>{strategy.price && strategy.trailing_stop ? money(Number(strategy.price) - Number(strategy.trailing_stop), account.currency) : '--'}</dd></div>
             <div><dt>K 线开始</dt><dd>{time(strategy.bar_start_ms)}</dd></div>
             <div><dt>K 线状态</dt><dd>形成中，Tick 实时交易</dd></div>

@@ -108,6 +108,8 @@ class LiveFuturesSettings:
     max_slippage_bps: float = 30.0
     max_daily_loss: float = 50.0
     max_orders_per_day: int = 6
+    profit_activation_atr: float = 0.0
+    profit_trailing_atr: float = 0.0
     reconcile_seconds: int = 5
     trade_sync_seconds: int = 60
     order_timeout_seconds: int = 30
@@ -251,6 +253,17 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         raise ValueError("live_futures risk limits cannot be negative")
     if live_futures.max_slippage_bps < 0:
         raise ValueError("live_futures slippage limit cannot be negative")
+    if (
+        live_futures.profit_activation_atr < 0
+        or live_futures.profit_trailing_atr < 0
+    ):
+        raise ValueError("live_futures profit protection ATR cannot be negative")
+    if (live_futures.profit_activation_atr > 0) != (
+        live_futures.profit_trailing_atr > 0
+    ):
+        raise ValueError(
+            "live_futures profit activation and trailing ATR must both be enabled"
+        )
     if (
         live_futures.max_orders_per_day < 0
         or live_futures.reconcile_seconds < 1

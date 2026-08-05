@@ -3,9 +3,46 @@ from decimal import Decimal
 import pytest
 
 from mastermind_tick.models import Bar, Side, Tick
-from mastermind_tick.strategy import ATRTickStrategy, wilder_atr
+from mastermind_tick.strategy import ATRProfitProtection, ATRTickStrategy, wilder_atr
 
 BAR_MS = 900_000
+
+
+def test_atr_profit_protection_activates_ratchets_and_restores() -> None:
+    protection = ATRProfitProtection(2, 0.5)
+    protection.open(
+        entry_price=Decimal("100"), entry_atr=Decimal("2"), is_short=False
+    )
+
+    assert protection.observe(Decimal("103.99"), Decimal("2"), action_locked=False) is None
+    assert not protection.active
+    assert protection.observe(Decimal("104"), Decimal("2"), action_locked=False) is None
+    assert protection.active
+    assert protection.stop == Decimal("103.0")
+    assert protection.observe(Decimal("105"), Decimal("2"), action_locked=False) is None
+    assert protection.stop == Decimal("104.0")
+
+    restored = ATRProfitProtection(2, 0.5)
+    restored.restore_runtime(protection.runtime_state())
+
+    assert restored.observe(Decimal("104"), Decimal("2"), action_locked=False) == Decimal(
+        "104.0"
+    )
+
+
+def test_atr_profit_protection_is_symmetric_for_short() -> None:
+    protection = ATRProfitProtection(2, 0.5)
+    protection.open(
+        entry_price=Decimal("100"), entry_atr=Decimal("2"), is_short=True
+    )
+
+    assert protection.observe(Decimal("96"), Decimal("2"), action_locked=False) is None
+    assert protection.stop == Decimal("97.0")
+    assert protection.observe(Decimal("95"), Decimal("2"), action_locked=False) is None
+    assert protection.stop == Decimal("96.0")
+    assert protection.observe(Decimal("96"), Decimal("2"), action_locked=False) == Decimal(
+        "96.0"
+    )
 
 
 def bars(closes: list[float], spread: float = 0.5) -> list[Bar]:

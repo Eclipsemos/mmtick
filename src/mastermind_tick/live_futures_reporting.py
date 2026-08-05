@@ -41,6 +41,8 @@ def build_live_futures_overview(
             "trend_efficiency_period": settings.strategy.trend_efficiency_period,
             "minimum_trend_efficiency": settings.strategy.minimum_trend_efficiency,
             "reversal_confirmation_atr": settings.strategy.reversal_confirmation_atr,
+            "profit_activation_atr": settings.live_futures.profit_activation_atr,
+            "profit_trailing_atr": settings.live_futures.profit_trailing_atr,
             "one_action_per_bar": True,
             "startup_alignment": False,
             "futures_reversal_mode": "close_then_confirm",
@@ -126,6 +128,7 @@ def build_live_futures_account(
     )
     strategy_view = trader.strategy.view()
     strategy = _strategy_view(asdict(strategy_view))
+    strategy.update(trader.profit_protection_view())
     normalized_orders = live_futures_orders(store, account_id, 1)
     pending = store.pending_orders(account_id)
     runtime = {
@@ -153,6 +156,8 @@ def build_live_futures_account(
             "trend_efficiency_period": settings.strategy.trend_efficiency_period,
             "minimum_trend_efficiency": settings.strategy.minimum_trend_efficiency,
             "reversal_confirmation_atr": settings.strategy.reversal_confirmation_atr,
+            "profit_activation_atr": config.profit_activation_atr,
+            "profit_trailing_atr": config.profit_trailing_atr,
             "one_action_per_bar": True,
             "startup_alignment": False,
             "futures_reversal_mode": "close_then_confirm",

@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 from decimal import Decimal
 
 from mastermind_tick.config import (
@@ -126,6 +127,47 @@ def test_rebuild_candidate_replaces_ledger_and_preserves_market_data(tmp_path) -
     assert state["trend_efficiency_period"] == 2
     assert state["minimum_trend_efficiency"] == "0"
     assert report["market_counts"]["agg_trades"] == source_market_count
+
+
+def test_rebuild_persists_profit_protection_for_target_futures_account(tmp_path) -> None:
+    base = _settings(tmp_path)
+    instrument = replace(
+        _instrument(),
+        id="soxl_perp",
+        paper_model="futures",
+        leverage=2,
+        margin_mode="isolated",
+        allow_short=True,
+    )
+    settings = replace(
+        base,
+        instruments=(instrument,),
+        live_futures=replace(
+            base.live_futures,
+            instrument_id=instrument.id,
+            profit_activation_atr=2,
+            profit_trailing_atr=0.5,
+        ),
+    )
+    store = PaperStore(settings.database_path)
+    store.upsert_history_bars(instrument, 15, [_bar(0, "10"), _bar(1, "9")], "test")
+    for item in (
+        _tick("tick-1", 2 * BAR_MS, "10"),
+        _tick("tick-2", 2 * BAR_MS + 1, "10.1"),
+        _tick("tick-3", 3 * BAR_MS, "8"),
+        _tick("tick-4", 3 * BAR_MS + 1, "7.9"),
+    ):
+        store.record_market_tick(instrument, 15, item)
+
+    candidate_path = tmp_path / "profit-protection.db"
+    report = rebuild_candidate(settings, candidate_path, (instrument.id,))
+
+    state = PaperStore(candidate_path).strategy_state(instrument.id)
+    assert state is not None
+    assert state["profit_protection"]["activation_atr"] == "2"
+    assert state["profit_protection"]["trailing_atr"] == "0.5"
+    assert report["strategy"]["profit_activation_atr"] == 2
+    assert report["strategy"]["profit_trailing_atr"] == 0.5
 
 
 def test_apply_candidate_atomically_replaces_derived_rows(tmp_path) -> None:

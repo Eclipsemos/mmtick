@@ -263,6 +263,35 @@ def test_futures_readonly_reconciliation_persists_actual_account(tmp_path) -> No
     assert "FUTURES_TEST_ORDER_REQUIRED" in trader.block_reasons
 
 
+def test_live_futures_profit_protection_builds_reduce_only_close(tmp_path) -> None:
+    settings = futures_settings(tmp_path)
+    trader = LiveFuturesTrader(
+        settings,
+        LiveStore(settings.live_futures.database_path),
+        client=FakeFuturesClient(),  # type: ignore[arg-type]
+    )
+    trader.position_quantity = Decimal("10")
+    trader.entry_price = Decimal("100")
+    trader.strategy.last_atr = Decimal("2")
+
+    assert trader._profit_protection_signal(
+        Tick("activate", 3 * 900_000, Decimal("104"), Decimal("1"), "test"),
+        has_pending_order=False,
+        emit_signals=True,
+    ) is None
+    signal = trader._profit_protection_signal(
+        Tick("retrace", 3 * 900_000 + 1, Decimal("103"), Decimal("1"), "test"),
+        has_pending_order=False,
+        emit_signals=True,
+    )
+
+    assert signal is not None
+    assert signal.side is Side.SELL
+    assert signal.reduce_only
+    assert signal.reason == "atr_profit_protection"
+    assert signal.trailing_stop == Decimal("103.0")
+
+
 def test_futures_account_mode_mismatches_block_execution(tmp_path, monkeypatch) -> None:
     settings = futures_settings(tmp_path, allow_orders=True)
     monkeypatch.setenv(

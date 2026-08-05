@@ -16,6 +16,7 @@ from mastermind_tick.backtest import ReplayATRTickStrategy, _load_funding_rates,
 from mastermind_tick.config import InstrumentSettings, Settings, load_settings
 from mastermind_tick.models import Tick
 from mastermind_tick.store import PaperStore
+from mastermind_tick.strategy import ATRProfitProtection, atr_profit_protection_signal
 
 DERIVED_TABLES = (
     "fills",
@@ -82,6 +83,8 @@ def rebuild_candidate(
             "trend_efficiency_period": settings.strategy.trend_efficiency_period,
             "minimum_trend_efficiency": settings.strategy.minimum_trend_efficiency,
             "reversal_confirmation_atr": settings.strategy.reversal_confirmation_atr,
+            "profit_activation_atr": settings.live_futures.profit_activation_atr,
+            "profit_trailing_atr": settings.live_futures.profit_trailing_atr,
         },
         "market_counts": after_market,
         "accounts": [asdict(result) for result in results],
@@ -125,6 +128,7 @@ def _rebuild_account(
         settings.strategy.reversal_confirmation_atr,
     )
     strategy.bootstrap(warmup)
+    profit_protection = _paper_profit_protection(settings, instrument)
     position_fraction = (
         instrument.position_fraction
         if instrument.position_fraction is not None
@@ -134,6 +138,7 @@ def _rebuild_account(
     last_snapshot_ms = 0
     last_tick: Tick | None = None
     position_quantity = Decimal("0")
+    average_price = Decimal("0")
     has_pending = False
 
     with store.connection() as connection:
@@ -201,7 +206,9 @@ def _rebuild_account(
                         filled=fill.get("status") == "FILLED",
                     )
                 has_pending = False
-                position_quantity = Decimal(store.account(instrument.id)["quantity"])
+                account = store.account(instrument.id)
+                position_quantity = Decimal(account["quantity"])
+                average_price = Decimal(account["average_price"])
             signal = strategy.on_tick(
                 tick,
                 has_position=position_quantity != 0,
@@ -209,6 +216,16 @@ def _rebuild_account(
                 allow_short=instrument.short_enabled,
                 is_short=position_quantity < 0,
             )
+            if signal is None:
+                signal = atr_profit_protection_signal(
+                    profit_protection,
+                    strategy,
+                    tick,
+                    position_quantity=position_quantity,
+                    entry_price=average_price,
+                    has_pending_order=has_pending,
+                    emit_signals=True,
+                )
             if signal is not None:
                 store.submit_order(instrument.id, signal, tick.timestamp_ms)
                 has_pending = True
@@ -217,15 +234,27 @@ def _rebuild_account(
                 tick.timestamp_ms - last_snapshot_ms >= settings.equity_snapshot_seconds * 1000
             )
             if snapshot_due or fill or signal or funding_applied:
-                store.snapshot(instrument.id, tick, _strategy_view(strategy))
+                store.snapshot(
+                    instrument.id,
+                    tick,
+                    _strategy_view(strategy, profit_protection),
+                )
                 last_snapshot_ms = tick.timestamp_ms
             last_tick = tick
 
     if last_tick is None:
         raise RuntimeError(f"replay unexpectedly produced no ticks for {instrument.id}")
-    store.save_strategy_state(instrument.id, strategy.runtime_state(), last_tick.timestamp_ms)
+    store.save_strategy_state(
+        instrument.id,
+        _strategy_state(strategy, profit_protection),
+        last_tick.timestamp_ms,
+    )
     account = store.account(instrument.id)
-    final_snapshot = store.snapshot(instrument.id, last_tick, _strategy_view(strategy))
+    final_snapshot = store.snapshot(
+        instrument.id,
+        last_tick,
+        _strategy_view(strategy, profit_protection),
+    )
     initial_cash = Decimal(account["initial_cash"])
     final_equity = Decimal(str(final_snapshot["equity"]))
     counts = _ledger_counts(store, instrument.id)
@@ -428,7 +457,11 @@ def _replay_account_tail(
             settings.strategy.reversal_confirmation_atr,
         )
         strategy.bootstrap(warmup)
-        strategy.restore_runtime(store.strategy_state(instrument.id))
+        saved_state = store.strategy_state(instrument.id)
+        strategy.restore_runtime(saved_state)
+        profit_protection = _paper_profit_protection(settings, instrument)
+        if profit_protection is not None and saved_state is not None:
+            profit_protection.restore_runtime(saved_state.get("profit_protection"))
         position_fraction = (
             instrument.position_fraction
             if instrument.position_fraction is not None
@@ -436,6 +469,7 @@ def _replay_account_tail(
         )
         account = store.account(instrument.id)
         position_quantity = Decimal(account["quantity"])
+        average_price = Decimal(account["average_price"])
         has_pending = store.has_pending_order(instrument.id)
         with store.connection() as ledger_connection:
             latest_snapshot = ledger_connection.execute(
@@ -475,7 +509,9 @@ def _replay_account_tail(
                         filled=fill.get("status") == "FILLED",
                     )
                 has_pending = False
-                position_quantity = Decimal(store.account(instrument.id)["quantity"])
+                account = store.account(instrument.id)
+                position_quantity = Decimal(account["quantity"])
+                average_price = Decimal(account["average_price"])
             signal = strategy.on_tick(
                 tick,
                 has_position=position_quantity != 0,
@@ -483,6 +519,16 @@ def _replay_account_tail(
                 allow_short=instrument.short_enabled,
                 is_short=position_quantity < 0,
             )
+            if signal is None:
+                signal = atr_profit_protection_signal(
+                    profit_protection,
+                    strategy,
+                    tick,
+                    position_quantity=position_quantity,
+                    entry_price=average_price,
+                    has_pending_order=has_pending,
+                    emit_signals=True,
+                )
             if signal is not None:
                 store.submit_order(instrument.id, signal, tick.timestamp_ms)
                 has_pending = True
@@ -490,13 +536,25 @@ def _replay_account_tail(
                 tick.timestamp_ms - last_snapshot_ms >= settings.equity_snapshot_seconds * 1000
             )
             if snapshot_due or fill or signal or funding_applied:
-                store.snapshot(instrument.id, tick, _strategy_view(strategy))
+                store.snapshot(
+                    instrument.id,
+                    tick,
+                    _strategy_view(strategy, profit_protection),
+                )
                 last_snapshot_ms = tick.timestamp_ms
             last_tick = tick
 
     if last_tick is not None:
-        store.save_strategy_state(instrument.id, strategy.runtime_state(), last_tick.timestamp_ms)
-        store.snapshot(instrument.id, last_tick, _strategy_view(strategy))
+        store.save_strategy_state(
+            instrument.id,
+            _strategy_state(strategy, profit_protection),
+            last_tick.timestamp_ms,
+        )
+        store.snapshot(
+            instrument.id,
+            last_tick,
+            _strategy_view(strategy, profit_protection),
+        )
     return tick_count
 
 
@@ -564,9 +622,57 @@ def _tick_from_row(row: sqlite3.Row) -> Tick:
     )
 
 
-def _strategy_view(strategy: ReplayATRTickStrategy) -> dict[str, Any]:
+def _paper_profit_protection(
+    settings: Settings, instrument: InstrumentSettings
+) -> ATRProfitProtection | None:
+    config = settings.live_futures
+    if (
+        instrument.id != config.instrument_id
+        or instrument.paper_model != "futures"
+        or config.profit_activation_atr <= 0
+        or config.profit_trailing_atr <= 0
+    ):
+        return None
+    return ATRProfitProtection(config.profit_activation_atr, config.profit_trailing_atr)
+
+
+def _strategy_state(
+    strategy: ReplayATRTickStrategy,
+    profit_protection: ATRProfitProtection | None,
+) -> dict[str, Any]:
+    state = strategy.runtime_state()
+    if profit_protection is not None:
+        state["profit_protection"] = profit_protection.runtime_state()
+    return state
+
+
+def _strategy_view(
+    strategy: ReplayATRTickStrategy,
+    profit_protection: ATRProfitProtection | None = None,
+) -> dict[str, Any]:
     view = asdict(strategy.view())
-    return {key: str(value) if isinstance(value, Decimal) else value for key, value in view.items()}
+    result = {
+        key: str(value) if isinstance(value, Decimal) else value
+        for key, value in view.items()
+    }
+    result.update(
+        {
+            "profit_protection_active": bool(
+                profit_protection and profit_protection.active
+            ),
+            "profit_stop": (
+                str(profit_protection.stop)
+                if profit_protection and profit_protection.stop is not None
+                else None
+            ),
+            "profit_favorable_extreme": (
+                str(profit_protection.favorable_extreme)
+                if profit_protection and profit_protection.favorable_extreme is not None
+                else None
+            ),
+        }
+    )
+    return result
 
 
 def _ledger_counts(store: PaperStore, account_id: str) -> dict[str, int]:

@@ -25,15 +25,16 @@ def policies(settings: Settings) -> list[ReplayParameters]:
         ReplayParameters(
             period,
             multiplier,
-            variant="fixed_6atr",
-            fixed_take_profit_atr=6,
+            variant="protect_1atr_trail_0_5atr",
+            profit_activation_atr=1,
+            profit_trailing_atr=0.5,
         ),
         ReplayParameters(
             period,
             multiplier,
-            variant="protect_2atr_trail_2_5atr",
+            variant="protect_2atr_trail_0_5atr",
             profit_activation_atr=2,
-            profit_trailing_atr=2.5,
+            profit_trailing_atr=0.5,
         ),
     ]
 
@@ -112,9 +113,10 @@ def build_profit_report(payload: dict[str, Any]) -> str:
         "stored Tick with configured Taker fees, slippage, leverage and funding.",
         "",
         "- `baseline`: current strategy, no additional take profit.",
-        "- `fixed_6atr`: exit after a favorable move of 6 x entry ATR.",
-        "- `protect_2atr_trail_2_5atr`: after a 2 x entry ATR favorable move, activate a "
-        "one-way 2.5 x current ATR profit stop.",
+        "- `protect_1atr_trail_0_5atr`: after a 1 x entry ATR favorable move, activate a "
+        "one-way 0.5 x current ATR profit stop (aggressive protection).",
+        "- `protect_2atr_trail_0_5atr`: after a 2 x entry ATR favorable move, activate a "
+        "one-way 0.5 x current ATR profit stop (drawdown-focused candidate).",
         "",
         "Profit exits flatten the position and do not reverse it. Re-entry still requires the "
         "production strategy's normal signal rules.",

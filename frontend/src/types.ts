@@ -17,6 +17,9 @@ export type StrategyView = {
   last_cross_at_ms: number | null
   last_cross_result: 'BUY_SIGNAL' | 'SELL_SIGNAL' | 'BLOCKED' | null
   last_cross_reason: string | null
+  profit_protection_active?: boolean
+  profit_stop?: string | null
+  profit_favorable_extreme?: string | null
 }
 
 export type DecisionView = {
@@ -72,6 +75,8 @@ export type Runtime = {
     trend_efficiency_period: number
     minimum_trend_efficiency: number
     reversal_confirmation_atr: number
+    profit_activation_atr?: number
+    profit_trailing_atr?: number
     one_action_per_bar: boolean
     startup_alignment: boolean
     futures_reversal_mode: 'close_then_confirm'

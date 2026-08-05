@@ -226,6 +226,7 @@ journalctl --user -u mmtick.service -f
 - 持仓期间显示当前成本价、当前价平仓收益、ATR 平仓价及按当前止损线估算的毛收益；
 - 当前价格、ATR、趋势效率、K 线动作锁、反向确认和下一触发条件；
 - Futures 标记价、指数价、资金费率、保证金、可用余额和累计资金费；
+- SOXL Futures 浮盈达到 `2 ATR` 后启用单向 `0.5 ATR` 利润保护线；保护平仓不立即反手；
 - 现金、持仓、净值、累计收益、最大回撤、完整开仓—平仓轮次胜率和年化夏普率；
 - LIVE 账户净值同时标明外部净入金；入金和出金不计入累计收益、周期收益、最大回撤
   或夏普率；
@@ -307,8 +308,8 @@ PYTHONPATH=src .venv/bin/python -m mastermind_tick.backtest
 Tick 成交语义，并计入各账户的 Taker 手续费、滑点、目标暴露和永续历史资金费。
 报告写入 `reports/`，不会修改模拟盘数据库。
 
-三个利润退出版本（当前基准、固定 6 ATR 止盈、2 ATR 激活后使用 2.5 ATR
-利润保护）的复现命令：
+三个利润退出版本（当前基准、1 ATR 激活后使用 0.5 ATR 的激进利润保护、2 ATR
+激活后使用 0.5 ATR 的回撤优先利润保护）的复现命令：
 
 ```bash
 PYTHONPATH=src .venv/bin/python -m mastermind_tick.profit_backtest \

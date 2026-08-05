@@ -6,7 +6,7 @@ from mastermind_tick.config import load_settings
 from mastermind_tick.engine import InstrumentRuntime, PaperEngine, _decision_view
 from mastermind_tick.models import Bar, Tick
 from mastermind_tick.store import PaperStore
-from mastermind_tick.strategy import ATRTickStrategy, StrategyView
+from mastermind_tick.strategy import ATRProfitProtection, ATRTickStrategy, StrategyView
 
 
 def strategy_view(**overrides) -> StrategyView:
@@ -171,10 +171,63 @@ def test_tick_signal_is_submitted_then_filled_on_next_tick(tmp_path) -> None:
 
     asyncio.run(engine._process_official_close(runtime, official))
     stored = next(
-        bar for bar in store.ohlcv_bars(instrument.id, 15, 2)
+        bar
+        for bar in store.ohlcv_bars(instrument.id, 15, 2)
         if bar["start_ms"] == official.start_ms
     )
     assert stored["source"] == "test_kline_rest"
+
+
+def test_paper_futures_uses_and_persists_atr_profit_protection(tmp_path) -> None:
+    settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
+    instrument = next(item for item in settings.instruments if item.id == "soxl_perp")
+    store = PaperStore(settings.database_path)
+    store.ensure_account(instrument, settings.initial_cash, 1)
+    with store.connection() as connection:
+        connection.execute(
+            "UPDATE accounts SET quantity = '1', average_price = '100' WHERE id = ?",
+            (instrument.id,),
+        )
+    strategy = ATRTickStrategy(
+        period=2,
+        multiplier=0.75,
+        bar_minutes=15,
+        trend_efficiency_period=2,
+        minimum_trend_efficiency=0,
+    )
+    strategy.bootstrap(
+        [
+            Bar(0, 899_999, Decimal("10"), Decimal("10.5"), Decimal("9.5"), Decimal("10")),
+            Bar(900_000, 1_799_999, Decimal("9"), Decimal("9.5"), Decimal("8.5"), Decimal("9")),
+            Bar(1_800_000, 2_699_999, Decimal("8"), Decimal("8.5"), Decimal("7.5"), Decimal("8")),
+        ]
+    )
+    strategy.previous_price = Decimal("104")
+    strategy.trailing_stop = Decimal("90")
+    strategy.last_atr = Decimal("2")
+    strategy.startup_alignment_checked = True
+    protection = ATRProfitProtection(2, 0.5)
+    protection.open(entry_price=Decimal("100"), entry_atr=Decimal("2"), is_short=False)
+    protection.observe(Decimal("104"), Decimal("2"), action_locked=False)
+    runtime = InstrumentRuntime(
+        instrument=instrument,
+        feed=OfficialBarFeed([]),  # type: ignore[arg-type]
+        strategy=strategy,
+        profit_protection=protection,
+    )
+    engine = PaperEngine(settings, store)
+    exit_tick = Tick("profit-exit", 4 * 900_000, Decimal("103"), Decimal("1"), "test")
+
+    asyncio.run(engine._process_tick(runtime, exit_tick))
+
+    order = store.orders(instrument.id, 1)[0]
+    assert order["reason"] == "atr_profit_protection"
+    assert order["reduce_only"] == 1
+    assert order["status"] == "PENDING"
+    state = store.strategy_state(instrument.id)
+    assert state is not None
+    assert state["profit_protection"]["active"] is True
+    assert state["profit_protection"]["stop"] == "103.0"
 
 
 def test_shared_market_tick_is_stored_once_and_fanned_out_to_both_accounts(
@@ -387,9 +440,7 @@ def test_rest_reconciliation_closes_missing_bars_but_not_current_bar(tmp_path) -
     )
     engine = PaperEngine(settings, store)
 
-    synced = asyncio.run(
-        engine._reconcile_closed_klines(runtime, now_ms=bars[3].start_ms + 10_000)
-    )
+    synced = asyncio.run(engine._reconcile_closed_klines(runtime, now_ms=bars[3].start_ms + 10_000))
 
     assert synced
     assert runtime.last_official_bar_start_ms == bars[2].start_ms
@@ -402,7 +453,8 @@ def test_rest_reconciliation_closes_missing_bars_but_not_current_bar(tmp_path) -
     ]
     assert all(row["is_closed"] for row in stored)
     backfill = next(
-        event for event in store.events(instrument.id, 10)
+        event
+        for event in store.events(instrument.id, 10)
         if event["event_type"] == "KLINE_REST_BACKFILL"
     )
     assert backfill["payload"]["start_ms"] == bars[1].start_ms

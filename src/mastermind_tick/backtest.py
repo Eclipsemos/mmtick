@@ -14,7 +14,12 @@ from typing import Any
 
 from mastermind_tick.config import InstrumentSettings, Settings, load_settings
 from mastermind_tick.models import Bar, FundingRate, Side, StrategySignal, Tick
-from mastermind_tick.strategy import ATRTickStrategy, true_range, wilder_atr
+from mastermind_tick.strategy import (
+    ATRProfitProtection,
+    ATRTickStrategy,
+    true_range,
+    wilder_atr,
+)
 
 DEFAULT_PERIODS = (5, 7, 10, 14, 21, 28, 35, 42, 56)
 DEFAULT_MULTIPLIERS = (0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0)
@@ -330,8 +335,27 @@ class ReplayCandidate:
     funding_index: int = 0
     entry_atr: Decimal | None = None
     favorable_extreme: Decimal | None = None
-    profit_stop: Decimal | None = None
-    profit_protection_active: bool = False
+    profit_protection: ATRProfitProtection | None = None
+
+    def __post_init__(self) -> None:
+        activation = self.parameters.profit_activation_atr
+        trailing = self.parameters.profit_trailing_atr
+        if activation is not None and trailing is not None:
+            self.profit_protection = ATRProfitProtection(activation, trailing)
+            if self.broker.has_position and self.entry_atr is not None:
+                self.profit_protection.open(
+                    entry_price=self.broker.average_price,
+                    entry_atr=self.entry_atr,
+                    is_short=self.broker.is_short,
+                )
+
+    @property
+    def profit_stop(self) -> Decimal | None:
+        return self.profit_protection.stop if self.profit_protection else None
+
+    @property
+    def profit_protection_active(self) -> bool:
+        return bool(self.profit_protection and self.profit_protection.active)
 
     def process_tick(self, tick: Tick, funding_rates: list[FundingRate]) -> None:
         while (
@@ -356,8 +380,12 @@ class ReplayCandidate:
                 if position_before == 0 and self.broker.has_position:
                     self.entry_atr = pending_signal.atr
                     self.favorable_extreme = self.broker.average_price
-                    self.profit_stop = None
-                    self.profit_protection_active = False
+                    if self.profit_protection is not None:
+                        self.profit_protection.open(
+                            entry_price=self.broker.average_price,
+                            entry_atr=pending_signal.atr,
+                            is_short=self.broker.is_short,
+                        )
                 elif position_before != 0 and not self.broker.has_position:
                     self._clear_profit_state()
 
@@ -411,53 +439,21 @@ class ReplayCandidate:
                     entry_price - distance if is_short else entry_price + distance,
                 )
 
-        activation_atr = self.parameters.profit_activation_atr
-        trailing_atr = self.parameters.profit_trailing_atr
-        if activation_atr is None or trailing_atr is None:
+        if self.profit_protection is None:
             return None
-        activation_distance = self.entry_atr * Decimal(str(activation_atr))
-        favorable_move = (
-            entry_price - self.favorable_extreme
-            if is_short
-            else self.favorable_extreme - entry_price
+        crossed_stop = self.profit_protection.observe(
+            tick.price,
+            atr,
+            action_locked=self.strategy.action_this_bar,
         )
-        trailing_distance = atr * Decimal(str(trailing_atr))
-        if not self.profit_protection_active:
-            if favorable_move < activation_distance:
-                return None
-            self.profit_protection_active = True
-            self.profit_stop = (
-                tick.price + trailing_distance
-                if is_short
-                else tick.price - trailing_distance
-            )
+        if crossed_stop is None:
             return None
-
-        if self.profit_stop is None:
-            return None
-        crossed = (
-            tick.price >= self.profit_stop
-            if is_short
-            else tick.price <= self.profit_stop
+        return self._build_profit_signal(
+            tick,
+            atr,
+            "atr_profit_protection",
+            crossed_stop,
         )
-        if crossed:
-            return self._build_profit_signal(
-                tick,
-                atr,
-                "atr_profit_protection",
-                self.profit_stop,
-            )
-        candidate_stop = (
-            tick.price + trailing_distance
-            if is_short
-            else tick.price - trailing_distance
-        )
-        self.profit_stop = (
-            min(self.profit_stop, candidate_stop)
-            if is_short
-            else max(self.profit_stop, candidate_stop)
-        )
-        return None
 
     def _build_profit_signal(
         self,
@@ -481,8 +477,8 @@ class ReplayCandidate:
     def _clear_profit_state(self) -> None:
         self.entry_atr = None
         self.favorable_extreme = None
-        self.profit_stop = None
-        self.profit_protection_active = False
+        if self.profit_protection is not None:
+            self.profit_protection.reset()
 
 
 def run_parameter_grid(

@@ -14,7 +14,12 @@ from mastermind_tick.config import InstrumentSettings, Settings
 from mastermind_tick.feeds import MarketFeed, build_feed
 from mastermind_tick.models import Bar, Tick
 from mastermind_tick.store import PaperStore
-from mastermind_tick.strategy import ATRTickStrategy, StrategyView
+from mastermind_tick.strategy import (
+    ATRProfitProtection,
+    ATRTickStrategy,
+    StrategyView,
+    atr_profit_protection_signal,
+)
 
 KLINE_RECONCILIATION_INTERVAL_SECONDS = 30
 KLINE_CLOSE_GRACE_MS = 5_000
@@ -25,6 +30,7 @@ class InstrumentRuntime:
     instrument: InstrumentSettings
     feed: MarketFeed
     strategy: ATRTickStrategy
+    profit_protection: ATRProfitProtection | None = None
     status: str = "STARTING"
     status_message: str = "Loading warm-up history"
     last_tick: Tick | None = None
@@ -98,6 +104,7 @@ class PaperEngine:
                 instrument=instrument,
                 feed=feed,
                 strategy=strategy,
+                profit_protection=_paper_profit_protection(self.settings, instrument),
                 strategy_ready=False,
             )
             account = self.store.account(instrument.id)
@@ -107,7 +114,12 @@ class PaperEngine:
                 latest_funding or 0,
             )
             self.runtimes[instrument.id] = runtime
-            strategy.restore_runtime(self.store.strategy_state(instrument.id))
+            saved_state = self.store.strategy_state(instrument.id)
+            strategy.restore_runtime(saved_state)
+            if runtime.profit_protection is not None and saved_state is not None:
+                runtime.profit_protection.restore_runtime(
+                    saved_state.get("profit_protection")
+                )
             try:
                 await self._warmup_runtime(runtime)
             except Exception as exc:
@@ -423,7 +435,7 @@ class PaperEngine:
                     >= self.settings.equity_snapshot_seconds * 1000
                 )
                 if snapshot_due or funding_applied:
-                    strategy_view = _strategy_view(asdict(runtime.strategy.view()))
+                    strategy_view = _runtime_strategy_view(runtime)
                     self.store.snapshot(account_id, tick, strategy_view)
                     runtime.last_snapshot_ms = tick.timestamp_ms
                 return
@@ -455,6 +467,16 @@ class PaperEngine:
                 is_short=is_short,
                 emit_signals=self.trading_enabled,
             )
+            if signal is None:
+                signal = atr_profit_protection_signal(
+                    runtime.profit_protection,
+                    runtime.strategy,
+                    tick,
+                    position_quantity=position_quantity,
+                    entry_price=Decimal(account["average_price"]),
+                    has_pending_order=has_pending,
+                    emit_signals=self.trading_enabled,
+                )
             if signal:
                 self.store.submit_order(account_id, signal, tick.timestamp_ms)
             snapshot_due = (
@@ -462,12 +484,10 @@ class PaperEngine:
                 >= self.settings.equity_snapshot_seconds * 1000
             )
             if snapshot_due or fill or signal or funding_applied:
-                strategy_view = _strategy_view(asdict(runtime.strategy.view()))
+                strategy_view = _runtime_strategy_view(runtime)
                 self.store.snapshot(account_id, tick, strategy_view)
                 runtime.last_snapshot_ms = tick.timestamp_ms
-            self.store.save_strategy_state(
-                account_id, runtime.strategy.runtime_state(), tick.timestamp_ms
-            )
+            self.store.save_strategy_state(account_id, _runtime_state(runtime), tick.timestamp_ms)
 
     async def _process_official_close(self, runtime: InstrumentRuntime, stream_bar: Bar) -> None:
         async with runtime.lock:
@@ -651,6 +671,16 @@ class PaperEngine:
                         "reversal_confirmation_atr": float(
                             runtime.strategy.reversal_confirmation_atr
                         ),
+                        "profit_activation_atr": (
+                            float(runtime.profit_protection.activation_atr)
+                            if runtime.profit_protection is not None
+                            else None
+                        ),
+                        "profit_trailing_atr": (
+                            float(runtime.profit_protection.trailing_atr)
+                            if runtime.profit_protection is not None
+                            else None
+                        ),
                         "one_action_per_bar": True,
                         "startup_alignment": True,
                         "futures_reversal_mode": "close_then_confirm",
@@ -671,7 +701,7 @@ class PaperEngine:
                     "strategy_ready": runtime.strategy_ready,
                     "reconnects": runtime.reconnects,
                     "last_tick": runtime.last_tick.as_dict() if runtime.last_tick else None,
-                    "strategy": _strategy_view(asdict(view)),
+                    "strategy": _runtime_strategy_view(runtime),
                     "decision": _decision_view(
                         view,
                         trading_enabled=self.trading_enabled and runtime.strategy_ready,
@@ -698,6 +728,46 @@ def _strategy_view(value: dict[str, Any]) -> dict[str, Any]:
         if value[key] is not None:
             value[key] = str(value[key])
     return value
+
+
+def _paper_profit_protection(
+    settings: Settings, instrument: InstrumentSettings
+) -> ATRProfitProtection | None:
+    config = settings.live_futures
+    if (
+        instrument.id != config.instrument_id
+        or instrument.paper_model != "futures"
+        or config.profit_activation_atr <= 0
+        or config.profit_trailing_atr <= 0
+    ):
+        return None
+    return ATRProfitProtection(config.profit_activation_atr, config.profit_trailing_atr)
+
+
+def _runtime_state(runtime: InstrumentRuntime) -> dict[str, Any]:
+    state = runtime.strategy.runtime_state()
+    if runtime.profit_protection is not None:
+        state["profit_protection"] = runtime.profit_protection.runtime_state()
+    return state
+
+
+def _runtime_strategy_view(runtime: InstrumentRuntime) -> dict[str, Any]:
+    view = _strategy_view(asdict(runtime.strategy.view()))
+    protection = runtime.profit_protection
+    view.update(
+        {
+            "profit_protection_active": bool(protection and protection.active),
+            "profit_stop": (
+                str(protection.stop) if protection and protection.stop is not None else None
+            ),
+            "profit_favorable_extreme": (
+                str(protection.favorable_extreme)
+                if protection and protection.favorable_extreme is not None
+                else None
+            ),
+        }
+    )
+    return view
 
 
 def _position_fraction(instrument: InstrumentSettings, settings: Settings) -> float:

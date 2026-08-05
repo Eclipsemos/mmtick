@@ -20,7 +20,11 @@ from mastermind_tick.engine import PaperEngine
 from mastermind_tick.live_spot import load_live_credentials
 from mastermind_tick.live_store import LiveStore
 from mastermind_tick.models import Side, StrategySignal, Tick
-from mastermind_tick.strategy import ATRTickStrategy
+from mastermind_tick.strategy import (
+    ATRProfitProtection,
+    ATRTickStrategy,
+    atr_profit_protection_signal,
+)
 
 TERMINAL_ORDER_STATES = {"FILLED", "CANCELED", "REJECTED", "EXPIRED"}
 AMBIGUOUS_BINANCE_CODES = {-1006, -1007}
@@ -72,6 +76,15 @@ class LiveFuturesTrader:
             trend_efficiency_period=settings.strategy.trend_efficiency_period,
             minimum_trend_efficiency=settings.strategy.minimum_trend_efficiency,
             reversal_confirmation_atr=settings.strategy.reversal_confirmation_atr,
+        )
+        self.profit_protection = (
+            ATRProfitProtection(
+                self.config.profit_activation_atr,
+                self.config.profit_trailing_atr,
+            )
+            if self.config.profit_activation_atr > 0
+            and self.config.profit_trailing_atr > 0
+            else None
         )
         self.rules: FuturesSymbolRules | None = None
         self.status = "STARTING"
@@ -155,6 +168,10 @@ class LiveFuturesTrader:
         self.strategy.bootstrap(history)
         saved_state = self.store.strategy_state(self.config.account_id)
         self.strategy.restore_runtime(saved_state)
+        if self.profit_protection is not None and saved_state is not None:
+            self.profit_protection.restore_runtime(
+                saved_state.get("profit_protection")
+            )
         if saved_state is None:
             self.strategy.startup_alignment_checked = True
         engine.add_tick_listener(self.instrument.market_id, self.enqueue_tick)
@@ -365,9 +382,11 @@ class LiveFuturesTrader:
                 self.entry_price = Decimal("0")
                 self.unrealized_pnl = Decimal("0")
                 self.strategy.on_manual_flatten(completed_at_ms)
+                if self.profit_protection is not None:
+                    self.profit_protection.reset()
                 self.store.save_strategy_state(
                     self.config.account_id,
-                    self.strategy.runtime_state(),
+                    self._runtime_state(),
                     completed_at_ms,
                 )
             self._event(
@@ -693,8 +712,15 @@ class LiveFuturesTrader:
                 is_short=self.position_quantity < 0,
                 emit_signals=execution_ready,
             )
+            profit_signal = self._profit_protection_signal(
+                tick,
+                has_pending_order=pending,
+                emit_signals=execution_ready,
+            )
+            if signal is None:
+                signal = profit_signal
             self.store.save_strategy_state(
-                self.config.account_id, self.strategy.runtime_state(), tick.timestamp_ms
+                self.config.account_id, self._runtime_state(), tick.timestamp_ms
             )
             if (
                 not execution_ready
@@ -722,6 +748,41 @@ class LiveFuturesTrader:
                 )
             if signal is not None:
                 await self._submit_signal(signal, tick)
+
+    def _profit_protection_signal(
+        self,
+        tick: Tick,
+        *,
+        has_pending_order: bool,
+        emit_signals: bool,
+    ) -> StrategySignal | None:
+        return atr_profit_protection_signal(
+            self.profit_protection,
+            self.strategy,
+            tick,
+            position_quantity=self.position_quantity,
+            entry_price=self.entry_price,
+            has_pending_order=has_pending_order,
+            emit_signals=emit_signals,
+        )
+
+    def _runtime_state(self) -> dict[str, Any]:
+        state = self.strategy.runtime_state()
+        if self.profit_protection is not None:
+            state["profit_protection"] = self.profit_protection.runtime_state()
+        return state
+
+    def profit_protection_view(self) -> dict[str, Any]:
+        protection = self.profit_protection
+        return {
+            "profit_protection_active": bool(protection and protection.active),
+            "profit_stop": str(protection.stop) if protection and protection.stop else None,
+            "profit_favorable_extreme": (
+                str(protection.favorable_extreme)
+                if protection and protection.favorable_extreme is not None
+                else None
+            ),
+        }
 
     async def _submit_signal(self, signal: StrategySignal, tick: Tick) -> None:
         if not self.order_submission_ready or self.rules is None:
