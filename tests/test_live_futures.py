@@ -7,9 +7,11 @@ import pytest
 from mastermind_tick.binance_futures import BinanceFuturesAPIError, FuturesSymbolRules
 from mastermind_tick.config import load_settings
 from mastermind_tick.live_futures import LiveFuturesTrader, LiveOperationError
+from mastermind_tick.live_futures_reporting import live_futures_fills
 from mastermind_tick.live_preflight import run as run_live_preflight
 from mastermind_tick.live_store import LiveStore
 from mastermind_tick.models import Side, StrategySignal, Tick
+from mastermind_tick.reporting import _trade_stats
 
 
 class FakeFuturesClient:
@@ -164,6 +166,80 @@ def futures_settings(tmp_path, *, allow_orders: bool = False):
         max_orders_per_day=6,
     )
     return replace(settings, live_futures=live)
+
+
+def test_futures_reporting_aggregates_partial_fills_into_round_trip(tmp_path) -> None:
+    settings = futures_settings(tmp_path)
+    account_id = settings.live_futures.account_id
+    store = LiveStore(settings.live_futures.database_path)
+
+    rows = [
+        {
+            "id": 1,
+            "orderId": 101,
+            "time": 1_000,
+            "side": "SELL",
+            "positionSide": "SHORT",
+            "price": "100",
+            "qty": "10",
+            "quoteQty": "1000",
+            "commission": "1",
+            "commissionAsset": "USDT",
+            "realizedPnl": "0",
+        },
+        {
+            "id": 3,
+            "orderId": 102,
+            "time": 2_000,
+            "side": "BUY",
+            "positionSide": "SHORT",
+            "price": "90",
+            "qty": "7",
+            "quoteQty": "630",
+            "commission": "0.63",
+            "commissionAsset": "USDT",
+            "realizedPnl": "70",
+        },
+        {
+            "id": 2,
+            "orderId": 102,
+            "time": 2_000,
+            "side": "BUY",
+            "positionSide": "SHORT",
+            "price": "90",
+            "qty": "3",
+            "quoteQty": "270",
+            "commission": "0.27",
+            "commissionAsset": "USDT",
+            "realizedPnl": "30",
+        },
+    ]
+    for row in rows:
+        store.upsert_fill(
+            account_id=account_id,
+            symbol="SOXLUSDT",
+            side=row["side"],
+            client_order_id=f"order-{row['orderId']}",
+            payload=row,
+        )
+
+    fills = live_futures_fills(store, account_id, 100)
+    ordered = sorted(fills, key=lambda fill: fill["timestamp_ms"])
+
+    assert len(fills) == 2
+    assert ordered[0]["position_effect"] == "OPEN"
+    assert ordered[0]["position_after"] == "-10"
+    assert ordered[1]["quantity"] == "10"
+    assert ordered[1]["position_effect"] == "CLOSE"
+    assert ordered[1]["position_before"] == "-10"
+    assert ordered[1]["position_after"] == "0"
+    assert ordered[1]["realized_pnl"] == "99.10"
+    assert _trade_stats(fills) == {
+        "round_trips": 1,
+        "winning_trades": 1,
+        "losing_trades": 0,
+        "win_rate": 1.0,
+    }
 
 
 def test_futures_readonly_reconciliation_persists_actual_account(tmp_path) -> None:

@@ -275,13 +275,48 @@ def live_futures_equity(
 def live_futures_fills(
     store: LiveStore, account_id: str, limit: int = 200
 ) -> list[dict[str, Any]]:
-    rows = sorted(store.fills(account_id, limit), key=lambda row: int(row["timestamp_ms"]))
+    rows = sorted(
+        store.fills(account_id, limit),
+        key=lambda row: (
+            int(row["timestamp_ms"]),
+            int(row["order_id"]),
+            int(row["trade_id"]),
+        ),
+    )
+    order_fills: dict[int, dict[str, Any]] = {}
+    for row in rows:
+        order_id = int(row["order_id"])
+        raw = row.get("raw_json") or {}
+        aggregate = order_fills.setdefault(
+            order_id,
+            {
+                "order_id": order_id,
+                "client_order_id": row["client_order_id"],
+                "side": str(row["side"]),
+                "position_side": str(raw.get("positionSide", "BOTH")),
+                "timestamp_ms": int(row["timestamp_ms"]),
+                "quantity": Decimal("0"),
+                "notional": Decimal("0"),
+                "fee": Decimal("0"),
+                "realized_pnl": Decimal("0"),
+            },
+        )
+        aggregate["timestamp_ms"] = max(
+            int(aggregate["timestamp_ms"]), int(row["timestamp_ms"])
+        )
+        aggregate["quantity"] += Decimal(row["quantity"])
+        aggregate["notional"] += Decimal(row["quote_quantity"])
+        aggregate["fee"] += _fee_in_quote(row)
+        aggregate["realized_pnl"] += Decimal(str(raw.get("realizedPnl", "0")))
+
     position = Decimal("0")
     result = []
-    for row in rows:
-        raw = row.get("raw_json") or {}
+    for row in sorted(
+        order_fills.values(),
+        key=lambda item: (int(item["timestamp_ms"]), int(item["order_id"])),
+    ):
         side = str(row["side"])
-        position_side = str(raw.get("positionSide", "BOTH"))
+        position_side = str(row["position_side"])
         quantity = Decimal(row["quantity"])
         before = position
         if position_side == "LONG":
@@ -292,17 +327,19 @@ def live_futures_fills(
             delta = quantity if side == "BUY" else -quantity
         position += delta
         effect = "OPEN" if abs(position) > abs(before) else "CLOSE"
-        fee = _fee_in_quote(row)
-        realized = Decimal(str(raw.get("realizedPnl", "0"))) - fee
+        fee = Decimal(row["fee"])
+        realized = Decimal(row["realized_pnl"]) - fee
+        notional = Decimal(row["notional"])
+        price = notional / quantity if quantity else Decimal("0")
         result.append(
             {
-                "id": f"binance-futures-trade-{row['trade_id']}",
+                "id": f"binance-futures-order-{row['order_id']}",
                 "account_id": account_id,
                 "side": side,
                 "timestamp_ms": int(row["timestamp_ms"]),
-                "price": row["price"],
-                "quantity": row["quantity"],
-                "notional": row["quote_quantity"],
+                "price": str(price),
+                "quantity": str(quantity),
+                "notional": str(notional),
                 "fee": str(fee),
                 "reason": f"binance_actual_{position_side.lower()}",
                 "source": "binance_usdm_actual",

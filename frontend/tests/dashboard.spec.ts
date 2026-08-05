@@ -23,7 +23,7 @@ test('paper console renders operational views and switches to the protected live
   await page.getByRole('button', { name: 'SOXL/USDT PERP', exact: true }).click()
   await expect(page.getByText('账户净值')).toBeVisible()
   await expect(page.getByText('夏普率')).toBeVisible()
-  await expect(page.getByText('交易胜率')).toBeVisible()
+  await expect(page.getByText('轮次胜率')).toBeVisible()
   await expect(page.getByText('交易决策状态')).toBeVisible()
   await expect(page.getByText('下一触发条件')).toBeVisible()
   await expect(page.getByText('ATR 实时状态')).toBeVisible()

@@ -373,6 +373,9 @@ def _trade_stats(
         funding_payments or [],
         key=lambda payment: int(payment["timestamp_ms"]),
     )
+    if any(fill.get("position_effect") in {"OPEN", "CLOSE"} for fill in ordered):
+        return _position_trade_stats(ordered, funding)
+
     entry: dict[str, Any] | None = None
     wins = 0
     completed = 0
@@ -409,6 +412,47 @@ def _trade_stats(
         if net_pnl > 0:
             wins += 1
         entry = None
+
+    return {
+        "round_trips": completed,
+        "winning_trades": wins,
+        "losing_trades": completed - wins,
+        "win_rate": wins / completed if completed else None,
+    }
+
+
+def _position_trade_stats(
+    fills: list[dict[str, Any]], funding: list[dict[str, Any]]
+) -> dict[str, int | float | None]:
+    entry: dict[str, Any] | None = None
+    round_pnl = Decimal("0")
+    wins = 0
+    completed = 0
+    for fill in fills:
+        quantity = Decimal(fill["quantity"])
+        if quantity <= 0:
+            continue
+        effect = fill.get("position_effect")
+        if effect == "OPEN":
+            if entry is None:
+                entry = fill
+                round_pnl = Decimal("0")
+            round_pnl -= Decimal(fill.get("fee") or "0")
+            continue
+        if effect != "CLOSE" or entry is None:
+            continue
+
+        round_pnl += Decimal(fill.get("realized_pnl") or "0")
+        position_after = fill.get("position_after")
+        if position_after is not None and Decimal(position_after) != 0:
+            continue
+
+        round_pnl += _funding_between(funding, entry, fill)
+        completed += 1
+        if round_pnl > 0:
+            wins += 1
+        entry = None
+        round_pnl = Decimal("0")
 
     return {
         "round_trips": completed,
