@@ -123,6 +123,9 @@ class FakeFuturesClient:
     async def income_history(self, symbol: str) -> list[dict]:
         return []
 
+    async def transfer_history(self) -> list[dict]:
+        return []
+
     async def market_order(self, **kwargs) -> dict:
         self.market_order_calls.append(kwargs)
         return {
@@ -724,6 +727,44 @@ def test_futures_history_creates_sync_order_for_unknown_exchange_order(tmp_path)
     assert store.fills(settings.live_futures.account_id)[0]["client_order_id"] == (
         "binance-futures-sync-72"
     )
+
+
+def test_futures_transfer_history_records_cash_flows_idempotently(tmp_path) -> None:
+    class TransferClient(FakeFuturesClient):
+        async def transfer_history(self) -> list[dict]:
+            return [
+                {
+                    "incomeType": "TRANSFER",
+                    "income": "1614.00000000",
+                    "asset": "USDT",
+                    "time": 1_700_000_000_000,
+                    "tranId": 397312444870,
+                },
+                {
+                    "incomeType": "TRANSFER",
+                    "income": "-14.00000000",
+                    "asset": "USDT",
+                    "time": 1_700_000_010_000,
+                    "tranId": 397312444871,
+                },
+            ]
+
+    settings = futures_settings(tmp_path)
+    store = LiveStore(settings.live_futures.database_path)
+    trader = LiveFuturesTrader(
+        settings, store, client=TransferClient()  # type: ignore[arg-type]
+    )
+
+    asyncio.run(trader._sync_account_history(1_700_000_020_000))
+    asyncio.run(trader._sync_account_history(1_700_000_030_000))
+
+    flows = store.cash_flows(settings.live_futures.account_id)
+    assert len(flows) == 2
+    assert flows[0]["flow_id"] == "binance-futures-transfer-397312444870"
+    assert flows[0]["amount_quote"] == "1614.00000000"
+    assert flows[0]["flow_type"] == "DEPOSIT"
+    assert flows[1]["amount_quote"] == "-14.00000000"
+    assert flows[1]["flow_type"] == "WITHDRAWAL"
 
 
 def test_futures_preflight_uses_test_endpoint_without_real_order(

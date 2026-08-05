@@ -71,6 +71,12 @@ def build_live_account(
     initial_equity = Decimal(first["equity_quote"]) if first else Decimal("0")
     current_equity = Decimal(latest["equity_quote"]) if latest else initial_equity
     first_timestamp_ms = int(first["timestamp_ms"]) if first else 0
+    return_base, _, return_points = _return_inception(
+        performance_points,
+        flows,
+        initial_equity,
+        first_timestamp_ms,
+    )
     net_cash_flow = sum(
         (
             Decimal(flow["amount_quote"])
@@ -86,8 +92,8 @@ def build_live_account(
         else initial_equity
     )
     total_return = (
-        performance_equity / initial_equity - Decimal("1")
-        if initial_equity
+        performance_equity / return_base - Decimal("1")
+        if return_base
         else Decimal("0")
     )
     quote_total = (
@@ -200,9 +206,9 @@ def build_live_account(
         "total_pnl": str(total_pnl),
         "total_return": float(total_return),
         "net_cash_flow": str(net_cash_flow),
-        "max_drawdown": _max_drawdown(performance_points),
+        "max_drawdown": _max_drawdown(return_points),
         "sharpe_ratio": _sharpe_ratio(
-            performance_points, settings.strategy.bar_minutes
+            return_points, settings.strategy.bar_minutes
         ),
         "win_rate": stats["win_rate"],
         "winning_trades": stats["winning_trades"],
@@ -364,10 +370,16 @@ def build_cash_flow_return_summary(
     cash_flows: list[dict[str, Any]],
     timezone_offset_minutes: int,
 ) -> dict[str, Any]:
-    performance_points = _performance_equity_points(
-        raw_points, cash_flows
+    performance_points = _performance_equity_points(raw_points, cash_flows)
+    initial, created_at_ms, performance_points = _return_inception(
+        performance_points,
+        cash_flows,
+        Decimal(initial_equity),
+        created_at_ms,
     )
-    initial = Decimal(initial_equity)
+    period_raw_points = [
+        point for point in raw_points if int(point["timestamp_ms"]) >= created_at_ms
+    ]
     latest_raw = raw_points[-1] if raw_points else None
     latest_performance = performance_points[-1] if performance_points else None
     as_of_ms = int(latest_raw["timestamp_ms"]) if latest_raw else created_at_ms
@@ -392,7 +404,7 @@ def build_cash_flow_return_summary(
             created_at_ms,
             as_of_ms,
             initial,
-            raw_points,
+            period_raw_points,
             performance_points,
             label=value.isoformat(),
         )
@@ -406,7 +418,7 @@ def build_cash_flow_return_summary(
             created_at_ms,
             as_of_ms,
             initial,
-            raw_points,
+            period_raw_points,
             performance_points,
             label=f"{value.isocalendar().year} W{value.isocalendar().week:02d}",
         )
@@ -420,7 +432,7 @@ def build_cash_flow_return_summary(
             created_at_ms,
             as_of_ms,
             initial,
-            raw_points,
+            period_raw_points,
             performance_points,
             label=value.strftime("%Y-%m"),
         )
@@ -492,10 +504,46 @@ def _performance_equity_points(
         current_raw = Decimal(point["equity"])
         if previous_raw:
             performance_equity *= (current_raw - interval_flow) / previous_raw
+        elif current_raw > 0 and performance_equity == 0:
+            performance_equity = current_raw
         previous_raw = current_raw
         previous_timestamp = timestamp_ms
         result.append({**point, "equity": str(performance_equity)})
     return result
+
+
+def _return_inception(
+    performance_points: list[dict[str, Any]],
+    cash_flows: list[dict[str, Any]],
+    initial_equity: Decimal,
+    created_at_ms: int,
+) -> tuple[Decimal, int, list[dict[str, Any]]]:
+    if initial_equity > 0:
+        return initial_equity, created_at_ms, performance_points
+    cumulative_flow = Decimal("0")
+    for flow in sorted(cash_flows, key=lambda item: int(item["timestamp_ms"])):
+        cumulative_flow += Decimal(flow["amount_quote"])
+        if cumulative_flow > 0:
+            funded_at_ms = int(flow["timestamp_ms"])
+            funded_points = [
+                point
+                for point in performance_points
+                if int(point["timestamp_ms"]) >= funded_at_ms
+            ]
+            return cumulative_flow, funded_at_ms, funded_points
+    first_positive = next(
+        (point for point in performance_points if Decimal(point["equity"]) > 0),
+        None,
+    )
+    if first_positive is not None:
+        funded_at_ms = int(first_positive["timestamp_ms"])
+        funded_points = [
+            point
+            for point in performance_points
+            if int(point["timestamp_ms"]) >= funded_at_ms
+        ]
+        return Decimal(first_positive["equity"]), funded_at_ms, funded_points
+    return initial_equity, created_at_ms, performance_points
 
 
 def _live_return_period(

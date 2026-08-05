@@ -11,6 +11,7 @@ from mastermind_tick.engine import PaperEngine, _decision_view, _strategy_view
 from mastermind_tick.live_futures import LiveFuturesTrader
 from mastermind_tick.live_reporting import (
     _performance_equity_points,
+    _return_inception,
     build_cash_flow_return_summary,
 )
 from mastermind_tick.live_store import LiveStore
@@ -70,6 +71,12 @@ def build_live_futures_account(
     initial_equity = Decimal(first["margin_balance"]) if first else Decimal("0")
     current_equity = Decimal(latest["margin_balance"]) if latest else initial_equity
     first_timestamp_ms = int(first["timestamp_ms"]) if first else 0
+    return_base, _, return_points = _return_inception(
+        performance_points,
+        flows,
+        initial_equity,
+        first_timestamp_ms,
+    )
     net_cash_flow = sum(
         (
             Decimal(flow["amount_quote"])
@@ -85,8 +92,8 @@ def build_live_futures_account(
     )
     total_pnl = current_equity - initial_equity - net_cash_flow
     total_return = (
-        performance_equity / initial_equity - Decimal("1")
-        if initial_equity
+        performance_equity / return_base - Decimal("1")
+        if return_base
         else Decimal("0")
     )
     quantity = Decimal(latest["position_quantity"]) if latest else Decimal("0")
@@ -205,8 +212,8 @@ def build_live_futures_account(
         "total_pnl": str(total_pnl),
         "total_return": float(total_return),
         "net_cash_flow": str(net_cash_flow),
-        "max_drawdown": _max_drawdown(performance_points),
-        "sharpe_ratio": _sharpe_ratio(performance_points, settings.strategy.bar_minutes),
+        "max_drawdown": _max_drawdown(return_points),
+        "sharpe_ratio": _sharpe_ratio(return_points, settings.strategy.bar_minutes),
         "win_rate": stats["win_rate"],
         "winning_trades": stats["winning_trades"],
         "losing_trades": stats["losing_trades"],

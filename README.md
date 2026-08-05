@@ -112,8 +112,9 @@ SOXL 永续的反向确认机会成本需要单独审查。
   驱动两个独立策略状态和账户账本。
 - 主数据库：`data/paper.db`，SQLite WAL 模式。
 - 实盘数据库：`data/live_futures.db`；保存 USD-M 账户净值、保证金、实际多空持仓、
-  订单、成交、手续费、资金费和 ATR 状态。`live_cash_flows` 单独保存经确认的入金和
-  出金，策略收益使用资金流调整后的时间加权收益。
+  订单、成交、手续费、资金费和 ATR 状态。系统通过 Binance Futures income history
+  自动将 `TRANSFER` 幂等同步到 `live_cash_flows`，入金和出金不计入策略收益；从零
+  余额启动的账户以首次净转入建立收益率基准。
 - `agg_trades`：保存事件时间、成交时间、价格、数量、名义金额、maker 方向和交易
   ID；Futures 保存 250 ms 聚合批次及底层 ID 范围。
 - `ohlcv_bars`：保存历史和实时 15 分钟 OHLCV；官方最终值覆盖当前 K 线临时值。

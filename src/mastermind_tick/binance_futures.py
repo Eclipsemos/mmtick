@@ -160,6 +160,14 @@ class BinanceFuturesClient:
         )
         return list(payload)
 
+    async def transfer_history(self) -> list[dict[str, Any]]:
+        payload = await self._signed_request(
+            "GET",
+            "/fapi/v1/income",
+            {"incomeType": "TRANSFER", "limit": 1000},
+        )
+        return list(payload)
+
     async def market_order(
         self,
         *,

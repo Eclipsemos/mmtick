@@ -260,6 +260,64 @@ def test_live_performance_excludes_deposits_but_keeps_actual_equity(tmp_path) ->
     assert returns["daily"][-1]["equity"] == "2020"
 
 
+def test_zero_balance_live_account_starts_returns_at_first_transfer(tmp_path) -> None:
+    app = _live_app(tmp_path)
+    store = app.state.live_store
+    store.save_futures_snapshot(
+        account_id="soxl_perp_live",
+        timestamp_ms=1_699_999_999_000,
+        wallet_balance="0",
+        margin_balance="0",
+        available_balance="0",
+        unrealized_pnl="0",
+        position_quantity="0",
+        entry_price="0",
+        mark_price="100",
+        liquidation_price=None,
+        leverage=2,
+        margin_type="isolated",
+        position_side="FLAT",
+    )
+    store.record_cash_flow(
+        flow_id="binance-futures-transfer-1",
+        account_id="soxl_perp_live",
+        timestamp_ms=1_700_000_000_000,
+        amount_quote="400",
+        flow_type="DEPOSIT",
+        reason="binance_futures_transfer",
+        source="binance_usdm_income",
+        created_at_ms=1_700_000_001_000,
+    )
+    store.save_futures_snapshot(
+        account_id="soxl_perp_live",
+        timestamp_ms=1_700_000_005_000,
+        wallet_balance="380",
+        margin_balance="380",
+        available_balance="380",
+        unrealized_pnl="0",
+        position_quantity="0",
+        entry_price="0",
+        mark_price="100",
+        liquidation_price=None,
+        leverage=2,
+        margin_type="isolated",
+        position_side="FLAT",
+    )
+
+    with TestClient(app) as client:
+        assert client.post("/api/live/unlock-local").status_code == 200
+        account = client.get("/api/live/overview").json()["accounts"][0]
+        returns = client.get("/api/live/returns?timezone_offset_minutes=0").json()
+
+    assert account["initial_cash"] == "0"
+    assert account["net_cash_flow"] == "400"
+    assert account["total_pnl"] == "-20"
+    assert account["total_return"] == -0.05
+    assert returns["initial_equity"] == "400"
+    assert returns["current_equity"] == "380"
+    assert returns["total_return"] == -0.05
+
+
 def test_live_store_migrates_balance_indicator_columns(tmp_path) -> None:
     path = tmp_path / "legacy-live.db"
     with sqlite3.connect(path) as connection:

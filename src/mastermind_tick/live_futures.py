@@ -591,9 +591,10 @@ class LiveFuturesTrader:
             self._refresh_status()
 
     async def _sync_account_history(self, now_ms: int) -> None:
-        trades, income = await asyncio.gather(
+        trades, income, transfers = await asyncio.gather(
             self.client.user_trades(self.instrument.symbol),
             self.client.income_history(self.instrument.symbol),
+            self.client.transfer_history(),
         )
         trades_by_order: dict[int, list[dict[str, Any]]] = {}
         for trade in trades:
@@ -660,6 +661,21 @@ class LiveFuturesTrader:
                 account_id=self.config.account_id,
                 symbol=self.instrument.symbol,
                 payload=row,
+            )
+        for row in transfers:
+            amount = Decimal(str(row.get("income", "0")))
+            if amount == 0 or str(row.get("asset", "")) != self.instrument.currency:
+                continue
+            transaction_id = int(row["tranId"])
+            self.store.record_cash_flow(
+                flow_id=f"binance-futures-transfer-{transaction_id}",
+                account_id=self.config.account_id,
+                timestamp_ms=int(row["time"]),
+                amount_quote=str(amount),
+                flow_type="DEPOSIT" if amount > 0 else "WITHDRAWAL",
+                reason="binance_futures_transfer",
+                source="binance_usdm_income",
+                created_at_ms=now_ms,
             )
         self.last_trade_sync_at_ms = now_ms
 
