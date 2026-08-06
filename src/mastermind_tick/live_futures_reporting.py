@@ -88,16 +88,10 @@ def build_live_futures_account(
         Decimal("0"),
     )
     performance_equity = (
-        Decimal(performance_points[-1]["equity"])
-        if performance_points
-        else initial_equity
+        Decimal(performance_points[-1]["equity"]) if performance_points else initial_equity
     )
     total_pnl = current_equity - initial_equity - net_cash_flow
-    total_return = (
-        performance_equity / return_base - Decimal("1")
-        if return_base
-        else Decimal("0")
-    )
+    total_return = performance_equity / return_base - Decimal("1") if return_base else Decimal("0")
     quantity = Decimal(latest["position_quantity"]) if latest else Decimal("0")
     entry_price = Decimal(latest["entry_price"]) if latest else Decimal("0")
     mark_price = Decimal(latest["mark_price"]) if latest else Decimal("0")
@@ -110,12 +104,8 @@ def build_live_futures_account(
         else Decimal("0")
     )
     total_fees = sum((Decimal(fill["fee"]) for fill in fills), Decimal("0"))
-    realized_pnl = sum(
-        (Decimal(fill["realized_pnl"] or "0") for fill in fills), Decimal("0")
-    )
-    total_funding = sum(
-        (Decimal(payment["amount"]) for payment in funding), Decimal("0")
-    )
+    realized_pnl = sum((Decimal(fill["realized_pnl"] or "0") for fill in fills), Decimal("0"))
+    total_funding = sum((Decimal(payment["amount"]) for payment in funding), Decimal("0"))
     market_runtime = paper_engine.runtimes.get(trader.instrument.market_id)
     market_status = paper_engine.status()
     market_view = next(
@@ -129,6 +119,7 @@ def build_live_futures_account(
     strategy_view = trader.strategy.view()
     strategy = _strategy_view(asdict(strategy_view))
     strategy.update(trader.profit_protection_view())
+    strategy.update(trader.continuation_reentry_view())
     normalized_orders = live_futures_orders(store, account_id, 1)
     pending = store.pending_orders(account_id)
     runtime = {
@@ -158,6 +149,7 @@ def build_live_futures_account(
             "reversal_confirmation_atr": settings.strategy.reversal_confirmation_atr,
             "profit_activation_atr": config.profit_activation_atr,
             "profit_trailing_atr": config.profit_trailing_atr,
+            "continuation_reentry_atr": config.continuation_reentry_atr,
             "one_action_per_bar": True,
             "startup_alignment": False,
             "futures_reversal_mode": "close_then_confirm",
@@ -277,9 +269,7 @@ def live_futures_equity(
     ]
 
 
-def live_futures_fills(
-    store: LiveStore, account_id: str, limit: int = 200
-) -> list[dict[str, Any]]:
+def live_futures_fills(store: LiveStore, account_id: str, limit: int = 200) -> list[dict[str, Any]]:
     rows = sorted(
         store.fills(account_id, limit),
         key=lambda row: (
@@ -306,9 +296,7 @@ def live_futures_fills(
                 "realized_pnl": Decimal("0"),
             },
         )
-        aggregate["timestamp_ms"] = max(
-            int(aggregate["timestamp_ms"]), int(row["timestamp_ms"])
-        )
+        aggregate["timestamp_ms"] = max(int(aggregate["timestamp_ms"]), int(row["timestamp_ms"]))
         aggregate["quantity"] += Decimal(row["quantity"])
         aggregate["notional"] += Decimal(row["quote_quantity"])
         aggregate["fee"] += _fee_in_quote(row)
@@ -376,9 +364,7 @@ def live_futures_orders(
                 "atr": None,
                 "trailing_stop": None,
                 "submitted_at_ms": row["submitted_at_ms"] or row["signal_at_ms"],
-                "filled_at_ms": (
-                    row["updated_at_ms"] if row["status"] == "FILLED" else None
-                ),
+                "filled_at_ms": (row["updated_at_ms"] if row["status"] == "FILLED" else None),
                 "fill_price": str(fill_price) if fill_price is not None else None,
             }
         )

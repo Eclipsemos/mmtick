@@ -98,9 +98,7 @@ class FakeFuturesClient:
     async def open_orders(self, symbol: str | None = None) -> list[dict]:
         return self._open_orders
 
-    async def user_trades(
-        self, symbol: str, *, order_id: int | None = None
-    ) -> list[dict]:
+    async def user_trades(self, symbol: str, *, order_id: int | None = None) -> list[dict]:
         if order_id is None:
             return []
         call = self.market_order_calls[-1]
@@ -246,7 +244,9 @@ def test_futures_readonly_reconciliation_persists_actual_account(tmp_path) -> No
     settings = futures_settings(tmp_path)
     store = LiveStore(settings.live_futures.database_path)
     trader = LiveFuturesTrader(
-        settings, store, client=FakeFuturesClient()  # type: ignore[arg-type]
+        settings,
+        store,
+        client=FakeFuturesClient(),  # type: ignore[arg-type]
     )
 
     asyncio.run(trader.public_preflight())
@@ -274,11 +274,14 @@ def test_live_futures_profit_protection_builds_reduce_only_close(tmp_path) -> No
     trader.entry_price = Decimal("100")
     trader.strategy.last_atr = Decimal("2")
 
-    assert trader._profit_protection_signal(
-        Tick("activate", 3 * 900_000, Decimal("104"), Decimal("1"), "test"),
-        has_pending_order=False,
-        emit_signals=True,
-    ) is None
+    assert (
+        trader._profit_protection_signal(
+            Tick("activate", 3 * 900_000, Decimal("104"), Decimal("1"), "test"),
+            has_pending_order=False,
+            emit_signals=True,
+        )
+        is None
+    )
     signal = trader._profit_protection_signal(
         Tick("retrace", 3 * 900_000 + 1, Decimal("103"), Decimal("1"), "test"),
         has_pending_order=False,
@@ -294,9 +297,7 @@ def test_live_futures_profit_protection_builds_reduce_only_close(tmp_path) -> No
 
 def test_futures_account_mode_mismatches_block_execution(tmp_path, monkeypatch) -> None:
     settings = futures_settings(tmp_path, allow_orders=True)
-    monkeypatch.setenv(
-        settings.live_futures.activation_env, settings.live_futures.activation_value
-    )
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
     trader = LiveFuturesTrader(
         settings,
         LiveStore(settings.live_futures.database_path),
@@ -314,18 +315,16 @@ def test_futures_account_mode_mismatches_block_execution(tmp_path, monkeypatch) 
     )
 
 
-def test_futures_long_order_uses_hedge_position_side_and_actual_fill(
-    tmp_path, monkeypatch
-) -> None:
+def test_futures_long_order_uses_hedge_position_side_and_actual_fill(tmp_path, monkeypatch) -> None:
     settings = futures_settings(tmp_path, allow_orders=True)
-    monkeypatch.setenv(
-        settings.live_futures.activation_env, settings.live_futures.activation_value
-    )
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
     client = FakeFuturesClient()
     store = LiveStore(settings.live_futures.database_path)
     store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
     trader = LiveFuturesTrader(
-        settings, store, client=client  # type: ignore[arg-type]
+        settings,
+        store,
+        client=client,  # type: ignore[arg-type]
     )
     asyncio.run(trader.public_preflight())
     asyncio.run(trader.reconcile())
@@ -355,14 +354,14 @@ def test_futures_long_order_uses_hedge_position_side_and_actual_fill(
 
 def test_futures_short_order_uses_hedge_position_side(tmp_path, monkeypatch) -> None:
     settings = futures_settings(tmp_path, allow_orders=True)
-    monkeypatch.setenv(
-        settings.live_futures.activation_env, settings.live_futures.activation_value
-    )
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
     client = FakeFuturesClient()
     store = LiveStore(settings.live_futures.database_path)
     store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
     trader = LiveFuturesTrader(
-        settings, store, client=client  # type: ignore[arg-type]
+        settings,
+        store,
+        client=client,  # type: ignore[arg-type]
     )
     asyncio.run(trader.public_preflight())
     asyncio.run(trader.reconcile())
@@ -387,19 +386,17 @@ def test_futures_short_order_uses_hedge_position_side(tmp_path, monkeypatch) -> 
     assert store.orders(settings.live_futures.account_id)[0]["position_side"] == "SHORT"
 
 
-def test_futures_close_long_uses_full_position_and_long_side(
-    tmp_path, monkeypatch
-) -> None:
+def test_futures_close_long_uses_full_position_and_long_side(tmp_path, monkeypatch) -> None:
     settings = futures_settings(tmp_path, allow_orders=True)
-    monkeypatch.setenv(
-        settings.live_futures.activation_env, settings.live_futures.activation_value
-    )
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
     client = FakeFuturesClient(long_quantity="1.23")
     store = LiveStore(settings.live_futures.database_path)
     store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
     store.set_metadata("managed_position", "true", 1_700_000_000_000)
     trader = LiveFuturesTrader(
-        settings, store, client=client  # type: ignore[arg-type]
+        settings,
+        store,
+        client=client,  # type: ignore[arg-type]
     )
     asyncio.run(trader.public_preflight())
     asyncio.run(trader.reconcile())
@@ -428,19 +425,17 @@ def test_futures_close_long_uses_full_position_and_long_side(
     assert order["position_side"] == "LONG"
 
 
-def test_futures_close_short_uses_full_position_and_short_side(
-    tmp_path, monkeypatch
-) -> None:
+def test_futures_close_short_uses_full_position_and_short_side(tmp_path, monkeypatch) -> None:
     settings = futures_settings(tmp_path, allow_orders=True)
-    monkeypatch.setenv(
-        settings.live_futures.activation_env, settings.live_futures.activation_value
-    )
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
     client = FakeFuturesClient(short_quantity="-1.23")
     store = LiveStore(settings.live_futures.database_path)
     store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
     store.set_metadata("managed_position", "true", 1_700_000_000_000)
     trader = LiveFuturesTrader(
-        settings, store, client=client  # type: ignore[arg-type]
+        settings,
+        store,
+        client=client,  # type: ignore[arg-type]
     )
     asyncio.run(trader.public_preflight())
     asyncio.run(trader.reconcile())
@@ -468,17 +463,150 @@ def test_futures_close_short_uses_full_position_and_short_side(
     assert order["position_side"] == "SHORT"
 
 
-def test_operator_can_persistently_stop_and_resume_live_strategy(
-    tmp_path, monkeypatch
-) -> None:
-    settings = futures_settings(tmp_path, allow_orders=True)
-    monkeypatch.setenv(
-        settings.live_futures.activation_env, settings.live_futures.activation_value
+def test_strategy_close_arms_persistent_next_bar_continuation_reentry(tmp_path) -> None:
+    settings = futures_settings(tmp_path)
+    store = LiveStore(settings.live_futures.database_path)
+    trader = LiveFuturesTrader(
+        settings,
+        store,
+        client=FakeFuturesClient(),  # type: ignore[arg-type]
     )
+    account_id = settings.live_futures.account_id
+    client_order_id = "managed-close"
+    fill_at_ms = 1_700_000_002_000
+    store.create_order(
+        client_order_id=client_order_id,
+        account_id=account_id,
+        symbol="SOXLUSDT",
+        side="SELL",
+        position_side="LONG",
+        reduce_only=True,
+        reason="atr_profit_protection",
+        signal_price="120",
+        signal_at_ms=fill_at_ms - 1_000,
+        requested_quantity="1",
+        requested_quote_quantity=None,
+    )
+    store.update_order(
+        client_order_id,
+        status="FILLED",
+        updated_at_ms=fill_at_ms,
+        payload={"orderId": 72, "executedQty": "1", "cumQuote": "121"},
+    )
+    for trade_id, price, quantity, timestamp_ms in (
+        (92, "120", "0.4", fill_at_ms - 1_000),
+        (93, "121.6666666666666666666666667", "0.6", fill_at_ms),
+    ):
+        store.upsert_fill(
+            account_id=account_id,
+            symbol="SOXLUSDT",
+            side="SELL",
+            client_order_id=client_order_id,
+            payload={
+                "id": trade_id,
+                "orderId": 72,
+                "time": timestamp_ms,
+                "price": price,
+                "qty": quantity,
+                "quoteQty": str(Decimal(price) * Decimal(quantity)),
+                "commission": "0",
+                "commissionAsset": "USDT",
+            },
+        )
+
+    trader._apply_terminal_strategy_result(client_order_id, fill_at_ms + 5_000)
+
+    eligible_bar_ms = (
+        fill_at_ms // trader.strategy.bar_ms * trader.strategy.bar_ms + trader.strategy.bar_ms
+    )
+    assert trader.continuation_direction == "LONG"
+    assert trader.continuation_anchor == Decimal("121.0000000000000000000000000")
+    assert trader.continuation_eligible_bar_ms == eligible_bar_ms
+    saved = store.strategy_state(account_id)
+    restored = LiveFuturesTrader(
+        settings,
+        store,
+        client=FakeFuturesClient(),  # type: ignore[arg-type]
+    )
+    restored._restore_continuation_state(saved)
+    assert restored.continuation_reentry_view() == trader.continuation_reentry_view()
+
+    trader.position_quantity = Decimal("0")
+    trader.strategy.last_atr = Decimal("2")
+    trader.strategy.trailing_stop = Decimal("100")
+    trader.strategy.last_trend_efficiency = Decimal("0.5")
+    trader.strategy.action_this_bar = False
+    signal = trader._continuation_reentry_signal(
+        Tick("continuation", eligible_bar_ms, Decimal("123.8"), Decimal("1"), "test"),
+        has_pending_order=False,
+        emit_signals=True,
+    )
+    assert signal is not None
+    assert signal.reason == "confirmed_long_continuation"
+    assert signal.reduce_only is False
+
+
+def test_manual_close_does_not_arm_continuation_reentry(tmp_path) -> None:
+    settings = futures_settings(tmp_path)
+    store = LiveStore(settings.live_futures.database_path)
+    trader = LiveFuturesTrader(
+        settings,
+        store,
+        client=FakeFuturesClient(),  # type: ignore[arg-type]
+    )
+    account_id = settings.live_futures.account_id
+    store.create_order(
+        client_order_id="manual-close",
+        account_id=account_id,
+        symbol="SOXLUSDT",
+        side="BUY",
+        position_side="SHORT",
+        reduce_only=True,
+        reason="operator_manual_flatten",
+        signal_price="120",
+        signal_at_ms=1_700_000_000_000,
+        requested_quantity="1",
+        requested_quote_quantity=None,
+    )
+    store.update_order(
+        "manual-close",
+        status="FILLED",
+        updated_at_ms=1_700_000_001_000,
+        payload={"orderId": 73, "executedQty": "1", "cumQuote": "120"},
+    )
+    store.upsert_fill(
+        account_id=account_id,
+        symbol="SOXLUSDT",
+        side="BUY",
+        client_order_id="manual-close",
+        payload={
+            "id": 94,
+            "orderId": 73,
+            "time": 1_700_000_001_000,
+            "price": "120",
+            "qty": "1",
+            "quoteQty": "120",
+            "commission": "0",
+            "commissionAsset": "USDT",
+        },
+    )
+
+    trader._apply_terminal_strategy_result("manual-close", 1_700_000_001_000)
+
+    assert trader.continuation_direction is None
+    assert trader.continuation_anchor is None
+    assert trader.continuation_eligible_bar_ms is None
+
+
+def test_operator_can_persistently_stop_and_resume_live_strategy(tmp_path, monkeypatch) -> None:
+    settings = futures_settings(tmp_path, allow_orders=True)
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
     store = LiveStore(settings.live_futures.database_path)
     store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
     trader = LiveFuturesTrader(
-        settings, store, client=FakeFuturesClient()  # type: ignore[arg-type]
+        settings,
+        store,
+        client=FakeFuturesClient(),  # type: ignore[arg-type]
     )
     asyncio.run(trader.public_preflight())
     asyncio.run(trader.reconcile())
@@ -506,7 +634,9 @@ def test_operator_flatten_closes_fresh_long_position_while_strategy_is_stopped(
     store = LiveStore(settings.live_futures.database_path)
     store.set_metadata("trading_paused", "true", 1_700_000_000_000)
     trader = LiveFuturesTrader(
-        settings, store, client=client  # type: ignore[arg-type]
+        settings,
+        store,
+        client=client,  # type: ignore[arg-type]
     )
     asyncio.run(trader.public_preflight())
     asyncio.run(trader.reconcile())
@@ -526,9 +656,7 @@ def test_operator_flatten_closes_fresh_long_position_while_strategy_is_stopped(
     assert order["reduce_only"] == 1
     assert trader.strategy.flattened_this_bar
     assert trader.strategy.reversal_direction is None
-    assert store.events(settings.live_futures.account_id)[0]["code"] == (
-        "MANUAL_FLATTEN_SUBMITTED"
-    )
+    assert store.events(settings.live_futures.account_id)[0]["code"] == ("MANUAL_FLATTEN_SUBMITTED")
 
 
 def test_operator_flatten_is_noop_when_exchange_position_is_flat(tmp_path) -> None:
@@ -536,7 +664,9 @@ def test_operator_flatten_is_noop_when_exchange_position_is_flat(tmp_path) -> No
     client = FakeFuturesClient()
     store = LiveStore(settings.live_futures.database_path)
     trader = LiveFuturesTrader(
-        settings, store, client=client  # type: ignore[arg-type]
+        settings,
+        store,
+        client=client,  # type: ignore[arg-type]
     )
     asyncio.run(trader.public_preflight())
     asyncio.run(trader.reconcile())
@@ -559,7 +689,9 @@ def test_operator_flatten_rejects_when_exchange_has_open_order(tmp_path) -> None
     )
     store = LiveStore(settings.live_futures.database_path)
     trader = LiveFuturesTrader(
-        settings, store, client=client  # type: ignore[arg-type]
+        settings,
+        store,
+        client=client,  # type: ignore[arg-type]
     )
     asyncio.run(trader.public_preflight())
     asyncio.run(trader.reconcile())
@@ -573,14 +705,14 @@ def test_operator_flatten_rejects_when_exchange_has_open_order(tmp_path) -> None
 
 def test_futures_daily_order_limit_blocks_new_entry(tmp_path, monkeypatch) -> None:
     settings = futures_settings(tmp_path, allow_orders=True)
-    monkeypatch.setenv(
-        settings.live_futures.activation_env, settings.live_futures.activation_value
-    )
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
     client = FakeFuturesClient()
     store = LiveStore(settings.live_futures.database_path)
     store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
     trader = LiveFuturesTrader(
-        settings, store, client=client  # type: ignore[arg-type]
+        settings,
+        store,
+        client=client,  # type: ignore[arg-type]
     )
     asyncio.run(trader.public_preflight())
     asyncio.run(trader.reconcile())
@@ -622,9 +754,7 @@ def test_futures_daily_order_limit_blocks_new_entry(tmp_path, monkeypatch) -> No
     assert rejection == "DAILY_ORDER_LIMIT"
 
 
-def test_zero_futures_entry_limits_disable_external_risk_caps(
-    tmp_path, monkeypatch
-) -> None:
+def test_zero_futures_entry_limits_disable_external_risk_caps(tmp_path, monkeypatch) -> None:
     settings = futures_settings(tmp_path, allow_orders=True)
     settings = replace(
         settings,
@@ -635,14 +765,14 @@ def test_zero_futures_entry_limits_disable_external_risk_caps(
             max_orders_per_day=0,
         ),
     )
-    monkeypatch.setenv(
-        settings.live_futures.activation_env, settings.live_futures.activation_value
-    )
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
     client = FakeFuturesClient()
     store = LiveStore(settings.live_futures.database_path)
     store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
     trader = LiveFuturesTrader(
-        settings, store, client=client  # type: ignore[arg-type]
+        settings,
+        store,
+        client=client,  # type: ignore[arg-type]
     )
     asyncio.run(trader.public_preflight())
     asyncio.run(trader.reconcile())
@@ -664,23 +794,21 @@ def test_zero_futures_entry_limits_disable_external_risk_caps(
     assert client.market_order_calls[0]["quantity"] == Decimal("16.66")
 
 
-def test_futures_ambiguous_submission_waits_for_reconciliation(
-    tmp_path, monkeypatch
-) -> None:
+def test_futures_ambiguous_submission_waits_for_reconciliation(tmp_path, monkeypatch) -> None:
     class AmbiguousClient(FakeFuturesClient):
         async def market_order(self, **kwargs) -> dict:
             self.market_order_calls.append(kwargs)
             raise BinanceFuturesAPIError(503, -1007, "execution status unknown")
 
     settings = futures_settings(tmp_path, allow_orders=True)
-    monkeypatch.setenv(
-        settings.live_futures.activation_env, settings.live_futures.activation_value
-    )
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
     client = AmbiguousClient()
     store = LiveStore(settings.live_futures.database_path)
     store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
     trader = LiveFuturesTrader(
-        settings, store, client=client  # type: ignore[arg-type]
+        settings,
+        store,
+        client=client,  # type: ignore[arg-type]
     )
     asyncio.run(trader.public_preflight())
     asyncio.run(trader.reconcile())
@@ -782,7 +910,9 @@ def test_futures_history_reuses_managed_order_and_merges_legacy_sync_duplicate(
         },
     )
     trader = LiveFuturesTrader(
-        settings, store, client=HistoryClient()  # type: ignore[arg-type]
+        settings,
+        store,
+        client=HistoryClient(),  # type: ignore[arg-type]
     )
 
     asyncio.run(trader._sync_account_history(1_700_000_001_000))
@@ -819,15 +949,15 @@ def test_futures_history_creates_sync_order_for_unknown_exchange_order(tmp_path)
     settings = futures_settings(tmp_path)
     store = LiveStore(settings.live_futures.database_path)
     trader = LiveFuturesTrader(
-        settings, store, client=ExternalHistoryClient()  # type: ignore[arg-type]
+        settings,
+        store,
+        client=ExternalHistoryClient(),  # type: ignore[arg-type]
     )
 
     asyncio.run(trader._sync_account_history(1_700_000_001_000))
 
     orders = store.orders(settings.live_futures.account_id)
-    assert [order["client_order_id"] for order in orders] == [
-        "binance-futures-sync-72"
-    ]
+    assert [order["client_order_id"] for order in orders] == ["binance-futures-sync-72"]
     assert orders[0]["reduce_only"] == 1
     assert store.fills(settings.live_futures.account_id)[0]["client_order_id"] == (
         "binance-futures-sync-72"
@@ -857,7 +987,9 @@ def test_futures_transfer_history_records_cash_flows_idempotently(tmp_path) -> N
     settings = futures_settings(tmp_path)
     store = LiveStore(settings.live_futures.database_path)
     trader = LiveFuturesTrader(
-        settings, store, client=TransferClient()  # type: ignore[arg-type]
+        settings,
+        store,
+        client=TransferClient(),  # type: ignore[arg-type]
     )
 
     asyncio.run(trader._sync_account_history(1_700_000_020_000))
@@ -872,9 +1004,7 @@ def test_futures_transfer_history_records_cash_flows_idempotently(tmp_path) -> N
     assert flows[1]["flow_type"] == "WITHDRAWAL"
 
 
-def test_futures_preflight_uses_test_endpoint_without_real_order(
-    tmp_path, capsys
-) -> None:
+def test_futures_preflight_uses_test_endpoint_without_real_order(tmp_path, capsys) -> None:
     client = FakeFuturesClient()
 
     exit_code = asyncio.run(
@@ -938,7 +1068,9 @@ def test_observe_only_cross_is_persisted_as_shadow_event(tmp_path) -> None:
     settings = futures_settings(tmp_path)
     store = LiveStore(settings.live_futures.database_path)
     trader = LiveFuturesTrader(
-        settings, store, client=FakeFuturesClient()  # type: ignore[arg-type]
+        settings,
+        store,
+        client=FakeFuturesClient(),  # type: ignore[arg-type]
     )
     trader.strategy = ShadowStrategy()  # type: ignore[assignment]
     tick = Tick("shadow", 1_700_000_000_000, Decimal("120"), Decimal("1"), "test")

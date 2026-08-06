@@ -82,10 +82,12 @@ class LiveFuturesTrader:
                 self.config.profit_activation_atr,
                 self.config.profit_trailing_atr,
             )
-            if self.config.profit_activation_atr > 0
-            and self.config.profit_trailing_atr > 0
+            if self.config.profit_activation_atr > 0 and self.config.profit_trailing_atr > 0
             else None
         )
+        self.continuation_direction: str | None = None
+        self.continuation_anchor: Decimal | None = None
+        self.continuation_eligible_bar_ms: int | None = None
         self.rules: FuturesSymbolRules | None = None
         self.status = "STARTING"
         self.status_message = "Live Futures preflight has not run"
@@ -168,16 +170,13 @@ class LiveFuturesTrader:
         self.strategy.bootstrap(history)
         saved_state = self.store.strategy_state(self.config.account_id)
         self.strategy.restore_runtime(saved_state)
+        self._restore_continuation_state(saved_state)
         if self.profit_protection is not None and saved_state is not None:
-            self.profit_protection.restore_runtime(
-                saved_state.get("profit_protection")
-            )
+            self.profit_protection.restore_runtime(saved_state.get("profit_protection"))
         if saved_state is None:
             self.strategy.startup_alignment_checked = True
         engine.add_tick_listener(self.instrument.market_id, self.enqueue_tick)
-        self._tick_task = asyncio.create_task(
-            self._run_ticks(), name="soxl-perp-live-ticks"
-        )
+        self._tick_task = asyncio.create_task(self._run_ticks(), name="soxl-perp-live-ticks")
         if not self.client.has_credentials:
             self._block(self.credential_error or "CREDENTIALS_MISSING")
             self.status = "BLOCKED"
@@ -220,9 +219,7 @@ class LiveFuturesTrader:
         """Persistently stop or resume strategy-driven order submission."""
         async with self._lock:
             now_ms = _now_ms()
-            self.store.set_metadata(
-                "trading_paused", "true" if paused else "false", now_ms
-            )
+            self.store.set_metadata("trading_paused", "true" if paused else "false", now_ms)
             self._event(
                 "WARN" if paused else "INFO",
                 "STRATEGY_STOPPED" if paused else "STRATEGY_RESUMED",
@@ -297,9 +294,7 @@ class LiveFuturesTrader:
                 signal_price = Decimal(
                     str(book["bidPrice"] if side == "SELL" else book["askPrice"])
                 )
-                client_order_id = _manual_close_client_order_id(
-                    position_side, now_ms, index
-                )
+                client_order_id = _manual_close_client_order_id(position_side, now_ms, index)
                 created = self.store.create_order(
                     client_order_id=client_order_id,
                     account_id=self.config.account_id,
@@ -349,9 +344,7 @@ class LiveFuturesTrader:
                         payload={"code": exc.code, "msg": exc.message},
                     )
                     self._event("ERROR", "MANUAL_CLOSE_REJECTED", exc.message)
-                    raise LiveOperationError(
-                        "MANUAL_CLOSE_REJECTED", exc.message
-                    ) from exc
+                    raise LiveOperationError("MANUAL_CLOSE_REJECTED", exc.message) from exc
 
                 status = str(payload["status"])
                 self.store.update_order(
@@ -360,9 +353,7 @@ class LiveFuturesTrader:
                     updated_at_ms=_now_ms(),
                     payload=payload,
                 )
-                await self._ingest_order_trades(
-                    client_order_id, int(payload["orderId"])
-                )
+                await self._ingest_order_trades(client_order_id, int(payload["orderId"]))
                 if status in TERMINAL_ORDER_STATES:
                     self._apply_terminal_strategy_result(client_order_id, _now_ms())
                 results.append(
@@ -488,9 +479,7 @@ class LiveFuturesTrader:
             )
             self.multi_assets_enabled = bool(multi_assets_mode.get("multiAssetsMargin"))
             self._set_gate("READ_PERMISSION_MISSING", not self.api_reading_enabled)
-            self._set_gate(
-                "FUTURES_TRADING_PERMISSION_MISSING", not self.futures_trading_permitted
-            )
+            self._set_gate("FUTURES_TRADING_PERMISSION_MISSING", not self.futures_trading_permitted)
             self._set_gate("WITHDRAWAL_PERMISSION_ENABLED", self.withdrawals_enabled)
             self._set_gate("IP_RESTRICTION_DISABLED", not self.ip_restricted)
             self._set_gate(
@@ -508,15 +497,9 @@ class LiveFuturesTrader:
             self._set_gate("OTHER_OPEN_POSITIONS", bool(other_positions))
             self._unblock("SIGNED_PREFLIGHT_FAILED")
 
-            long_row = next(
-                (row for row in positions if row.get("positionSide") == "LONG"), {}
-            )
-            short_row = next(
-                (row for row in positions if row.get("positionSide") == "SHORT"), {}
-            )
-            both_row = next(
-                (row for row in positions if row.get("positionSide") == "BOTH"), {}
-            )
+            long_row = next((row for row in positions if row.get("positionSide") == "LONG"), {})
+            short_row = next((row for row in positions if row.get("positionSide") == "SHORT"), {})
+            both_row = next((row for row in positions if row.get("positionSide") == "BOTH"), {})
             long_quantity = Decimal(str(long_row.get("positionAmt", "0")))
             short_quantity = Decimal(str(short_row.get("positionAmt", "0")))
             both_quantity = Decimal(str(both_row.get("positionAmt", "0")))
@@ -524,8 +507,13 @@ class LiveFuturesTrader:
             self._set_gate("SIMULTANEOUS_LONG_SHORT_POSITION", both_legs)
             self.position_quantity = long_quantity + short_quantity + both_quantity
             active = (
-                long_row if long_quantity else short_row if short_quantity else both_row
-                if both_quantity else long_row or short_row or both_row
+                long_row
+                if long_quantity
+                else short_row
+                if short_quantity
+                else both_row
+                if both_quantity
+                else long_row or short_row or both_row
             )
             self.wallet_balance = Decimal(str(account.get("totalWalletBalance", "0")))
             self.margin_balance = Decimal(str(account.get("totalMarginBalance", "0")))
@@ -540,9 +528,7 @@ class LiveFuturesTrader:
             self.liquidation_price = liquidation if liquidation > 0 else None
             self.current_leverage = int(active.get("leverage", 0) or 0)
             self.current_margin_mode = str(active.get("marginType", "unknown")).lower()
-            self._set_gate(
-                "LEVERAGE_MISMATCH", self.current_leverage != self.config.leverage
-            )
+            self._set_gate("LEVERAGE_MISMATCH", self.current_leverage != self.config.leverage)
             self._set_gate(
                 "MARGIN_MODE_MISMATCH",
                 self.current_margin_mode != self.config.margin_mode,
@@ -560,14 +546,15 @@ class LiveFuturesTrader:
                 position_quantity=str(self.position_quantity),
                 entry_price=str(self.entry_price),
                 mark_price=str(self.mark_price),
-                liquidation_price=(
-                    str(self.liquidation_price) if self.liquidation_price else None
-                ),
+                liquidation_price=(str(self.liquidation_price) if self.liquidation_price else None),
                 leverage=self.current_leverage,
                 margin_type=self.current_margin_mode,
                 position_side=(
-                    "LONG" if self.position_quantity > 0 else "SHORT"
-                    if self.position_quantity < 0 else "FLAT"
+                    "LONG"
+                    if self.position_quantity > 0
+                    else "SHORT"
+                    if self.position_quantity < 0
+                    else "FLAT"
                 ),
                 atr=str(strategy_view.atr) if strategy_view.atr is not None else None,
                 trailing_stop=(
@@ -578,12 +565,9 @@ class LiveFuturesTrader:
                 relation=strategy_view.relation,
             )
             known_ids = {
-                row["client_order_id"]
-                for row in self.store.orders(self.config.account_id, 10_000)
+                row["client_order_id"] for row in self.store.orders(self.config.account_id, 10_000)
             }
-            unknown = [
-                row for row in open_orders if row.get("clientOrderId") not in known_ids
-            ]
+            unknown = [row for row in open_orders if row.get("clientOrderId") not in known_ids]
             self._set_gate("UNKNOWN_OPEN_ORDERS", bool(unknown))
             managed = self.store.metadata("managed_position") == "true"
             if self.position_quantity != 0 and not managed:
@@ -598,8 +582,7 @@ class LiveFuturesTrader:
                 await self._reconcile_order(pending, now_ms)
             if (
                 self.last_trade_sync_at_ms is None
-                or now_ms - self.last_trade_sync_at_ms
-                >= self.config.trade_sync_seconds * 1000
+                or now_ms - self.last_trade_sync_at_ms >= self.config.trade_sync_seconds * 1000
             ):
                 await self._sync_account_history(now_ms)
             self.last_reconciled_at_ms = now_ms
@@ -627,9 +610,7 @@ class LiveFuturesTrader:
             )
             existing = self.store.order_by_exchange_id(self.config.account_id, order_id)
             client_order_id = (
-                str(existing["client_order_id"])
-                if existing
-                else f"binance-futures-sync-{order_id}"
+                str(existing["client_order_id"]) if existing else f"binance-futures-sync-{order_id}"
             )
             executed_quantity = sum(
                 (Decimal(str(trade["qty"])) for trade in order_trades), Decimal("0")
@@ -718,6 +699,12 @@ class LiveFuturesTrader:
                 emit_signals=execution_ready,
             )
             if signal is None:
+                signal = self._continuation_reentry_signal(
+                    tick,
+                    has_pending_order=pending,
+                    emit_signals=execution_ready,
+                )
+            if signal is None:
                 signal = profit_signal
             self.store.save_strategy_state(
                 self.config.account_id, self._runtime_state(), tick.timestamp_ms
@@ -740,9 +727,7 @@ class LiveFuturesTrader:
                         "price": str(tick.price),
                         "atr": str(view.atr) if view.atr is not None else None,
                         "trailing_stop": (
-                            str(view.trailing_stop)
-                            if view.trailing_stop is not None
-                            else None
+                            str(view.trailing_stop) if view.trailing_stop is not None else None
                         ),
                     },
                 )
@@ -766,11 +751,84 @@ class LiveFuturesTrader:
             emit_signals=emit_signals,
         )
 
+    def _continuation_reentry_signal(
+        self,
+        tick: Tick,
+        *,
+        has_pending_order: bool,
+        emit_signals: bool,
+    ) -> StrategySignal | None:
+        eligible_bar = self.continuation_eligible_bar_ms
+        if (
+            self.config.continuation_reentry_atr <= 0
+            or self.position_quantity != 0
+            or self.continuation_direction is None
+            or self.continuation_anchor is None
+            or eligible_bar is None
+        ):
+            return None
+        bar_start = tick.timestamp_ms // self.strategy.bar_ms * self.strategy.bar_ms
+        if bar_start > eligible_bar:
+            self._clear_continuation_state()
+            return None
+        return self.strategy.continuation_reentry_signal(
+            tick,
+            direction=self.continuation_direction,
+            exit_anchor=self.continuation_anchor,
+            eligible_bar_ms=eligible_bar,
+            threshold_atr=Decimal(str(self.config.continuation_reentry_atr)),
+            has_pending_order=has_pending_order,
+            emit_signals=emit_signals,
+        )
+
     def _runtime_state(self) -> dict[str, Any]:
         state = self.strategy.runtime_state()
         if self.profit_protection is not None:
             state["profit_protection"] = self.profit_protection.runtime_state()
+        state["continuation_reentry"] = {
+            "threshold_atr": str(self.config.continuation_reentry_atr),
+            "direction": self.continuation_direction,
+            "anchor": (
+                str(self.continuation_anchor) if self.continuation_anchor is not None else None
+            ),
+            "eligible_bar_ms": self.continuation_eligible_bar_ms,
+        }
         return state
+
+    def _restore_continuation_state(self, saved_state: dict[str, Any] | None) -> None:
+        self._clear_continuation_state()
+        if self.config.continuation_reentry_atr <= 0 or not saved_state:
+            return
+        state = saved_state.get("continuation_reentry")
+        if not isinstance(state, dict):
+            return
+        if Decimal(str(state.get("threshold_atr", "-1"))) != Decimal(
+            str(self.config.continuation_reentry_atr)
+        ):
+            return
+        direction = state.get("direction")
+        anchor = state.get("anchor")
+        eligible_bar_ms = state.get("eligible_bar_ms")
+        if direction not in {"LONG", "SHORT"} or anchor is None or eligible_bar_ms is None:
+            return
+        self.continuation_direction = str(direction)
+        self.continuation_anchor = Decimal(str(anchor))
+        self.continuation_eligible_bar_ms = int(eligible_bar_ms)
+
+    def _clear_continuation_state(self) -> None:
+        self.continuation_direction = None
+        self.continuation_anchor = None
+        self.continuation_eligible_bar_ms = None
+
+    def continuation_reentry_view(self) -> dict[str, Any]:
+        return {
+            "continuation_reentry_atr": self.config.continuation_reentry_atr,
+            "continuation_reentry_direction": self.continuation_direction,
+            "continuation_reentry_anchor": (
+                str(self.continuation_anchor) if self.continuation_anchor is not None else None
+            ),
+            "continuation_reentry_eligible_bar_ms": self.continuation_eligible_bar_ms,
+        }
 
     def profit_protection_view(self) -> dict[str, Any]:
         protection = self.profit_protection
@@ -872,9 +930,7 @@ class LiveFuturesTrader:
             self._apply_terminal_strategy_result(client_order_id, _now_ms())
         self._event("INFO", "ORDER_ACCEPTED", f"Binance accepted {side} {position_side}")
 
-    async def _risk_rejection(
-        self, signal: StrategySignal, tick: Tick
-    ) -> str | None:
+    async def _risk_rejection(self, signal: StrategySignal, tick: Tick) -> str | None:
         if self.persisted_paused:
             return "LIVE_TRADING_PAUSED"
         if not signal.reduce_only:
@@ -885,9 +941,7 @@ class LiveFuturesTrader:
                 >= self.config.max_orders_per_day
             ):
                 return "DAILY_ORDER_LIMIT"
-            initial = self.store.day_start_futures_equity(
-                self.config.account_id, day_start_ms
-            )
+            initial = self.store.day_start_futures_equity(self.config.account_id, day_start_ms)
             latest = self.store.latest_futures_snapshot(self.config.account_id)
             if self.config.max_daily_loss > 0 and initial and latest:
                 loss = Decimal(initial) - Decimal(latest["margin_balance"])
@@ -898,9 +952,7 @@ class LiveFuturesTrader:
             str(book["askPrice"] if signal.side is Side.BUY else book["bidPrice"])
         )
         slippage_bps = abs(execution_price - tick.price) / tick.price * Decimal("10000")
-        if not signal.reduce_only and slippage_bps > Decimal(
-            str(self.config.max_slippage_bps)
-        ):
+        if not signal.reduce_only and slippage_bps > Decimal(str(self.config.max_slippage_bps)):
             return "SLIPPAGE_LIMIT"
         return None
 
@@ -918,13 +970,10 @@ class LiveFuturesTrader:
         submitted_at_ms = order.get("submitted_at_ms") or order["signal_at_ms"]
         if (
             status in {"NEW", "PARTIALLY_FILLED"}
-            and now_ms - int(submitted_at_ms)
-            >= self.config.order_timeout_seconds * 1000
+            and now_ms - int(submitted_at_ms) >= self.config.order_timeout_seconds * 1000
         ):
             try:
-                payload = await self.client.cancel_order(
-                    self.instrument.symbol, client_order_id
-                )
+                payload = await self.client.cancel_order(self.instrument.symbol, client_order_id)
                 status = str(payload["status"])
             except BinanceFuturesAPIError as exc:
                 if exc.code not in {-2011, -2013}:
@@ -942,9 +991,7 @@ class LiveFuturesTrader:
         order = self.store.order(client_order_id)
         if order is None:
             return
-        for trade in await self.client.user_trades(
-            self.instrument.symbol, order_id=order_id
-        ):
+        for trade in await self.client.user_trades(self.instrument.symbol, order_id=order_id):
             self.store.upsert_fill(
                 account_id=self.config.account_id,
                 symbol=self.instrument.symbol,
@@ -953,9 +1000,7 @@ class LiveFuturesTrader:
                 payload=trade,
             )
 
-    def _apply_terminal_strategy_result(
-        self, client_order_id: str, timestamp_ms: int
-    ) -> None:
+    def _apply_terminal_strategy_result(self, client_order_id: str, timestamp_ms: int) -> None:
         marker = f"strategy_fill_applied:{client_order_id}"
         if self.store.metadata(marker) is not None:
             return
@@ -963,11 +1008,50 @@ class LiveFuturesTrader:
         if order is None:
             return
         filled = Decimal(str(order["executed_quantity"])) > 0
-        self.strategy.on_fill(timestamp_ms, filled=filled)
+        fills = self.store.fills_for_order(self.config.account_id, client_order_id)
+        fill_timestamp_ms = (
+            max(int(fill["timestamp_ms"]) for fill in fills) if fills else timestamp_ms
+        )
+        self.strategy.on_fill(fill_timestamp_ms, filled=filled)
         self.store.set_metadata(marker, str(order["status"]), timestamp_ms)
         if filled:
             self.store.set_metadata(
                 "managed_position", "false" if order["reduce_only"] else "true", timestamp_ms
+            )
+            if order["reduce_only"]:
+                if (
+                    self.config.continuation_reentry_atr > 0
+                    and order["status"] == "FILLED"
+                    and order["reason"] != "operator_manual_flatten"
+                    and fills
+                ):
+                    total_quantity = sum(
+                        (Decimal(str(fill["quantity"])) for fill in fills), Decimal("0")
+                    )
+                    total_quote = sum(
+                        (Decimal(str(fill["quote_quantity"])) for fill in fills),
+                        Decimal("0"),
+                    )
+                    if total_quantity > 0:
+                        self.continuation_direction = str(order["position_side"])
+                        self.continuation_anchor = total_quote / total_quantity
+                        fill_bar_start = (
+                            fill_timestamp_ms // self.strategy.bar_ms * self.strategy.bar_ms
+                        )
+                        self.continuation_eligible_bar_ms = fill_bar_start + self.strategy.bar_ms
+                        self._event(
+                            "INFO",
+                            "CONTINUATION_REENTRY_ARMED",
+                            "Next-bar continuation re-entry opportunity armed",
+                            timestamp_ms=fill_timestamp_ms,
+                            details=self.continuation_reentry_view(),
+                        )
+                else:
+                    self._clear_continuation_state()
+            else:
+                self._clear_continuation_state()
+            self.store.save_strategy_state(
+                self.config.account_id, self._runtime_state(), timestamp_ms
             )
 
     def readiness(self) -> dict[str, Any]:
@@ -1004,7 +1088,10 @@ class LiveFuturesTrader:
             "target_margin_mode": self.config.margin_mode,
             "current_position_mode": self.current_position_mode,
             "multi_assets_enabled": self.multi_assets_enabled,
-            "strategy": _json_decimals(asdict(self.strategy.view())),
+            "strategy": {
+                **_json_decimals(asdict(self.strategy.view())),
+                **self.continuation_reentry_view(),
+            },
             "database": str(self.config.database_path),
             "risk_limits": {
                 "position_fraction": self.config.position_fraction,
@@ -1063,20 +1150,13 @@ class LiveFuturesTrader:
         )
 
 
-def _client_order_id(
-    account_id: str, signal: StrategySignal, position_side: str
-) -> str:
-    raw = (
-        f"{account_id}:{signal.side.value}:{position_side}:"
-        f"{signal.tick_id}:{signal.bar_start_ms}"
-    )
+def _client_order_id(account_id: str, signal: StrategySignal, position_side: str) -> str:
+    raw = f"{account_id}:{signal.side.value}:{position_side}:{signal.tick_id}:{signal.bar_start_ms}"
     digest = hashlib.sha256(raw.encode()).hexdigest()[:18]
     return f"mmt-{signal.side.value.lower()}-{digest}"[:36]
 
 
-def _manual_close_client_order_id(
-    position_side: str, timestamp_ms: int, index: int
-) -> str:
+def _manual_close_client_order_id(position_side: str, timestamp_ms: int, index: int) -> str:
     side = position_side[:1].lower() or "x"
     return f"mmt-close-{side}-{timestamp_ms}-{index}"
 

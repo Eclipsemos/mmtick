@@ -76,6 +76,7 @@ export type Runtime = {
     minimum_trend_efficiency: number
     reversal_confirmation_atr: number
     profit_activation_atr?: number
+    continuation_reentry_atr?: number
     profit_trailing_atr?: number
     one_action_per_bar: boolean
     startup_alignment: boolean

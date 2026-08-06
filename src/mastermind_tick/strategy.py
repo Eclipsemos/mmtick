@@ -81,11 +81,7 @@ class ATRProfitProtection:
             self.reset()
             return
         side = "SHORT" if quantity < 0 else "LONG"
-        if (
-            self.position_side != side
-            or self.entry_price != entry_price
-            or self.entry_atr is None
-        ):
+        if self.position_side != side or self.entry_price != entry_price or self.entry_atr is None:
             self.open(
                 entry_price=entry_price,
                 entry_atr=current_atr,
@@ -95,11 +91,7 @@ class ATRProfitProtection:
     def observe(
         self, price: Decimal, current_atr: Decimal, *, action_locked: bool
     ) -> Decimal | None:
-        if (
-            self.entry_price is None
-            or self.entry_atr is None
-            or self.position_side is None
-        ):
+        if self.entry_price is None or self.entry_atr is None or self.position_side is None:
             return None
         is_short = self.position_side == "SHORT"
         self.favorable_extreme = (
@@ -292,14 +284,10 @@ class ATRTickStrategy:
         self.reversal_direction = value.get("reversal_direction")
         self.reversal_anchor = _decimal_or_none(value.get("reversal_anchor"))
         self.reversal_eligible_bar_ms = value.get("reversal_eligible_bar_ms")
-        self.startup_alignment_checked = bool(
-            value.get("startup_alignment_checked", False)
-        )
+        self.startup_alignment_checked = bool(value.get("startup_alignment_checked", False))
         current_value = value.get("current_bar")
         current = Bar.from_dict(current_value) if current_value else None
-        latest_completed_start = (
-            self.completed_bars[-1].start_ms if self.completed_bars else None
-        )
+        latest_completed_start = self.completed_bars[-1].start_ms if self.completed_bars else None
         if (
             current is None
             or latest_completed_start is not None
@@ -400,9 +388,7 @@ class ATRTickStrategy:
         self.last_trend_efficiency = self._current_trend_efficiency()
 
         if not has_position and self.reversal_direction is not None:
-            opposite_cross = (
-                self.reversal_direction == "LONG" and cross_down
-            ) or (
+            opposite_cross = (self.reversal_direction == "LONG" and cross_down) or (
                 self.reversal_direction == "SHORT" and cross_up
             )
             if opposite_cross:
@@ -556,19 +542,13 @@ class ATRTickStrategy:
     ) -> StrategySignal | None:
         if self.reversal_eligible_bar_ms != bar_start or self.reversal_anchor is None:
             return None
-        blocked_reason = _common_block_reason(
-            emit_signals, has_pending_order, self.action_this_bar
-        )
+        blocked_reason = _common_block_reason(emit_signals, has_pending_order, self.action_this_bar)
         if blocked_reason is None:
             blocked_reason = self._entry_filter_reason()
         threshold = atr * self.reversal_confirmation_atr
         confirmed = (
-            self.reversal_direction == "LONG"
-            and tick.price >= self.reversal_anchor + threshold
-        ) or (
-            self.reversal_direction == "SHORT"
-            and tick.price <= self.reversal_anchor - threshold
-        )
+            self.reversal_direction == "LONG" and tick.price >= self.reversal_anchor + threshold
+        ) or (self.reversal_direction == "SHORT" and tick.price <= self.reversal_anchor - threshold)
         if blocked_reason is not None or not confirmed:
             return None
         side = Side.BUY if self.reversal_direction == "LONG" else Side.SELL
@@ -580,6 +560,49 @@ class ATRTickStrategy:
             bar_start,
             side,
             f"confirmed_{direction}_reversal",
+            reduce_only=False,
+        )
+
+    def continuation_reentry_signal(
+        self,
+        tick: Tick,
+        *,
+        direction: str,
+        exit_anchor: Decimal,
+        eligible_bar_ms: int,
+        threshold_atr: Decimal,
+        has_pending_order: bool,
+        emit_signals: bool = True,
+    ) -> StrategySignal | None:
+        """Re-enter the prior direction on the one bar after a completed exit."""
+        if direction not in {"LONG", "SHORT"} or threshold_atr < 0:
+            raise ValueError("invalid continuation re-entry parameters")
+        bar_start = tick.timestamp_ms // self.bar_ms * self.bar_ms
+        if bar_start != eligible_bar_ms or self.last_atr is None or self.trailing_stop is None:
+            return None
+        blocked_reason = _common_block_reason(emit_signals, has_pending_order, self.action_this_bar)
+        if blocked_reason is None:
+            blocked_reason = self._entry_filter_reason()
+        distance = self.last_atr * threshold_atr
+        confirmed = (
+            direction == "LONG"
+            and tick.price >= exit_anchor + distance
+            and tick.price > self.trailing_stop
+        ) or (
+            direction == "SHORT"
+            and tick.price <= exit_anchor - distance
+            and tick.price < self.trailing_stop
+        )
+        if blocked_reason is not None or not confirmed:
+            return None
+        self._clear_reversal()
+        side = Side.BUY if direction == "LONG" else Side.SELL
+        return self._emit_signal(
+            tick,
+            self.last_atr,
+            bar_start,
+            side,
+            f"confirmed_{direction.lower()}_continuation",
             reduce_only=False,
         )
 
@@ -740,12 +763,7 @@ def atr_profit_protection_signal(
         atr,
         action_locked=strategy.action_this_bar,
     )
-    if (
-        crossed_stop is None
-        or not emit_signals
-        or has_pending_order
-        or position_quantity == 0
-    ):
+    if crossed_stop is None or not emit_signals or has_pending_order or position_quantity == 0:
         return None
     return StrategySignal(
         side=Side.BUY if position_quantity < 0 else Side.SELL,

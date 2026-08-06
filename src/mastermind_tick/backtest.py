@@ -33,6 +33,7 @@ class ReplayParameters:
     fixed_take_profit_atr: float | None = None
     profit_activation_atr: float | None = None
     profit_trailing_atr: float | None = None
+    continuation_reentry_atr: float | None = None
 
 
 @dataclass
@@ -69,6 +70,7 @@ class ReplayResult:
     fixed_take_profit_atr: float | None
     profit_activation_atr: float | None
     profit_trailing_atr: float | None
+    continuation_reentry_atr: float | None
     start_ms: int
     end_ms: int
     tick_count: int
@@ -90,6 +92,7 @@ class ReplayResult:
     total_funding: float
     signals: int
     profit_exit_signals: int
+    continuation_reentry_signals: int
     ending_position: str
 
 
@@ -127,9 +130,7 @@ class ReplayATRTickStrategy(ATRTickStrategy):
         if self._closed_atr is None or len(self.completed_bars) < self.period:
             return wilder_atr([*self.completed_bars, self.current_bar], self.period)
         current_range = true_range(self.current_bar, self.completed_bars[-1].close)
-        return (
-            self._closed_atr * Decimal(self.period - 1) + current_range
-        ) / Decimal(self.period)
+        return (self._closed_atr * Decimal(self.period - 1) + current_range) / Decimal(self.period)
 
 
 class ReplayBroker:
@@ -195,11 +196,7 @@ class ReplayBroker:
             )
             notional = fill_price * quantity
             fee = notional * self.fee_rate
-            if (
-                quantity <= 0
-                or notional < self.minimum_notional
-                or notional + fee > self.cash
-            ):
+            if quantity <= 0 or notional < self.minimum_notional or notional + fee > self.cash:
                 return False
             self.cash -= notional + fee
             self.quantity = quantity
@@ -256,11 +253,7 @@ class ReplayBroker:
         notional = fill_price * quantity
         fee = notional * self.fee_rate
         required_balance = notional / self.leverage + fee
-        if (
-            quantity <= 0
-            or notional < self.minimum_notional
-            or required_balance > self.cash
-        ):
+        if quantity <= 0 or notional < self.minimum_notional or required_balance > self.cash:
             return False
         self.quantity = desired_sign * quantity
         self.average_price = fill_price
@@ -275,9 +268,7 @@ class ReplayBroker:
         )
         return True
 
-    def _complete_trade(
-        self, exit_price: Decimal, exit_fee: Decimal, timestamp_ms: int
-    ) -> None:
+    def _complete_trade(self, exit_price: Decimal, exit_fee: Decimal, timestamp_ms: int) -> None:
         trade = self.open_trade
         if trade is None:
             return
@@ -318,9 +309,7 @@ class ReplayBroker:
         equity = self.equity(market_price)
         self.peak_equity = max(self.peak_equity, equity)
         if self.peak_equity > 0:
-            self.max_drawdown = min(
-                self.max_drawdown, equity / self.peak_equity - Decimal("1")
-            )
+            self.max_drawdown = min(self.max_drawdown, equity / self.peak_equity - Decimal("1"))
         return equity
 
 
@@ -332,12 +321,21 @@ class ReplayCandidate:
     pending_signal: StrategySignal | None = None
     signals: int = 0
     profit_exit_signals: int = 0
+    continuation_reentry_signals: int = 0
     funding_index: int = 0
     entry_atr: Decimal | None = None
     favorable_extreme: Decimal | None = None
     profit_protection: ATRProfitProtection | None = None
+    continuation_direction: str | None = None
+    continuation_anchor: Decimal | None = None
+    continuation_eligible_bar_ms: int | None = None
 
     def __post_init__(self) -> None:
+        if (
+            self.parameters.continuation_reentry_atr is not None
+            and self.parameters.continuation_reentry_atr < 0
+        ):
+            raise ValueError("continuation re-entry ATR must be non-negative")
         activation = self.parameters.profit_activation_atr
         trailing = self.parameters.profit_trailing_atr
         if activation is not None and trailing is not None:
@@ -378,6 +376,7 @@ class ReplayCandidate:
             self.pending_signal = None
             if filled:
                 if position_before == 0 and self.broker.has_position:
+                    self._clear_continuation_state()
                     self.entry_atr = pending_signal.atr
                     self.favorable_extreme = self.broker.average_price
                     if self.profit_protection is not None:
@@ -387,6 +386,14 @@ class ReplayCandidate:
                             is_short=self.broker.is_short,
                         )
                 elif position_before != 0 and not self.broker.has_position:
+                    if self.parameters.continuation_reentry_atr is not None:
+                        trade = self.broker.trades[-1]
+                        self.continuation_direction = trade.direction
+                        self.continuation_anchor = trade.exit_price
+                        fill_bar_start = (
+                            tick.timestamp_ms // self.strategy.bar_ms * self.strategy.bar_ms
+                        )
+                        self.continuation_eligible_bar_ms = fill_bar_start + self.strategy.bar_ms
                     self._clear_profit_state()
 
         signal = self.strategy.on_tick(
@@ -397,11 +404,40 @@ class ReplayCandidate:
             is_short=self.broker.is_short,
         )
         if signal is None:
+            signal = self._continuation_reentry_signal(tick)
+        if signal is None:
             signal = self._profit_exit_signal(tick)
         if signal is not None:
             self.pending_signal = signal
             self.signals += 1
         self.broker.mark(tick.price)
+
+    def _continuation_reentry_signal(self, tick: Tick) -> StrategySignal | None:
+        threshold = self.parameters.continuation_reentry_atr
+        eligible_bar = self.continuation_eligible_bar_ms
+        if (
+            threshold is None
+            or self.broker.has_position
+            or self.continuation_direction is None
+            or self.continuation_anchor is None
+            or eligible_bar is None
+        ):
+            return None
+        bar_start = tick.timestamp_ms // self.strategy.bar_ms * self.strategy.bar_ms
+        if bar_start > eligible_bar:
+            self._clear_continuation_state()
+            return None
+        signal = self.strategy.continuation_reentry_signal(
+            tick,
+            direction=self.continuation_direction,
+            exit_anchor=self.continuation_anchor,
+            eligible_bar_ms=eligible_bar,
+            threshold_atr=Decimal(str(threshold)),
+            has_pending_order=self.pending_signal is not None,
+        )
+        if signal is not None:
+            self.continuation_reentry_signals += 1
+        return signal
 
     def _profit_exit_signal(self, tick: Tick) -> StrategySignal | None:
         atr = self.strategy.last_atr
@@ -480,6 +516,11 @@ class ReplayCandidate:
         if self.profit_protection is not None:
             self.profit_protection.reset()
 
+    def _clear_continuation_state(self) -> None:
+        self.continuation_direction = None
+        self.continuation_anchor = None
+        self.continuation_eligible_bar_ms = None
+
 
 def run_parameter_grid(
     settings: Settings,
@@ -512,33 +553,37 @@ def run_parameter_grid(
         if replay_start >= replay_end:
             raise ValueError(f"invalid replay range for {instrument.id}")
 
-        warmup_bars = _load_warmup_bars(
-            connection, market_id, replay_start, settings.warmup_bars
-        )
+        warmup_bars = _load_warmup_bars(connection, market_id, replay_start, settings.warmup_bars)
         if not warmup_bars:
             raise ValueError(f"no pre-replay OHLCV warmup for {instrument.id}")
         funding_rates = _load_funding_rates(connection, market_id, replay_start, replay_end)
 
-        position_fraction = Decimal(str(
-            instrument.position_fraction
-            if instrument.position_fraction is not None
-            else settings.strategy.position_fraction
-        ))
-        fee_bps = Decimal(str(
-            instrument.fee_bps
-            if instrument.fee_bps is not None
-            else settings.execution.fee_bps
-        ))
-        slippage_bps = Decimal(str(
-            instrument.slippage_bps
-            if instrument.slippage_bps is not None
-            else settings.execution.slippage_bps
-        ))
-        minimum_notional = Decimal(str(
-            instrument.minimum_notional
-            if instrument.minimum_notional is not None
-            else settings.execution.minimum_notional
-        ))
+        position_fraction = Decimal(
+            str(
+                instrument.position_fraction
+                if instrument.position_fraction is not None
+                else settings.strategy.position_fraction
+            )
+        )
+        fee_bps = Decimal(
+            str(
+                instrument.fee_bps if instrument.fee_bps is not None else settings.execution.fee_bps
+            )
+        )
+        slippage_bps = Decimal(
+            str(
+                instrument.slippage_bps
+                if instrument.slippage_bps is not None
+                else settings.execution.slippage_bps
+            )
+        )
+        minimum_notional = Decimal(
+            str(
+                instrument.minimum_notional
+                if instrument.minimum_notional is not None
+                else settings.execution.minimum_notional
+            )
+        )
         candidates = []
         for item in parameters:
             strategy = ReplayATRTickStrategy(
@@ -588,15 +633,9 @@ def run_parameter_grid(
                 source=row["source"],
                 first_trade_id=row["first_trade_id"],
                 last_trade_id=row["last_trade_id"],
-                open_price=(
-                    Decimal(row["open_price"]) if row["open_price"] is not None else None
-                ),
-                high_price=(
-                    Decimal(row["high_price"]) if row["high_price"] is not None else None
-                ),
-                low_price=(
-                    Decimal(row["low_price"]) if row["low_price"] is not None else None
-                ),
+                open_price=(Decimal(row["open_price"]) if row["open_price"] is not None else None),
+                high_price=(Decimal(row["high_price"]) if row["high_price"] is not None else None),
+                low_price=(Decimal(row["low_price"]) if row["low_price"] is not None else None),
             )
             for candidate in candidates:
                 candidate.process_tick(tick, funding_rates)
@@ -679,6 +718,7 @@ def _candidate_result(
         fixed_take_profit_atr=candidate.parameters.fixed_take_profit_atr,
         profit_activation_atr=candidate.parameters.profit_activation_atr,
         profit_trailing_atr=candidate.parameters.profit_trailing_atr,
+        continuation_reentry_atr=candidate.parameters.continuation_reentry_atr,
         start_ms=start_ms,
         end_ms=end_ms,
         tick_count=tick_count,
@@ -700,6 +740,7 @@ def _candidate_result(
         total_funding=float(broker.total_funding),
         signals=candidate.signals,
         profit_exit_signals=candidate.profit_exit_signals,
+        continuation_reentry_signals=candidate.continuation_reentry_signals,
         ending_position=ending_position,
     )
 
@@ -878,9 +919,7 @@ def main() -> None:
     periods = _csv_numbers(args.periods, int)
     multipliers = _csv_numbers(args.multipliers, float)
     parameters = [
-        ReplayParameters(period, multiplier)
-        for period in periods
-        for multiplier in multipliers
+        ReplayParameters(period, multiplier) for period in periods for multiplier in multipliers
     ]
 
     runs = []
@@ -920,19 +959,14 @@ def main() -> None:
     print(markdown_path)
     if args.minimum_return is not None:
         failures = [
-            run
-            for run in runs
-            if run["recommendation"]["net_return"] < args.minimum_return
+            run for run in runs if run["recommendation"]["net_return"] < args.minimum_return
         ]
         if failures:
             details = ", ".join(
-                f"{run['metadata']['instrument_id']}="
-                f"{run['recommendation']['net_return']:.2%}"
+                f"{run['metadata']['instrument_id']}={run['recommendation']['net_return']:.2%}"
                 for run in failures
             )
-            raise SystemExit(
-                f"minimum return {args.minimum_return:.2%} not met: {details}"
-            )
+            raise SystemExit(f"minimum return {args.minimum_return:.2%} not met: {details}")
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ from mastermind_tick.backtest import (
     ReplayParameters,
 )
 from mastermind_tick.config import InstrumentSettings
-from mastermind_tick.models import Bar, FundingRate, Side, Tick
+from mastermind_tick.models import Bar, FundingRate, Side, StrategySignal, Tick
 from mastermind_tick.strategy import ATRTickStrategy
 
 BAR_MS = 900_000
@@ -95,11 +95,7 @@ def test_replay_strategy_matches_production_tick_state(period: int, multiplier: 
         if expected is not None:
             production.on_fill(item.timestamp_ms, filled=True)
             replay.on_fill(item.timestamp_ms, filled=True)
-            position_side = (
-                0
-                if expected.reduce_only
-                else 1 if expected.side is Side.BUY else -1
-            )
+            position_side = 0 if expected.reduce_only else 1 if expected.side is Side.BUY else -1
 
 
 def test_spot_round_trip_net_pnl_includes_both_fees_and_slippage() -> None:
@@ -117,9 +113,7 @@ def test_spot_round_trip_net_pnl_includes_both_fees_and_slippage() -> None:
 
     trade = broker.trades[0]
     assert trade.direction == "LONG"
-    assert trade.fees == trade.quantity * (
-        trade.entry_price + trade.exit_price
-    ) * Decimal("0.001")
+    assert trade.fees == trade.quantity * (trade.entry_price + trade.exit_price) * Decimal("0.001")
     assert trade.net_pnl == broker.cash - broker.initial_cash
     assert broker.quantity == 0
 
@@ -226,9 +220,7 @@ def opened_candidate(
 
 
 def test_fixed_atr_take_profit_closes_on_next_tick() -> None:
-    candidate = opened_candidate(
-        ReplayParameters(2, 4, variant="fixed", fixed_take_profit_atr=6)
-    )
+    candidate = opened_candidate(ReplayParameters(2, 4, variant="fixed", fixed_take_profit_atr=6))
 
     candidate.process_tick(tick("take-profit", 3 * BAR_MS, 106), [])
 
@@ -308,3 +300,80 @@ def test_profit_protection_is_symmetric_for_short_position() -> None:
     assert candidate.pending_signal is not None
     assert candidate.pending_signal.side is Side.BUY
     assert candidate.pending_signal.reason == "atr_profit_protection"
+
+
+def test_continuation_reentry_uses_actual_exit_and_only_next_bar() -> None:
+    candidate = opened_candidate(
+        ReplayParameters(
+            2,
+            4,
+            variant="continuation",
+            continuation_reentry_atr=0.5,
+        )
+    )
+    candidate.pending_signal = StrategySignal(
+        side=Side.SELL,
+        reason="test_exit",
+        signal_price=Decimal("99"),
+        trailing_stop=Decimal("99"),
+        atr=Decimal("1"),
+        bar_start_ms=3 * BAR_MS,
+        tick_id="exit-signal",
+        reduce_only=True,
+    )
+
+    candidate.process_tick(tick("exit-fill", 3 * BAR_MS + 1, 99), [])
+
+    assert not candidate.broker.has_position
+    assert candidate.continuation_direction == "LONG"
+    assert candidate.continuation_anchor == Decimal("99")
+    candidate.strategy.trailing_stop = Decimal("98")
+    candidate.strategy.last_trend_efficiency = Decimal("1")
+    candidate.process_tick(tick("below-threshold", 4 * BAR_MS, 99.1), [])
+    assert candidate.pending_signal is None
+    candidate.process_tick(tick("confirmed", 4 * BAR_MS + 1, 100), [])
+    assert candidate.pending_signal is not None
+    assert candidate.pending_signal.side is Side.BUY
+    assert candidate.pending_signal.reason == "confirmed_long_continuation"
+    assert candidate.continuation_reentry_signals == 1
+
+
+def test_continuation_reentry_expires_after_one_bar() -> None:
+    candidate = opened_candidate(ReplayParameters(2, 4, continuation_reentry_atr=0))
+    candidate.continuation_direction = "LONG"
+    candidate.continuation_anchor = Decimal("100")
+    candidate.continuation_eligible_bar_ms = 4 * BAR_MS
+    candidate.broker.quantity = Decimal("0")
+    candidate.broker.average_price = Decimal("0")
+    candidate.broker.open_trade = None
+
+    candidate.process_tick(tick("expired", 5 * BAR_MS, 110), [])
+
+    assert candidate.pending_signal is None
+    assert candidate.continuation_direction is None
+
+
+def test_continuation_reentry_is_symmetric_for_short_position() -> None:
+    candidate = opened_candidate(
+        ReplayParameters(2, 4, continuation_reentry_atr=0.5),
+        Side.SELL,
+    )
+    candidate.pending_signal = StrategySignal(
+        side=Side.BUY,
+        reason="test_exit",
+        signal_price=Decimal("101"),
+        trailing_stop=Decimal("101"),
+        atr=Decimal("1"),
+        bar_start_ms=3 * BAR_MS,
+        tick_id="exit-signal",
+        reduce_only=True,
+    )
+    candidate.process_tick(tick("exit-fill", 3 * BAR_MS + 1, 101), [])
+    candidate.strategy.trailing_stop = Decimal("102")
+    candidate.strategy.last_trend_efficiency = Decimal("1")
+
+    candidate.process_tick(tick("confirmed", 4 * BAR_MS, 100), [])
+
+    assert candidate.pending_signal is not None
+    assert candidate.pending_signal.side is Side.SELL
+    assert candidate.pending_signal.reason == "confirmed_short_continuation"

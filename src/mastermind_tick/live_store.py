@@ -171,20 +171,15 @@ class LiveStore:
     @staticmethod
     def _ensure_balance_columns(connection: sqlite3.Connection) -> None:
         existing = {
-            row["name"]
-            for row in connection.execute("PRAGMA table_info(live_balance_snapshots)")
+            row["name"] for row in connection.execute("PRAGMA table_info(live_balance_snapshots)")
         }
         for name in ("atr", "trailing_stop", "relation"):
             if name not in existing:
-                connection.execute(
-                    f"ALTER TABLE live_balance_snapshots ADD COLUMN {name} TEXT"
-                )
+                connection.execute(f"ALTER TABLE live_balance_snapshots ADD COLUMN {name} TEXT")
 
     @staticmethod
     def _ensure_order_columns(connection: sqlite3.Connection) -> None:
-        existing = {
-            row["name"] for row in connection.execute("PRAGMA table_info(live_orders)")
-        }
+        existing = {row["name"] for row in connection.execute("PRAGMA table_info(live_orders)")}
         if "position_side" not in existing:
             connection.execute("ALTER TABLE live_orders ADD COLUMN position_side TEXT")
         if "reduce_only" not in existing:
@@ -308,9 +303,7 @@ class LiveStore:
                     payload.get("orderId"),
                     status,
                     _optional_text(payload.get("executedQty")),
-                    _optional_text(
-                        payload.get("cummulativeQuoteQty") or payload.get("cumQuote")
-                    ),
+                    _optional_text(payload.get("cummulativeQuoteQty") or payload.get("cumQuote")),
                     submitted_at_ms,
                     updated_at_ms,
                     json.dumps(payload, separators=(",", ":")) if payload else None,
@@ -466,6 +459,18 @@ class LiveStore:
             ).fetchall()
         return [_row(row, json_fields=("raw_json",)) for row in rows]
 
+    def fills_for_order(self, account_id: str, client_order_id: str) -> list[dict[str, Any]]:
+        with self.connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT * FROM live_fills
+                WHERE account_id = ? AND client_order_id = ?
+                ORDER BY timestamp_ms, trade_id
+                """,
+                (account_id, client_order_id),
+            ).fetchall()
+        return [_row(row, json_fields=("raw_json",)) for row in rows]
+
     def save_balance_snapshot(
         self,
         *,
@@ -577,11 +582,7 @@ class LiveStore:
         before_ms: int | None = None,
     ) -> list[dict[str, Any]]:
         before_clause = "AND timestamp_ms < ?" if before_ms is not None else ""
-        params = (
-            (account_id, before_ms, limit)
-            if before_ms is not None
-            else (account_id, limit)
-        )
+        params = (account_id, before_ms, limit) if before_ms is not None else (account_id, limit)
         with self.connection() as connection:
             rows = connection.execute(
                 f"""
@@ -676,11 +677,7 @@ class LiveStore:
         before_ms: int | None = None,
     ) -> list[dict[str, Any]]:
         before_clause = "AND timestamp_ms < ?" if before_ms is not None else ""
-        params = (
-            (account_id, before_ms, limit)
-            if before_ms is not None
-            else (account_id, limit)
-        )
+        params = (account_id, before_ms, limit) if before_ms is not None else (account_id, limit)
         with self.connection() as connection:
             rows = connection.execute(
                 f"""

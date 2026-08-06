@@ -110,6 +110,7 @@ class LiveFuturesSettings:
     max_orders_per_day: int = 6
     profit_activation_atr: float = 0.0
     profit_trailing_atr: float = 0.0
+    continuation_reentry_atr: float = 0.0
     reconcile_seconds: int = 5
     trade_sync_seconds: int = 60
     order_timeout_seconds: int = 30
@@ -148,9 +149,7 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
     credentials_value = live_raw.pop("credentials_path", None)
     credentials_path = project_root / credentials_value if credentials_value else None
     operator_token_value = live_raw.pop("operator_token_path", None)
-    operator_token_path = (
-        project_root / operator_token_value if operator_token_value else None
-    )
+    operator_token_path = project_root / operator_token_value if operator_token_value else None
     live_spot = LiveSpotSettings(
         database_path=live_database_path,
         credentials_path=credentials_path,
@@ -158,17 +157,13 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         **live_raw,
     )
     futures_raw = dict(raw.get("live_futures", {}))
-    futures_database_path = project_root / futures_raw.pop(
-        "database_path", "data/live_futures.db"
-    )
+    futures_database_path = project_root / futures_raw.pop("database_path", "data/live_futures.db")
     futures_credentials_value = futures_raw.pop("credentials_path", None)
     futures_credentials_path = (
         project_root / futures_credentials_value if futures_credentials_value else None
     )
     futures_token_value = futures_raw.pop("operator_token_path", None)
-    futures_token_path = (
-        project_root / futures_token_value if futures_token_value else None
-    )
+    futures_token_path = project_root / futures_token_value if futures_token_value else None
     live_futures = LiveFuturesSettings(
         database_path=futures_database_path,
         credentials_path=futures_credentials_path,
@@ -238,9 +233,7 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         raise ValueError("live_spot timing limits are invalid")
     live_futures_instrument = instrument_by_id.get(live_futures.instrument_id)
     if live_futures_instrument is None:
-        raise ValueError(
-            f"unknown live_futures instrument_id: {live_futures.instrument_id}"
-        )
+        raise ValueError(f"unknown live_futures instrument_id: {live_futures.instrument_id}")
     if live_futures_instrument.paper_model != "futures":
         raise ValueError("live_futures instrument must use the futures paper model")
     if live_futures.leverage < 1 or live_futures.margin_mode not in {"isolated", "cross"}:
@@ -253,17 +246,12 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         raise ValueError("live_futures risk limits cannot be negative")
     if live_futures.max_slippage_bps < 0:
         raise ValueError("live_futures slippage limit cannot be negative")
-    if (
-        live_futures.profit_activation_atr < 0
-        or live_futures.profit_trailing_atr < 0
-    ):
+    if live_futures.profit_activation_atr < 0 or live_futures.profit_trailing_atr < 0:
         raise ValueError("live_futures profit protection ATR cannot be negative")
-    if (live_futures.profit_activation_atr > 0) != (
-        live_futures.profit_trailing_atr > 0
-    ):
-        raise ValueError(
-            "live_futures profit activation and trailing ATR must both be enabled"
-        )
+    if (live_futures.profit_activation_atr > 0) != (live_futures.profit_trailing_atr > 0):
+        raise ValueError("live_futures profit activation and trailing ATR must both be enabled")
+    if live_futures.continuation_reentry_atr < 0:
+        raise ValueError("live_futures continuation re-entry ATR cannot be negative")
     if (
         live_futures.max_orders_per_day < 0
         or live_futures.reconcile_seconds < 1
