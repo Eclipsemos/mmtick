@@ -1,349 +1,258 @@
 # mastermind:tick
 
-Mastermind 旗下短线策略产品。系统使用 Binance 生产环境的公开行情驱动三个相互
-隔离的本地模拟账户，并包含一条独立、默认关闭下单的 SOXL USD-M Futures 多空
-实盘路径，持续记录行情、策略状态、订单、成交、资金费与账户绩效。
+`mastermind:tick` 是一个以 Binance 公共行情驱动的 SOXL 短周期交易系统，包含三个隔离的
+paper 账户、一条独立的 Binance USDⓈ-M Futures 实盘链路、Tick 级回放工具和 React
+监控台。系统持续保存行情、K 线、策略状态、订单、成交、资金费、现金流和账户绩效。
 
-当前策略版本为 `atr_tick_v3_startup_alignment`。从 **2026-08-02 至
-2026-08-09** 保持当前策略和仓位参数不变，连续运行一周后再做样本外评估。
+> **实盘提示**：仓库当前配置已启用 `SOXLUSDT` 实盘运行时和真实订单开关。只有凭证、启动
+> 确认、IP 白名单、账户模式、测试订单和对账等全部门禁通过时才会进入 `ARMED`。开发环境应
+> 先将 `live_futures.allow_order_submission` 改为 `false`。
 
-## 产品边界
+## 账户与产品
 
-- `SOXLB/USDT`：Binance SOXL bStocks 代币化现货，模拟账户仅做多。
-- `SOXL/USDT PERP`：Binance USDⓈ-M `TRADIFI_PERPETUAL`，模拟账户可做多、
-  做空。
-- `SOXL/USDT PERP LONG ONLY`：同一永续市场的独立仅做多模拟账户，卖出信号
-  只平掉已有多头，空仓时不会开空。
-- `soxlb`、`soxl_perp` 与 `soxl_perp_long` 各自拥有独立的 100,000 USDT 初始
-  资金、订单、持仓、费用和绩效序列。
-- 三个绩效账户仍由本地 paper broker 驱动。另有 `soxl_perp_live` 多空实盘账户，
-  使用独立的 `data/live_futures.db`，不会把真实余额、订单或成交混入
-  `data/paper.db`。
-- `soxl_perp_live` 当前以只读观察模式运行；签名账户、持仓、挂单、成交和资金费
-  对账已启用，但提交真实订单的配置保持关闭。旧 SOXLB LIVE 运行时已停用，历史
-  `data/live.db` 仅保留审计，不再通过 Dashboard 提供。
-- Binance Testnet/Demo 暂不提供这两个标的，因此模拟成交使用生产公共行情和本地
-  撮合。
-- 本项目不读取 `~/mm` 的数据；Mastermind 长线 Alpha 研究和真实基金账户与本项目
-  隔离。
+| 账户 ID | 产品 | 方向 | 初始资金/来源 | 目标敞口 |
+|---|---|---|---|---:|
+| `soxlb` | `SOXLB/USDT` bStock paper | 仅做多 | 100,000 USDT | 1.00x |
+| `soxl_perp` | `SOXL/USDT PERP` paper | 多空 | 100,000 USDT | 1.25x |
+| `soxl_perp_long` | 同一 Futures 行情的独立 paper 账户 | 仅做多 | 100,000 USDT | 1.25x |
+| `soxl_perp_live` | Binance `SOXLUSDT` USD-M Futures | 多空 | Binance 实际余额 | 1.25x |
+
+Paper 账户写入 `data/paper.db`，实盘账户写入 `data/live_futures.db`；真实余额、订单与成交
+不会混入模拟账本。已停用的 SOXLB Spot 实盘配置和 `data/live.db` 仅保留兼容与审计用途。
+
+永续账户使用 `2x isolated` 和 62.5% 仓位预算：
+
+```text
+目标名义仓位 = 账户净值 × position_fraction × leverage
+             = 账户净值 × 0.625 × 2
+             = 账户净值 × 1.25
+```
+
+提高 `leverage` 而不降低 `position_fraction` 会同时放大收益、亏损、手续费和资金费。
 
 ## 当前策略
 
-完整规则见 [strategy_v1.md](strategy_v1.md)，运行参数见
-[config/settings.toml](config/settings.toml)。当前冻结配置如下：
+运行参数以 [config/settings.toml](config/settings.toml) 为准：
 
 ```text
 算法版本                 atr_tick_v3_startup_alignment
 K 线周期                 15 分钟
-ATR                      Wilder RMA / TradingView ta.atr(21)
-ATR 距离                 ATR(21) x 4.0
-趋势效率周期             8 根 K 线
-最低趋势效率             0.25
-反向确认                 0.25 ATR
+基础止损                 Wilder ATR(21) × 4.0 递归跟踪线
+趋势过滤                 8 根 K 线效率 >= 0.25
+反向确认                 下一根 K 线继续运行 0.25 × 当前 ATR
+利润保护                 2.0 × 入场 ATR 激活，0.5 × 当前 ATR 跟踪
+实盘延续重入             下一根 K 线突破真实平仓均价 1.4 × 当前 ATR
 信号检测                 每个 Binance 成交 Tick
-模拟成交                 信号后的下一成交 Tick
-频率限制                 每根 15 分钟 K 线最多一个交易动作
+动作频率                 每根 K 线最多一个交易动作
 ```
 
-ATR 移动止损线沿用 Pine 策略的递归规则。启动时使用 Binance 官方 15 分钟 K 线
-预热；运行中由成交 Tick 更新当前未收盘 K 线、ATR 和移动止损线。每个 Tick 先用
-更新前的价格和止损线判断穿越，再递归更新指标。Binance 官方收盘 K 线用于最终
-OHLCV，并在收盘后通过 REST 再校验一次。
+### 基础信号与反向
 
-价格从 ATR 线下方穿到上方时产生多头方向信号，从上方穿到下方时产生空头方向
-信号。新开仓还必须通过趋势效率过滤；该过滤不阻止已有仓位平仓。每根 15 分钟
-K 线只有一个全局交易动作名额，以避免同一根 K 线内来回成交。
+价格从 ATR 跟踪线下方穿到上方时产生多头方向信号，从上方穿到下方时产生空头方向信号。
+新开仓必须通过趋势效率过滤；过滤器不会阻止已有仓位减仓。多空 Futures 反向时先发送
+`reduce_only` 平仓，平仓后的下一根 15 分钟 K 线若继续向反方向突破 `0.25 ATR`，才建立
+反向仓位；机会随后过期。
 
-新账户或新算法首次接收实时 Tick 时会执行一次启动趋势对齐：价格在 ATR 线上方
-时尝试建立多头，永续价格在线下时尝试建立空头；SOXLB 现货在线下时保持空仓。
-启动对齐状态会持久化，服务重启不会重复开仓。
+Paper 账户首次启动时会执行一次趋势对齐。实盘首次启动不会按当前趋势追单，只等待新的有效
+穿越；兼容策略状态会持久化，普通服务重启不会重复执行启动入场。
 
-## 账户与成交
+### 利润保护
 
-| 账户 | 方向 | 交易所杠杆档位 | 仓位预算 | 目标名义暴露 |
-|---|---|---:|---:|---:|
-| SOXLB Spot | 仅做多 | 无 | 100% | 1.00x |
-| SOXL Perpetual | 多空 | 2x | 62.5% | 1.25x |
-| SOXL Perpetual Long Only | 仅做多 | 2x | 62.5% | 1.25x |
+`soxl_perp` paper 与 `soxl_perp_live` 共用 ATR 利润保护。持仓有利移动达到
+`2.0 × 入场 ATR` 后激活，以持仓期间的有利极值减去/加上 `0.5 × 当前 ATR` 形成单向保护线。
+保护线只向锁定更多利润的方向移动。触发时只平仓，不立即反手；新仓会按新的成交价和入场
+ATR 重新初始化保护状态。
 
-永续的 `2x` 是保证金杠杆档位，不代表每次使用 2 倍账户净值。当前仓位预算为
-62.5%，因此多头和空头的目标名义暴露均为 **1.25x**。
+### 实盘延续重入
 
-SOXLB 与 Long Only 永续下穿 ATR 线时只平掉已有多头。多空 SOXL 永续发生反向
-穿越时先以 `reduce_only`
-平仓，不在同一个信号内立即反手；平仓成交后的下一根 15 分钟 K 线，价格相对
-平仓信号锚点继续向目标方向突破 `0.25 ATR`，才建立反向仓位。确认机会只在该根
-K 线内有效。
+策略平仓后，实盘会记录原方向和 Binance 真实平仓成交均价。只有紧接着的下一根 15 分钟
+K 线可以重入：价格必须沿原方向突破 `1.4 × 当前 ATR`、位于基础 ATR 线正确一侧并通过趋势
+过滤。人工平仓、历史成交同步和首次启动不会创建重入机会；有效机会可跨服务重启恢复。
 
-所有模拟成交均按 Taker 计费，并叠加配置的模拟滑点：
+阈值研究见
+[reports/continuation_reentry/continuation_reentry_threshold_20260806.md](reports/continuation_reentry/continuation_reentry_threshold_20260806.md)。
+样本截至 2026-08-06，仅包含 13 个完成轮次和 3 次重入，不能视为未来收益预期。
 
-- SOXLB Spot：单边手续费 10 bps，滑点 5 bps。
-- SOXL Perpetual：单边手续费 5 bps，滑点 2 bps。
-- 永续每 8 小时同步 Binance 公共资金费历史；正费率时多头支付、空头收取。
+## 行情、成交与记账
 
-## 一周 Paper 观察
+- Spot 使用 Binance `SOXLBUSDT` 聚合成交；Futures 使用 `SOXLUSDT` Trade 流并按 250 ms
+  聚合，保留底层 Trade ID 范围。
+- Spot/Futures 均使用官方 15 分钟 K 线预热和定稿；收盘后通过 REST `/klines` 再校验。
+- `soxl_perp`、`soxl_perp_long` 和实盘策略复用同一份 Futures 市场数据，但策略状态和账本
+  相互独立。
+- Paper 信号在下一笔持久化 Tick 按固定手续费与滑点成交；实盘只采用 Binance 返回的真实
+  订单和成交结果。
+- Paper Spot 默认手续费/滑点为 10/5 bps；Paper Futures 为 5/2 bps。实盘使用真实费用，
+  开仓盘口偏离上限为 30 bps。
+- 实盘订单使用确定性 `clientOrderId`。网络结果不明确时按该 ID 对账，不直接重复提交。
+- Binance Futures `TRANSFER` 会幂等写入现金流；外部入金和出金不计入策略收益。
+- 胜率按完整开仓—平仓轮次计算，分段成交归入同一轮；净值包含当前未实现盈亏。
 
-观察窗口为 **2026-08-02 至 2026-08-09**。期间不因短期盈亏调参、不切换算法、
-不重建模拟账本，以保证这一周的结果可解释。只有服务故障、行情中断、重复成交或
-账本错误等实现问题需要立即修复，并应保留修复记录。
+## 安装与启动
 
-每日检查：
-
-- 服务和 Binance 行情连接状态，是否存在长期未成交的 pending 订单；
-- OHLCV、聚合成交、净值快照和资金费是否连续持久化；
-- 三账户净收益、最大回撤、完整交易数、胜率和手续费；
-- 单 K 线动作锁的拦截是否符合预期；
-- 下跌行情中的平仓延迟，以及永续反向确认是否触发或过期。
-
-2026-08-09 复评时，重点比较三个账户的净收益、最大回撤、完整交易数、胜率、
-手续费占毛收益比例，并按上涨、下跌和震荡区间拆分结果。SOXLB 的离场速度和
-SOXL 永续的反向确认机会成本需要单独审查。
-
-## 数据仓库与持久化
-
-- Spot 实时成交：`wss://data-stream.binance.vision/ws/soxlbusdt@aggTrade`。
-- Futures 实时成交：`wss://fstream.binance.com/ws/soxlusdt@trade`，feed 内按
-  250 ms 聚合并保留底层 Trade ID 范围。
-- 官方 15 分钟 K 线：Spot/Futures `@kline_15m`，每根收盘后分别通过 Binance
-  Spot/Futures REST `/klines` 校验。
-- 永续标记价、指数价和资金费率来自 Binance Futures 公共接口。
-- `soxl_perp` 与 `soxl_perp_long` 复用同一条实时 Futures 行情流以及同一份
-  `agg_trades`、`ohlcv_bars`、`funding_rates` 市场仓库；Tick 只存一次，再分别
-  驱动两个独立策略状态和账户账本。
-- 主数据库：`data/paper.db`，SQLite WAL 模式。
-- 实盘数据库：`data/live_futures.db`；保存 USD-M 账户净值、保证金、实际多空持仓、
-  订单、成交、手续费、资金费和 ATR 状态。系统通过 Binance Futures income history
-  自动将 `TRANSFER` 幂等同步到 `live_cash_flows`，入金和出金不计入策略收益；从零
-  余额启动的账户以首次净转入建立收益率基准。
-- `agg_trades`：保存事件时间、成交时间、价格、数量、名义金额、maker 方向和交易
-  ID；Futures 保存 250 ms 聚合批次及底层 ID 范围。
-- `ohlcv_bars`：保存历史和实时 15 分钟 OHLCV；官方最终值覆盖当前 K 线临时值。
-- `funding_payments`：保存费率、标记价格、持仓名义价值和资金费收付。
-
-成交以事件 ID、K 线以起始时间幂等写入，重连或重启不会重复累计同一条行情。
-账户、订单、成交、持仓、策略运行状态和净值快照均持久化。当前没有自动清理策略，
-聚合成交数据和 SQLite WAL/索引占用需要持续监控。
-
-## SOXL Futures 实盘接入
-
-`soxl_perp_live` 复用现有 SOXL Futures 公共 Tick、标记价和官方 15 分钟 K 线，
-但使用独立 ATR 策略状态和实盘账本。余额、保证金、LONG/SHORT 持仓、挂单、订单、
-成交和资金费以 Binance USD-M 签名接口为准；系统不会用下一 Tick 伪造实盘成交。
-每个信号生成确定性的 `clientOrderId`，网络结果不明确时按该 ID 对账，不直接重发。
-
-真实订单必须同时满足以下三项配置才可能提交：
-
-```text
-live_futures.enabled = true               # 当前已开启只读运行时
-live_futures.allow_order_submission = true
-MMTICK_LIVE_CONFIRM=SOXLUSDT_PERP_LIVE
-```
-
-运行时还要求 Futures test order 已成功并记录在独立实盘库中。测试命令只调用
-Binance `/fapi/v1/order/test`，不会创建订单或持仓：
+需要 Python 3.11+、Node.js 20+ 和 npm。
 
 ```bash
-.venv/bin/mmtick-live-preflight --test-order
-```
+python3 -m venv .venv
+.venv/bin/pip install -e '.[dev]'
 
-如果返回 `-4411`，在确认已经阅读并同意 Binance TradFi-Perps 协议后，可通过签名
-接口接受协议并紧接着重新执行无成交测试订单：
+cd frontend
+npm ci
+npm run build
+cd ..
 
-```bash
-.venv/bin/mmtick-live-preflight --sign-tradfi-contract --test-order
-```
-
-`--sign-tradfi-contract` 会调用 `/fapi/v1/stock/contract` 并改变账户的协议接受状态，
-不得在账户所有者未明确同意协议时使用。
-
-此外还必须有通过签名校验的 Binance Futures `canTrade` 权限、IP 白名单、Hedge
-Mode、目标 `2x isolated`、完整对账，且不存在人工挂单、其他合约持仓、未接管的
-SOXL 持仓、持久暂停或风控阻断。新实盘账户首次启动只等待新的 ATR 穿越，不会按
-启动时所处趋势立即追单。
-
-目标杠杆为 2x、仓位预算为净值的 62.5%，目标名义暴露为 1.25x。实盘测试按操作员
-要求关闭单笔名义上限、每日订单数和每日亏损入场限制（对应配置值均为 `0`）；盘口
-偏离仍不得超过 30 bps，交易所规则校验、幂等对账和 `reduce_only` 平仓保护仍启用。
-ATR 止损由本服务收到实时 Tick 后提交市价平仓，并非预挂在 Binance 的原生止损单；
-服务、网络或机器中断期间不会触发该止损。
-
-当前只读凭证从被 Git 忽略的项目根目录 `.env` 读取 `API_KEY` 与 `SECRET_KEY`，文件
-权限必须为 `600`；程序不会记录或通过 API 返回密钥。截至 2026-08-04，权限审计结果为
-Futures 读取及交易权限开启、提现关闭、IP 白名单开启；账户为 Single-Asset、Hedge
-Mode，`SOXLUSDT` 为 2x isolated，TradFi-Perps 协议和 Futures test order 均已通过。
-账户已注资并开启订单开关和独立启动确认；全部运行时准入通过时状态为 `ARMED`。
-Dashboard 公开接口只包含同步健康和权限状态；实盘余额、仓位、订单、成交和收益必须先建立
-独立的操作员会话才能读取。
-
-操作员令牌位于被 Git 忽略的 `data/operator.token`，权限必须为 `600`，不得使用
-Binance API Secret 代替。浏览器从本机 `127.0.0.1` 访问时点击 `LIVE` 可自动建立
-会话；从其他机器访问时首次点击需要输入操作员令牌。会话使用 HttpOnly、
-SameSite=Strict Cookie，8 小时后失效，之后 `PAPER / LIVE` 切换均为一键操作。
-远程访问应在 HTTPS 反向代理之后提供，避免在明文 HTTP 链路上传输会话。
-
-不要把密钥写入聊天、仓库、`settings.toml` 或提交记录。部署顺序为：只读签名账户、
-持仓、挂单、成交和资金费同步；固定出口 IP；切换为 Single-Asset Margin；将
-`SOXLUSDT` 调整为 Hedge Mode 下的 2x isolated；签署 TradFi Perpetuals 协议；
-运行 Futures test order；小额观察；
-最后才打开配置订单开关和独立启动确认。任何一步失败都不得进入下一步，网页没有
-启用真实下单的控制入口。
-
-## 后台运行
-
-Python 环境位于项目根目录 `.venv`，前端生产文件构建到 `frontend/dist`。
-本地启动命令：
-
-```bash
 ./scripts/run.sh --host 127.0.0.1 --port 8100
 ```
 
-Dashboard“实盘交易”地址为 `http://127.0.0.1:8100`。生产实例由 `mmtick.service` 在后台运行，
-网页不需要保持打开；关闭浏览器不会停止行情处理、策略执行或持久化。检查服务：
-
-```bash
-systemctl --user status mmtick.service
-journalctl --user -u mmtick.service -f
-```
-
-停止服务不会自动平仓。重启后会恢复已有账户、持仓和兼容的策略状态。Dashboard
-暂停操作会取消尚未成交的本地 pending 订单，但仍继续接收行情和更新指标。
-
-## Dashboard
-
-页面提供：
-
-- 顶部 `PAPER / LIVE` 一键模式切换；PAPER 保留三个模拟账户，LIVE 只显示独立的
-  `SOXL/USDT PERP LIVE` Binance USD-M Futures 多空账户；
-- LIVE 模式复用监控、订单、收益和仓库组件，真实账户余额与成交使用受保护接口，
-  OHLCV 和 aggTrade 继续使用共享的 Binance 公共行情仓库；
-- `SOXL/USDT PERP LIVE` 提供持久停止策略按钮，以及带二次确认的人工平仓按钮；
-  人工平仓会重新读取 Binance 实际仓位，只减仓且在存在挂单或未决订单时拒绝执行；
-- SOXLB、SOXL Perpetual 多空及 SOXL Perpetual Long Only 账户切换、行情连接
-  和策略运行状态；
-- 可滚动、缩放的价格与交易信号图，以及独立的官方 15 分钟 K 线图；
-- 价格快照和 OHLCV 按时间游标加载历史页，价格线按图表像素密度降采样；
-- 黄色 ATR 移动止损线，以及做多、做空和平仓成交标记；
-- 持仓期间显示当前成本价、当前价平仓收益、ATR 平仓价及按当前止损线估算的毛收益；
-- 当前价格、ATR、趋势效率、K 线动作锁、反向确认和下一触发条件；
-- Futures 标记价、指数价、资金费率、保证金、可用余额和累计资金费；
-- SOXL Futures 浮盈达到 `2 ATR` 后启用单向 `0.5 ATR` 利润保护线；保护平仓不立即反手；
-- 现金、持仓、净值、累计收益、最大回撤、完整开仓—平仓轮次胜率和年化夏普率；
-- LIVE 账户净值同时标明外部净入金；入金和出金不计入累计收益、周期收益、最大回撤
-  或夏普率；
-- 每笔完整交易的方向、进出场时间、手续费后盈亏；
-- 最近 30 个自然日收益日历、最近 12 周、最近 12 月和成立以来 CAGR；
-- OHLCV/aggTrade 的覆盖时间、记录数和磁盘占用；
-- 信号暂停/恢复和成交 CSV 导出。
-
-策略参数只在 LIVE 的 `STRATEGY STATE` 中默认隐藏，用户点击后才显示；PAPER 不展示
-这组隐藏参数。
-
-## 开发与验证
-
-```bash
-export PYTHONPATH="$PWD/src"
-.venv/bin/pytest
-.venv/bin/ruff check src tests
-
-cd frontend
-npm run build
-```
-
-前端开发服务器：
+Dashboard 默认地址为 `http://127.0.0.1:8100`。前端开发模式：
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-Vite 会把 `/api` 转发到 `127.0.0.1:8100`。
+Vite 会将 `/api` 代理到 `127.0.0.1:8100`。若已安装用户级服务，可使用：
 
-## API
+```bash
+systemctl --user status mmtick.service
+journalctl --user -u mmtick.service -f
+```
+
+停止服务不会自动平仓。远程访问应让应用监听 loopback，并通过设置正确
+`X-Forwarded-Proto` 的 HTTPS 反向代理暴露；不要直接将实盘控制面板暴露在明文公网。
+
+## 配置与实盘门禁
+
+主配置为 [config/settings.toml](config/settings.toml)，也可通过 `MMTICK_CONFIG` 指定另一份
+文件。API 凭证从被 Git 忽略的 `.env` 读取，当前键名为 `API_KEY` 和 `SECRET_KEY`；操作员
+令牌位于 `data/operator.token`。两者权限必须为 `600`，不得写入仓库、日志、聊天或 URL。
+
+真实订单至少要求：
+
+```text
+live_futures.enabled = true
+live_futures.allow_order_submission = true
+MMTICK_LIVE_CONFIRM = SOXLUSDT_PERP_LIVE   # 进程环境变量，不是普通配置项
+```
+
+运行时还会校验：
+
+- API 读取和 Futures 交易权限开启、提现关闭、IP 白名单开启；
+- Single-Asset、Hedge Mode、`SOXLUSDT` 为目标 `2x isolated`；
+- Futures test order 已通过并写入实盘库（TradFi-Perps 协议未接受时该测试无法通过）；
+- 无未知挂单、其他合约持仓、同时多空腿、未接管仓位或对账错误；
+- 策略未被操作员持久停止。
+
+预检与无成交测试：
+
+```bash
+.venv/bin/mmtick-live-preflight
+.venv/bin/mmtick-live-preflight --test-order
+```
+
+`--test-order` 调用 `/fapi/v1/order/test`，不会创建订单。只有账户所有者已经阅读并明确同意
+Binance TradFi-Perps 协议时，才可执行：
+
+```bash
+.venv/bin/mmtick-live-preflight --sign-tradfi-contract --test-order
+```
+
+该命令会通过 `/fapi/v1/stock/contract` 改变账户协议状态。
+
+公开的 `/api/live/readiness` 仅返回门禁和健康信息。余额、仓位、订单、成交和收益接口需要
+操作员会话：本机 loopback 可调用 `/api/live/unlock-local`，远程浏览器需使用操作员令牌登录。
+会话使用 HttpOnly、SameSite=Strict Cookie，有效期 8 小时；HTTPS 代理下同时启用 Secure
+Cookie 和 HSTS。
+
+## 操作控制
+
+- Paper Dashboard 支持暂停与恢复模拟成交，不停止行情和指标更新。
+- LIVE 的“停止策略”会持久阻止后续策略订单，重启不会自动恢复；当前公开 API 不提供远程
+  恢复操作。
+- LIVE 的“平仓”要求二次确认，会重新读取 Binance 实际仓位并只发送减仓市价单；存在人工
+  挂单或本地未决订单时拒绝执行。人工平仓不会自动停止策略。
+- ATR 止损和利润保护是服务收到实时 Tick 后提交的市价减仓，不是预挂在 Binance 的原生
+  止损单。服务、网络或行情中断期间无法触发。
+
+## Dashboard 与 API
+
+Dashboard 提供 PAPER/LIVE 切换、价格与官方 K 线、ATR 与利润保护线、交易标记、持仓估值、
+保证金、资金费、订单、完整轮次胜率、收益周期、仓库覆盖和 CSV 导出。LIVE 参数默认隐藏，
+敏感账户数据需要操作员会话。
+
+主要接口：
 
 ```text
 GET  /api/health
 GET  /api/overview
-GET  /api/live/readiness
-GET  /api/live/session
-POST /api/live/unlock
-POST /api/live/unlock-local
-POST /api/live/logout
-POST /api/live/control       {"action":"stop"}
-POST /api/live/flatten       {"confirm":"FLATTEN_SOXLUSDT"}
-GET  /api/live/overview
-GET  /api/live/equity?limit=&before_ms=
-GET  /api/live/returns
-GET  /api/live/orders
-GET  /api/live/fills
-GET  /api/live/funding
-GET  /api/live/events
-GET  /api/live/fills.csv
-GET  /api/accounts/{id}/equity?limit=&before_ms=
+POST /api/control                 {"action":"pause" | "resume"}
+GET  /api/accounts/{id}/equity
 GET  /api/accounts/{id}/returns
-GET  /api/orders
-GET  /api/fills
-GET  /api/events
-GET  /api/funding
-GET  /api/fills.csv
+GET  /api/orders | /api/fills | /api/events | /api/funding
 GET  /api/warehouse
-GET  /api/market/ohlcv?instrument_id=&limit=&before_ms=
-GET  /api/market/agg-trades
-POST /api/control       {"action":"pause" | "resume"}
+GET  /api/market/ohlcv | /api/market/agg-trades
+
+GET  /api/live/readiness          # 公开健康信息
+GET  /api/live/session
+POST /api/live/unlock | /api/live/unlock-local | /api/live/logout
+GET  /api/live/overview | /api/live/equity | /api/live/returns
+GET  /api/live/orders | /api/live/fills | /api/live/funding | /api/live/events
+POST /api/live/control            {"action":"stop"}
+POST /api/live/flatten            {"confirm":"FLATTEN_SOXLUSDT"}
 ```
 
-收益明细按浏览器本地时区划分自然日，周周期从周一开始。日、周、月收益使用周期
-开始前最近一次净值到周期末最后一次净值计算；账户首个周期以初始资金为基准。
-年化收益是成立以来 CAGR，并同时显示实际运行天数。运行仅一两天时，CAGR 会被
-极度放大，不适合作为策略质量判断依据。
+## 回放与 paper 重建
 
-## Tick 回放
-
-可使用仓库中已持久化的 `agg_trades` 做无未来数据的 Tick 级参数回放：
-
-```bash
-PYTHONPATH=src .venv/bin/python -m mastermind_tick.backtest
-```
-
-回放沿用 Tick 穿越、启动对齐、趋势效率过滤、分阶段反向、单 K 线动作锁和下一
-Tick 成交语义，并计入各账户的 Taker 手续费、滑点、目标暴露和永续历史资金费。
-报告写入 `reports/`，不会修改模拟盘数据库。
-
-三个利润退出版本（当前基准、1 ATR 激活后使用 0.5 ATR 的激进利润保护、2 ATR
-激活后使用 0.5 ATR 的回撤优先利润保护）的复现命令：
-
-```bash
-PYTHONPATH=src .venv/bin/python -m mastermind_tick.profit_backtest \
-  --cutoff-ms 1785739041994
-```
-
-冻结至 `2026-08-03 14:37:21.994 UTC+8` 的报告见
-[reports/profit_exits/atr_profit_exit_comparison_20260803T063734Z.md](reports/profit_exits/atr_profit_exit_comparison_20260803T063734Z.md)。
-
-当前冻结参数的复现命令：
+使用已持久化的 `agg_trades` 做 Tick 级 ATR 参数回放：
 
 ```bash
 PYTHONPATH=src .venv/bin/python -m mastermind_tick.backtest \
+  --instrument soxl_perp \
   --periods 21 \
   --multipliers 4.0 \
-  --end-ms 1785652557073 \
-  --minimum-return 0.20 \
   --output-dir reports/validation
 ```
 
-冻结样本报告见
-[reports/sample_target_validation_20260802.md](reports/sample_target_validation_20260802.md)：
-SOXLB 为 `+29.83%`，SOXL Perpetual 为 `+23.00%`，双倍手续费和滑点压力测试仍
-超过 20%。但该数据不足三天，而且参数是在同一段数据上优化和验证的，只能证明
-回放实现与样本内结果，不能作为未来收益预期。这也是当前需要冻结参数运行一周、
-积累样本外数据的原因。
+回放包含 Tick 穿越、趋势过滤、分阶段反向、动作锁、下一 Tick 成交、手续费、滑点、杠杆和
+历史资金费，但不模拟盘口深度、真实 API 延迟或强制清算。利润保护对比入口：
 
-## 风险与限制
+```bash
+PYTHONPATH=src .venv/bin/python -m mastermind_tick.profit_backtest
+```
 
-- Paper 成交使用下一笔公开成交和固定滑点模型，未完整模拟盘口深度、排队、拒单、
-  限价成交、强平和真实 API 延迟。
-- SOXLB 和 SOXL Perpetual 的成交量、交易时段、跟踪误差及产品规则可能变化。
-- ATR 趋势策略在窄幅震荡中可能频繁止损；趋势效率和反向确认只能降低噪声，不能
-  消除亏损。
-- 杠杆和做空会放大收益、亏损与资金费影响。上线真实资金前必须重新验证交易规则、
-  精度、保证金、风控和故障恢复。
-- 当前回放样本过短。一周 paper 观察仍只是初步验证，不足以支持真实资金决策。
+Paper 账户重建默认先生成候选数据库，不直接替换生产派生账本：
+
+```bash
+.venv/bin/mmtick-rebuild --account-id soxl_perp \
+  --candidate data/rebuild-soxl-perp.db
+```
+
+`--apply` 会创建可恢复备份后替换所选账户，属于生产数据变更；执行前应停止相关写入并检查候选
+报告、市场数据只读校验和账户范围。
+
+研究报告保存在 `reports/`，系统与策略变更记录见 [changes.md](changes.md)。回测收益只说明
+给定数据、成本和撮合模型下的历史结果，不代表未来表现。
+
+## 开发与验证
+
+```bash
+.venv/bin/pytest
+.venv/bin/ruff check src tests
+
+cd frontend
+npm run build
+npm run test:e2e            # 需要已运行的 127.0.0.1:8100 服务
+```
+
+Python 源码位于 `src/mastermind_tick/`，测试位于 `tests/`；React/TypeScript 前端位于
+`frontend/src/`，Playwright 测试位于 `frontend/tests/`。贡献规范见 [AGENTS.md](AGENTS.md)。
+
+## 已知限制
+
+- 回测样本仍短，部分参数来自同一数据区间优化；高胜率不能替代对平均盈亏、成本和回撤的检查。
+- Paper 撮合未完整模拟盘口深度、排队、拒单、网络延迟、强平和跳空。
+- 实盘 ATR 与利润保护不是交易所托管止损，运行进程和行情连接是执行依赖。
+- 当前开仓信号在 `SLIPPAGE_LIMIT` 拦截后不会自动重试，并可能已消费本 K 线动作机会；修复计划
+  见 [TODO.md](TODO.md)。减仓信号不受滑点阈值限制，但当前仍会执行盘口查询。
+- 当前工程只读取并校验交易所杠杆和保证金模式，尚未封装修改杠杆或增减逐仓保证金的操作 API。
+- 参数变更、paper 重建和实盘切换都需要明确的样本外验证与可恢复部署流程。
