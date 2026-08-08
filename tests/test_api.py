@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from mastermind_tick.api import create_app
-from mastermind_tick.config import load_settings
+from mastermind_tick.config import instrument_strategy, load_settings
 from mastermind_tick.models import Bar, Tick
 
 
@@ -35,8 +35,11 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert health.status_code == 200
     assert health.json()["service"] == "mastermind-tick"
     assert overview.status_code == 200
+    assert [item["id"] for item in overview.json()["accounts"]] == [
+        "soxl_perp_long",
+        "soxl_perp",
+    ]
     assert {item["id"] for item in overview.json()["accounts"]} == {
-        "soxlb",
         "soxl_perp",
         "soxl_perp_long",
     }
@@ -45,9 +48,9 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert overview.json()["accounts"][0]["sharpe_ratio"] is None
     assert overview.json()["accounts"][0]["win_rate"] is None
     assert warehouse.status_code == 200
-    assert warehouse.json()["instruments"][0]["symbol"] == "SOXLBUSDT"
+    assert warehouse.json()["instruments"][0]["instrument_id"] == "soxl_perp_long"
+    assert warehouse.json()["instruments"][0]["market_data_id"] == "soxl_perp"
     assert warehouse.json()["instruments"][1]["symbol"] == "SOXLUSDT"
-    assert warehouse.json()["instruments"][2]["market_data_id"] == "soxl_perp"
     assert live_readiness.status_code == 200
     assert live_readiness.json()["status"] == "STARTING"
     assert live_readiness.json()["order_submission_ready"] is False
@@ -56,6 +59,9 @@ def test_health_and_empty_overview(tmp_path) -> None:
     funding = client.get("/api/funding?account_id=soxl_perp")
     assert funding.status_code == 200
     assert funding.json() == []
+
+    archived = client.get("/api/fills?account_id=soxlb")
+    assert archived.status_code == 404
 
 
 def test_active_strategy_uses_recommended_atr_parameters() -> None:
@@ -70,6 +76,25 @@ def test_active_strategy_uses_recommended_atr_parameters() -> None:
     long_only = next(item for item in settings.instruments if item.id == "soxl_perp_long")
     assert long_only.market_id == perp.id
     assert not long_only.short_enabled
+    assert settings.instruments[0].id == long_only.id
+    long_strategy = instrument_strategy(settings, long_only)
+    assert long_strategy.name == "soxl_long_atr32x3_v1"
+    assert long_strategy.atr_period == 32
+    assert long_strategy.atr_multiplier == 3.0
+    assert long_strategy.position_fraction == 0.70
+    assert long_strategy.reversal_confirmation_atr == 0.0
+    perp_strategy = instrument_strategy(settings, perp)
+    assert perp_strategy.atr_period == 21
+    assert perp_strategy.atr_multiplier == 4.0
+    assert {item.id for item in settings.instruments} == {"soxl_perp", "soxl_perp_long"}
+    assert settings.live_spot.enabled is False
+    assert settings.live_futures.strategy_name == "soxl_long_atr32x3_v1"
+    assert settings.live_futures.allow_short is False
+    assert settings.live_futures.atr_period == 32
+    assert settings.live_futures.atr_multiplier == 3.0
+    assert settings.live_futures.position_fraction == 0.70
+    assert settings.live_futures.profit_activation_atr == 0
+    assert settings.live_futures.continuation_reentry_atr == 0
 
 
 def test_chart_endpoints_page_backwards_with_time_cursor(tmp_path) -> None:
@@ -79,7 +104,7 @@ def test_chart_endpoints_page_backwards_with_time_cursor(tmp_path) -> None:
         frontend_dist=tmp_path / "missing-frontend",
     )
     app = create_app(settings, start_engine=False)
-    instrument = next(item for item in settings.instruments if item.id == "soxlb")
+    instrument = next(item for item in settings.instruments if item.id == "soxl_perp")
     app.state.store.ensure_account(instrument, 100_000, 1)
     for timestamp_ms in range(1, 26):
         app.state.store.snapshot(

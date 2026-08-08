@@ -219,7 +219,7 @@ function App() {
   const client = useQueryClient()
   const [view, setView] = useState<View>('monitor')
   const [mode, setMode] = useState<AccountMode>('paper')
-  const [paperAccountId, setPaperAccountId] = useState('soxl_perp')
+  const [paperAccountId, setPaperAccountId] = useState('soxl_perp_long')
   const [unlockOpen, setUnlockOpen] = useState(false)
   const [unlockToken, setUnlockToken] = useState('')
   const [unlockError, setUnlockError] = useState('')
@@ -696,7 +696,7 @@ function LiveReadinessBand({ readiness }: { readiness?: LiveReadiness }) {
     FUTURES_TRADING_PERMISSION_MISSING: '缺少合约交易权限',
     WITHDRAWAL_PERMISSION_ENABLED: '必须关闭提现权限',
     UNKNOWN_OPEN_ORDERS: '存在未接管挂单',
-    UNMANAGED_EXISTING_POSITION: '存在未接管 SOXLB 持仓',
+    UNMANAGED_EXISTING_POSITION: '存在未接管 SOXL 合约持仓',
     CREDENTIALS_MISSING: '缺少 API 凭证',
     CREDENTIAL_FILE_PERMISSIONS_INSECURE: '凭证文件权限不安全',
     LEVERAGE_MISMATCH: `当前 ${readiness?.current_leverage ?? '--'}x，目标 ${readiness?.target_leverage ?? '--'}x`,

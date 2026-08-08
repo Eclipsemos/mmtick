@@ -151,7 +151,7 @@ class FakeFuturesClient:
         return {"status": "CANCELED", "orderId": 71, "executedQty": "0"}
 
 
-def futures_settings(tmp_path, *, allow_orders: bool = False):
+def futures_settings(tmp_path, *, allow_orders: bool = False, allow_short: bool = True):
     settings = load_settings("config/settings.toml")
     live = replace(
         settings.live_futures,
@@ -162,8 +162,35 @@ def futures_settings(tmp_path, *, allow_orders: bool = False):
         max_order_notional=100.0,
         max_daily_loss=50.0,
         max_orders_per_day=6,
+        allow_short=allow_short,
+        position_fraction=0.625,
+        profit_activation_atr=2.0,
+        profit_trailing_atr=0.5,
+        continuation_reentry_atr=1.4,
     )
     return replace(settings, live_futures=live)
+
+
+def test_live_trader_uses_live_specific_strategy_parameters(tmp_path) -> None:
+    settings = load_settings("config/settings.toml")
+    settings = replace(
+        settings,
+        live_futures=replace(
+            settings.live_futures,
+            database_path=tmp_path / "live-futures.db",
+            credentials_path=None,
+        ),
+    )
+
+    trader = LiveFuturesTrader(
+        settings,
+        LiveStore(settings.live_futures.database_path),
+        client=FakeFuturesClient(),  # type: ignore[arg-type]
+    )
+
+    assert trader.strategy.period == 32
+    assert trader.strategy.multiplier == Decimal("3.0")
+    assert trader.strategy.reversal_confirmation_atr == Decimal("0.0")
 
 
 def test_futures_reporting_aggregates_partial_fills_into_round_trip(tmp_path) -> None:
@@ -384,6 +411,42 @@ def test_futures_short_order_uses_hedge_position_side(tmp_path, monkeypatch) -> 
     assert call["side"] == "SELL"
     assert call["position_side"] == "SHORT"
     assert store.orders(settings.live_futures.account_id)[0]["position_side"] == "SHORT"
+
+
+def test_long_only_live_strategy_rejects_short_entry(tmp_path) -> None:
+    settings = futures_settings(tmp_path, allow_short=False)
+    trader = LiveFuturesTrader(
+        settings,
+        LiveStore(settings.live_futures.database_path),
+        client=FakeFuturesClient(),  # type: ignore[arg-type]
+    )
+    tick = Tick("short", 1_700_000_000_000, Decimal("120"), Decimal("1"), "test")
+    signal = StrategySignal(
+        side=Side.SELL,
+        reason="price_crossed_below_atr_stop",
+        signal_price=tick.price,
+        trailing_stop=Decimal("125"),
+        atr=Decimal("2"),
+        bar_start_ms=tick.timestamp_ms // 900_000 * 900_000,
+        tick_id=tick.event_id,
+    )
+
+    assert asyncio.run(trader._risk_rejection(signal, tick)) == "SHORT_ENTRY_DISABLED"
+
+
+def test_long_only_live_strategy_blocks_existing_short_position(tmp_path) -> None:
+    settings = futures_settings(tmp_path, allow_short=False)
+    trader = LiveFuturesTrader(
+        settings,
+        LiveStore(settings.live_futures.database_path),
+        client=FakeFuturesClient(short_quantity="-1"),  # type: ignore[arg-type]
+    )
+
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+
+    assert "SHORT_POSITION_NOT_ALLOWED" in trader.block_reasons
+    assert not trader.order_submission_ready
 
 
 def test_futures_close_long_uses_full_position_and_long_side(tmp_path, monkeypatch) -> None:

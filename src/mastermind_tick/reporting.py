@@ -16,10 +16,12 @@ def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
     runtime_status = engine.status()
     runtime_by_id = {item["id"]: item for item in runtime_status["instruments"]}
     active_ids = set(runtime_by_id) or {item.id for item in engine.settings.instruments}
+    stored_accounts = {account["id"]: account for account in store.accounts()}
     accounts = []
-    for account in store.accounts():
-        account_id = account["id"]
-        if account_id not in active_ids:
+    for instrument in engine.settings.instruments:
+        account_id = instrument.id
+        account = stored_accounts.get(account_id)
+        if account is None or account_id not in active_ids:
             continue
         points = store.equity(account_id, 100_000)
         latest = points[-1] if points else None

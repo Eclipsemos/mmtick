@@ -229,8 +229,9 @@ WAREHOUSE_TABLES = (
 
 
 class PaperStore:
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, *, durable: bool = True):
         self.path = path
+        self.durable = durable
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.connection() as connection:
             connection.executescript(SCHEMA)
@@ -321,6 +322,8 @@ class PaperStore:
     def connection(self) -> Iterator[sqlite3.Connection]:
         connection = sqlite3.connect(self.path, timeout=30)
         connection.row_factory = sqlite3.Row
+        if not self.durable:
+            connection.execute("PRAGMA synchronous=OFF")
         try:
             yield connection
             connection.commit()

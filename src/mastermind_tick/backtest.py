@@ -12,7 +12,7 @@ from decimal import ROUND_DOWN, Decimal
 from pathlib import Path
 from typing import Any
 
-from mastermind_tick.config import InstrumentSettings, Settings, load_settings
+from mastermind_tick.config import InstrumentSettings, Settings, instrument_strategy, load_settings
 from mastermind_tick.models import Bar, FundingRate, Side, StrategySignal, Tick
 from mastermind_tick.strategy import (
     ATRProfitProtection,
@@ -530,6 +530,7 @@ def run_parameter_grid(
     start_ms: int | None = None,
     end_ms: int | None = None,
 ) -> tuple[dict[str, Any], list[ReplayResult]]:
+    strategy_settings = instrument_strategy(settings, instrument)
     database_uri = f"file:{settings.database_path}?mode=ro"
     with sqlite3.connect(database_uri, uri=True) as connection:
         connection.row_factory = sqlite3.Row
@@ -558,13 +559,7 @@ def run_parameter_grid(
             raise ValueError(f"no pre-replay OHLCV warmup for {instrument.id}")
         funding_rates = _load_funding_rates(connection, market_id, replay_start, replay_end)
 
-        position_fraction = Decimal(
-            str(
-                instrument.position_fraction
-                if instrument.position_fraction is not None
-                else settings.strategy.position_fraction
-            )
-        )
+        position_fraction = Decimal(str(strategy_settings.position_fraction))
         fee_bps = Decimal(
             str(
                 instrument.fee_bps if instrument.fee_bps is not None else settings.execution.fee_bps
@@ -589,10 +584,10 @@ def run_parameter_grid(
             strategy = ReplayATRTickStrategy(
                 item.atr_period,
                 item.atr_multiplier,
-                settings.strategy.bar_minutes,
-                settings.strategy.trend_efficiency_period,
-                settings.strategy.minimum_trend_efficiency,
-                settings.strategy.reversal_confirmation_atr,
+                strategy_settings.bar_minutes,
+                strategy_settings.trend_efficiency_period,
+                strategy_settings.minimum_trend_efficiency,
+                strategy_settings.reversal_confirmation_atr,
             )
             strategy.bootstrap(warmup_bars)
             candidates.append(

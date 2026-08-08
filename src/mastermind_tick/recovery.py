@@ -15,7 +15,7 @@ from typing import Any
 import httpx
 
 from mastermind_tick.backtest import ReplayATRTickStrategy, _load_warmup_bars
-from mastermind_tick.config import InstrumentSettings, Settings, load_settings
+from mastermind_tick.config import InstrumentSettings, Settings, instrument_strategy, load_settings
 from mastermind_tick.feeds import BINANCE_FUTURES_REST, BINANCE_REST, FUTURES_TICK_BUCKET_MS
 from mastermind_tick.models import Side, StrategySignal, Tick
 from mastermind_tick.rebuild import backup_database
@@ -363,7 +363,8 @@ def _reconstruct_gap_artifacts(
     end_ms: int,
     gaps: list[TradeGap],
 ) -> tuple[int, int, int]:
-    bar_ms = settings.strategy.bar_minutes * 60_000
+    strategy_settings = instrument_strategy(settings, instrument)
+    bar_ms = strategy_settings.bar_minutes * 60_000
     replay_start_ms = min(gap.previous_timestamp_ms for gap in gaps) // bar_ms * bar_ms
     with store.connection() as connection:
         fills = connection.execute(
@@ -415,15 +416,15 @@ def _reconstruct_gap_artifacts(
             replay_start_ms,
         )
 
-    if len(warmup) < settings.strategy.atr_period:
+    if len(warmup) < strategy_settings.atr_period:
         raise RuntimeError("insufficient official OHLCV warm-up for recovery replay")
     strategy = ReplayATRTickStrategy(
-        settings.strategy.atr_period,
-        settings.strategy.atr_multiplier,
-        settings.strategy.bar_minutes,
-        settings.strategy.trend_efficiency_period,
-        settings.strategy.minimum_trend_efficiency,
-        settings.strategy.reversal_confirmation_atr,
+        strategy_settings.atr_period,
+        strategy_settings.atr_multiplier,
+        strategy_settings.bar_minutes,
+        strategy_settings.trend_efficiency_period,
+        strategy_settings.minimum_trend_efficiency,
+        strategy_settings.reversal_confirmation_atr,
     )
     strategy.bootstrap(warmup)
     if checkpoint["atr"] is not None:

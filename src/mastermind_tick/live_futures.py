@@ -40,7 +40,7 @@ class LiveOperationError(RuntimeError):
 
 
 class LiveFuturesTrader:
-    """Run the ATR long/short strategy against the actual USD-M account."""
+    """Run the configured ATR strategy against the actual USD-M account."""
 
     def __init__(
         self,
@@ -70,12 +70,12 @@ class LiveFuturesTrader:
         )
         self.credential_error = None if client is not None else credential_error
         self.strategy = ATRTickStrategy(
-            period=settings.strategy.atr_period,
-            multiplier=settings.strategy.atr_multiplier,
+            period=self.config.atr_period,
+            multiplier=self.config.atr_multiplier,
             bar_minutes=settings.strategy.bar_minutes,
-            trend_efficiency_period=settings.strategy.trend_efficiency_period,
-            minimum_trend_efficiency=settings.strategy.minimum_trend_efficiency,
-            reversal_confirmation_atr=settings.strategy.reversal_confirmation_atr,
+            trend_efficiency_period=self.config.trend_efficiency_period,
+            minimum_trend_efficiency=self.config.minimum_trend_efficiency,
+            reversal_confirmation_atr=self.config.reversal_confirmation_atr,
         )
         self.profit_protection = (
             ATRProfitProtection(
@@ -173,8 +173,9 @@ class LiveFuturesTrader:
         self._restore_continuation_state(saved_state)
         if self.profit_protection is not None and saved_state is not None:
             self.profit_protection.restore_runtime(saved_state.get("profit_protection"))
-        if saved_state is None:
-            self.strategy.startup_alignment_checked = True
+        # LIVE must never chase the currently observed trend after either a first
+        # start or a strategy-parameter migration. It only acts on a fresh cross.
+        self.strategy.startup_alignment_checked = True
         engine.add_tick_listener(self.instrument.market_id, self.enqueue_tick)
         self._tick_task = asyncio.create_task(self._run_ticks(), name="soxl-perp-live-ticks")
         if not self.client.has_credentials:
@@ -505,6 +506,10 @@ class LiveFuturesTrader:
             both_quantity = Decimal(str(both_row.get("positionAmt", "0")))
             both_legs = long_quantity != 0 and short_quantity != 0
             self._set_gate("SIMULTANEOUS_LONG_SHORT_POSITION", both_legs)
+            self._set_gate(
+                "SHORT_POSITION_NOT_ALLOWED",
+                not self.config.allow_short and short_quantity != 0,
+            )
             self.position_quantity = long_quantity + short_quantity + both_quantity
             active = (
                 long_row
@@ -689,7 +694,7 @@ class LiveFuturesTrader:
                 tick,
                 has_position=self.position_quantity != 0,
                 has_pending_order=pending,
-                allow_short=True,
+                allow_short=self.config.allow_short,
                 is_short=self.position_quantity < 0,
                 emit_signals=execution_ready,
             )
@@ -933,6 +938,8 @@ class LiveFuturesTrader:
     async def _risk_rejection(self, signal: StrategySignal, tick: Tick) -> str | None:
         if self.persisted_paused:
             return "LIVE_TRADING_PAUSED"
+        if not signal.reduce_only and signal.side is Side.SELL and not self.config.allow_short:
+            return "SHORT_ENTRY_DISABLED"
         if not signal.reduce_only:
             day_start_ms = tick.timestamp_ms // 86_400_000 * 86_400_000
             if (
@@ -1088,6 +1095,8 @@ class LiveFuturesTrader:
             "target_margin_mode": self.config.margin_mode,
             "current_position_mode": self.current_position_mode,
             "multi_assets_enabled": self.multi_assets_enabled,
+            "strategy_name": self.config.strategy_name,
+            "allow_short": self.config.allow_short,
             "strategy": {
                 **_json_decimals(asdict(self.strategy.view())),
                 **self.continuation_reentry_view(),

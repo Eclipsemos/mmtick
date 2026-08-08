@@ -3,7 +3,7 @@ from dataclasses import replace
 from decimal import Decimal
 
 from mastermind_tick.binance_spot import SpotSymbolRules
-from mastermind_tick.config import load_settings
+from mastermind_tick.config import InstrumentSettings, load_settings
 from mastermind_tick.live_spot import LiveSpotTrader, load_live_credentials
 from mastermind_tick.live_store import LiveStore
 from mastermind_tick.models import Side, StrategySignal, Tick
@@ -126,15 +126,31 @@ class FakeSpotClient:
         }
 
 
-def live_settings(tmp_path):
+def _spot_instrument() -> InstrumentSettings:
+    return InstrumentSettings(
+        id="soxlb",
+        symbol="SOXLBUSDT",
+        display_symbol="SOXLB/USDT",
+        name="Legacy Spot unit-test instrument",
+        asset_type="tokenized_etf",
+        venue="Binance Spot",
+        currency="USDT",
+        feed="binance_spot",
+        quantity_step=0.001,
+        reference_symbol="SOXL",
+    )
+
+
+def live_settings(tmp_path, *, allow_order_submission: bool = True):
     settings = load_settings("config/settings.toml")
+    instrument = _spot_instrument()
     live = replace(
         settings.live_spot,
         enabled=True,
-        allow_order_submission=True,
+        allow_order_submission=allow_order_submission,
         database_path=tmp_path / "live.db",
     )
-    return replace(settings, live_spot=live)
+    return replace(settings, instruments=(*settings.instruments, instrument), live_spot=live)
 
 
 def test_live_order_needs_every_gate_and_ingests_actual_fill(tmp_path, monkeypatch) -> None:
@@ -190,11 +206,7 @@ def test_existing_position_and_unknown_order_block_activation(tmp_path, monkeypa
 
 
 def test_default_configuration_cannot_submit_orders(tmp_path) -> None:
-    settings = load_settings("config/settings.toml")
-    settings = replace(
-        settings,
-        live_spot=replace(settings.live_spot, database_path=tmp_path / "live.db"),
-    )
+    settings = live_settings(tmp_path, allow_order_submission=False)
     trader = LiveSpotTrader(
         settings,
         LiveStore(settings.live_spot.database_path),

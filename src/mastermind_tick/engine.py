@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass, field
 from decimal import Decimal
 from typing import Any
 
-from mastermind_tick.config import InstrumentSettings, Settings
+from mastermind_tick.config import InstrumentSettings, Settings, instrument_strategy
 from mastermind_tick.feeds import MarketFeed, build_feed
 from mastermind_tick.models import Bar, Tick
 from mastermind_tick.store import PaperStore
@@ -92,19 +92,20 @@ class PaperEngine:
                     market_instrument.symbol,
                 )
             feed = feeds[instrument.market_id]
+            strategy_settings = instrument_strategy(self.settings, instrument)
             strategy = ATRTickStrategy(
-                period=self.settings.strategy.atr_period,
-                multiplier=self.settings.strategy.atr_multiplier,
-                bar_minutes=self.settings.strategy.bar_minutes,
-                trend_efficiency_period=self.settings.strategy.trend_efficiency_period,
-                minimum_trend_efficiency=self.settings.strategy.minimum_trend_efficiency,
-                reversal_confirmation_atr=self.settings.strategy.reversal_confirmation_atr,
+                period=strategy_settings.atr_period,
+                multiplier=strategy_settings.atr_multiplier,
+                bar_minutes=strategy_settings.bar_minutes,
+                trend_efficiency_period=strategy_settings.trend_efficiency_period,
+                minimum_trend_efficiency=strategy_settings.minimum_trend_efficiency,
+                reversal_confirmation_atr=strategy_settings.reversal_confirmation_atr,
             )
             runtime = InstrumentRuntime(
                 instrument=instrument,
                 feed=feed,
                 strategy=strategy,
-                profit_protection=_paper_profit_protection(self.settings, instrument),
+                profit_protection=_paper_profit_protection(instrument),
                 strategy_ready=False,
             )
             account = self.store.account(instrument.id)
@@ -730,18 +731,17 @@ def _strategy_view(value: dict[str, Any]) -> dict[str, Any]:
     return value
 
 
-def _paper_profit_protection(
-    settings: Settings, instrument: InstrumentSettings
-) -> ATRProfitProtection | None:
-    config = settings.live_futures
+def _paper_profit_protection(instrument: InstrumentSettings) -> ATRProfitProtection | None:
     if (
-        instrument.id != config.instrument_id
-        or instrument.paper_model != "futures"
-        or config.profit_activation_atr <= 0
-        or config.profit_trailing_atr <= 0
+        instrument.paper_model != "futures"
+        or instrument.profit_activation_atr <= 0
+        or instrument.profit_trailing_atr <= 0
     ):
         return None
-    return ATRProfitProtection(config.profit_activation_atr, config.profit_trailing_atr)
+    return ATRProfitProtection(
+        instrument.profit_activation_atr,
+        instrument.profit_trailing_atr,
+    )
 
 
 def _runtime_state(runtime: InstrumentRuntime) -> dict[str, Any]:

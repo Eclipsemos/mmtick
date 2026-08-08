@@ -13,7 +13,12 @@ from pathlib import Path
 from typing import Any
 
 from mastermind_tick.backtest import ReplayATRTickStrategy, _load_funding_rates, _load_warmup_bars
-from mastermind_tick.config import InstrumentSettings, Settings, load_settings
+from mastermind_tick.config import (
+    InstrumentSettings,
+    Settings,
+    instrument_strategy,
+    load_settings,
+)
 from mastermind_tick.models import Tick
 from mastermind_tick.store import PaperStore
 from mastermind_tick.strategy import ATRProfitProtection, atr_profit_protection_signal
@@ -52,6 +57,8 @@ def backup_database(source: Path, destination: Path) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     if destination.exists():
         destination.unlink()
+    for suffix in ("-wal", "-shm"):
+        Path(f"{destination}{suffix}").unlink(missing_ok=True)
     with (
         sqlite3.connect(source) as source_connection,
         sqlite3.connect(destination) as destination_connection,
@@ -66,9 +73,12 @@ def rebuild_candidate(
 ) -> dict[str, Any]:
     """Create and fully replay a candidate DB without modifying the source DB."""
     backup_database(settings.database_path, candidate_path)
-    store = PaperStore(candidate_path)
+    with sqlite3.connect(candidate_path) as connection:
+        connection.execute("PRAGMA journal_mode=OFF")
+    store = PaperStore(candidate_path, durable=False)
     before_market = _market_counts(candidate_path)
     selected = _selected_instruments(settings, account_ids)
+    selected_strategy = instrument_strategy(settings, selected[0])
     results = [_rebuild_account(settings, store, instrument) for instrument in selected]
     after_market = _market_counts(candidate_path)
     if after_market != before_market:
@@ -77,14 +87,15 @@ def rebuild_candidate(
         "candidate_path": str(candidate_path),
         "strategy": {
             "algorithm_version": ReplayATRTickStrategy.ALGORITHM_VERSION,
-            "period": settings.strategy.atr_period,
-            "multiplier": settings.strategy.atr_multiplier,
-            "bar_ms": settings.strategy.bar_minutes * 60_000,
-            "trend_efficiency_period": settings.strategy.trend_efficiency_period,
-            "minimum_trend_efficiency": settings.strategy.minimum_trend_efficiency,
-            "reversal_confirmation_atr": settings.strategy.reversal_confirmation_atr,
-            "profit_activation_atr": settings.live_futures.profit_activation_atr,
-            "profit_trailing_atr": settings.live_futures.profit_trailing_atr,
+            "name": selected_strategy.name,
+            "period": selected_strategy.atr_period,
+            "multiplier": selected_strategy.atr_multiplier,
+            "bar_ms": selected_strategy.bar_minutes * 60_000,
+            "trend_efficiency_period": selected_strategy.trend_efficiency_period,
+            "minimum_trend_efficiency": selected_strategy.minimum_trend_efficiency,
+            "reversal_confirmation_atr": selected_strategy.reversal_confirmation_atr,
+            "profit_activation_atr": selected[0].profit_activation_atr,
+            "profit_trailing_atr": selected[0].profit_trailing_atr,
         },
         "market_counts": after_market,
         "accounts": [asdict(result) for result in results],
@@ -95,6 +106,7 @@ def _rebuild_account(
     settings: Settings, store: PaperStore, instrument: InstrumentSettings
 ) -> AccountRebuildResult:
     market_id = instrument.market_id
+    strategy_settings = instrument_strategy(settings, instrument)
     with store.connection() as connection:
         bounds = connection.execute(
             """
@@ -112,28 +124,24 @@ def _rebuild_account(
         warmup = _load_warmup_bars(connection, market_id, first_ms, settings.warmup_bars)
         funding_rates = _load_funding_rates(connection, market_id, first_ms, last_ms)
 
-    if len(warmup) < settings.strategy.atr_period:
+    if len(warmup) < strategy_settings.atr_period:
         raise ValueError(
             f"insufficient warmup for {instrument.id}: "
-            f"{len(warmup)} < {settings.strategy.atr_period}"
+            f"{len(warmup)} < {strategy_settings.atr_period}"
         )
 
     _clear_account_ledger(store, instrument, settings.initial_cash, first_ms)
     strategy = ReplayATRTickStrategy(
-        settings.strategy.atr_period,
-        settings.strategy.atr_multiplier,
-        settings.strategy.bar_minutes,
-        settings.strategy.trend_efficiency_period,
-        settings.strategy.minimum_trend_efficiency,
-        settings.strategy.reversal_confirmation_atr,
+        strategy_settings.atr_period,
+        strategy_settings.atr_multiplier,
+        strategy_settings.bar_minutes,
+        strategy_settings.trend_efficiency_period,
+        strategy_settings.minimum_trend_efficiency,
+        strategy_settings.reversal_confirmation_atr,
     )
     strategy.bootstrap(warmup)
-    profit_protection = _paper_profit_protection(settings, instrument)
-    position_fraction = (
-        instrument.position_fraction
-        if instrument.position_fraction is not None
-        else settings.strategy.position_fraction
-    )
+    profit_protection = _paper_profit_protection(instrument)
+    position_fraction = strategy_settings.position_fraction
     funding_index = 0
     last_snapshot_ms = 0
     last_tick: Tick | None = None
@@ -413,6 +421,7 @@ def _replay_account_tail(
     instrument: InstrumentSettings,
 ) -> int:
     market_id = instrument.market_id
+    strategy_settings = instrument_strategy(settings, instrument)
     database_uri = f"file:{settings.database_path}?mode=ro"
     with sqlite3.connect(database_uri, uri=True) as connection:
         connection.row_factory = sqlite3.Row
@@ -449,24 +458,20 @@ def _replay_account_tail(
         )
 
         strategy = ReplayATRTickStrategy(
-            settings.strategy.atr_period,
-            settings.strategy.atr_multiplier,
-            settings.strategy.bar_minutes,
-            settings.strategy.trend_efficiency_period,
-            settings.strategy.minimum_trend_efficiency,
-            settings.strategy.reversal_confirmation_atr,
+            strategy_settings.atr_period,
+            strategy_settings.atr_multiplier,
+            strategy_settings.bar_minutes,
+            strategy_settings.trend_efficiency_period,
+            strategy_settings.minimum_trend_efficiency,
+            strategy_settings.reversal_confirmation_atr,
         )
         strategy.bootstrap(warmup)
         saved_state = store.strategy_state(instrument.id)
         strategy.restore_runtime(saved_state)
-        profit_protection = _paper_profit_protection(settings, instrument)
+        profit_protection = _paper_profit_protection(instrument)
         if profit_protection is not None and saved_state is not None:
             profit_protection.restore_runtime(saved_state.get("profit_protection"))
-        position_fraction = (
-            instrument.position_fraction
-            if instrument.position_fraction is not None
-            else settings.strategy.position_fraction
-        )
+        position_fraction = strategy_settings.position_fraction
         account = store.account(instrument.id)
         position_quantity = Decimal(account["quantity"])
         average_price = Decimal(account["average_price"])
@@ -622,18 +627,17 @@ def _tick_from_row(row: sqlite3.Row) -> Tick:
     )
 
 
-def _paper_profit_protection(
-    settings: Settings, instrument: InstrumentSettings
-) -> ATRProfitProtection | None:
-    config = settings.live_futures
+def _paper_profit_protection(instrument: InstrumentSettings) -> ATRProfitProtection | None:
     if (
-        instrument.id != config.instrument_id
-        or instrument.paper_model != "futures"
-        or config.profit_activation_atr <= 0
-        or config.profit_trailing_atr <= 0
+        instrument.paper_model != "futures"
+        or instrument.profit_activation_atr <= 0
+        or instrument.profit_trailing_atr <= 0
     ):
         return None
-    return ATRProfitProtection(config.profit_activation_atr, config.profit_trailing_atr)
+    return ATRProfitProtection(
+        instrument.profit_activation_atr,
+        instrument.profit_trailing_atr,
+    )
 
 
 def _strategy_state(

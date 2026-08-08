@@ -138,16 +138,13 @@ def test_rebuild_persists_profit_protection_for_target_futures_account(tmp_path)
         leverage=2,
         margin_mode="isolated",
         allow_short=True,
+        profit_activation_atr=2,
+        profit_trailing_atr=0.5,
     )
     settings = replace(
         base,
         instruments=(instrument,),
-        live_futures=replace(
-            base.live_futures,
-            instrument_id=instrument.id,
-            profit_activation_atr=2,
-            profit_trailing_atr=0.5,
-        ),
+        live_futures=replace(base.live_futures, instrument_id=instrument.id),
     )
     store = PaperStore(settings.database_path)
     store.upsert_history_bars(instrument, 15, [_bar(0, "10"), _bar(1, "9")], "test")
@@ -223,6 +220,12 @@ def test_selected_long_only_account_replays_shared_futures_market(tmp_path) -> N
             "display_symbol": "TEST/USDT PERP LONG ONLY",
             "market_data_id": market.id,
             "allow_short": False,
+            "strategy_name": "long-only-latest",
+            "atr_period": 2,
+            "atr_multiplier": 0.75,
+            "minimum_trend_efficiency": 0.2,
+            "reversal_confirmation_atr": 0.0,
+            "position_fraction": 0.7,
         }
     )
     settings = Settings(**{**base.__dict__, "instruments": (market, long_only)})
@@ -243,9 +246,14 @@ def test_selected_long_only_account_replays_shared_futures_market(tmp_path) -> N
     account = candidate.account(long_only.id)
     fills = candidate.fills(long_only.id, 100)
     assert report["accounts"][0]["account_id"] == long_only.id
+    assert report["strategy"]["name"] == "long-only-latest"
+    assert report["strategy"]["period"] == 2
+    assert report["strategy"]["multiplier"] == 0.75
     assert not candidate.agg_trades(long_only.id, 100)
     assert len(candidate.agg_trades(market.id, 100)) == 4
     assert Decimal(account["quantity"]) >= 0
+    assert account["position_fraction"] == "0.7"
+    assert candidate.strategy_state(long_only.id)["multiplier"] == "0.75"
     assert all(Decimal(fill["position_after"] or "0") >= 0 for fill in fills)
 
 

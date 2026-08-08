@@ -247,7 +247,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         limit: Annotated[int, Query(ge=20, le=10000)] = 1000,
         before_ms: Annotated[int | None, Query(gt=0)] = None,
     ) -> list[dict]:
-        _require_account(store, account_id)
+        _require_account(resolved, store, account_id)
         return store.equity(account_id, limit, before_ms)
 
     @app.get("/api/accounts/{account_id}/returns")
@@ -255,25 +255,23 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         account_id: str,
         timezone_offset_minutes: Annotated[int, Query(ge=-720, le=840)] = 0,
     ) -> dict:
-        _require_account(store, account_id)
+        _require_account(resolved, store, account_id)
         return build_return_summary(store, account_id, timezone_offset_minutes)
 
     @app.get("/api/fills")
     def fills(
-        account_id: str | None = None,
+        account_id: str = "soxl_perp",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     ) -> list[dict]:
-        if account_id:
-            _require_account(store, account_id)
+        _require_account(resolved, store, account_id)
         return store.fills(account_id, limit)
 
     @app.get("/api/orders")
     def orders(
-        account_id: str | None = None,
+        account_id: str = "soxl_perp",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     ) -> list[dict]:
-        if account_id:
-            _require_account(store, account_id)
+        _require_account(resolved, store, account_id)
         return store.orders(account_id, limit)
 
     @app.get("/api/reconstructed-signals")
@@ -281,25 +279,23 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         account_id: str = "soxl_perp",
         limit: Annotated[int, Query(ge=1, le=1000)] = 1000,
     ) -> list[dict]:
-        _require_account(store, account_id)
+        _require_account(resolved, store, account_id)
         return store.reconstructed_signals(account_id, limit)
 
     @app.get("/api/events")
     def events(
-        account_id: str | None = None,
+        account_id: str = "soxl_perp",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     ) -> list[dict]:
-        if account_id:
-            _require_account(store, account_id)
+        _require_account(resolved, store, account_id)
         return store.events(account_id, limit)
 
     @app.get("/api/funding")
     def funding(
-        account_id: str | None = None,
+        account_id: str = "soxl_perp",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     ) -> list[dict]:
-        if account_id:
-            _require_account(store, account_id)
+        _require_account(resolved, store, account_id)
         return store.funding_payments(account_id, limit)
 
     @app.get("/api/warehouse")
@@ -311,7 +307,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
 
     @app.get("/api/market/agg-trades")
     def agg_trades(
-        instrument_id: str = "soxlb",
+        instrument_id: str = "soxl_perp",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     ) -> list[dict]:
         instrument = _require_instrument(resolved, instrument_id)
@@ -319,7 +315,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
 
     @app.get("/api/market/ohlcv")
     def ohlcv(
-        instrument_id: str = "soxlb",
+        instrument_id: str = "soxl_perp",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
         before_ms: Annotated[int | None, Query(gt=0)] = None,
     ) -> list[dict]:
@@ -332,9 +328,8 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         )
 
     @app.get("/api/fills.csv")
-    def export_fills(account_id: str | None = None) -> Response:
-        if account_id:
-            _require_account(store, account_id)
+    def export_fills(account_id: str = "soxl_perp") -> Response:
+        _require_account(resolved, store, account_id)
         rows = store.fills(account_id, 100_000)
         return _fills_csv(rows, "mmtick-fills.csv")
 
@@ -362,7 +357,9 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     return app
 
 
-def _require_account(store: PaperStore, account_id: str) -> None:
+def _require_account(settings: Settings, store: PaperStore, account_id: str) -> None:
+    if account_id not in {instrument.id for instrument in settings.instruments}:
+        raise HTTPException(status_code=404, detail=f"unknown account: {account_id}")
     try:
         store.account(account_id)
     except LookupError as exc:

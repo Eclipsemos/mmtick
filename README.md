@@ -1,6 +1,6 @@
 # mastermind:tick
 
-`mastermind:tick` 是一个以 Binance 公共行情驱动的 SOXL 短周期交易系统，包含三个隔离的
+`mastermind:tick` 是一个以 Binance 公共行情驱动的 SOXL 短周期交易系统，包含两个隔离的
 paper 账户、一条独立的 Binance USDⓈ-M Futures 实盘链路、Tick 级回放工具和 React
 监控台。系统持续保存行情、K 线、策略状态、订单、成交、资金费、现金流和账户绩效。
 
@@ -12,20 +12,20 @@ paper 账户、一条独立的 Binance USDⓈ-M Futures 实盘链路、Tick 级�
 
 | 账户 ID | 产品 | 方向 | 初始资金/来源 | 目标敞口 |
 |---|---|---|---|---:|
-| `soxlb` | `SOXLB/USDT` bStock paper | 仅做多 | 100,000 USDT | 1.00x |
-| `soxl_perp` | `SOXL/USDT PERP` paper | 多空 | 100,000 USDT | 1.25x |
-| `soxl_perp_long` | 同一 Futures 行情的独立 paper 账户 | 仅做多 | 100,000 USDT | 1.25x |
-| `soxl_perp_live` | Binance `SOXLUSDT` USD-M Futures | 多空 | Binance 实际余额 | 1.25x |
+| `soxl_perp_long` | `SOXL/USDT PERP LONG ONLY` paper | 仅做多 | 100,000 USDT | 1.40x |
+| `soxl_perp` | 同一 Futures 行情的独立 paper 账户 | 多空 | 100,000 USDT | 1.25x |
+| `soxl_perp_live` | Binance `SOXLUSDT` USD-M Futures | 仅做多 | Binance 实际余额 | 1.40x |
 
 Paper 账户写入 `data/paper.db`，实盘账户写入 `data/live_futures.db`；真实余额、订单与成交
-不会混入模拟账本。已停用的 SOXLB Spot 实盘配置和 `data/live.db` 仅保留兼容与审计用途。
+不会混入模拟账本。SOXLB paper 行情采集和仓库写入已经停用，既有历史行保留用于审计，
+不会继续更新或作为可配置账户公开。
 
-永续账户使用 `2x isolated` 和 62.5% 仓位预算：
+实盘账户使用 `2x isolated` 和 70% 仓位预算：
 
 ```text
 目标名义仓位 = 账户净值 × position_fraction × leverage
-             = 账户净值 × 0.625 × 2
-             = 账户净值 × 1.25
+             = 账户净值 × 0.70 × 2
+             = 账户净值 × 1.40
 ```
 
 提高 `leverage` 而不降低 `position_fraction` 会同时放大收益、亏损、手续费和资金费。
@@ -35,55 +35,39 @@ Paper 账户写入 `data/paper.db`，实盘账户写入 `data/live_futures.db`�
 运行参数以 [config/settings.toml](config/settings.toml) 为准：
 
 ```text
-算法版本                 atr_tick_v3_startup_alignment
+策略名称                 soxl_long_atr32x3_v1
 K 线周期                 15 分钟
-基础止损                 Wilder ATR(21) × 4.0 递归跟踪线
+实盘基础止损             Wilder ATR(32) × 3.0 递归跟踪线
 趋势过滤                 8 根 K 线效率 >= 0.25
-反向确认                 下一根 K 线继续运行 0.25 × 当前 ATR
-利润保护                 2.0 × 入场 ATR 激活，0.5 × 当前 ATR 跟踪
-实盘延续重入             下一根 K 线突破真实平仓均价 1.4 × 当前 ATR
+实盘交易方向             仅做多
+实盘利润保护             关闭
+实盘延续重入             关闭
 信号检测                 每个 Binance 成交 Tick
 动作频率                 每根 K 线最多一个交易动作
 ```
 
 ### 基础信号与反向
 
-价格从 ATR 跟踪线下方穿到上方时产生多头方向信号，从上方穿到下方时产生空头方向信号。
-新开仓必须通过趋势效率过滤；过滤器不会阻止已有仓位减仓。多空 Futures 反向时先发送
-`reduce_only` 平仓，平仓后的下一根 15 分钟 K 线若继续向反方向突破 `0.25 ATR`，才建立
-反向仓位；机会随后过期。
+实盘和 `soxl_perp_long` 在价格从 ATR 跟踪线下方穿到上方且趋势效率过滤通过时开多；持有
+多仓时，下穿 ATR 跟踪线会发送 `reduce_only` 平仓。平仓后保持空仓，等待下一次有效上穿，
+不开空、不反手、
+不执行延续重入。`soxl_perp_long` 使用与实盘相同的 ATR(32) × 3.0、70% 仓位策略；
+`soxl_perp` 继续使用全局 ATR(21) × 4.0，并保留多空反向和 2.0/0.5 ATR 利润保护，用于独立比较。
 
 Paper 账户首次启动时会执行一次趋势对齐。实盘首次启动不会按当前趋势追单，只等待新的有效
 穿越；兼容策略状态会持久化，普通服务重启不会重复执行启动入场。
 
-### 利润保护
-
-`soxl_perp` paper 与 `soxl_perp_live` 共用 ATR 利润保护。持仓有利移动达到
-`2.0 × 入场 ATR` 后激活，以持仓期间的有利极值减去/加上 `0.5 × 当前 ATR` 形成单向保护线。
-保护线只向锁定更多利润的方向移动。触发时只平仓，不立即反手；新仓会按新的成交价和入场
-ATR 重新初始化保护状态。
-
-### 实盘延续重入
-
-策略平仓后，实盘会记录原方向和 Binance 真实平仓成交均价。只有紧接着的下一根 15 分钟
-K 线可以重入：价格必须沿原方向突破 `1.4 × 当前 ATR`、位于基础 ATR 线正确一侧并通过趋势
-过滤。人工平仓、历史成交同步和首次启动不会创建重入机会；有效机会可跨服务重启恢复。
-
-阈值研究见
-[reports/continuation_reentry/continuation_reentry_threshold_20260806.md](reports/continuation_reentry/continuation_reentry_threshold_20260806.md)。
-样本截至 2026-08-06，仅包含 13 个完成轮次和 3 次重入，不能视为未来收益预期。
+完整实盘策略和风险预算研究见 [STRATEGY.md](STRATEGY.md)。
 
 ## 行情、成交与记账
 
-- Spot 使用 Binance `SOXLBUSDT` 聚合成交；Futures 使用 `SOXLUSDT` Trade 流并按 250 ms
-  聚合，保留底层 Trade ID 范围。
-- Spot/Futures 均使用官方 15 分钟 K 线预热和定稿；收盘后通过 REST `/klines` 再校验。
+- Futures 使用 `SOXLUSDT` Trade 流并按 250 ms 聚合，保留底层 Trade ID 范围。
+- 系统使用官方 15 分钟 Futures K 线预热和定稿；收盘后通过 REST `/klines` 再校验。
 - `soxl_perp`、`soxl_perp_long` 和实盘策略复用同一份 Futures 市场数据，但策略状态和账本
   相互独立。
 - Paper 信号在下一笔持久化 Tick 按固定手续费与滑点成交；实盘只采用 Binance 返回的真实
   订单和成交结果。
-- Paper Spot 默认手续费/滑点为 10/5 bps；Paper Futures 为 5/2 bps。实盘使用真实费用，
-  开仓盘口偏离上限为 30 bps。
+- Paper Futures 使用 5/2 bps 手续费/滑点。实盘使用真实费用，开仓盘口偏离上限为 30 bps。
 - 实盘订单使用确定性 `clientOrderId`。网络结果不明确时按该 ID 对账，不直接重复提交。
 - Binance Futures `TRANSFER` 会幂等写入现金流；外部入金和出金不计入策略收益。
 - 胜率按完整开仓—平仓轮次计算，分段成交归入同一轮；净值包含当前未实现盈亏。
@@ -171,8 +155,8 @@ Cookie 和 HSTS。
   恢复操作。
 - LIVE 的“平仓”要求二次确认，会重新读取 Binance 实际仓位并只发送减仓市价单；存在人工
   挂单或本地未决订单时拒绝执行。人工平仓不会自动停止策略。
-- ATR 止损和利润保护是服务收到实时 Tick 后提交的市价减仓，不是预挂在 Binance 的原生
-  止损单。服务、网络或行情中断期间无法触发。
+- 实盘 ATR 止损是服务收到实时 Tick 后提交的市价减仓，不是预挂在 Binance 的原生止损单。
+  服务、网络或行情中断期间无法触发。
 
 ## Dashboard 与 API
 

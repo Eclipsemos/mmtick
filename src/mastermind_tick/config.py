@@ -47,6 +47,14 @@ class InstrumentSettings:
     minimum_notional: float | None = None
     market_data_id: str | None = None
     allow_short: bool | None = None
+    strategy_name: str | None = None
+    atr_period: int | None = None
+    atr_multiplier: float | None = None
+    trend_efficiency_period: int | None = None
+    minimum_trend_efficiency: float | None = None
+    reversal_confirmation_atr: float | None = None
+    profit_activation_atr: float = 0.0
+    profit_trailing_atr: float = 0.0
 
     @property
     def market_id(self) -> str:
@@ -89,6 +97,7 @@ class LiveFuturesSettings:
     enabled: bool = False
     instrument_id: str = "soxl_perp"
     account_id: str = "soxl_perp_live"
+    strategy_name: str = "soxl_live_atr"
     database_path: Path = Path("data/live_futures.db")
     api_base_url: str = "https://fapi.binance.com"
     spot_api_base_url: str = "https://api.binance.com"
@@ -100,6 +109,12 @@ class LiveFuturesSettings:
     activation_value: str = "SOXLUSDT_PERP_LIVE"
     allow_order_submission: bool = False
     adopt_existing_position: bool = False
+    allow_short: bool = True
+    atr_period: int = 21
+    atr_multiplier: float = 4.0
+    trend_efficiency_period: int = 8
+    minimum_trend_efficiency: float = 0.25
+    reversal_confirmation_atr: float = 0.25
     leverage: int = 2
     margin_mode: str = "isolated"
     position_mode: str = "hedge"
@@ -132,6 +147,43 @@ class Settings:
     instruments: tuple[InstrumentSettings, ...]
     live_spot: LiveSpotSettings = LiveSpotSettings()
     live_futures: LiveFuturesSettings = LiveFuturesSettings()
+
+
+def instrument_strategy(settings: Settings, instrument: InstrumentSettings) -> StrategySettings:
+    """Resolve one paper account's strategy, falling back to global paper defaults."""
+    default = settings.strategy
+    return StrategySettings(
+        name=instrument.strategy_name or default.name,
+        bar_minutes=default.bar_minutes,
+        atr_period=(
+            instrument.atr_period if instrument.atr_period is not None else default.atr_period
+        ),
+        atr_multiplier=(
+            instrument.atr_multiplier
+            if instrument.atr_multiplier is not None
+            else default.atr_multiplier
+        ),
+        position_fraction=(
+            instrument.position_fraction
+            if instrument.position_fraction is not None
+            else default.position_fraction
+        ),
+        trend_efficiency_period=(
+            instrument.trend_efficiency_period
+            if instrument.trend_efficiency_period is not None
+            else default.trend_efficiency_period
+        ),
+        minimum_trend_efficiency=(
+            instrument.minimum_trend_efficiency
+            if instrument.minimum_trend_efficiency is not None
+            else default.minimum_trend_efficiency
+        ),
+        reversal_confirmation_atr=(
+            instrument.reversal_confirmation_atr
+            if instrument.reversal_confirmation_atr is not None
+            else default.reversal_confirmation_atr
+        ),
+    )
 
 
 def load_settings(path: str | Path = "config/settings.toml") -> Settings:
@@ -212,25 +264,49 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
             )
         if instrument.allow_short and instrument.paper_model != "futures":
             raise ValueError(f"allow_short requires futures paper_model for {instrument.id}")
-    live_instrument = instrument_by_id.get(live_spot.instrument_id)
-    if live_instrument is None:
-        raise ValueError(f"unknown live_spot instrument_id: {live_spot.instrument_id}")
-    if live_instrument.paper_model != "spot":
-        raise ValueError("live_spot instrument must use the spot paper model")
-    if not 0 < live_spot.position_fraction <= 1:
-        raise ValueError("live_spot.position_fraction must be in (0, 1]")
-    if live_spot.max_order_notional <= 0 or live_spot.quote_reserve < 0:
-        raise ValueError("live_spot order limits must be positive")
-    if live_spot.max_slippage_bps < 0 or live_spot.max_daily_loss <= 0:
-        raise ValueError("live_spot risk limits are invalid")
-    if (
-        live_spot.max_orders_per_day < 1
-        or live_spot.reconcile_seconds < 1
-        or live_spot.trade_sync_seconds < live_spot.reconcile_seconds
-    ):
-        raise ValueError("live_spot frequency limits are invalid")
-    if live_spot.order_timeout_seconds < 1 or live_spot.recv_window_ms < 1000:
-        raise ValueError("live_spot timing limits are invalid")
+        if instrument.atr_period is not None and instrument.atr_period < 1:
+            raise ValueError(f"invalid atr_period for {instrument.id}")
+        if instrument.atr_multiplier is not None and instrument.atr_multiplier <= 0:
+            raise ValueError(f"invalid atr_multiplier for {instrument.id}")
+        if (
+            instrument.trend_efficiency_period is not None
+            and instrument.trend_efficiency_period < 2
+        ):
+            raise ValueError(f"invalid trend_efficiency_period for {instrument.id}")
+        if (
+            instrument.minimum_trend_efficiency is not None
+            and not 0 <= instrument.minimum_trend_efficiency <= 1
+        ):
+            raise ValueError(f"invalid minimum_trend_efficiency for {instrument.id}")
+        if (
+            instrument.reversal_confirmation_atr is not None
+            and instrument.reversal_confirmation_atr < 0
+        ):
+            raise ValueError(f"invalid reversal_confirmation_atr for {instrument.id}")
+        if instrument.profit_activation_atr < 0 or instrument.profit_trailing_atr < 0:
+            raise ValueError(f"profit protection ATR cannot be negative for {instrument.id}")
+        if (instrument.profit_activation_atr > 0) != (instrument.profit_trailing_atr > 0):
+            raise ValueError(f"profit protection ATR must be enabled as a pair for {instrument.id}")
+    if live_spot.enabled:
+        live_instrument = instrument_by_id.get(live_spot.instrument_id)
+        if live_instrument is None:
+            raise ValueError(f"unknown live_spot instrument_id: {live_spot.instrument_id}")
+        if live_instrument.paper_model != "spot":
+            raise ValueError("live_spot instrument must use the spot paper model")
+        if not 0 < live_spot.position_fraction <= 1:
+            raise ValueError("live_spot.position_fraction must be in (0, 1]")
+        if live_spot.max_order_notional <= 0 or live_spot.quote_reserve < 0:
+            raise ValueError("live_spot order limits must be positive")
+        if live_spot.max_slippage_bps < 0 or live_spot.max_daily_loss <= 0:
+            raise ValueError("live_spot risk limits are invalid")
+        if (
+            live_spot.max_orders_per_day < 1
+            or live_spot.reconcile_seconds < 1
+            or live_spot.trade_sync_seconds < live_spot.reconcile_seconds
+        ):
+            raise ValueError("live_spot frequency limits are invalid")
+        if live_spot.order_timeout_seconds < 1 or live_spot.recv_window_ms < 1000:
+            raise ValueError("live_spot timing limits are invalid")
     live_futures_instrument = instrument_by_id.get(live_futures.instrument_id)
     if live_futures_instrument is None:
         raise ValueError(f"unknown live_futures instrument_id: {live_futures.instrument_id}")
@@ -238,6 +314,14 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         raise ValueError("live_futures instrument must use the futures paper model")
     if live_futures.leverage < 1 or live_futures.margin_mode not in {"isolated", "cross"}:
         raise ValueError("live_futures leverage or margin mode is invalid")
+    if live_futures.atr_period < 1 or live_futures.atr_multiplier <= 0:
+        raise ValueError("live_futures ATR parameters are invalid")
+    if live_futures.trend_efficiency_period < 2:
+        raise ValueError("live_futures trend efficiency period must be at least 2")
+    if not 0 <= live_futures.minimum_trend_efficiency <= 1:
+        raise ValueError("live_futures minimum trend efficiency must be in [0, 1]")
+    if live_futures.reversal_confirmation_atr < 0:
+        raise ValueError("live_futures reversal confirmation ATR cannot be negative")
     if live_futures.position_mode not in {"hedge"}:
         raise ValueError("live_futures currently requires hedge position mode")
     if not 0 < live_futures.position_fraction <= 1:

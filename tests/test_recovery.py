@@ -11,7 +11,6 @@ from mastermind_tick.recovery import (
     BACKFILL_SOURCE,
     FUTURES_BACKFILL_SOURCE,
     RECONSTRUCTED_SOURCE,
-    SPOT_BACKFILL_SOURCE,
     TradeGap,
     apply_recovery_candidate,
     detect_trade_gaps,
@@ -259,7 +258,6 @@ def test_futures_gap_recovery_backfills_market_and_chart_without_touching_ledger
 @pytest.mark.parametrize(
     ("account_id", "expected_path", "expected_source"),
     [
-        ("soxlb", "/api/v3/aggTrades", SPOT_BACKFILL_SOURCE),
         ("soxl_perp_long", "/fapi/v1/aggTrades", FUTURES_BACKFILL_SOURCE),
     ],
 )
@@ -282,11 +280,11 @@ def test_gap_recovery_supports_spot_and_shared_futures_market_data(
     settings = replace(
         base,
         database_path=tmp_path / f"{account_id}.db",
-        warmup_bars=30,
+        warmup_bars=40,
         instruments=instruments,
     )
     store = PaperStore(settings.database_path)
-    replay_start = 30 * BAR_MS
+    replay_start = 40 * BAR_MS
     store.ensure_account(account_instrument, settings.initial_cash, 1)
     store.upsert_history_bars(
         market_instrument,
@@ -301,7 +299,7 @@ def test_gap_recovery_supports_spot_and_shared_futures_market_data(
                 close=Decimal(101 + index),
                 volume=Decimal("10"),
             )
-            for index in range(30)
+            for index in range(40)
         ],
         "test_kline_rest",
     )

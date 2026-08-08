@@ -118,7 +118,7 @@ def test_action_lock_is_exposed_for_the_current_bar() -> None:
 
 def test_tick_signal_is_submitted_then_filled_on_next_tick(tmp_path) -> None:
     settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
-    instrument = settings.instruments[0]
+    instrument = next(item for item in settings.instruments if item.id == "soxl_perp")
     store = PaperStore(settings.database_path)
     store.ensure_account(instrument, settings.initial_cash, 1)
     engine = PaperEngine(settings, store)
@@ -167,7 +167,7 @@ def test_tick_signal_is_submitted_then_filled_on_next_tick(tmp_path) -> None:
     fill = store.fills(instrument.id)[0]
     assert filled_order["filled_at_ms"] == fill_tick.timestamp_ms
     assert fill["timestamp_ms"] == fill_tick.timestamp_ms
-    assert Decimal(fill["price"]) == Decimal("11.20560")
+    assert Decimal(fill["price"]) == Decimal("11.20224")
 
     asyncio.run(engine._process_official_close(runtime, official))
     stored = next(
@@ -280,7 +280,7 @@ def test_shared_market_tick_is_stored_once_and_fanned_out_to_both_accounts(
 
 def test_rest_failure_does_not_block_original_tick_strategy(tmp_path) -> None:
     settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
-    instrument = settings.instruments[0]
+    instrument = next(item for item in settings.instruments if item.id == "soxl_perp")
     store = PaperStore(settings.database_path)
     store.ensure_account(instrument, settings.initial_cash, 1)
     engine = PaperEngine(settings, store)
@@ -328,7 +328,7 @@ def test_rest_failure_does_not_block_original_tick_strategy(tmp_path) -> None:
 
 def test_unready_strategy_does_not_overwrite_persisted_checkpoint(tmp_path) -> None:
     settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
-    instrument = settings.instruments[0]
+    instrument = next(item for item in settings.instruments if item.id == "soxl_perp")
     store = PaperStore(settings.database_path)
     store.ensure_account(instrument, settings.initial_cash, 1)
     persisted = ATRTickStrategy(
@@ -374,7 +374,7 @@ def test_unready_strategy_does_not_overwrite_persisted_checkpoint(tmp_path) -> N
 
 def test_warmup_uses_persisted_closed_bars_when_rest_is_unavailable(tmp_path) -> None:
     settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
-    instrument = settings.instruments[0]
+    instrument = next(item for item in settings.instruments if item.id == "soxl_perp")
     store = PaperStore(settings.database_path)
     store.ensure_account(instrument, settings.initial_cash, 1)
     bars = [
@@ -415,7 +415,7 @@ def test_warmup_uses_persisted_closed_bars_when_rest_is_unavailable(tmp_path) ->
 
 def test_rest_reconciliation_closes_missing_bars_but_not_current_bar(tmp_path) -> None:
     settings = replace(load_settings("config/settings.toml"), database_path=tmp_path / "paper.db")
-    instrument = settings.instruments[0]
+    instrument = next(item for item in settings.instruments if item.id == "soxl_perp")
     store = PaperStore(settings.database_path)
     store.ensure_account(instrument, settings.initial_cash, 1)
     bars = [
