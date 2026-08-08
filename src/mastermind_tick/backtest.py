@@ -548,7 +548,18 @@ def run_parameter_grid(
         ).fetchone()
         if available is None or available["first_ms"] is None:
             raise ValueError(f"no aggTrade data for {instrument.id}")
-        replay_start = max(int(available["first_ms"]), start_ms or int(available["first_ms"]))
+        requested_start = start_ms
+        if requested_start is None:
+            requested_start = _default_replay_start(
+                connection,
+                market_id,
+                settings.strategy.bar_minutes,
+                settings.warmup_bars,
+            )
+        replay_start = max(
+            int(available["first_ms"]),
+            requested_start,
+        )
         replay_end = min(int(available["last_ms"]), end_ms or int(available["last_ms"]))
         if replay_start >= replay_end:
             raise ValueError(f"invalid replay range for {instrument.id}")
@@ -776,6 +787,26 @@ def _load_warmup_bars(
         )
         for row in rows
     ]
+
+
+def _default_replay_start(
+    connection: sqlite3.Connection,
+    instrument_id: str,
+    interval_minutes: int,
+    warmup_bars: int,
+) -> int:
+    row = connection.execute(
+        """
+        SELECT start_ms FROM ohlcv_bars
+        WHERE instrument_id = ? AND interval_minutes = ? AND is_closed = 1
+        ORDER BY start_ms
+        LIMIT 1 OFFSET ?
+        """,
+        (instrument_id, interval_minutes, warmup_bars),
+    ).fetchone()
+    if row is None:
+        raise ValueError(f"insufficient OHLCV warmup for {instrument_id}")
+    return int(row["start_ms"] if isinstance(row, sqlite3.Row) else row[0])
 
 
 def _load_funding_rates(

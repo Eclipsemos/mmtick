@@ -132,7 +132,7 @@ def build_live_futures_account(
         "reference_symbol": trader.instrument.reference_symbol,
         "paper_model": "futures",
         "market_data_id": trader.instrument.market_id,
-        "allow_short": True,
+        "allow_short": trader.instrument.short_enabled,
         "leverage": config.leverage,
         "margin_mode": config.margin_mode,
         "position_fraction": config.position_fraction,
@@ -152,7 +152,9 @@ def build_live_futures_account(
             "continuation_reentry_atr": config.continuation_reentry_atr,
             "one_action_per_bar": True,
             "startup_alignment": False,
-            "futures_reversal_mode": "close_then_confirm",
+            "futures_reversal_mode": (
+                "close_then_confirm" if trader.instrument.short_enabled else "long_only_exit"
+            ),
             "signal_confirmation": "tick",
             "fill_timing": "binance_actual",
         },
@@ -185,7 +187,7 @@ def build_live_futures_account(
             has_position=quantity != 0,
             has_pending_order=bool(pending),
             bar_ms=trader.strategy.bar_ms,
-            allow_short=True,
+            allow_short=trader.instrument.short_enabled,
             is_short=quantity < 0,
             last_order=normalized_orders[0] if normalized_orders else None,
         ),

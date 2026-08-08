@@ -7,10 +7,10 @@ initial_cash = 100000.0
 equity_snapshot_seconds = 10
 
 [strategy]
-name = "xiaoguo_atr_tick_v3_sample_optimized"
+name = "xiaoguo_atr_tick_v4_full_history_robust_long"
 bar_minutes = 15
-atr_period = 21
-atr_multiplier = 4.0
+atr_period = 32
+atr_multiplier = 3.0
 position_fraction = 1.0
 trend_efficiency_period = 8
 minimum_trend_efficiency = 0.25
@@ -50,7 +50,7 @@ order_timeout_seconds = 30
 recv_window_ms = 5000
 
 [live_futures]
-enabled = true
+enabled = false
 instrument_id = "soxl_perp"
 account_id = "soxl_perp_live"
 database_path = "data/live_futures.db"
@@ -62,7 +62,7 @@ credentials_path = ".env"
 operator_token_path = "data/operator.token"
 activation_env = "MMTICK_LIVE_CONFIRM"
 activation_value = "SOXLUSDT_PERP_LIVE"
-allow_order_submission = true
+allow_order_submission = false
 adopt_existing_position = false
 leverage = 2
 margin_mode = "isolated"
@@ -72,9 +72,9 @@ max_order_notional = 0.0
 max_slippage_bps = 30.0
 max_daily_loss = 0.0
 max_orders_per_day = 0
-profit_activation_atr = 2.0
-profit_trailing_atr = 0.5
-continuation_reentry_atr = 1.4
+profit_activation_atr = 0.0
+profit_trailing_atr = 0.0
+continuation_reentry_atr = 0.0
 reconcile_seconds = 5
 trade_sync_seconds = 60
 order_timeout_seconds = 30
@@ -110,6 +110,7 @@ position_fraction = 0.625
 fee_bps = 5.0
 slippage_bps = 2.0
 minimum_notional = 5.0
+allow_short = false
 
 [[instruments]]
 id = "soxl_perp_long"

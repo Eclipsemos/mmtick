@@ -505,6 +505,11 @@ class LiveFuturesTrader:
             both_quantity = Decimal(str(both_row.get("positionAmt", "0")))
             both_legs = long_quantity != 0 and short_quantity != 0
             self._set_gate("SIMULTANEOUS_LONG_SHORT_POSITION", both_legs)
+            self._set_gate(
+                "SHORT_POSITION_NOT_ALLOWED",
+                not self.instrument.short_enabled
+                and (short_quantity != 0 or both_quantity < 0),
+            )
             self.position_quantity = long_quantity + short_quantity + both_quantity
             active = (
                 long_row
@@ -689,7 +694,7 @@ class LiveFuturesTrader:
                 tick,
                 has_position=self.position_quantity != 0,
                 has_pending_order=pending,
-                allow_short=True,
+                allow_short=self.instrument.short_enabled,
                 is_short=self.position_quantity < 0,
                 emit_signals=execution_ready,
             )
@@ -844,6 +849,13 @@ class LiveFuturesTrader:
 
     async def _submit_signal(self, signal: StrategySignal, tick: Tick) -> None:
         if not self.order_submission_ready or self.rules is None:
+            return
+        if (
+            not signal.reduce_only
+            and signal.side is Side.SELL
+            and not self.instrument.short_enabled
+        ):
+            self._event("WARN", "ORDER_RISK_BLOCKED", "SHORT_ENTRY_DISABLED")
             return
         rejection = await self._risk_rejection(signal, tick)
         if rejection:

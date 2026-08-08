@@ -61,15 +61,19 @@ def test_health_and_empty_overview(tmp_path) -> None:
 def test_active_strategy_uses_recommended_atr_parameters() -> None:
     settings = load_settings("config/settings.toml")
 
-    assert settings.strategy.atr_period == 21
-    assert settings.strategy.atr_multiplier == 4.0
+    assert settings.strategy.atr_period == 32
+    assert settings.strategy.atr_multiplier == 3.0
     perp = next(item for item in settings.instruments if item.id == "soxl_perp")
+    assert not perp.short_enabled
     assert perp.leverage == 2
     assert perp.position_fraction == 0.625
     assert perp.leverage * perp.position_fraction == 1.25
     long_only = next(item for item in settings.instruments if item.id == "soxl_perp_long")
     assert long_only.market_id == perp.id
     assert not long_only.short_enabled
+    assert settings.live_futures.profit_activation_atr == 0.0
+    assert settings.live_futures.profit_trailing_atr == 0.0
+    assert settings.live_futures.continuation_reentry_atr == 0.0
 
 
 def test_chart_endpoints_page_backwards_with_time_cursor(tmp_path) -> None:

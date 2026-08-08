@@ -1,0 +1,242 @@
+{
+  "generated_at": "2026-08-07T14:28:31.623594+00:00",
+  "grid": "selected",
+  "periods": {
+    "full": [
+      1779033600000,
+      1786108395531
+    ],
+    "may": [
+      1779033600000,
+      1780271999999
+    ],
+    "june": [
+      1780272000000,
+      1782863999999
+    ],
+    "july": [
+      1782864000000,
+      1785455999999
+    ],
+    "train": [
+      1779033600000,
+      1782863999999
+    ],
+    "validation": [
+      1782864000000,
+      1785455999999
+    ],
+    "holdout": [
+      1785456000000,
+      1786108395531
+    ]
+  },
+  "evaluated_splits": [
+    "may",
+    "june",
+    "july",
+    "holdout"
+  ],
+  "results": [
+    {
+      "period": "may",
+      "spec": {
+        "name": "selected_long_atr_32_3",
+        "instrument_id": "soxl_perp_long",
+        "atr_period": 32,
+        "atr_multiplier": 3.0,
+        "trend_period": 8,
+        "minimum_efficiency": 0.25,
+        "reversal_confirmation_atr": 0.25,
+        "profit_activation_atr": null,
+        "profit_trailing_atr": null,
+        "continuation_reentry_atr": null
+      },
+      "result": {
+        "instrument_id": "soxl_perp_long",
+        "symbol": "SOXLUSDT",
+        "paper_model": "futures",
+        "atr_period": 32,
+        "atr_multiplier": 3.0,
+        "variant": "selected_long_atr_32_3",
+        "fixed_take_profit_atr": null,
+        "profit_activation_atr": null,
+        "profit_trailing_atr": null,
+        "continuation_reentry_atr": null,
+        "start_ms": 1779033600000,
+        "end_ms": 1780271999999,
+        "tick_count": 692076,
+        "raw_trade_count": 6461089,
+        "warmup_bars": 200,
+        "initial_equity": 100000.0,
+        "final_equity": 133316.13487109277,
+        "net_profit": 33316.134871092785,
+        "net_return": 0.33316134871092784,
+        "completed_trades": 26,
+        "winning_trades": 12,
+        "losing_trades": 14,
+        "win_rate": 0.46153846153846156,
+        "gross_profit": 66040.15029473553,
+        "gross_loss": 32724.015423642748,
+        "profit_factor": 2.0180943395785786,
+        "max_drawdown": -0.14657705749253988,
+        "total_fees": 3779.36035104237,
+        "total_funding": -330.8353799248453,
+        "signals": 52,
+        "profit_exit_signals": 0,
+        "continuation_reentry_signals": 0,
+        "ending_position": "FLAT"
+      }
+    },
+    {
+      "period": "holdout",
+      "spec": {
+        "name": "selected_long_atr_32_3",
+        "instrument_id": "soxl_perp_long",
+        "atr_period": 32,
+        "atr_multiplier": 3.0,
+        "trend_period": 8,
+        "minimum_efficiency": 0.25,
+        "reversal_confirmation_atr": 0.25,
+        "profit_activation_atr": null,
+        "profit_trailing_atr": null,
+        "continuation_reentry_atr": null
+      },
+      "result": {
+        "instrument_id": "soxl_perp_long",
+        "symbol": "SOXLUSDT",
+        "paper_model": "futures",
+        "atr_period": 32,
+        "atr_multiplier": 3.0,
+        "variant": "selected_long_atr_32_3",
+        "fixed_take_profit_atr": null,
+        "profit_activation_atr": null,
+        "profit_trailing_atr": null,
+        "continuation_reentry_atr": null,
+        "start_ms": 1785456000000,
+        "end_ms": 1786108395531,
+        "tick_count": 1264199,
+        "raw_trade_count": 26100170,
+        "warmup_bars": 200,
+        "initial_equity": 100000.0,
+        "final_equity": 117041.95754205377,
+        "net_profit": 17041.957542053777,
+        "net_return": 0.1704195754205378,
+        "completed_trades": 10,
+        "winning_trades": 4,
+        "losing_trades": 6,
+        "win_rate": 0.4,
+        "gross_profit": 29834.484363368778,
+        "gross_loss": 18430.5953829699,
+        "profit_factor": 1.618747725911026,
+        "max_drawdown": -0.14335436545019806,
+        "total_fees": 1366.34128992171,
+        "total_funding": 89.55540407548814,
+        "signals": 21,
+        "profit_exit_signals": 0,
+        "continuation_reentry_signals": 0,
+        "ending_position": "LONG"
+      }
+    },
+    {
+      "period": "june",
+      "spec": {
+        "name": "selected_long_atr_32_3",
+        "instrument_id": "soxl_perp_long",
+        "atr_period": 32,
+        "atr_multiplier": 3.0,
+        "trend_period": 8,
+        "minimum_efficiency": 0.25,
+        "reversal_confirmation_atr": 0.25,
+        "profit_activation_atr": null,
+        "profit_trailing_atr": null,
+        "continuation_reentry_atr": null
+      },
+      "result": {
+        "instrument_id": "soxl_perp_long",
+        "symbol": "SOXLUSDT",
+        "paper_model": "futures",
+        "atr_period": 32,
+        "atr_multiplier": 3.0,
+        "variant": "selected_long_atr_32_3",
+        "fixed_take_profit_atr": null,
+        "profit_activation_atr": null,
+        "profit_trailing_atr": null,
+        "continuation_reentry_atr": null,
+        "start_ms": 1780272000000,
+        "end_ms": 1782863999999,
+        "tick_count": 3212096,
+        "raw_trade_count": 46496528,
+        "warmup_bars": 200,
+        "initial_equity": 100000.0,
+        "final_equity": 136413.8371437662,
+        "net_profit": 36413.837143766184,
+        "net_return": 0.36413837143766187,
+        "completed_trades": 46,
+        "winning_trades": 18,
+        "losing_trades": 28,
+        "win_rate": 0.391304347826087,
+        "gross_profit": 123869.99072133852,
+        "gross_loss": 87456.15357757233,
+        "profit_factor": 1.4163667810003517,
+        "max_drawdown": -0.20652096672499112,
+        "total_fees": 6661.6356481035,
+        "total_funding": -924.8360822903122,
+        "signals": 92,
+        "profit_exit_signals": 0,
+        "continuation_reentry_signals": 0,
+        "ending_position": "FLAT"
+      }
+    },
+    {
+      "period": "july",
+      "spec": {
+        "name": "selected_long_atr_32_3",
+        "instrument_id": "soxl_perp_long",
+        "atr_period": 32,
+        "atr_multiplier": 3.0,
+        "trend_period": 8,
+        "minimum_efficiency": 0.25,
+        "reversal_confirmation_atr": 0.25,
+        "profit_activation_atr": null,
+        "profit_trailing_atr": null,
+        "continuation_reentry_atr": null
+      },
+      "result": {
+        "instrument_id": "soxl_perp_long",
+        "symbol": "SOXLUSDT",
+        "paper_model": "futures",
+        "atr_period": 32,
+        "atr_multiplier": 3.0,
+        "variant": "selected_long_atr_32_3",
+        "fixed_take_profit_atr": null,
+        "profit_activation_atr": null,
+        "profit_trailing_atr": null,
+        "continuation_reentry_atr": null,
+        "start_ms": 1782864000000,
+        "end_ms": 1785455999999,
+        "tick_count": 4774891,
+        "raw_trade_count": 105180200,
+        "warmup_bars": 200,
+        "initial_equity": 100000.0,
+        "final_equity": 123448.60737564926,
+        "net_profit": 23448.607375649248,
+        "net_return": 0.23448607375649247,
+        "completed_trades": 43,
+        "winning_trades": 17,
+        "losing_trades": 26,
+        "win_rate": 0.3953488372093023,
+        "gross_profit": 72169.0451309747,
+        "gross_loss": 81108.6437544025,
+        "profit_factor": 0.8897824176360666,
+        "max_drawdown": -0.2671262364797254,
+        "total_fees": 5463.47463774196,
+        "total_funding": -772.0215075287919,
+        "signals": 87,
+        "profit_exit_signals": 0,
+        "continuation_reentry_signals": 0,
+        "ending_position": "LONG"
+      }
+    }
+  ]
+}

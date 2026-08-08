@@ -1,3 +1,4 @@
+import sqlite3
 from decimal import Decimal
 
 import pytest
@@ -8,6 +9,7 @@ from mastermind_tick.backtest import (
     ReplayBroker,
     ReplayCandidate,
     ReplayParameters,
+    _default_replay_start,
 )
 from mastermind_tick.config import InstrumentSettings
 from mastermind_tick.models import Bar, FundingRate, Side, StrategySignal, Tick
@@ -55,6 +57,26 @@ def tick(event_id: str, timestamp_ms: int, price: float) -> Tick:
         quantity=Decimal("1"),
         source="test",
     )
+
+
+def test_default_replay_start_reserves_requested_warmup_bars() -> None:
+    connection = sqlite3.connect(":memory:")
+    connection.execute(
+        """
+        CREATE TABLE ohlcv_bars (
+            instrument_id TEXT,
+            interval_minutes INTEGER,
+            start_ms INTEGER,
+            is_closed INTEGER
+        )
+        """
+    )
+    connection.executemany(
+        "INSERT INTO ohlcv_bars VALUES ('test', 15, ?, 1)",
+        [(index * BAR_MS,) for index in range(5)],
+    )
+
+    assert _default_replay_start(connection, "test", 15, 3) == 3 * BAR_MS
 
 
 @pytest.mark.parametrize("period,multiplier", [(7, 1.0), (14, 1.5), (21, 2.0)])

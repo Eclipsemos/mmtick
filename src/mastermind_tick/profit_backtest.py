@@ -213,7 +213,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Compare ATR profit exit variants")
     parser.add_argument("--config", default="config/settings.toml")
     parser.add_argument("--instrument", action="append", dest="instruments")
-    parser.add_argument("--output-dir", default="reports/profit_exits")
+    parser.add_argument("--output-dir", default="reports/experiments/profit_exits")
     parser.add_argument("--cutoff-ms", type=int)
     args = parser.parse_args()
 

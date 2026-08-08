@@ -151,8 +151,14 @@ class FakeFuturesClient:
         return {"status": "CANCELED", "orderId": 71, "executedQty": "0"}
 
 
-def futures_settings(tmp_path, *, allow_orders: bool = False):
+def futures_settings(tmp_path, *, allow_orders: bool = False, allow_short: bool = True):
     settings = load_settings("config/settings.toml")
+    instruments = tuple(
+        replace(item, allow_short=allow_short)
+        if item.id == settings.live_futures.instrument_id
+        else item
+        for item in settings.instruments
+    )
     live = replace(
         settings.live_futures,
         enabled=True,
@@ -162,8 +168,11 @@ def futures_settings(tmp_path, *, allow_orders: bool = False):
         max_order_notional=100.0,
         max_daily_loss=50.0,
         max_orders_per_day=6,
+        profit_activation_atr=2.0,
+        profit_trailing_atr=0.5,
+        continuation_reentry_atr=1.4,
     )
-    return replace(settings, live_futures=live)
+    return replace(settings, instruments=instruments, live_futures=live)
 
 
 def test_futures_reporting_aggregates_partial_fills_into_round_trip(tmp_path) -> None:
@@ -384,6 +393,58 @@ def test_futures_short_order_uses_hedge_position_side(tmp_path, monkeypatch) -> 
     assert call["side"] == "SELL"
     assert call["position_side"] == "SHORT"
     assert store.orders(settings.live_futures.account_id)[0]["position_side"] == "SHORT"
+
+
+def test_long_only_futures_blocks_short_entry(tmp_path, monkeypatch) -> None:
+    settings = futures_settings(tmp_path, allow_orders=True, allow_short=False)
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
+    client = FakeFuturesClient()
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
+    trader = LiveFuturesTrader(
+        settings,
+        store,
+        client=client,  # type: ignore[arg-type]
+    )
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+    tick = Tick("short", 1_700_000_000_000, Decimal("120"), Decimal("1"), "test")
+    signal = StrategySignal(
+        side=Side.SELL,
+        reason="price_crossed_below_atr_stop",
+        signal_price=tick.price,
+        trailing_stop=Decimal("125"),
+        atr=Decimal("2"),
+        bar_start_ms=tick.timestamp_ms // 900_000 * 900_000,
+        tick_id=tick.event_id,
+        signal_at_ms=tick.timestamp_ms,
+    )
+
+    asyncio.run(trader._submit_signal(signal, tick))
+
+    assert trader.order_submission_ready
+    assert client.market_order_calls == []
+    assert store.orders(settings.live_futures.account_id) == []
+
+
+def test_long_only_futures_blocks_execution_with_existing_short(tmp_path, monkeypatch) -> None:
+    settings = futures_settings(tmp_path, allow_orders=True, allow_short=False)
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
+    client = FakeFuturesClient(short_quantity="-1.23")
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
+    store.set_metadata("managed_position", "true", 1_700_000_000_000)
+    trader = LiveFuturesTrader(
+        settings,
+        store,
+        client=client,  # type: ignore[arg-type]
+    )
+
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+
+    assert not trader.order_submission_ready
+    assert "SHORT_POSITION_NOT_ALLOWED" in trader.block_reasons
 
 
 def test_futures_close_long_uses_full_position_and_long_side(tmp_path, monkeypatch) -> None:

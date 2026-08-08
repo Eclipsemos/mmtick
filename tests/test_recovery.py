@@ -87,14 +87,15 @@ def test_futures_gap_recovery_backfills_market_and_chart_without_touching_ledger
 ) -> None:
     base = load_settings("config/settings.toml")
     instrument = next(item for item in base.instruments if item.id == "soxl_perp")
+    warmup_bars = max(30, base.strategy.atr_period)
     settings = replace(
         base,
         database_path=tmp_path / "paper.db",
-        warmup_bars=30,
+        warmup_bars=warmup_bars,
         instruments=(instrument,),
     )
     store = PaperStore(settings.database_path)
-    replay_start = 30 * BAR_MS
+    replay_start = warmup_bars * BAR_MS
     store.ensure_account(instrument, settings.initial_cash, 1)
     store.upsert_history_bars(
         instrument,
@@ -109,7 +110,7 @@ def test_futures_gap_recovery_backfills_market_and_chart_without_touching_ledger
                 close=Decimal(101 + index),
                 volume=Decimal("10"),
             )
-            for index in range(30)
+            for index in range(warmup_bars)
         ],
         "test_kline_rest",
     )
@@ -270,6 +271,7 @@ def test_gap_recovery_supports_spot_and_shared_futures_market_data(
     expected_source: str,
 ) -> None:
     base = load_settings("config/settings.toml")
+    warmup_bars = max(30, base.strategy.atr_period)
     account_instrument = next(item for item in base.instruments if item.id == account_id)
     market_instrument = next(
         item for item in base.instruments if item.id == account_instrument.market_id
@@ -282,11 +284,11 @@ def test_gap_recovery_supports_spot_and_shared_futures_market_data(
     settings = replace(
         base,
         database_path=tmp_path / f"{account_id}.db",
-        warmup_bars=30,
+        warmup_bars=warmup_bars,
         instruments=instruments,
     )
     store = PaperStore(settings.database_path)
-    replay_start = 30 * BAR_MS
+    replay_start = warmup_bars * BAR_MS
     store.ensure_account(account_instrument, settings.initial_cash, 1)
     store.upsert_history_bars(
         market_instrument,
@@ -301,7 +303,7 @@ def test_gap_recovery_supports_spot_and_shared_futures_market_data(
                 close=Decimal(101 + index),
                 volume=Decimal("10"),
             )
-            for index in range(30)
+            for index in range(warmup_bars)
         ],
         "test_kline_rest",
     )
