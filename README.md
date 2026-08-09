@@ -12,20 +12,20 @@ paper 账户、一条独立的 Binance USDⓈ-M Futures 实盘链路、Tick 级�
 
 | 账户 ID | 产品 | 方向 | 初始资金/来源 | 目标敞口 |
 |---|---|---|---|---:|
-| `soxl_perp_long` | `SOXL/USDT PERP LONG ONLY` paper | 仅做多 | 100,000 USDT | 1.40x |
+| `soxl_perp_long` | `SOXL/USDT PERP LONG ONLY` paper | 仅做多 | 100,000 USDT | 1.25x |
 | `soxl_perp` | 同一 Futures 行情的独立 paper 账户 | 多空 | 100,000 USDT | 1.25x |
-| `soxl_perp_live` | Binance `SOXLUSDT` USD-M Futures | 仅做多 | Binance 实际余额 | 1.40x |
+| `soxl_perp_live` | Binance `SOXLUSDT` USD-M Futures | 仅做多 | Binance 实际余额 | 1.25x |
 
 Paper 账户写入 `data/paper.db`，实盘账户写入 `data/live_futures.db`；真实余额、订单与成交
 不会混入模拟账本。SOXLB paper 行情采集和仓库写入已经停用，既有历史行保留用于审计，
 不会继续更新或作为可配置账户公开。
 
-实盘账户使用 `2x isolated` 和 70% 仓位预算：
+实盘和 long-only paper 使用 `2x isolated` 和 62.5% 仓位预算：
 
 ```text
 目标名义仓位 = 账户净值 × position_fraction × leverage
-             = 账户净值 × 0.70 × 2
-             = 账户净值 × 1.40
+             = 账户净值 × 0.625 × 2
+             = 账户净值 × 1.25
 ```
 
 提高 `leverage` 而不降低 `position_fraction` 会同时放大收益、亏损、手续费和资金费。
@@ -51,8 +51,12 @@ K 线周期                 15 分钟
 实盘和 `soxl_perp_long` 在价格从 ATR 跟踪线下方穿到上方且趋势效率过滤通过时开多；持有
 多仓时，下穿 ATR 跟踪线会发送 `reduce_only` 平仓。平仓后保持空仓，等待下一次有效上穿，
 不开空、不反手、
-不执行延续重入。`soxl_perp_long` 使用与实盘相同的 ATR(32) × 3.0、70% 仓位策略；
+不执行延续重入。`soxl_perp_long` 使用与实盘相同的 ATR(32) × 3.0、62.5% 仓位策略；
 `soxl_perp` 继续使用全局 ATR(21) × 4.0，并保留多空反向和 2.0/0.5 ATR 利润保护，用于独立比较。
+
+该 ATR(32) × 3.0 策略的历史胜率为 `42.28%`，依赖少数大赢家，不属于高胜率目标策略。
+`2x × 70% = 1.40x` 因完整样本回撤 `-29.42%`、新增尾段亏损 `-2.76%` 且回放未模拟强平而
+未获批准；当前维持 1.25x 研究基线，高胜率策略研究暂缓。
 
 Paper 账户首次启动时会执行一次趋势对齐。实盘首次启动不会按当前趋势追单，只等待新的有效
 穿越；兼容策略状态会持久化，普通服务重启不会重复执行启动入场。

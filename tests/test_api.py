@@ -81,7 +81,7 @@ def test_active_strategy_uses_recommended_atr_parameters() -> None:
     assert long_strategy.name == "soxl_long_atr32x3_v1"
     assert long_strategy.atr_period == 32
     assert long_strategy.atr_multiplier == 3.0
-    assert long_strategy.position_fraction == 0.70
+    assert long_strategy.position_fraction == 0.625
     assert long_strategy.reversal_confirmation_atr == 0.0
     perp_strategy = instrument_strategy(settings, perp)
     assert perp_strategy.atr_period == 21
@@ -92,7 +92,7 @@ def test_active_strategy_uses_recommended_atr_parameters() -> None:
     assert settings.live_futures.allow_short is False
     assert settings.live_futures.atr_period == 32
     assert settings.live_futures.atr_multiplier == 3.0
-    assert settings.live_futures.position_fraction == 0.70
+    assert settings.live_futures.position_fraction == 0.625
     assert settings.live_futures.profit_activation_atr == 0
     assert settings.live_futures.continuation_reentry_atr == 0
 
