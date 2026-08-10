@@ -12,6 +12,19 @@
 | `soxl_perp` | `origin/main` long/short paper 对照 | 主分支部署快照 | [origin_main/soxl_perp.md](origin_main/soxl_perp.md) |
 | `soxl_perp_live` | `origin/main` Binance Futures 实盘 | 主分支部署快照 | [origin_main/soxl_perp_live.md](origin_main/soxl_perp_live.md) |
 
+## 四种环境对比
+
+| 环境 | 用途/账户 | 方向 | 周期与 ATR | 趋势过滤 | 动作锁 | 盈利保护 | 反向/重入 | 风险预算 | 初始化与成交 |
+|---|---|---|---|---|---|---|---|---|---|
+| 研究基线 | 历史回测 | 仅做多 | 15m，ATR(32) × 3 | 8 / 0.25 | 固定 15m | 关闭 | 不开空；重入关闭 | 2x × 62.5% = 1.25x | 200 根 K 线预热；下一持久化 Tick，5/2 bps |
+| Long-only paper | `soxl_perp_long` | 仅做多 | 15m，ATR(32) × 3 | 8 / 0.25 | 固定 15m | 关闭 | 不开空；重入关闭 | 2x × 62.5% = 1.25x | 200 根预热，可一次启动趋势对齐；下一持久化 Tick，5/2 bps |
+| Long/short paper | `soxl_perp` | 多空 | 15m，ATR(21) × 4 | 8 / 0.25 | 固定 15m | 2.0 ATR 激活，0.5 ATR 跟踪 | 反向确认 0.25 ATR；重入关闭 | 2x × 62.5% = 1.25x | 200 根预热，可一次启动趋势对齐；下一持久化 Tick，5/2 bps |
+| Live Futures | `soxl_perp_live` | 仅做多 | 15m，ATR(32) × 3 | 8 / 0.25 | 固定 15m | 关闭 | 不开空；重入关闭 | 2x isolated，62.5% 仓位 = 1.25x | 200 根预热并恢复状态；禁止启动追入；Binance 实际成交 |
+
+四种环境共享 SOXLUSDT Futures 行情和 ATR 穿越逻辑，但不能把它们视为同一条运行路径：
+研究基线用于回测，两个 paper 使用模拟撮合，实盘还受凭证、账户模式、对账、滑点和操作员门禁
+约束。实盘配置中的启用开关也不等于当前服务一定处于可下单状态。
+
 主分支部署快照的总览和共同执行语义见
 [origin_main/README.md](origin_main/README.md)。这些文件记录 `origin/main@3c2253f` 的代码与
 配置意图，不代表交易服务、账户门禁或持仓在任意时刻的实际状态。
