@@ -13,8 +13,9 @@ market data.
 - `experiments/`: optional destination for new exploratory output. Promote an experiment into the
   full-history tree only after documenting its data range, costs, split method, and limitations.
 
-The frozen strategy definition lives in [`../STRATEGY.md`](../STRATEGY.md). When a report and that
-document disagree, `STRATEGY.md` is authoritative for the current research baseline.
+The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
+catalog disagree, the catalog is authoritative for the current research baseline and deployment
+snapshots.
 
 ## Report Policy
 

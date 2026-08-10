@@ -49,7 +49,7 @@ K 线周期                 15 分钟
 动作频率                 每根 K 线最多一个交易动作
 ```
 
-完整策略说明见 [STRATEGY.md](STRATEGY.md)。
+完整研究基线和主分支部署策略快照见 [strategies/](strategies/README.md)。
 
 ### 基础信号与退出
 
