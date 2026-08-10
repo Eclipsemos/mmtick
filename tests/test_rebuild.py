@@ -167,6 +167,50 @@ def test_rebuild_persists_profit_protection_for_target_futures_account(tmp_path)
     assert report["strategy"]["profit_trailing_atr"] == 0.5
 
 
+def test_rebuild_can_reset_account_at_strategy_cutover(tmp_path) -> None:
+    settings = _settings(tmp_path)
+    store = PaperStore(settings.database_path)
+    instrument = settings.instruments[0]
+    store.upsert_history_bars(instrument, 15, [_bar(0, "10"), _bar(1, "9")], "test")
+    ticks = (
+        _tick("before-1", 2 * BAR_MS, "10"),
+        _tick("before-2", 2 * BAR_MS + 1, "10.1"),
+        _tick("after-1", 3 * BAR_MS, "8"),
+        _tick("after-2", 3 * BAR_MS + 1, "7.9"),
+    )
+    for item in ticks:
+        store.record_market_tick(instrument, 15, item)
+
+    candidate_path = tmp_path / "cutover.db"
+    report = rebuild_candidate(
+        settings,
+        candidate_path,
+        (instrument.id,),
+        start_ms=3 * BAR_MS,
+    )
+
+    candidate = PaperStore(candidate_path)
+    account = candidate.account(instrument.id)
+    assert report["requested_start_ms"] == 3 * BAR_MS
+    assert report["accounts"][0]["first_tick_ms"] == 3 * BAR_MS
+    assert report["accounts"][0]["tick_count"] == 2
+    assert account["initial_cash"] == "10000"
+    assert account["created_at_ms"] == 3 * BAR_MS
+    assert len(candidate.agg_trades(instrument.id, 100)) == len(ticks)
+    assert all(
+        order["submitted_at_ms"] >= 3 * BAR_MS
+        for order in candidate.orders(instrument.id, 100)
+    )
+    assert all(
+        fill["timestamp_ms"] >= 3 * BAR_MS
+        for fill in candidate.fills(instrument.id, 100)
+    )
+    assert all(
+        snapshot["timestamp_ms"] >= 3 * BAR_MS
+        for snapshot in candidate.equity(instrument.id, 100)
+    )
+
+
 def test_apply_candidate_atomically_replaces_derived_rows(tmp_path) -> None:
     settings = _settings(tmp_path)
     store = PaperStore(settings.database_path)

@@ -70,8 +70,12 @@ def rebuild_candidate(
     settings: Settings,
     candidate_path: Path,
     account_ids: tuple[str, ...] | None = None,
+    *,
+    start_ms: int | None = None,
 ) -> dict[str, Any]:
     """Create and fully replay a candidate DB without modifying the source DB."""
+    if start_ms is not None and start_ms < 0:
+        raise ValueError("start_ms must be non-negative")
     backup_database(settings.database_path, candidate_path)
     with sqlite3.connect(candidate_path) as connection:
         connection.execute("PRAGMA journal_mode=OFF")
@@ -79,7 +83,10 @@ def rebuild_candidate(
     before_market = _market_counts(candidate_path)
     selected = _selected_instruments(settings, account_ids)
     selected_strategy = instrument_strategy(settings, selected[0])
-    results = [_rebuild_account(settings, store, instrument) for instrument in selected]
+    results = [
+        _rebuild_account(settings, store, instrument, start_ms=start_ms)
+        for instrument in selected
+    ]
     after_market = _market_counts(candidate_path)
     if after_market != before_market:
         raise RuntimeError("market warehouse changed while rebuilding candidate")
@@ -98,12 +105,17 @@ def rebuild_candidate(
             "profit_trailing_atr": selected[0].profit_trailing_atr,
         },
         "market_counts": after_market,
+        "requested_start_ms": start_ms,
         "accounts": [asdict(result) for result in results],
     }
 
 
 def _rebuild_account(
-    settings: Settings, store: PaperStore, instrument: InstrumentSettings
+    settings: Settings,
+    store: PaperStore,
+    instrument: InstrumentSettings,
+    *,
+    start_ms: int | None = None,
 ) -> AccountRebuildResult:
     market_id = instrument.market_id
     strategy_settings = instrument_strategy(settings, instrument)
@@ -112,12 +124,13 @@ def _rebuild_account(
             """
             SELECT MIN(timestamp_ms) AS first_ms, MAX(timestamp_ms) AS last_ms,
                    COUNT(*) AS tick_count
-            FROM agg_trades WHERE instrument_id = ?
+            FROM agg_trades WHERE instrument_id = ? AND timestamp_ms >= ?
             """,
-            (market_id,),
+            (market_id, start_ms or 0),
         ).fetchone()
         if bounds is None or bounds["first_ms"] is None:
-            raise ValueError(f"no persisted aggTrade data for {instrument.id}")
+            suffix = f" at or after {start_ms}" if start_ms is not None else ""
+            raise ValueError(f"no persisted aggTrade data for {instrument.id}{suffix}")
         first_ms = int(bounds["first_ms"])
         last_ms = int(bounds["last_ms"])
         tick_count = int(bounds["tick_count"])
@@ -156,10 +169,10 @@ def _rebuild_account(
                    quantity, source,
                    aggregate_trade_id, first_trade_id, last_trade_id,
                    buyer_is_maker, event_time_ms, notional
-            FROM agg_trades WHERE instrument_id = ?
+            FROM agg_trades WHERE instrument_id = ? AND timestamp_ms >= ?
             ORDER BY timestamp_ms, received_at_ms, event_id
             """,
-            (market_id,),
+            (market_id, first_ms),
         )
         for row in rows:
             tick = Tick(
@@ -730,6 +743,11 @@ def main() -> None:
     parser.add_argument("--candidate", type=Path)
     parser.add_argument("--account-id", action="append", dest="account_ids")
     parser.add_argument(
+        "--start-ms",
+        type=int,
+        help="reset selected accounts and replay only market ticks at or after this UTC epoch ms",
+    )
+    parser.add_argument(
         "--apply",
         action="store_true",
         help="replace production derived ledgers after creating a recoverable backup",
@@ -739,7 +757,7 @@ def main() -> None:
     slug = _timestamp_slug()
     candidate = args.candidate or settings.project_root / "data" / f"rebuild-{slug}.db"
     selected_ids = tuple(args.account_ids) if args.account_ids else None
-    report = rebuild_candidate(settings, candidate, selected_ids)
+    report = rebuild_candidate(settings, candidate, selected_ids, start_ms=args.start_ms)
     if args.apply:
         PaperStore(settings.database_path)
         backup_path = settings.project_root / "data" / "backups" / f"paper-{slug}.db"

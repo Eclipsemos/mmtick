@@ -215,6 +215,15 @@ Paper 账户重建默认先生成候选数据库，不直接替换生产派生�
   --candidate data/rebuild-soxl-perp.db
 ```
 
+若账户需要从策略正式切换时间重新以初始资金计算绩效，可增加 UTC epoch 毫秒截点；截点前行情
+仍保留并用于 ATR 预热，但不会生成该账户的订单、成交、快照或收益：
+
+```bash
+.venv/bin/mmtick-rebuild --account-id soxl_perp \
+  --start-ms 1785945639000 \
+  --candidate data/rebuild-soxl-perp-since-cutover.db
+```
+
 `--apply` 会创建可恢复备份后替换所选账户，属于生产数据变更；执行前应停止相关写入并检查候选
 报告、市场数据只读校验和账户范围。
 
