@@ -16,7 +16,9 @@ import {
   Database,
   Eye,
   EyeOff,
+  FlaskConical,
   Gauge,
+  GitBranch,
   History,
   ListOrdered,
   LockKeyhole,
@@ -45,6 +47,7 @@ import {
   YAxis,
 } from 'recharts'
 import { api, ApiError } from './api'
+import ResearchDashboard from './ResearchDashboard'
 import type {
   Account,
   AggTrade,
@@ -59,7 +62,7 @@ import type {
   LiveReadiness,
 } from './types'
 
-type View = 'monitor' | 'orders' | 'returns' | 'warehouse'
+type View = 'research' | 'monitor' | 'orders' | 'returns' | 'warehouse'
 type AccountMode = 'paper' | 'live'
 
 type PricePoint = {
@@ -217,7 +220,7 @@ const ohlcvTimestamp = (bar: OhlcvBar) => bar.start_ms
 
 function App() {
   const client = useQueryClient()
-  const [view, setView] = useState<View>('monitor')
+  const [view, setView] = useState<View>('research')
   const [mode, setMode] = useState<AccountMode>('paper')
   const [paperAccountId, setPaperAccountId] = useState('soxl_perp')
   const [unlockOpen, setUnlockOpen] = useState(false)
@@ -232,11 +235,13 @@ function App() {
   const overview = useQuery({
     queryKey: ['overview', mode],
     queryFn: mode === 'live' ? api.liveOverview : api.overview,
+    enabled: view !== 'research',
     refetchInterval: 1000,
   })
   const liveReadiness = useQuery({
     queryKey: ['live-readiness'],
     queryFn: api.liveReadiness,
+    enabled: view !== 'research' && mode === 'live',
     refetchInterval: 5000,
   })
   const equityPage = useCallback(
@@ -252,21 +257,25 @@ function App() {
   const equity = useQuery({
     queryKey: ['equity', mode, accountId],
     queryFn: () => equityPage(accountId),
+    enabled: view !== 'research',
     refetchInterval: 5000,
   })
   const fills = useQuery({
     queryKey: ['fills', mode, accountId],
     queryFn: () => mode === 'live' ? api.liveFills() : api.fills(accountId),
+    enabled: view !== 'research',
     refetchInterval: 5000,
   })
   const funding = useQuery({
     queryKey: ['funding', mode, accountId],
     queryFn: () => mode === 'live' ? api.liveFunding() : api.funding(accountId),
+    enabled: view !== 'research',
     refetchInterval: 5000,
   })
   const orders = useQuery({
     queryKey: ['orders', mode, accountId],
     queryFn: () => mode === 'live' ? api.liveOrders() : api.orders(accountId),
+    enabled: view !== 'research',
     refetchInterval: 5000,
   })
   const returns = useQuery({
@@ -289,6 +298,7 @@ function App() {
   const ohlcv = useQuery({
     queryKey: ['ohlcv', mode, marketInstrumentId],
     queryFn: () => api.ohlcv(marketInstrumentId),
+    enabled: view !== 'research',
     refetchInterval: 5000,
   })
   const equityHistory = useTimePaginatedSeries(
@@ -424,12 +434,18 @@ function App() {
   const feedLabel = mode === 'live'
     ? liveReadiness.data?.status ?? 'STARTING'
     : `${liveCount}/${instrumentCount} LIVE`
-  const pageTitle = view === 'warehouse'
-    ? '数据仓库'
+  const pageTitle = view === 'research'
+    ? 'SOXLUSDT 策略研究'
+    : view === 'warehouse'
+    ? '历史数据'
     : view === 'returns'
-      ? '收益明细'
-      : mode === 'live' ? '实盘交易' : '模拟交易'
-  const pageKicker = view === 'warehouse'
+      ? '历史绩效'
+      : view === 'orders'
+        ? '回测交易明细'
+        : '历史策略回放'
+  const pageKicker = view === 'research'
+    ? 'RESEARCH BRANCH / FROZEN BASELINE / WALK-FORWARD'
+    : view === 'warehouse'
     ? 'MARKET DATA / SQLITE WAL'
     : view === 'returns'
       ? 'PERFORMANCE / CALENDAR RETURNS'
@@ -444,42 +460,25 @@ function App() {
           <span>tick</span>
         </div>
         <nav className="nav-tabs" aria-label="主视图">
+          <button className={view === 'research' ? 'active' : ''} onClick={() => setView('research')}>
+            <FlaskConical size={16} />研究
+          </button>
           <button className={view === 'monitor' ? 'active' : ''} onClick={() => setView('monitor')}>
-            <Gauge size={16} />监控
+            <Gauge size={16} />回放
           </button>
           <button className={view === 'orders' ? 'active' : ''} onClick={() => setView('orders')}>
-            <ListOrdered size={16} />订单
+            <ListOrdered size={16} />回测明细
           </button>
           <button className={view === 'returns' ? 'active' : ''} onClick={() => setView('returns')}>
-            <CalendarDays size={16} />收益明细
+            <CalendarDays size={16} />绩效
           </button>
           <button className={view === 'warehouse' ? 'active' : ''} onClick={() => setView('warehouse')}>
-            <Database size={16} />仓库
+            <Database size={16} />数据
           </button>
         </nav>
         <div className="top-actions">
-          <div className="mode-switch" aria-label="账户模式">
-            <button type="button" className={mode === 'paper' ? 'active paper' : ''} onClick={() => setMode('paper')}>PAPER</button>
-            <button type="button" className={mode === 'live' ? 'active live' : ''} disabled={switchingMode} onClick={() => void switchToLive()}>LIVE</button>
-          </div>
-          <span className={`feed-state ${feedConnected ? 'live' : ''}`}>
-            <i />{feedLabel}
-          </span>
-          {mode === 'paper' ? (
-            <button
-              className={overview.data?.trading_enabled ? 'control danger' : 'control resume'}
-              disabled={control.isPending}
-              onClick={() => control.mutate(overview.data?.trading_enabled ? 'pause' : 'resume')}
-              title={overview.data?.trading_enabled ? '暂停策略' : '恢复策略'}
-            >
-              {overview.data?.trading_enabled ? <CirclePause size={17} /> : <CirclePlay size={17} />}
-              {overview.data?.trading_enabled ? '暂停' : '恢复'}
-            </button>
-          ) : (
-            <button className="control" type="button" onClick={() => void lockLive()} title="锁定实盘账户信息">
-              <LockKeyhole size={16} />锁定
-            </button>
-          )}
+          <span className="research-branch-badge"><GitBranch size={14} />research/soxl-history-backtest</span>
+          <span className="research-readonly-badge"><LockKeyhole size={14} />READ ONLY</span>
         </div>
       </header>
 
@@ -490,18 +489,9 @@ function App() {
             <h1>{pageTitle}</h1>
           </div>
           <div className="page-actions">
-            <div className="account-switch" aria-label={mode === 'live' ? '实盘账户' : '模拟账户'}>
-              {accounts.map((item) => (
-                <button
-                  type="button"
-                  key={item.id}
-                  className={item.id === account?.id ? 'active' : ''}
-                  onClick={() => mode === 'paper' && setPaperAccountId(item.id)}
-                >
-                  {item.display_symbol}
-                </button>
-              ))}
-            </div>
+            {view !== 'research' && <div className="account-switch" aria-label="回放账户">
+              {accounts.map((item) => <button type="button" key={item.id} className={item.id === account?.id ? 'active' : ''} onClick={() => setPaperAccountId(item.id)}>{item.display_symbol}</button>)}
+            </div>}
             {mode === 'live' && (
               <div className="live-account-actions" aria-label="SOXL 合约实盘操作">
                 <button
@@ -526,7 +516,9 @@ function App() {
               </div>
             )}
             <div className="scope-chips">
-              <span>{account?.symbol ?? 'INITIALIZING'}</span><span>15m</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : view === 'returns' ? 'PERFORMANCE' : account?.runtime.allow_short ? 'LONG / SHORT' : 'LONG ONLY'}</span>
+              {view === 'research'
+                ? <><span>SOXLUSDT</span><span>2026-05 → 2026-08</span><span>RESEARCH ONLY</span></>
+                : <><span>{account?.symbol ?? 'INITIALIZING'}</span><span>15m</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : view === 'returns' ? 'PERFORMANCE' : account?.runtime.allow_short ? 'LONG / SHORT' : 'LONG ONLY'}</span></>}
             </div>
           </div>
         </section>
@@ -539,7 +531,9 @@ function App() {
           </div>
         )}
 
-        {overview.isError ? (
+        {view === 'research' ? (
+          <ResearchDashboard />
+        ) : overview.isError ? (
           <div className="error-state">
             API 无法连接
             <button onClick={() => overview.refetch()}><RefreshCw size={15} />重试</button>
@@ -574,8 +568,8 @@ function App() {
         )}
       </main>
       <footer>
-        <span>mastermind:tick v0.1</span>
-        <span>{mode === 'live' ? 'Binance USD-M Futures 实盘账户 · 当前只读观察' : '本地模拟撮合 · 非真实账户'}</span>
+        <span>mastermind:tick research</span>
+        <span>历史数据维护 · 回测研究 · 候选策略生成 · 不执行交易</span>
       </footer>
       {unlockOpen && (
         <LiveUnlockDialog

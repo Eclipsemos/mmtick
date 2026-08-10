@@ -42,7 +42,7 @@
 
 ```bash
 PYTHONPATH=src python3 scripts/reassess_soxl_fit.py \
-  --output reports/soxl_perp_full_history/reassessment_20260808/full_fit.json
+  --output reports/soxl_perp_full_history/reassessment/2026-08-08/full_fit.json
 ```
 
 ## 标的特征与基础表现

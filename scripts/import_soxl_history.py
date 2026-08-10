@@ -310,18 +310,31 @@ def _fetch_current_agg_trades(
     end_ms: int,
 ) -> int:
     row = connection.execute(
-        "SELECT MAX(aggregate_trade_id) FROM agg_trades WHERE instrument_id = 'soxl_perp'",
+        """
+        SELECT MAX(aggregate_trade_id), MAX(timestamp_ms)
+        FROM agg_trades WHERE instrument_id = 'soxl_perp'
+        """
     ).fetchone()
     next_id = int(row[0]) + 1 if row and row[0] is not None else None
+    cursor_start = max(start_ms, int(row[1]) + 1) if row and row[1] is not None else start_ms
+    use_id_cursor = next_id is not None
     accumulator = _BucketAccumulator(symbol, REST_SOURCE)
     total = 0
     while True:
         query = {"symbol": symbol, "limit": 1000, "endTime": end_ms}
-        if next_id is not None:
+        if use_id_cursor and next_id is not None:
             query["fromId"] = next_id
         else:
-            query["startTime"] = start_ms
-        payload = json.loads(_get(f"{REST_BASE}/aggTrades?{urllib.parse.urlencode(query)}"))
+            query["startTime"] = cursor_start
+        try:
+            payload = json.loads(_get(f"{REST_BASE}/aggTrades?{urllib.parse.urlencode(query)}"))
+        except urllib.error.HTTPError as exc:
+            # Binance only exposes a short recent window for ID-based aggTrade lookup.
+            if use_id_cursor and exc.code == 400 and b"-1000" in exc.read():
+                use_id_cursor = False
+                next_id = None
+                continue
+            raise
         if not payload:
             break
         for item in payload:
@@ -336,11 +349,19 @@ def _fetch_current_agg_trades(
         last_id = int(payload[-1]["a"])
         if len(payload) < 1000 or last_id < (next_id or 0):
             break
-        next_id = last_id + 1
+        if use_id_cursor:
+            next_id = last_id + 1
+        else:
+            cursor_start = int(payload[-1]["T"]) + 1
         if total and total % 100_000 < 10_000:
             connection.commit()
+            cursor_label = (
+                f"aggregate id {next_id:,}"
+                if next_id is not None
+                else f"timestamp {cursor_start}"
+            )
             print(
-                f"current REST ticks imported: {total:,}; next aggregate id {next_id:,}", flush=True
+                f"current REST ticks imported: {total:,}; next {cursor_label}", flush=True
             )
         time.sleep(0.05)
     total += _insert_ticks(connection, accumulator.finish())

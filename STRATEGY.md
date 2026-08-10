@@ -125,11 +125,11 @@ Paper 新账户可执行一次启动趋势对齐：若价格已位于 ATR 线上
 因此：当前仍运行固定 15 分钟锁；滚动 30 分钟只作为最新研究候选，等待后续真正前向交易再评估。
 
 最新适配性重评、成本压力和风险预算结论见
-[`strategy_fit_reassessment_20260808.md`](reports/soxl_perp_full_history/strategy_fit_reassessment_20260808.md)。
+[`strategy_fit_reassessment_20260808.md`](reports/soxl_perp_full_history/summaries/strategy_fit_reassessment_20260808.md)。
 原优化方法和候选比较见
-[`reports/soxl_perp_full_history/final_optimization_20260807.md`](reports/soxl_perp_full_history/final_optimization_20260807.md)。
+[`reports/soxl_perp_full_history/summaries/final_optimization_20260807.md`](reports/soxl_perp_full_history/summaries/final_optimization_20260807.md)。
 不固定周期和趋势窗口的复核见
-[`reports/soxl_perp_full_history/multitimeframe_optimization_20260807.md`](reports/soxl_perp_full_history/multitimeframe_optimization_20260807.md)。
+[`reports/soxl_perp_full_history/summaries/multitimeframe_optimization_20260807.md`](reports/soxl_perp_full_history/summaries/multitimeframe_optimization_20260807.md)。
 
 ## 限制
 

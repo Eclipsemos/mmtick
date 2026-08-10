@@ -1,17 +1,51 @@
 import { expect, test } from '@playwright/test'
 
-test('paper console renders operational views and switches to the protected live account', async ({ page }) => {
+test('research branch opens on the read-only strategy evidence dashboard', async ({ page }) => {
   const consoleErrors: string[] = []
+  const apiRequests: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text())
   })
+  page.on('request', (request) => {
+    if (new URL(request.url()).pathname.startsWith('/api/')) apiRequests.push(request.url())
+  })
 
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: '模拟交易' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'PAPER' })).toHaveClass(/active/)
+  await expect(page.getByRole('heading', { name: 'SOXLUSDT 策略研究' })).toBeVisible()
+  await expect(page.getByRole('button', { name: '研究', exact: true })).toHaveClass(/active/)
+  await expect(page.getByText('research/soxl-history-backtest')).toHaveCount(1)
+  await expect(page.getByText('READ ONLY')).toBeVisible()
+  await expect(page.getByRole('region', { name: '冻结基线状态' })).toContainText('15m 只做多 · ATR(32) × 3')
+  await expect(page.getByText('完整收益').first()).toBeVisible()
+  await expect(page.getByText('+171.85%', { exact: true }).first()).toBeVisible()
+  await expect(page.getByRole('heading', { name: '月度 performance' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '8 月每日收益' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '动作锁候选比较' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '分段验证' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '研究决策' })).toBeVisible()
+  await expect(page.getByRole('region', { name: '研究数据覆盖' })).toBeVisible()
+  await expect(page.locator('.recharts-bar-rectangle path').first()).toBeVisible()
+  await expect(page.getByRole('button', { name: 'LIVE', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'PAPER', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: '暂停', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: '平仓', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: '停止策略', exact: true })).toHaveCount(0)
+
+  const hasHorizontalOverflow = await page.evaluate(
+    () => document.documentElement.scrollWidth > window.innerWidth,
+  )
+  expect(hasHorizontalOverflow).toBe(false)
+  expect(consoleErrors).toEqual([])
+  expect(apiRequests).toEqual([])
+})
+
+test('historical replay and data views remain available without trading controls', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '回放', exact: true }).click()
+  await expect(page.getByRole('heading', { name: '历史策略回放' })).toBeVisible()
   await expect(page.getByRole('region', { name: 'SOXL 合约实盘就绪状态' })).toHaveCount(0)
   await expect(page.getByText('SOXL/USDT PERP', { exact: true }).first()).toBeVisible()
-  await expect(page.getByText('LONG / SHORT')).toBeVisible()
+  await expect(page.getByText('LONG ONLY', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'SOXL/USDT PERP LONG ONLY', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'SOXL/USDT PERP LONG ONLY' })).toBeVisible()
   await expect(page.getByText('LONG ONLY', { exact: true })).toBeVisible()
@@ -46,103 +80,28 @@ test('paper console renders operational views and switches to the protected live
   await expect(page.getByRole('button', { name: '放大K线' })).toBeVisible()
   await expect(page.getByRole('button', { name: '缩小K线' })).toBeVisible()
 
-  await page.getByRole('button', { name: /订单/ }).click()
+  await page.getByRole('button', { name: /回测明细/ }).click()
+  await expect(page.getByRole('heading', { name: '回测交易明细' })).toBeVisible()
   await expect(page.getByRole('heading', { name: '全部订单' })).toBeVisible()
-  await page.getByRole('button', { name: /收益明细/ }).click()
-  await expect(page.getByRole('heading', { name: '收益明细' })).toBeVisible()
+  await page.getByRole('button', { name: '绩效', exact: true }).click()
+  await expect(page.getByRole('heading', { name: '历史绩效' })).toBeVisible()
   await expect(page.getByText('近 30 日收益')).toBeVisible()
   await expect(page.getByRole('heading', { name: '最近 30 天收益日历' })).toBeVisible()
   await expect(page.getByRole('heading', { name: '每周收益' })).toBeVisible()
   await expect(page.getByRole('heading', { name: '每月收益' })).toBeVisible()
   await expect(page.getByText('年化收益')).toBeVisible()
-  await page.getByRole('button', { name: /仓库/ }).click({ force: true })
-  await expect(page.getByRole('heading', { name: '数据仓库' })).toBeVisible()
-  await expect(page.getByText('SQLite 总占用')).toBeVisible()
+  await page.getByRole('button', { name: '数据', exact: true }).click({ force: true })
+  await expect(page.getByRole('heading', { name: '历史数据' })).toBeVisible()
+  await expect(page.getByText('SQLite 总占用')).toBeVisible({ timeout: 15_000 })
   await expect(page.getByRole('heading', { name: '最近 15 分钟 K 线' })).toBeVisible()
   await expect(page.getByRole('heading', { name: '最近聚合成交' })).toBeVisible()
-  await page.getByRole('button', { name: /监控/ }).click()
-
-  await expect(page.getByRole('button', { name: '暂停' })).toBeVisible()
-
-  await page.getByRole('button', { name: 'LIVE', exact: true }).click()
-  await expect(page.getByRole('heading', { name: '实盘交易' })).toBeVisible()
-  const liveReadiness = page.getByRole('region', { name: 'SOXL 合约实盘就绪状态' })
-  await expect(liveReadiness.locator('.live-readiness-state strong')).toHaveText(/OBSERVE_ONLY|BLOCKED|DISABLED/)
-  await expect(liveReadiness.getByText('公开接口')).toBeVisible()
-  await expect(liveReadiness.getByText('订单开关')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'LIVE', exact: true })).toHaveClass(/active/)
-  await expect(page.getByRole('button', { name: 'SOXL/USDT PERP LIVE', exact: true })).toHaveCount(1)
-  await expect(page.locator('.account-switch button')).toHaveCount(1)
-  await expect(page.getByRole('button', { name: '平仓', exact: true })).toBeDisabled()
-  await expect(page.getByRole('button', { name: '停止策略', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: '锁定' })).toBeVisible()
-  await expect(page.getByText('Binance 实际成交')).toBeVisible()
-  await expect(page.getByText('LONG / SHORT', { exact: true })).toBeVisible()
-  await page.getByRole('button', { name: '显示策略参数' }).click()
-  const strategyParameters = page.getByRole('group', { name: '当前策略参数' })
-  await expect(strategyParameters.getByText('ATR 周期')).toBeVisible()
-  await expect(strategyParameters.getByText('21', { exact: true })).toBeVisible()
-  await expect(strategyParameters.getByText('ATR 倍数')).toBeVisible()
-  await expect(strategyParameters.getByText('4', { exact: true })).toBeVisible()
-  await expect(strategyParameters.getByText('效率比周期')).toBeVisible()
-  await expect(strategyParameters.getByText('最低趋势效率')).toBeVisible()
-  await expect(strategyParameters.getByText('反向确认距离')).toBeVisible()
-  await expect(strategyParameters.getByText('启动趋势对齐')).toBeVisible()
-  await page.getByRole('button', { name: '隐藏策略参数' }).click()
-  await page.getByRole('button', { name: 'PAPER', exact: true }).click()
-  await expect(page.getByRole('heading', { name: '模拟交易' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'SOXL/USDT PERP', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'LIVE', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: '暂停', exact: true })).toHaveCount(0)
 
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
   )
   expect(hasHorizontalOverflow).toBe(false)
-  expect(consoleErrors).toEqual([])
-})
-
-test('live market close requires a second explicit confirmation', async ({ page }) => {
-  let flattenCalls = 0
-  await page.route('**/api/live/overview', async (route) => {
-    const response = await route.fetch()
-    const body = await response.json()
-    body.accounts[0].quantity = '1'
-    await route.fulfill({ response, json: body })
-  })
-  await page.route('**/api/live/flatten', async (route) => {
-    flattenCalls += 1
-    expect(route.request().postDataJSON()).toEqual({ confirm: 'FLATTEN_SOXLUSDT' })
-    await route.fulfill({
-      contentType: 'application/json',
-      body: JSON.stringify({
-        ok: true,
-        already_flat: false,
-        flat_confirmed: true,
-        orders: [{
-          client_order_id: 'mmt-close-l-test',
-          side: 'SELL',
-          position_side: 'LONG',
-          quantity: '1',
-          status: 'FILLED',
-        }],
-      }),
-    })
-  })
-
-  await page.goto('/')
-  await page.getByRole('button', { name: 'LIVE', exact: true }).click()
-  const flatten = page.getByRole('button', { name: '平仓', exact: true })
-  await expect(flatten).toBeEnabled()
-  await flatten.click()
-  const dialog = page.getByRole('dialog', { name: '确认平仓' })
-  await expect(dialog).toBeVisible()
-  await expect(dialog.getByText('不会自动停止策略')).toBeVisible()
-  await dialog.getByRole('button', { name: '取消' }).click()
-  expect(flattenCalls).toBe(0)
-
-  await flatten.click()
-  await page.getByRole('dialog', { name: '确认平仓' }).getByRole('button', { name: '确认平仓' }).click()
-  await expect.poll(() => flattenCalls).toBe(1)
-  await expect(page.getByRole('status')).toContainText('平仓已成交')
 })
 
 test('price chart renders clean ATR lines and semantic trade markers', async ({ page }) => {
@@ -202,6 +161,7 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
   })
 
   await page.goto('/')
+  await page.getByRole('button', { name: '回放', exact: true }).click()
   await page.getByRole('button', { name: 'SOXLB/USDT', exact: true }).click()
   await page.waitForTimeout(100)
 
@@ -248,29 +208,4 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
   await page.getByRole('button', { name: '显示全部K线' }).click()
   await page.getByRole('button', { name: '加载更早K线' }).click()
   await expect.poll(() => ohlcvHistoryRequests).toBe(1)
-})
-
-test('remote live access requests the independent operator token', async ({ page }) => {
-  await page.route('**/api/live/session', (route) => route.fulfill({
-    contentType: 'application/json',
-    body: JSON.stringify({
-      authenticated: false,
-      configured: true,
-      local_unlock_available: false,
-    }),
-  }))
-  await page.route('**/api/live/unlock', (route) => route.fulfill({
-    status: 401,
-    contentType: 'application/json',
-    body: JSON.stringify({ detail: 'Invalid LIVE operator token' }),
-  }))
-
-  await page.goto('/')
-  await page.getByRole('button', { name: 'LIVE', exact: true }).click()
-  const dialog = page.getByRole('dialog', { name: '验证实盘访问' })
-  await expect(dialog).toBeVisible()
-  await dialog.getByLabel('操作员令牌').fill('not-the-operator-token')
-  await dialog.getByRole('button', { name: '进入 LIVE' }).click()
-  await expect(dialog.getByRole('alert')).toHaveText('操作员令牌不正确。')
-  await expect(page.getByRole('button', { name: 'PAPER', exact: true })).toHaveClass(/active/)
 })
