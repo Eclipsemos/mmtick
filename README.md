@@ -90,7 +90,10 @@ ATR 盈利保护和延续重入实现仍保留在代码中，但当前配置均�
 
 需要 Python 3.11+、Node.js 20+ 和 npm。
 
+首次安装依赖并构建前端：
+
 ```bash
+cd /home/spaceaic/mmtick
 python3 -m venv .venv
 .venv/bin/pip install -e '.[dev]'
 
@@ -98,12 +101,29 @@ cd frontend
 npm ci
 npm run build
 cd ..
+```
 
+之后在项目根目录使用一键脚本启动回测平台：
+
+```bash
+cd /home/spaceaic/mmtick
 ./scripts/run.sh --host 0.0.0.0 --port 8100
 ```
 
-Dashboard 默认监听所有网卡，使用运行机器的局域网 IP 访问，例如
-`http://192.168.1.20:8100`。前端开发模式：
+`scripts/run.sh` 会自动使用项目的 `.venv` 和 `src/` 代码，同时提供 API 与
+`frontend/dist/` 中的生产前端。启动后，本机访问 `http://127.0.0.1:8100`；其他计算机使用
+运行机器的局域网 IP，例如 `http://10.162.133.214:8100`。在启动终端按 `Ctrl+C` 即可停止。
+
+修改前端源码后，先重新构建再启动：
+
+```bash
+cd /home/spaceaic/mmtick/frontend
+npm run build
+cd ..
+./scripts/run.sh --host 0.0.0.0 --port 8100
+```
+
+前端开发模式：
 
 ```bash
 cd frontend
