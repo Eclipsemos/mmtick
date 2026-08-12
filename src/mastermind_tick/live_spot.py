@@ -1,4 +1,4 @@
-"""Credential-gated Binance Spot execution for the independent SOXLB live account."""
+"""Credential-gated Binance Spot execution for an independent live account."""
 
 from __future__ import annotations
 
@@ -127,7 +127,7 @@ class LiveSpotTrader:
         if runtime is None or not runtime.strategy_ready:
             self._block("MARKET_STRATEGY_NOT_READY")
             self.status = "BLOCKED"
-            self.status_message = "SOXLB market strategy warm-up is unavailable"
+            self.status_message = "Spot market strategy warm-up is unavailable"
             return
         history = await runtime.feed.history(self.settings.warmup_bars)
         self.strategy.bootstrap(history)
@@ -138,7 +138,7 @@ class LiveSpotTrader:
             self.strategy.startup_alignment_checked = True
 
         engine.add_tick_listener(self.instrument.market_id, self.enqueue_tick)
-        self._tick_task = asyncio.create_task(self._run_ticks(), name="soxlb-live-ticks")
+        self._tick_task = asyncio.create_task(self._run_ticks(), name="spot-live-ticks")
 
         if not self.client.has_credentials:
             self._block(self.credential_error or "CREDENTIALS_MISSING")
@@ -156,7 +156,7 @@ class LiveSpotTrader:
             self._event("ERROR", "SIGNED_PREFLIGHT_FAILED", self.status_message)
             return
         self._reconcile_task = asyncio.create_task(
-            self._run_reconciliation(), name="soxlb-live-reconciliation"
+            self._run_reconciliation(), name="spot-live-reconciliation"
         )
         self._refresh_status()
 
@@ -333,7 +333,7 @@ class LiveSpotTrader:
                     self._event(
                         "WARN",
                         "POSITION_ADOPTED",
-                        "Existing SOXLB balance adopted into the live strategy",
+                        "Existing spot balance adopted into the live strategy",
                         {"quantity": str(total_base)},
                     )
                 else:

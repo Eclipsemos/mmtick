@@ -167,7 +167,7 @@ def test_tick_signal_is_submitted_then_filled_on_next_tick(tmp_path) -> None:
     fill = store.fills(instrument.id)[0]
     assert filled_order["filled_at_ms"] == fill_tick.timestamp_ms
     assert fill["timestamp_ms"] == fill_tick.timestamp_ms
-    assert Decimal(fill["price"]) == Decimal("11.20560")
+    assert Decimal(fill["price"]) == Decimal("11.20224")
 
     asyncio.run(engine._process_official_close(runtime, official))
     stored = next(

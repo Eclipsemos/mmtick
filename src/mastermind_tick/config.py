@@ -60,8 +60,8 @@ class InstrumentSettings:
 @dataclass(frozen=True)
 class LiveSpotSettings:
     enabled: bool = False
-    instrument_id: str = "soxlb"
-    account_id: str = "soxlb_live"
+    instrument_id: str = "soxl_perp"
+    account_id: str = "spot_live"
     database_path: Path = Path("data/live.db")
     api_base_url: str = "https://api.binance.com"
     api_key_env: str = "BINANCE_API_KEY"
@@ -69,7 +69,7 @@ class LiveSpotSettings:
     credentials_path: Path | None = None
     operator_token_path: Path | None = None
     activation_env: str = "MMTICK_LIVE_CONFIRM"
-    activation_value: str = "SOXLBUSDT_LIVE"
+    activation_value: str = "SOXLUSDT_SPOT_LIVE"
     allow_order_submission: bool = False
     adopt_existing_position: bool = False
     position_fraction: float = 0.05
@@ -212,25 +212,26 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
             )
         if instrument.allow_short and instrument.paper_model != "futures":
             raise ValueError(f"allow_short requires futures paper_model for {instrument.id}")
-    live_instrument = instrument_by_id.get(live_spot.instrument_id)
-    if live_instrument is None:
-        raise ValueError(f"unknown live_spot instrument_id: {live_spot.instrument_id}")
-    if live_instrument.paper_model != "spot":
-        raise ValueError("live_spot instrument must use the spot paper model")
-    if not 0 < live_spot.position_fraction <= 1:
-        raise ValueError("live_spot.position_fraction must be in (0, 1]")
-    if live_spot.max_order_notional <= 0 or live_spot.quote_reserve < 0:
-        raise ValueError("live_spot order limits must be positive")
-    if live_spot.max_slippage_bps < 0 or live_spot.max_daily_loss <= 0:
-        raise ValueError("live_spot risk limits are invalid")
-    if (
-        live_spot.max_orders_per_day < 1
-        or live_spot.reconcile_seconds < 1
-        or live_spot.trade_sync_seconds < live_spot.reconcile_seconds
-    ):
-        raise ValueError("live_spot frequency limits are invalid")
-    if live_spot.order_timeout_seconds < 1 or live_spot.recv_window_ms < 1000:
-        raise ValueError("live_spot timing limits are invalid")
+    if live_spot.enabled:
+        live_instrument = instrument_by_id.get(live_spot.instrument_id)
+        if live_instrument is None:
+            raise ValueError(f"unknown live_spot instrument_id: {live_spot.instrument_id}")
+        if live_instrument.paper_model != "spot":
+            raise ValueError("live_spot instrument must use the spot paper model")
+        if not 0 < live_spot.position_fraction <= 1:
+            raise ValueError("live_spot.position_fraction must be in (0, 1]")
+        if live_spot.max_order_notional <= 0 or live_spot.quote_reserve < 0:
+            raise ValueError("live_spot order limits must be positive")
+        if live_spot.max_slippage_bps < 0 or live_spot.max_daily_loss <= 0:
+            raise ValueError("live_spot risk limits are invalid")
+        if (
+            live_spot.max_orders_per_day < 1
+            or live_spot.reconcile_seconds < 1
+            or live_spot.trade_sync_seconds < live_spot.reconcile_seconds
+        ):
+            raise ValueError("live_spot frequency limits are invalid")
+        if live_spot.order_timeout_seconds < 1 or live_spot.recv_window_ms < 1000:
+            raise ValueError("live_spot timing limits are invalid")
     live_futures_instrument = instrument_by_id.get(live_futures.instrument_id)
     if live_futures_instrument is None:
         raise ValueError(f"unknown live_futures instrument_id: {live_futures.instrument_id}")

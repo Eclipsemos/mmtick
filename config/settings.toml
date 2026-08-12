@@ -24,31 +24,6 @@ minimum_notional = 5.0
 [history]
 warmup_bars = 200
 
-[live_spot]
-enabled = false
-instrument_id = "soxlb"
-account_id = "soxlb_live"
-database_path = "data/live.db"
-api_base_url = "https://api.binance.com"
-api_key_env = "API_KEY"
-api_secret_env = "SECRET_KEY"
-credentials_path = ".env"
-operator_token_path = "data/operator.token"
-activation_env = "MMTICK_LIVE_CONFIRM"
-activation_value = "SOXLBUSDT_LIVE"
-allow_order_submission = false
-adopt_existing_position = false
-position_fraction = 0.05
-max_order_notional = 100.0
-quote_reserve = 10.0
-max_slippage_bps = 30.0
-max_daily_loss = 50.0
-max_orders_per_day = 6
-reconcile_seconds = 5
-trade_sync_seconds = 60
-order_timeout_seconds = 30
-recv_window_ms = 5000
-
 [live_futures]
 enabled = false
 instrument_id = "soxl_perp"
@@ -79,18 +54,6 @@ reconcile_seconds = 5
 trade_sync_seconds = 60
 order_timeout_seconds = 30
 recv_window_ms = 5000
-
-[[instruments]]
-id = "soxlb"
-symbol = "SOXLBUSDT"
-display_symbol = "SOXLB/USDT"
-name = "Semicon Bull 3X ETF Tokenized bStock"
-asset_type = "tokenized_equity"
-venue = "Binance"
-currency = "USDT"
-feed = "binance"
-quantity_step = 0.001
-reference_symbol = "SOXL"
 
 [[instruments]]
 id = "soxl_perp"

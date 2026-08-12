@@ -1,4 +1,4 @@
-"""Minimal signed Binance Spot REST client for the live SOXLB execution path."""
+"""Minimal signed Binance Spot REST client for the optional live spot path."""
 
 from __future__ import annotations
 

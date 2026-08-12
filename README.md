@@ -1,6 +1,6 @@
 # mastermind:tick
 
-`mastermind:tick` 是一个以 Binance 公共行情驱动的 SOXL 短周期交易系统，包含三个隔离的
+`mastermind:tick` 是一个以 Binance 公共行情驱动的 SOXL 短周期交易系统，包含两个隔离的
 paper 账户、一条独立的 Binance USDⓈ-M Futures 实盘链路、Tick 级回放工具和 React
 监控台。系统持续保存行情、K 线、策略状态、订单、成交、资金费、现金流和账户绩效。
 
@@ -12,13 +12,12 @@ paper 账户、一条独立的 Binance USDⓈ-M Futures 实盘链路、Tick 级�
 
 | 账户 ID | 产品 | 方向 | 初始资金/来源 | 目标敞口 |
 |---|---|---|---|---:|
-| `soxlb` | `SOXLB/USDT` bStock paper | 仅做多 | 100,000 USDT | 1.00x |
 | `soxl_perp` | `SOXL/USDT PERP` paper | 仅做多 | 100,000 USDT | 1.25x |
 | `soxl_perp_long` | 同一 Futures 行情的独立 paper 账户 | 仅做多 | 100,000 USDT | 1.25x |
 | `soxl_perp_live` | Binance `SOXLUSDT` USD-M Futures | 仅做多 | Binance 实际余额 | 1.25x |
 
 Paper 账户写入 `data/paper.db`，实盘账户写入 `data/live_futures.db`；真实余额、订单与成交
-不会混入模拟账本。已停用的 SOXLB Spot 实盘配置和 `data/live.db` 仅保留兼容与审计用途。
+不会混入模拟账本。当前 research 分支只保留 SOXLUSDT Futures 数据。
 
 SOXL 历史原始压缩包保存在被 Git 忽略的 `data/history_soxl/`，导入后的 Tick、K 线和资金费率
 位于 `data/paper.db`。运行 `scripts/import_soxl_history.py` 做增量更新时，原始归档也会写入
@@ -68,8 +67,7 @@ ATR 盈利保护和延续重入实现仍保留在代码中，但当前配置均�
 
 ## 行情、成交与记账
 
-- Spot 使用 Binance `SOXLBUSDT` 聚合成交；Futures 使用 `SOXLUSDT` Trade 流并按 250 ms
-  聚合，保留底层 Trade ID 范围。
+- Futures 使用 `SOXLUSDT` Trade 流并按 250 ms 聚合，保留底层 Trade ID 范围。
 - Spot/Futures 均使用官方 15 分钟 K 线预热和定稿；收盘后通过 REST `/klines` 再校验。
 - `soxl_perp`、`soxl_perp_long` 和实盘策略复用同一份 Futures 市场数据，但策略状态和账本
   相互独立。
@@ -94,10 +92,11 @@ npm ci
 npm run build
 cd ..
 
-./scripts/run.sh --host 127.0.0.1 --port 8100
+./scripts/run.sh --host 0.0.0.0 --port 8100
 ```
 
-Dashboard 默认地址为 `http://127.0.0.1:8100`。前端开发模式：
+Dashboard 默认监听所有网卡，使用运行机器的局域网 IP 访问，例如
+`http://192.168.1.20:8100`。前端开发模式：
 
 ```bash
 cd frontend

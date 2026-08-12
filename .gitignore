@@ -11,6 +11,9 @@ data/backups/
 data/history_soxl/
 frontend/node_modules/
 frontend/dist/
+reports/backtests/*.json
+reports/backtests/*.md
+!reports/backtests/README.md
 frontend/artifacts/
 frontend/test-results/
 .env

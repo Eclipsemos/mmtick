@@ -1,4 +1,4 @@
-import type { AggTrade, EquityPoint, EventItem, Fill, FundingPayment, LiveReadiness, LiveSession, OhlcvBar, Order, Overview, ReturnSummary, WarehouseSummary } from './types'
+import type { AggTrade, EquityPoint, EventItem, Fill, FundingPayment, LiveReadiness, LiveSession, OhlcvBar, Order, Overview, ResearchBacktestRequest, ResearchDataStatus, ResearchJob, ResearchReport, ResearchReportSummary, ReturnSummary, WarehouseSummary } from './types'
 
 export class ApiError extends Error {
   status: number
@@ -82,19 +82,28 @@ export const api = {
     const offset = -new Date().getTimezoneOffset()
     return getJson<ReturnSummary>(`/api/accounts/${accountId}/returns?timezone_offset_minutes=${offset}`)
   },
-  fills: (accountId = 'soxlb') => getJson<Fill[]>(`/api/fills?account_id=${accountId}&limit=200`),
-  orders: (accountId = 'soxlb') => getJson<Order[]>(`/api/orders?account_id=${accountId}&limit=200`),
-  events: (accountId = 'soxlb') => getJson<EventItem[]>(`/api/events?account_id=${accountId}&limit=200`),
+  fills: (accountId = 'soxl_perp') => getJson<Fill[]>(`/api/fills?account_id=${accountId}&limit=200`),
+  orders: (accountId = 'soxl_perp') => getJson<Order[]>(`/api/orders?account_id=${accountId}&limit=200`),
+  events: (accountId = 'soxl_perp') => getJson<EventItem[]>(`/api/events?account_id=${accountId}&limit=200`),
   funding: (accountId: string) =>
     getJson<FundingPayment[]>(`/api/funding?account_id=${accountId}&limit=1000`),
   warehouse: () => getJson<WarehouseSummary>('/api/warehouse'),
-  aggTrades: (instrumentId = 'soxlb') =>
+  aggTrades: (instrumentId = 'soxl_perp') =>
     getJson<AggTrade[]>(`/api/market/agg-trades?instrument_id=${instrumentId}&limit=100`),
-  ohlcv: (instrumentId = 'soxlb', beforeMs?: number) => {
+  ohlcv: (instrumentId = 'soxl_perp', beforeMs?: number) => {
     const cursor = beforeMs === undefined ? '' : `&before_ms=${beforeMs}`
     return getJson<OhlcvBar[]>(`/api/market/ohlcv?instrument_id=${instrumentId}&limit=200${cursor}`)
   },
   control: async (action: 'pause' | 'resume') => {
     return postJson<{ ok: boolean; trading_enabled: boolean }>('/api/control', { action })
   },
+  researchDataStatus: () => getJson<ResearchDataStatus>('/api/research/data-status'),
+  updateResearchData: (targetDate: string) =>
+    postJson<ResearchJob>('/api/research/data-update', { target_date: targetDate }),
+  runResearchBacktest: (request: ResearchBacktestRequest) =>
+    postJson<ResearchJob>('/api/research/backtests', request),
+  researchJob: (jobId: string) => getJson<ResearchJob>(`/api/research/jobs/${jobId}`),
+  researchReports: () => getJson<ResearchReportSummary[]>('/api/research/reports'),
+  researchReport: (reportId: string) =>
+    getJson<ResearchReport>(`/api/research/reports/${reportId}`),
 }

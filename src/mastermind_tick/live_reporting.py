@@ -128,8 +128,8 @@ def build_live_account(
     runtime = {
         "id": account_id,
         "symbol": trader.instrument.symbol,
-        "display_symbol": "SOXLB/USDT LIVE",
-        "name": "SOXLB Binance Spot Live Account",
+        "display_symbol": f"{trader.instrument.display_symbol} LIVE",
+        "name": "Binance Spot Live Account",
         "venue": "Binance Spot",
         "asset_type": "live_tokenized_equity",
         "reference_symbol": trader.instrument.reference_symbol,
@@ -192,7 +192,7 @@ def build_live_account(
     return {
         "id": account_id,
         "symbol": trader.instrument.symbol,
-        "display_symbol": "SOXLB/USDT LIVE",
+        "display_symbol": f"{trader.instrument.display_symbol} LIVE",
         "venue": "Binance Spot",
         "currency": trader.instrument.currency,
         "initial_cash": str(initial_equity),
@@ -641,6 +641,6 @@ def _fee_in_quote(row: dict[str, Any]) -> Decimal:
     commission = Decimal(row["commission"])
     if row["commission_asset"] == "USDT":
         return commission
-    if row["commission_asset"] == "SOXLB":
+    if row["commission_asset"] != "USDT":
         return commission * Decimal(row["price"])
     return Decimal("0")

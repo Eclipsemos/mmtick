@@ -31,12 +31,21 @@ def test_health_and_empty_overview(tmp_path) -> None:
         overview = client.get("/api/overview")
         warehouse = client.get("/api/warehouse")
         live_readiness = client.get("/api/live/readiness")
+        research_status = client.get("/api/research/data-status")
+        oversized_grid = client.post(
+            "/api/research/backtests",
+            json={
+                "start_date": "2026-05-15",
+                "end_date": "2026-05-16",
+                "atr_periods": [1, 2, 3, 4, 5],
+                "atr_multipliers": [1, 2, 3, 4, 5],
+            },
+        )
 
     assert health.status_code == 200
     assert health.json()["service"] == "mastermind-tick"
     assert overview.status_code == 200
     assert {item["id"] for item in overview.json()["accounts"]} == {
-        "soxlb",
         "soxl_perp",
         "soxl_perp_long",
     }
@@ -45,13 +54,18 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert overview.json()["accounts"][0]["sharpe_ratio"] is None
     assert overview.json()["accounts"][0]["win_rate"] is None
     assert warehouse.status_code == 200
-    assert warehouse.json()["instruments"][0]["symbol"] == "SOXLBUSDT"
-    assert warehouse.json()["instruments"][1]["symbol"] == "SOXLUSDT"
-    assert warehouse.json()["instruments"][2]["market_data_id"] == "soxl_perp"
+    assert len(warehouse.json()["instruments"]) == 2
+    assert {item["symbol"] for item in warehouse.json()["instruments"]} == {"SOXLUSDT"}
+    assert {item["market_data_id"] for item in warehouse.json()["instruments"]} == {"soxl_perp"}
     assert live_readiness.status_code == 200
     assert live_readiness.json()["status"] == "STARTING"
     assert live_readiness.json()["order_submission_ready"] is False
     assert live_readiness.json()["credentials_present"] is False
+    assert research_status.status_code == 200
+    assert research_status.json()["symbol"] == "SOXLUSDT"
+    assert research_status.json()["tick_count"] == 0
+    assert oversized_grid.status_code == 400
+    assert "24 candidates" in oversized_grid.json()["detail"]
 
     funding = client.get("/api/funding?account_id=soxl_perp")
     assert funding.status_code == 200
@@ -83,7 +97,7 @@ def test_chart_endpoints_page_backwards_with_time_cursor(tmp_path) -> None:
         frontend_dist=tmp_path / "missing-frontend",
     )
     app = create_app(settings, start_engine=False)
-    instrument = next(item for item in settings.instruments if item.id == "soxlb")
+    instrument = next(item for item in settings.instruments if item.id == "soxl_perp")
     app.state.store.ensure_account(instrument, 100_000, 1)
     for timestamp_ms in range(1, 26):
         app.state.store.snapshot(

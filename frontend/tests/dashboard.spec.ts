@@ -1,42 +1,93 @@
 import { expect, test } from '@playwright/test'
 
-test('research branch opens on the read-only strategy evidence dashboard', async ({ page }) => {
+test.beforeEach(async ({ page }) => {
+  await page.route('**/api/research/reports', (route) => route.fulfill({ json: [] }))
+})
+
+test('research branch runs the ATR workbench and renders its report', async ({ page }) => {
   const consoleErrors: string[] = []
-  const apiRequests: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text())
   })
-  page.on('request', (request) => {
-    if (new URL(request.url()).pathname.startsWith('/api/')) apiRequests.push(request.url())
-  })
+  await page.route('**/api/research/data-status', (route) => route.fulfill({ json: {
+    instrument_id: 'soxl_perp', symbol: 'SOXLUSDT', first_tick_ms: 1778803200000,
+    last_tick_ms: 1786406399000, tick_count: 10_000_000, raw_trade_count: 81_000_000,
+    bar_count: 8448, funding_count: 265, complete_through_date: '2026-08-10',
+    default_update_date: '2026-08-10', database_path: 'data/paper.db',
+  } }))
+  await page.route('**/api/research/reports', (route) => route.fulfill({ json: [] }))
+  await page.route('**/api/research/data-update', (route) => route.fulfill({ status: 202, json: {
+    id: 'update-1', kind: 'data_update', status: 'queued', stage: '等待研究任务队列',
+    progress: 0, created_at: '', started_at: null, completed_at: null, report_id: null,
+    error: null, message: null, request: {},
+  } }))
+  await page.route('**/api/research/backtests', (route) => route.fulfill({ status: 202, json: {
+    id: 'backtest-1', kind: 'backtest', status: 'queued', stage: '等待研究任务队列',
+    progress: 0, created_at: '', started_at: null, completed_at: null, report_id: null,
+    error: null, message: null, request: {},
+  } }))
+  await page.route('**/api/research/jobs/update-1', (route) => route.fulfill({ json: {
+    id: 'update-1', kind: 'data_update', status: 'completed', stage: '数据已是最新完整日',
+    progress: 1, created_at: '', started_at: '', completed_at: '', report_id: null,
+    error: null, message: '无需更新', request: {},
+  } }))
+  await page.route('**/api/research/jobs/backtest-1', (route) => route.fulfill({ json: {
+    id: 'backtest-1', kind: 'backtest', status: 'completed', stage: '回测报告已生成',
+    progress: 1, created_at: '', started_at: '', completed_at: '', report_id: 'atr-test',
+    error: null, message: '完成 9 个 ATR 候选', request: {},
+  } }))
+  await page.route('**/api/research/reports/atr-test', (route) => route.fulfill({ json: {
+    id: 'atr-test', generated_at: '2026-08-11T00:00:00Z', instrument_id: 'soxl_perp',
+    symbol: 'SOXLUSDT', best_candidate_id: 'candidate-1',
+    request: { instrument_id: 'soxl_perp', start_date: '2026-05-15', end_date: '2026-08-10', direction: 'long_only' },
+    metadata: { start_ms: 1, end_ms: 2, tick_count: 10_000_000, raw_trade_count: 81_000_000, warmup_bars: 200, target_exposure: 1.25 },
+    candidates: [{
+      id: 'candidate-1', rank: 1,
+      parameters: { atr_period: 32, atr_multiplier: 3, profit_activation_atr: null, profit_trailing_atr: null, continuation_reentry_atr: null },
+      metrics: { initial_equity: 100000, final_equity: 125000, net_profit: 25000, net_return: .25, completed_trades: 18, win_rate: .72, profit_factor: 2.1, max_drawdown: -.12, total_fees: 500, total_funding: 20, ending_position: 'LONG' },
+      monthly: [{ label: '2026-08', start_equity: 100000, end_equity: 125000, net_profit: 25000, return: .25 }],
+      daily: [{ label: '2026-08-10', timestamp_ms: 2, start_equity: 120000, end_equity: 125000, net_profit: 5000, return: .0416667 }],
+    }],
+  } }))
 
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'SOXLUSDT 策略研究' })).toBeVisible()
-  await expect(page.getByRole('button', { name: '研究', exact: true })).toHaveClass(/active/)
-  await expect(page.getByText('research/soxl-history-backtest')).toHaveCount(1)
-  await expect(page.getByText('READ ONLY')).toBeVisible()
-  await expect(page.getByRole('region', { name: '冻结基线状态' })).toContainText('15m 只做多 · ATR(32) × 3')
-  await expect(page.getByText('完整收益').first()).toBeVisible()
-  await expect(page.getByText('+171.85%', { exact: true }).first()).toBeVisible()
-  await expect(page.getByRole('heading', { name: '月度 performance' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: '8 月每日收益' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: '动作锁候选比较' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: '分段验证' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: '研究决策' })).toBeVisible()
-  await expect(page.getByRole('region', { name: '研究数据覆盖' })).toBeVisible()
-  await expect(page.locator('.recharts-bar-rectangle path').first()).toBeVisible()
-  await expect(page.getByRole('button', { name: 'LIVE', exact: true })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'PAPER', exact: true })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: '暂停', exact: true })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: '平仓', exact: true })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: '停止策略', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'SOXLUSDT 回测平台' })).toBeVisible()
+  await expect(page.getByText('NO TRADING')).toBeVisible()
+  await expect(page.getByRole('region', { name: '历史数据状态' })).toContainText('2026-08-10')
+  await expect(page.getByLabel('合约')).toHaveValue('soxl_perp')
+  await expect(page.getByText('9 / 24 候选')).toBeVisible()
+
+  await page.getByRole('button', { name: '更新完整日' }).click()
+  await expect(page.getByText('数据已是最新完整日')).toBeVisible()
+  await page.getByRole('button', { name: '运行 9 个候选' }).click()
+  await expect(page.getByRole('heading', { name: '候选排名' })).toBeVisible()
+  await expect(page.getByText('ATR(32) × 3')).toBeVisible()
+  await expect(page.getByRole('heading', { name: '每月收益' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '每日收益' })).toBeVisible()
+  await expect(page.getByText('+25.00%').first()).toBeVisible()
 
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
   )
   expect(hasHorizontalOverflow).toBe(false)
   expect(consoleErrors).toEqual([])
-  expect(apiRequests).toEqual([])
+})
+
+test('research workbench fits a mobile viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.route('**/api/research/data-status', (route) => route.fulfill({ json: {
+    instrument_id: 'soxl_perp', symbol: 'SOXLUSDT', first_tick_ms: 1778803200000,
+    last_tick_ms: 1786406399000, tick_count: 10_000_000, raw_trade_count: 81_000_000,
+    bar_count: 8448, funding_count: 265, complete_through_date: '2026-08-10',
+    default_update_date: '2026-08-10', database_path: 'data/paper.db',
+  } }))
+
+  await page.goto('/')
+  const hasHorizontalOverflow = await page.evaluate(
+    () => document.documentElement.scrollWidth > window.innerWidth,
+  )
+  expect(hasHorizontalOverflow).toBe(false)
+  await expect(page.getByRole('button', { name: '运行 9 个候选' })).toBeVisible()
 })
 
 test('historical replay and data views remain available without trading controls', async ({ page }) => {
@@ -51,8 +102,8 @@ test('historical replay and data views remain available without trading controls
   await expect(page.getByText('LONG ONLY', { exact: true })).toBeVisible()
   await expect(page.getByText('2x isolated')).toHaveCount(0)
   await expect(page.getByText('当前资金费')).toBeVisible()
-  await page.getByRole('button', { name: 'SOXLB/USDT', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'SOXLB/USDT' })).toBeVisible()
+  await page.getByRole('button', { name: 'SOXL/USDT PERP', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'SOXL/USDT PERP' })).toBeVisible()
   await expect(page.getByText('LONG ONLY', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'SOXL/USDT PERP', exact: true }).click()
   await expect(page.getByText('账户净值')).toBeVisible()
@@ -110,7 +161,7 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
   let ohlcvHistoryRequests = 0
   page.on('pageerror', (error) => pageErrors.push(error.message))
   const now = Date.now()
-  await page.route('**/api/accounts/soxlb/equity*', async (route) => {
+  await page.route('**/api/accounts/soxl_perp/equity*', async (route) => {
     if (new URL(route.request().url()).searchParams.has('before_ms')) equityHistoryRequests += 1
     await route.fulfill({
       contentType: 'application/json',
@@ -127,12 +178,12 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
     await route.fulfill({
       contentType: 'application/json',
       body: JSON.stringify([
-        { id: 'sell-loss', account_id: 'soxlb', side: 'SELL', timestamp_ms: now - 10_000, price: '99', quantity: '10', notional: '990', fee: '0.99', reason: 'test', source: 'test' },
-        { id: 'buy-loss', account_id: 'soxlb', side: 'BUY', timestamp_ms: now - 20_000, price: '108', quantity: '10', notional: '1080', fee: '1.08', reason: 'test', source: 'test' },
-        { id: 'sell-profit', account_id: 'soxlb', side: 'SELL', timestamp_ms: now - 30_000, price: '110', quantity: '10', notional: '1100', fee: '1.1', reason: 'test', source: 'test' },
-        { id: 'buy-profit', account_id: 'soxlb', side: 'BUY', timestamp_ms: now - 40_000, price: '100', quantity: '10', notional: '1000', fee: '1', reason: 'test', source: 'test' },
-        { id: 'buy-close-short', account_id: 'soxlb', side: 'BUY', timestamp_ms: now - 45_000, price: '100', quantity: '10', notional: '1000', fee: '1', reason: 'test', source: 'test', position_effect: 'CLOSE', position_before: '-10', position_after: '0', realized_pnl: '99' },
-        { id: 'sell-open-short', account_id: 'soxlb', side: 'SELL', timestamp_ms: now - 50_000, price: '110', quantity: '10', notional: '1100', fee: '1', reason: 'test', source: 'test', position_effect: 'OPEN', position_before: '0', position_after: '-10', realized_pnl: '-1' },
+        { id: 'sell-loss', account_id: 'soxl_perp', side: 'SELL', timestamp_ms: now - 10_000, price: '99', quantity: '10', notional: '990', fee: '0.99', reason: 'test', source: 'test' },
+        { id: 'buy-loss', account_id: 'soxl_perp', side: 'BUY', timestamp_ms: now - 20_000, price: '108', quantity: '10', notional: '1080', fee: '1.08', reason: 'test', source: 'test' },
+        { id: 'sell-profit', account_id: 'soxl_perp', side: 'SELL', timestamp_ms: now - 30_000, price: '110', quantity: '10', notional: '1100', fee: '1.1', reason: 'test', source: 'test' },
+        { id: 'buy-profit', account_id: 'soxl_perp', side: 'BUY', timestamp_ms: now - 40_000, price: '100', quantity: '10', notional: '1000', fee: '1', reason: 'test', source: 'test' },
+        { id: 'buy-close-short', account_id: 'soxl_perp', side: 'BUY', timestamp_ms: now - 45_000, price: '100', quantity: '10', notional: '1000', fee: '1', reason: 'test', source: 'test', position_effect: 'CLOSE', position_before: '-10', position_after: '0', realized_pnl: '99' },
+        { id: 'sell-open-short', account_id: 'soxl_perp', side: 'SELL', timestamp_ms: now - 50_000, price: '110', quantity: '10', notional: '1100', fee: '1', reason: 'test', source: 'test', position_effect: 'OPEN', position_before: '0', position_after: '-10', realized_pnl: '-1' },
       ]),
     })
   })
@@ -142,8 +193,8 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
     await route.fulfill({
       contentType: 'application/json',
       body: JSON.stringify(starts.map((start, index) => ({
-        instrument_id: 'soxlb',
-        symbol: 'SOXLBUSDT',
+        instrument_id: 'soxl_perp',
+        symbol: 'SOXLUSDT',
         interval_minutes: 15,
         start_ms: start,
         end_ms: start + 10_000,
@@ -162,7 +213,7 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
 
   await page.goto('/')
   await page.getByRole('button', { name: '回放', exact: true }).click()
-  await page.getByRole('button', { name: 'SOXLB/USDT', exact: true }).click()
+  await page.getByRole('button', { name: 'SOXL/USDT PERP', exact: true }).click()
   await page.waitForTimeout(100)
 
   expect(pageErrors).toEqual([])

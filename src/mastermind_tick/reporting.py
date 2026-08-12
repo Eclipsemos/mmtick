@@ -7,6 +7,7 @@ from datetime import UTC, date, datetime, time, timedelta, timezone
 from decimal import Decimal
 from typing import Any
 
+from mastermind_tick.config import Settings
 from mastermind_tick.engine import PaperEngine
 from mastermind_tick.feeds import FUTURES_MARK_PRICE_MAX_AGE_MS
 from mastermind_tick.store import PaperStore
@@ -24,7 +25,9 @@ def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
         points = store.equity(account_id, 100_000)
         latest = points[-1] if points else None
         initial = Decimal(account["initial_cash"])
-        runtime = runtime_by_id.get(account_id, {})
+        runtime = runtime_by_id.get(account_id)
+        if runtime is None:
+            runtime = _idle_runtime(engine.settings, account, latest)
         valuation = _live_account_valuation(account, latest, runtime)
         equity = Decimal(valuation["equity"])
         total_pnl = equity - initial
@@ -81,6 +84,134 @@ def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
             "fee_bps": engine.settings.execution.fee_bps,
             "slippage_bps": engine.settings.execution.slippage_bps,
         },
+    }
+
+
+def _idle_runtime(
+    settings: Settings,
+    account: dict[str, Any],
+    latest: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Provide a complete non-trading runtime for research-only API consumers."""
+    instrument = next(item for item in settings.instruments if item.id == account["id"])
+    position_fraction = (
+        instrument.position_fraction
+        if instrument.position_fraction is not None
+        else settings.strategy.position_fraction
+    )
+    strategy = {
+        "ready": False,
+        "atr": None,
+        "trailing_stop": None,
+        "price": latest["price"] if latest else None,
+        "relation": "warming",
+        "bar_start_ms": None,
+        "bought_this_bar": False,
+        "flattened_this_bar": False,
+        "action_this_bar": False,
+        "trend_efficiency": None,
+        "trend_filter_passed": False,
+        "reversal_direction": None,
+        "reversal_anchor": None,
+        "reversal_eligible_bar_ms": None,
+        "last_cross": None,
+        "last_cross_at_ms": None,
+        "last_cross_result": None,
+        "last_cross_reason": None,
+        "profit_protection_active": False,
+        "profit_stop": None,
+        "profit_favorable_extreme": None,
+    }
+    decision = {
+        "state": "PAUSED",
+        "reason": "RESEARCH_ONLY_ENGINE_STOPPED",
+        "next_trigger": "RESEARCH_BACKTEST",
+        "trading_enabled": False,
+        "has_position": Decimal(account["quantity"]) != 0,
+        "position_side": (
+            "SHORT" if Decimal(account["quantity"]) < 0
+            else "LONG" if Decimal(account["quantity"]) > 0
+            else "FLAT"
+        ),
+        "allow_short": instrument.short_enabled,
+        "has_pending_order": False,
+        "strategy_ready": False,
+        "buy_lock_open": False,
+        "reentry_lock_open": False,
+        "action_lock_open": False,
+        "trend_filter_passed": False,
+        "reversal_direction": None,
+        "reversal_eligible_bar_ms": None,
+        "fresh_up_cross": False,
+        "bar_end_ms": None,
+        "signal_confirmation": "TICK",
+        "fill_timing": "next_tick",
+        "last_signal": None,
+    }
+    return {
+        "id": instrument.id,
+        "symbol": instrument.symbol,
+        "display_symbol": instrument.display_symbol,
+        "name": instrument.name,
+        "venue": instrument.venue,
+        "asset_type": instrument.asset_type,
+        "reference_symbol": instrument.reference_symbol,
+        "paper_model": instrument.paper_model,
+        "market_data_id": instrument.market_id,
+        "allow_short": instrument.short_enabled,
+        "leverage": instrument.leverage,
+        "margin_mode": instrument.margin_mode,
+        "position_fraction": position_fraction,
+        "target_exposure": position_fraction * instrument.leverage,
+        "fee_bps": (
+            instrument.fee_bps
+            if instrument.fee_bps is not None
+            else settings.execution.fee_bps
+        ),
+        "slippage_bps": (
+            instrument.slippage_bps
+            if instrument.slippage_bps is not None
+            else settings.execution.slippage_bps
+        ),
+        "strategy_config": {
+            "algorithm_version": "atr_tick_v3_startup_alignment",
+            "bar_minutes": settings.strategy.bar_minutes,
+            "atr_period": settings.strategy.atr_period,
+            "atr_multiplier": settings.strategy.atr_multiplier,
+            "trend_efficiency_period": settings.strategy.trend_efficiency_period,
+            "minimum_trend_efficiency": settings.strategy.minimum_trend_efficiency,
+            "reversal_confirmation_atr": settings.strategy.reversal_confirmation_atr,
+            "profit_activation_atr": None,
+            "profit_trailing_atr": None,
+            "continuation_reentry_atr": None,
+            "one_action_per_bar": True,
+            "startup_alignment": True,
+            "futures_reversal_mode": "close_then_confirm",
+            "signal_confirmation": "tick",
+            "fill_timing": "next_tick",
+        },
+        "feed": "research_warehouse",
+        "market_state": {
+            "mark_price": None,
+            "index_price": None,
+            "funding_rate": None,
+            "next_funding_time_ms": None,
+            "updated_at_ms": None,
+        },
+        "kline_state": {
+            "source": "warehouse",
+            "validation": "NOT_RUNNING",
+            "last_official_bar_start_ms": None,
+            "last_verified_at_ms": None,
+            "mismatches": 0,
+        },
+        "status": "STOPPED",
+        "status_message": "研究分支未启动交易引擎",
+        "strategy_ready": False,
+        "reconnects": 0,
+        "last_tick": None,
+        "strategy": strategy,
+        "decision": decision,
     }
 
 

@@ -220,6 +220,124 @@ export type LiveSession = {
   local_unlock_available: boolean
 }
 
+export type ResearchDataStatus = {
+  instrument_id: 'soxl_perp'
+  symbol: 'SOXLUSDT'
+  first_tick_ms: number | null
+  last_tick_ms: number | null
+  tick_count: number
+  raw_trade_count: number
+  bar_count: number
+  funding_count: number
+  complete_through_date: string | null
+  earliest_replay_ms: number | null
+  earliest_replay_date: string | null
+  default_update_date: string
+  database_path: string
+}
+
+export type ResearchJob = {
+  id: string
+  kind: 'data_update' | 'backtest'
+  status: 'queued' | 'running' | 'completed' | 'failed'
+  stage: string
+  progress: number
+  created_at: string
+  started_at: string | null
+  completed_at: string | null
+  report_id: string | null
+  error: string | null
+  message: string | null
+  request: Record<string, unknown>
+}
+
+export type ResearchReportSummary = {
+  id: string
+  generated_at: string
+  symbol: string
+  start_date: string
+  end_date: string
+  candidate_count: number
+}
+
+export type ResearchBacktestRequest = {
+  instrument_id: 'soxl_perp'
+  start_date: string
+  end_date: string
+  direction: 'long_only' | 'short_only' | 'long_short'
+  atr_periods: number[]
+  atr_multipliers: number[]
+  trend_efficiency_period: number
+  minimum_trend_efficiency: number
+  reversal_confirmation_atr: number
+  leverage: number
+  position_fraction: number
+  fee_bps: number
+  slippage_bps: number
+  initial_cash: number
+  profit_activation_atr: number | null
+  profit_trailing_atr: number | null
+  continuation_reentry_atr: number | null
+}
+
+export type ResearchPeriodReturn = {
+  label: string
+  timestamp_ms?: number
+  start_equity: number
+  end_equity: number
+  net_profit: number
+  return: number
+}
+
+export type ResearchCandidate = {
+  id: string
+  rank: number
+  parameters: {
+    atr_period: number
+    atr_multiplier: number
+    profit_activation_atr: number | null
+    profit_trailing_atr: number | null
+    continuation_reentry_atr: number | null
+  }
+  metrics: {
+    initial_equity: number
+    final_equity: number
+    net_profit: number
+    net_return: number
+    completed_trades: number
+    win_rate: number | null
+    profit_factor: number | null
+    max_drawdown: number
+    total_fees: number
+    total_funding: number
+    ending_position: string
+  }
+  daily: ResearchPeriodReturn[]
+  monthly: ResearchPeriodReturn[]
+}
+
+export type ResearchReport = {
+  id: string
+  generated_at: string
+  instrument_id: string
+  symbol: string
+  request: ResearchBacktestRequest
+  metadata: {
+    start_ms: number
+    end_ms: number
+    requested_start_ms: number
+    requested_end_ms: number | null
+    start_adjusted_for_warmup: boolean
+    tick_count: number
+    raw_trade_count: number
+    warmup_bars: number
+    warmup_interval_minutes?: number
+    target_exposure: number
+  }
+  candidates: ResearchCandidate[]
+  best_candidate_id: string
+}
+
 export type EquityPoint = {
   timestamp_ms: number
   price: string

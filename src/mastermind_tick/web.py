@@ -9,7 +9,7 @@ import uvicorn
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the mastermind:tick paper console")
-    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", default=8100, type=int)
     parser.add_argument("--reload", action="store_true")
     args = parser.parse_args()

@@ -3,7 +3,7 @@ from dataclasses import replace
 from decimal import Decimal
 
 from mastermind_tick.binance_spot import SpotSymbolRules
-from mastermind_tick.config import load_settings
+from mastermind_tick.config import InstrumentSettings, load_settings
 from mastermind_tick.live_spot import LiveSpotTrader, load_live_credentials
 from mastermind_tick.live_store import LiveStore
 from mastermind_tick.models import Side, StrategySignal, Tick
@@ -34,7 +34,7 @@ class FakeSpotClient:
         return SpotSymbolRules(
             symbol=symbol,
             status="TRADING",
-            base_asset="SOXLB",
+            base_asset="SOXL",
             quote_asset="USDT",
             quantity_step=Decimal("0.001"),
             minimum_quantity=Decimal("0.001"),
@@ -51,7 +51,7 @@ class FakeSpotClient:
         return {
             "canTrade": True,
             "balances": [
-                {"asset": "SOXLB", "free": self.base_free, "locked": "0"},
+                {"asset": "SOXL", "free": self.base_free, "locked": "0"},
                 {"asset": "USDT", "free": "1000", "locked": "0"},
             ],
         }
@@ -90,7 +90,7 @@ class FakeSpotClient:
                 "qty": "0.1",
                 "quoteQty": "10",
                 "commission": "0.0001",
-                "commissionAsset": "SOXLB",
+                "commissionAsset": "SOXL",
             }
         ]
 
@@ -126,15 +126,34 @@ class FakeSpotClient:
         }
 
 
-def live_settings(tmp_path):
+def _settings_with_test_spot(tmp_path, *, enabled: bool):
+    instrument = InstrumentSettings(
+        id="test_spot",
+        symbol="SOXLUSDT",
+        display_symbol="SOXL/USDT SPOT TEST",
+        name="SOXL spot test instrument",
+        asset_type="test_spot",
+        venue="test",
+        currency="USDT",
+        feed="binance",
+        quantity_step=0.001,
+        reference_symbol="SOXL",
+        paper_model="spot",
+    )
     settings = load_settings("config/settings.toml")
     live = replace(
         settings.live_spot,
-        enabled=True,
-        allow_order_submission=True,
+        enabled=enabled,
+        instrument_id="test_spot",
+        account_id="test_spot_live",
+        allow_order_submission=enabled,
         database_path=tmp_path / "live.db",
     )
-    return replace(settings, live_spot=live)
+    return replace(settings, instruments=settings.instruments + (instrument,), live_spot=live)
+
+
+def live_settings(tmp_path):
+    return _settings_with_test_spot(tmp_path, enabled=True)
 
 
 def test_live_order_needs_every_gate_and_ingests_actual_fill(tmp_path, monkeypatch) -> None:
@@ -190,11 +209,7 @@ def test_existing_position_and_unknown_order_block_activation(tmp_path, monkeypa
 
 
 def test_default_configuration_cannot_submit_orders(tmp_path) -> None:
-    settings = load_settings("config/settings.toml")
-    settings = replace(
-        settings,
-        live_spot=replace(settings.live_spot, database_path=tmp_path / "live.db"),
-    )
+    settings = _settings_with_test_spot(tmp_path, enabled=False)
     trader = LiveSpotTrader(
         settings,
         LiveStore(settings.live_spot.database_path),
@@ -221,7 +236,7 @@ def test_entry_risk_limits_do_not_block_spot_exit(tmp_path) -> None:
         store.create_order(
             client_order_id=f"prior-{index}",
             account_id=settings.live_spot.account_id,
-            symbol="SOXLBUSDT",
+            symbol="SOXLUSDT",
             side="BUY",
             reason="test",
             signal_price="100",
@@ -261,7 +276,7 @@ def test_readonly_reconciliation_imports_actual_binance_trades(tmp_path) -> None
         "qty": "0.1",
         "quoteQty": "10",
         "commission": "0.0001",
-        "commissionAsset": "SOXLB",
+        "commissionAsset": "SOXL",
         "isBuyer": True,
     }
     store = LiveStore(settings.live_spot.database_path)

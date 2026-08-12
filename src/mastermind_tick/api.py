@@ -5,15 +5,17 @@ from __future__ import annotations
 import csv
 import io
 import os
+import sqlite3
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from datetime import date
 from typing import Annotated, Literal
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from starlette.middleware.base import RequestResponseEndpoint
 
 from mastermind_tick.config import InstrumentSettings, Settings, load_settings
@@ -30,6 +32,7 @@ from mastermind_tick.live_futures_reporting import (
 )
 from mastermind_tick.live_store import LiveStore
 from mastermind_tick.reporting import build_overview, build_return_summary
+from mastermind_tick.research import ResearchLab
 from mastermind_tick.store import PaperStore
 
 
@@ -49,6 +52,34 @@ class LiveFlattenRequest(BaseModel):
     confirm: Literal["FLATTEN_SOXLUSDT"]
 
 
+class ResearchDataUpdateRequest(BaseModel):
+    target_date: date
+
+
+class ResearchBacktestRequest(BaseModel):
+    instrument_id: Literal["soxl_perp"] = "soxl_perp"
+    start_date: date
+    end_date: date
+    direction: Literal["long_only", "short_only", "long_short"] = "long_only"
+    atr_periods: list[Annotated[int, Field(ge=1, le=500)]] = Field(
+        min_length=1, max_length=24
+    )
+    atr_multipliers: list[Annotated[float, Field(gt=0, le=100)]] = Field(
+        min_length=1, max_length=24
+    )
+    trend_efficiency_period: int = Field(default=8, ge=2, le=100)
+    minimum_trend_efficiency: float = Field(default=0.25, ge=0, le=1)
+    reversal_confirmation_atr: float = Field(default=0, ge=0, le=10)
+    leverage: int = Field(default=2, ge=1, le=10)
+    position_fraction: float = Field(default=0.625, gt=0, le=1)
+    fee_bps: float = Field(default=5, ge=0, le=100)
+    slippage_bps: float = Field(default=2, ge=0, le=100)
+    initial_cash: float = Field(default=100_000, gt=0)
+    profit_activation_atr: float | None = Field(default=None, ge=0, le=20)
+    profit_trailing_atr: float | None = Field(default=None, ge=0, le=20)
+    continuation_reentry_atr: float | None = Field(default=None, ge=0, le=20)
+
+
 def create_app(settings: Settings | None = None, *, start_engine: bool = True) -> FastAPI:
     resolved = settings or load_settings(os.getenv("MMTICK_CONFIG", "config/settings.toml"))
     store = PaperStore(resolved.database_path)
@@ -56,6 +87,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     live_store = LiveStore(resolved.live_futures.database_path)
     live_trader = LiveFuturesTrader(resolved, live_store)
     live_access = LiveAccess(resolved.live_futures.operator_token_path)
+    research_lab = ResearchLab(resolved)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -66,6 +98,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         if start_engine:
             await live_trader.stop()
             await engine.stop()
+        research_lab.close()
 
     app = FastAPI(
         title="mastermind:tick API",
@@ -78,9 +111,11 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     app.state.live_store = live_store
     app.state.live_trader = live_trader
     app.state.live_access = live_access
+    app.state.research_lab = research_lab
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+        allow_origin_regex=r"https?://[^:]+:5173",
         allow_credentials=True,
         allow_methods=["GET", "POST"],
         allow_headers=["*"],
@@ -311,7 +346,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
 
     @app.get("/api/market/agg-trades")
     def agg_trades(
-        instrument_id: str = "soxlb",
+        instrument_id: str = "soxl_perp",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     ) -> list[dict]:
         instrument = _require_instrument(resolved, instrument_id)
@@ -319,7 +354,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
 
     @app.get("/api/market/ohlcv")
     def ohlcv(
-        instrument_id: str = "soxlb",
+        instrument_id: str = "soxl_perp",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
         before_ms: Annotated[int | None, Query(gt=0)] = None,
     ) -> list[dict]:
@@ -346,6 +381,45 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
             await engine.resume()
         return {"ok": True, "trading_enabled": engine.trading_enabled}
 
+    @app.get("/api/research/data-status")
+    def research_data_status() -> dict:
+        try:
+            return research_lab.data_status()
+        except sqlite3.Error as exc:
+            raise HTTPException(status_code=503, detail=f"warehouse unavailable: {exc}") from exc
+
+    @app.post("/api/research/data-update", status_code=202)
+    def research_data_update(payload: ResearchDataUpdateRequest) -> dict:
+        try:
+            return research_lab.submit_data_update(payload.target_date)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.post("/api/research/backtests", status_code=202)
+    def research_backtest(payload: ResearchBacktestRequest) -> dict:
+        try:
+            return research_lab.submit_backtest(payload.model_dump())
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.get("/api/research/jobs/{job_id}")
+    def research_job(job_id: str) -> dict:
+        job = research_lab.get_job(job_id)
+        if job is None:
+            raise HTTPException(status_code=404, detail="research job not found")
+        return job
+
+    @app.get("/api/research/reports")
+    def research_reports() -> list[dict]:
+        return research_lab.list_reports()
+
+    @app.get("/api/research/reports/{report_id}")
+    def research_report(report_id: str) -> dict:
+        report = research_lab.get_report(report_id)
+        if report is None:
+            raise HTTPException(status_code=404, detail="research report not found")
+        return report
+
     frontend_dist = resolved.frontend_dist
     if frontend_dist.exists():
         assets = frontend_dist / "assets"
@@ -357,7 +431,10 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
             requested = (frontend_dist / path).resolve()
             if path and requested.is_relative_to(frontend_dist.resolve()) and requested.is_file():
                 return FileResponse(requested)
-            return FileResponse(frontend_dist / "index.html")
+            return FileResponse(
+                frontend_dist / "index.html",
+                headers={"Cache-Control": "no-cache, max-age=0, must-revalidate"},
+            )
 
     return app
 
@@ -404,4 +481,4 @@ def _fills_csv(rows: list[dict], filename: str) -> Response:
     )
 
 
-app = create_app()
+app = create_app(start_engine=False)

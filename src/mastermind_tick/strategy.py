@@ -334,6 +334,7 @@ class ATRTickStrategy:
         has_position: bool,
         has_pending_order: bool,
         allow_short: bool = False,
+        allow_long: bool = True,
         is_short: bool = False,
         emit_signals: bool = True,
     ) -> StrategySignal | None:
@@ -425,6 +426,8 @@ class ATRTickStrategy:
             reduce_only = allow_short and has_position and is_short
             if blocked_reason is None and has_position and not reduce_only:
                 blocked_reason = "ALREADY_LONG"
+            if blocked_reason is None and not has_position and not allow_long:
+                blocked_reason = "LONG_DISABLED"
             if blocked_reason is None and not has_position:
                 blocked_reason = self._entry_filter_reason()
             if blocked_reason is None:
@@ -435,7 +438,7 @@ class ATRTickStrategy:
                     Side.BUY,
                     "price_crossed_above_atr_stop",
                     reduce_only=reduce_only,
-                    reversal_after="LONG" if reduce_only else None,
+                    reversal_after="LONG" if reduce_only and allow_long else None,
                 )
             self._record_cross("UP", tick.timestamp_ms, "BLOCKED", blocked_reason)
 
@@ -469,6 +472,7 @@ class ATRTickStrategy:
             has_position=has_position,
             has_pending_order=has_pending_order,
             allow_short=allow_short,
+            allow_long=allow_long,
             emit_signals=emit_signals,
         )
         if startup_signal is not None:
@@ -484,6 +488,7 @@ class ATRTickStrategy:
         has_position: bool,
         has_pending_order: bool,
         allow_short: bool,
+        allow_long: bool,
         emit_signals: bool,
     ) -> StrategySignal | None:
         """Align a fresh account once when it starts inside an established trend."""
@@ -494,7 +499,7 @@ class ATRTickStrategy:
             return None
         if self._entry_filter_reason() is not None or self.trailing_stop is None:
             return None
-        if tick.price > self.trailing_stop:
+        if allow_long and tick.price > self.trailing_stop:
             side = Side.BUY
         elif allow_short and tick.price < self.trailing_stop:
             side = Side.SELL

@@ -1,292 +1,279 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  Activity,
   BarChart3,
-  CandlestickChart,
+  CalendarDays,
+  CheckCircle2,
   Database,
-  FlaskConical,
-  GitCompareArrows,
-  LockKeyhole,
-  ShieldCheck,
-  Target,
-  TrendingUp,
+  FileBarChart,
+  Play,
+  RefreshCw,
+  Settings2,
+  TriangleAlert,
 } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import type { FormEvent } from 'react'
 import {
   Bar,
   BarChart,
   CartesianGrid,
   Cell,
-  ComposedChart,
-  Legend,
-  LineChart,
-  Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
-import {
-  atrMultiplierNeighborhood,
-  atrPeriodNeighborhood,
-  augustDaily,
-  baselineMetrics,
-  decisionRegister,
-  lockCandidates,
-  monthlyPerformance,
-  researchSnapshot,
-  strategyVsUnderlying,
-  walkForward,
-} from './researchData'
+import { api, ApiError } from './api'
+import type {
+  ResearchBacktestRequest,
+  ResearchCandidate,
+  ResearchJob,
+} from './types'
 
-const COLORS = {
-  baseline: '#2878b8',
-  candidate: '#078a61',
-  warning: '#b47b0a',
-  loss: '#d74750',
-  grid: '#e3e9ed',
-  axis: '#687782',
+const PROFIT = '#078a61'
+const LOSS = '#d74750'
+const yesterdayUtc = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10)
+
+function parseNumbers(value: string, integer = false) {
+  return [...new Set(value.split(',').map((item) => Number(item.trim())).filter((item) => (
+    Number.isFinite(item) && item > 0 && (!integer || Number.isInteger(item))
+  )))]
+}
+
+function percent(value: number | null) {
+  if (value === null) return '--'
+  return `${value >= 0 ? '+' : ''}${(value * 100).toFixed(2)}%`
+}
+
+function money(value: number) {
+  return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function compact(value: number) {
   return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 2 }).format(value)
 }
 
-function signed(value: number) {
-  return `${value > 0 ? '+' : ''}${value.toFixed(2)}%`
+function dateTime(value: number | null) {
+  if (!value) return '--'
+  return new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'UTC', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(value)
 }
 
-function ResearchTooltip({ active, payload, label }: {
-  active?: boolean
-  payload?: Array<{ name: string; value: number; color: string }>
-  label?: string
-}) {
-  if (!active || !payload?.length) return null
+function errorMessage(error: unknown) {
+  if (error instanceof ApiError && typeof error.detail === 'string') return error.detail
+  return error instanceof Error ? error.message : '请求失败'
+}
+
+function JobProgress({ job }: { job?: ResearchJob }) {
+  if (!job) return null
   return (
-    <div className="research-tooltip">
-      <strong>{label}</strong>
-      {payload.map((item) => (
-        <span key={item.name}><i style={{ background: item.color }} />{item.name} {signed(item.value)}</span>
-      ))}
+    <div className={`lab-job ${job.status}`} role="status">
+      <div>
+        {job.status === 'failed' ? <TriangleAlert size={15} /> : job.status === 'completed' ? <CheckCircle2 size={15} /> : <RefreshCw className="spin" size={15} />}
+        <span>{job.stage}</span>
+        <strong>{Math.round(job.progress * 100)}%</strong>
+      </div>
+      <div className="lab-progress"><i style={{ width: `${job.progress * 100}%` }} /></div>
+      {(job.error || job.message) && <small>{job.error || job.message}</small>}
     </div>
   )
 }
 
 export default function ResearchDashboard() {
+  const queryClient = useQueryClient()
+  const [updateDate, setUpdateDate] = useState(yesterdayUtc)
+  const [startDate, setStartDate] = useState('2026-05-15')
+  const [endDate, setEndDate] = useState(yesterdayUtc)
+  const [direction, setDirection] = useState<ResearchBacktestRequest['direction']>('long_only')
+  const [periodText, setPeriodText] = useState('28,32,35')
+  const [multiplierText, setMultiplierText] = useState('2.5,3,3.5')
+  const [trendPeriod, setTrendPeriod] = useState(8)
+  const [trendEfficiency, setTrendEfficiency] = useState(0.25)
+  const [reversalAtr, setReversalAtr] = useState(0)
+  const [leverage, setLeverage] = useState(2)
+  const [positionFraction, setPositionFraction] = useState(0.625)
+  const [feeBps, setFeeBps] = useState(5)
+  const [slippageBps, setSlippageBps] = useState(2)
+  const [initialCash, setInitialCash] = useState(100000)
+  const [profitEnabled, setProfitEnabled] = useState(false)
+  const [profitActivation, setProfitActivation] = useState(1.5)
+  const [profitTrailing, setProfitTrailing] = useState(1)
+  const [reentryEnabled, setReentryEnabled] = useState(false)
+  const [reentryAtr, setReentryAtr] = useState(1.4)
+  const [updateJobId, setUpdateJobId] = useState('')
+  const [backtestJobId, setBacktestJobId] = useState('')
+  const [reportId, setReportId] = useState('')
+  const [selectedCandidateId, setSelectedCandidateId] = useState('')
+
+  const periods = useMemo(() => parseNumbers(periodText, true), [periodText])
+  const multipliers = useMemo(() => parseNumbers(multiplierText), [multiplierText])
+  const candidateCount = periods.length * multipliers.length
+  const dataStatus = useQuery({ queryKey: ['research-data-status'], queryFn: api.researchDataStatus })
+  const reports = useQuery({ queryKey: ['research-reports'], queryFn: api.researchReports })
+  const updateJob = useQuery({
+    queryKey: ['research-job', updateJobId],
+    queryFn: () => api.researchJob(updateJobId),
+    enabled: Boolean(updateJobId),
+    refetchInterval: (query) => ['completed', 'failed'].includes(query.state.data?.status ?? '') ? false : 1000,
+  })
+  const backtestJob = useQuery({
+    queryKey: ['research-job', backtestJobId],
+    queryFn: () => api.researchJob(backtestJobId),
+    enabled: Boolean(backtestJobId),
+    refetchInterval: (query) => ['completed', 'failed'].includes(query.state.data?.status ?? '') ? false : 1000,
+  })
+  const report = useQuery({
+    queryKey: ['research-report', reportId],
+    queryFn: () => api.researchReport(reportId),
+    enabled: Boolean(reportId),
+  })
+  const updateMutation = useMutation({
+    mutationFn: api.updateResearchData,
+    onSuccess: (job) => setUpdateJobId(job.id),
+  })
+  const backtestMutation = useMutation({
+    mutationFn: api.runResearchBacktest,
+    onSuccess: (job) => { setBacktestJobId(job.id); setReportId(''); setSelectedCandidateId('') },
+  })
+
+  useEffect(() => {
+    if (dataStatus.data?.default_update_date) {
+      setUpdateDate(dataStatus.data.default_update_date)
+      setEndDate(dataStatus.data.complete_through_date ?? dataStatus.data.default_update_date)
+      if (dataStatus.data.earliest_replay_date) {
+        setStartDate(dataStatus.data.earliest_replay_date)
+      }
+    }
+  }, [dataStatus.data])
+  useEffect(() => {
+    if (updateJob.data?.status === 'completed') {
+      void queryClient.invalidateQueries({ queryKey: ['research-data-status'] })
+    }
+  }, [queryClient, updateJob.data?.status])
+  useEffect(() => {
+    if (backtestJob.data?.status === 'completed' && backtestJob.data.report_id) {
+      setReportId(backtestJob.data.report_id)
+    }
+  }, [backtestJob.data])
+  useEffect(() => {
+    if (!reportId && !backtestJobId && reports.data?.length) {
+      setReportId(reports.data[0].id)
+    }
+  }, [backtestJobId, reportId, reports.data])
+  useEffect(() => {
+    if (report.data && !selectedCandidateId) setSelectedCandidateId(report.data.best_candidate_id)
+  }, [report.data, selectedCandidateId])
+
+  const selected = report.data?.candidates.find((item) => item.id === selectedCandidateId)
+    ?? report.data?.candidates[0]
+  const busy = ['queued', 'running'].includes(backtestJob.data?.status ?? '')
+  const invalidGrid = candidateCount < 1 || candidateCount > 24
+
+  function submitBacktest(event: FormEvent) {
+    event.preventDefault()
+    backtestMutation.mutate({
+      instrument_id: 'soxl_perp', start_date: startDate, end_date: endDate, direction,
+      atr_periods: periods, atr_multipliers: multipliers,
+      trend_efficiency_period: trendPeriod,
+      minimum_trend_efficiency: trendEfficiency,
+      reversal_confirmation_atr: reversalAtr,
+      leverage, position_fraction: positionFraction, fee_bps: feeBps,
+      slippage_bps: slippageBps, initial_cash: initialCash,
+      profit_activation_atr: profitEnabled ? profitActivation : null,
+      profit_trailing_atr: profitEnabled ? profitTrailing : null,
+      continuation_reentry_atr: reentryEnabled ? reentryAtr : null,
+    })
+  }
+
   return (
-    <div className="research-dashboard">
-      <section className="research-status-band" aria-label="冻结基线状态">
-        <div className="research-status-title">
-          <span><LockKeyhole size={14} /> FROZEN BASELINE</span>
-          <h2>15m 只做多 · ATR(32) × 3</h2>
-          <p>8 根效率窗口 · 阈值 0.25 · 固定 15m 动作锁 · 1.25x 敞口</p>
-        </div>
-        <dl className="research-status-facts">
-          <div><dt>方向</dt><dd>LONG ONLY</dd></div>
-          <div><dt>成本</dt><dd>5 / 2 bps</dd></div>
-          <div><dt>盈利保护</dt><dd>OFF</dd></div>
-          <div><dt>延续重入</dt><dd>OFF</dd></div>
-        </dl>
-        <div className="research-candidate-state">
-          <span><FlaskConical size={14} /> LEADING CANDIDATE</span>
-          <strong>成交后滚动 28–32m</strong>
-          <small>留出段未形成区分 · 未批准</small>
-        </div>
-      </section>
-
-      <section className="research-metrics" aria-label="基线回测指标">
-        {baselineMetrics.map((metric, index) => {
-          const icons = [TrendingUp, Activity, CandlestickChart, Target, ShieldCheck, GitCompareArrows]
-          const Icon = icons[index]
-          return (
-            <article className={`research-metric ${metric.tone}`} key={metric.label}>
-              <div><span>{metric.label}</span><Icon size={16} /></div>
-              <strong>{metric.value}</strong>
-              <small>{metric.detail}</small>
-            </article>
-          )
-        })}
-      </section>
-
-      <div className="research-two-column">
-        <section className="research-band">
-          <header className="research-band-head">
-            <div><span>CONTINUOUS ACCOUNT / UTC</span><h3>月度 performance</h3></div>
-            <strong>8 月 +16.98%</strong>
-          </header>
-          <div className="research-chart research-chart-main" aria-label="月度收益图">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyPerformance} margin={{ top: 18, right: 12, left: -12, bottom: 0 }}>
-                <CartesianGrid stroke={COLORS.grid} vertical={false} />
-                <XAxis dataKey="label" tick={{ fill: COLORS.axis, fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={(value) => `${value}%`} tick={{ fill: COLORS.axis, fontSize: 10 }} axisLine={false} tickLine={false} />
-                <Tooltip content={<ResearchTooltip />} cursor={{ fill: '#f2f5f7' }} />
-                <Legend iconType="square" wrapperStyle={{ fontSize: 10 }} />
-                <Bar name="当前基线" dataKey="baseline" fill={COLORS.baseline} radius={[2, 2, 0, 0]} />
-                <Bar name="滚动 30m" dataKey="rolling" fill={COLORS.candidate} radius={[2, 2, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="research-equity-strip">
-            {monthlyPerformance.map((month) => (
-              <div key={month.label}><span>{month.label} 月末</span><strong>{compact(month.endEquity)} USDT</strong></div>
-            ))}
-          </div>
-        </section>
-
-        <section className="research-band">
-          <header className="research-band-head">
-            <div><span>AUGUST / DAILY MARK-TO-MARKET</span><h3>8 月每日收益</h3></div>
-            <strong>271,854.63 USDT</strong>
-          </header>
-          <div className="research-chart research-chart-daily" aria-label="8 月每日收益图">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={augustDaily} margin={{ top: 18, right: 8, left: -14, bottom: 0 }}>
-                <CartesianGrid stroke={COLORS.grid} vertical={false} />
-                <XAxis dataKey="day" tick={{ fill: COLORS.axis, fontSize: 9 }} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={(value) => `${value}%`} tick={{ fill: COLORS.axis, fontSize: 9 }} axisLine={false} tickLine={false} />
-                <Tooltip content={<ResearchTooltip />} cursor={{ fill: '#f2f5f7' }} />
-                <Bar name="日收益" dataKey="value" radius={[2, 2, 0, 0]}>
-                  {augustDaily.map((row) => <Cell key={row.day} fill={row.value < 0 ? COLORS.loss : COLORS.candidate} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="research-daily-table">
-            {augustDaily.map((row) => (
-              <div key={row.day}><span>{row.day}</span><strong className={row.value < 0 ? 'loss' : row.value > 0 ? 'gain' : ''}>{signed(row.value)}</strong><small>{compact(row.equity)}</small></div>
-            ))}
-          </div>
-        </section>
-      </div>
-
-      <section className="research-band research-comparison-band">
-        <header className="research-band-head">
-          <div><span>CONTINUOUS ACCOUNT / SAME STARTING POINT</span><h3>策略 vs 标的累计收益</h3></div>
-          <strong>100,000 USDT → 271,854.63</strong>
-        </header>
-        <div className="research-chart research-chart-comparison" aria-label="策略与标的累计收益对比图">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={strategyVsUnderlying} margin={{ top: 18, right: 18, left: -8, bottom: 0 }}>
-              <CartesianGrid stroke={COLORS.grid} vertical={false} />
-              <XAxis dataKey="label" tick={{ fill: COLORS.axis, fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={(value) => `${value}%`} tick={{ fill: COLORS.axis, fontSize: 10 }} axisLine={false} tickLine={false} />
-              <Tooltip content={<ResearchTooltip />} cursor={{ stroke: COLORS.grid }} />
-              <Legend iconType="plainline" wrapperStyle={{ fontSize: 10 }} />
-              <Line type="monotone" name="当前策略" dataKey="strategy" stroke={COLORS.candidate} strokeWidth={3} dot={{ r: 4 }} />
-              <Line type="monotone" name="SOXLUSDT 1x" dataKey="underlying" stroke={COLORS.loss} strokeWidth={2} dot={{ r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="research-comparison-table">
-          {strategyVsUnderlying.map((row) => (
-            <div key={row.label}>
-              <span>{row.label}</span>
-              <strong className="gain">策略 {signed(row.strategy)}</strong>
-              <strong className={row.underlying >= 0 ? 'gain' : 'loss'}>标的 {signed(row.underlying)}</strong>
-              <small>超额 {signed(row.alpha)} · {compact(row.strategyEquity)} vs {compact(row.underlyingEquity)} USDT</small>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="research-band research-lock-band">
-        <header className="research-band-head">
-          <div><span>ACTION LOCK / FULL HISTORY</span><h3>动作锁候选比较</h3></div>
-          <div className="research-head-badges"><span className="active">F15 基线</span><span className="candidate">R28–32 候选</span></div>
-        </header>
-        <div className="research-chart research-chart-locks" aria-label="动作锁候选收益和回撤图">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={lockCandidates} margin={{ top: 20, right: 28, left: -8, bottom: 0 }}>
-              <CartesianGrid stroke={COLORS.grid} vertical={false} />
-              <XAxis dataKey="short" tick={{ fill: COLORS.axis, fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis yAxisId="return" tickFormatter={(value) => `${value}%`} tick={{ fill: COLORS.axis, fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis yAxisId="drawdown" orientation="right" domain={[-45, 0]} tickFormatter={(value) => `${value}%`} tick={{ fill: COLORS.axis, fontSize: 10 }} axisLine={false} tickLine={false} />
-              <Tooltip content={<ResearchTooltip />} cursor={{ fill: '#f2f5f7' }} />
-              <Legend iconType="square" wrapperStyle={{ fontSize: 10 }} />
-              <Bar yAxisId="return" name="完整收益" dataKey="return" radius={[2, 2, 0, 0]}>
-                {lockCandidates.map((row) => <Cell key={row.name} fill={row.status === 'best' ? COLORS.candidate : row.status === 'baseline' ? COLORS.baseline : '#8da0ac'} />)}
-              </Bar>
-              <Line yAxisId="drawdown" name="最大回撤" dataKey="drawdown" stroke={COLORS.loss} strokeWidth={2} dot={{ r: 3, fill: '#fff' }} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="research-lock-table">
-          <table>
-            <thead><tr><th>版本</th><th>收益</th><th>回撤</th><th>研究状态</th></tr></thead>
-            <tbody>{lockCandidates.map((row) => (
-              <tr key={row.name}><td>{row.name}</td><td className="gain">{signed(row.return)}</td><td className="loss">{signed(row.drawdown)}</td><td><ResearchStatus status={row.status} /></td></tr>
-            ))}</tbody>
-          </table>
-        </div>
-      </section>
-
-      <div className="research-two-column research-evidence-grid">
-        <section className="research-band">
-          <header className="research-band-head"><div><span>WALK-FORWARD</span><h3>分段验证</h3></div><strong>留出无区分</strong></header>
-          <div className="research-chart research-chart-compact" aria-label="walk-forward 收益图">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={walkForward} margin={{ top: 18, right: 12, left: -12, bottom: 0 }}>
-                <CartesianGrid stroke={COLORS.grid} vertical={false} />
-                <XAxis dataKey="segment" tick={{ fill: COLORS.axis, fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={(value) => `${value}%`} tick={{ fill: COLORS.axis, fontSize: 10 }} axisLine={false} tickLine={false} />
-                <Tooltip content={<ResearchTooltip />} cursor={{ fill: '#f2f5f7' }} />
-                <Legend iconType="square" wrapperStyle={{ fontSize: 10 }} />
-                <Bar name="固定 15m" dataKey="baseline" fill={COLORS.baseline} radius={[2, 2, 0, 0]} />
-                <Bar name="滚动 30m" dataKey="rolling" fill={COLORS.candidate} radius={[2, 2, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <p className="research-band-note">滚动 28–32m 在训练、验证和留出段产生同一条候选路径；留出结果与当前基线完全相同。</p>
-        </section>
-
-        <section className="research-band">
-          <header className="research-band-head"><div><span>DECISION REGISTER</span><h3>研究决策</h3></div><strong>5 controls</strong></header>
-          <div className="research-decisions">
-            {decisionRegister.map((row) => (
-              <div key={row.control}><span>{row.control}</span><strong>{row.setting}</strong><i className={row.tone}>{row.status}</i></div>
-            ))}
-          </div>
-        </section>
-      </div>
-
-      <div className="research-two-column research-parameter-grid">
-        <ParameterTable title="ATR 周期邻域" kicker="PERIOD NEIGHBORHOOD" rows={atrPeriodNeighborhood} />
-        <ParameterTable title="ATR 倍数断崖" kicker="MULTIPLIER SENSITIVITY" rows={atrMultiplierNeighborhood} />
-      </div>
-
-      <section className="research-data-band" aria-label="研究数据覆盖">
-        <div><Database size={18} /><span>DATA COVERAGE</span><strong>{researchSnapshot.dataStart} → {researchSnapshot.dataEnd}</strong></div>
+    <div className="research-dashboard lab-dashboard">
+      <section className="lab-data-band" aria-label="历史数据状态">
+        <header><Database size={18} /><div><span>MARKET DATA / UTC</span><h2>SOXLUSDT 历史数据</h2></div></header>
         <dl>
-          <div><dt>250ms 成交桶</dt><dd>{compact(researchSnapshot.tickBuckets)}</dd></div>
-          <div><dt>底层成交 ID</dt><dd>{compact(researchSnapshot.rawTradeCount)}</dd></div>
-          <div><dt>15m K 线</dt><dd>{researchSnapshot.bars.toLocaleString()}</dd></div>
-          <div><dt>资金费率</dt><dd>{researchSnapshot.fundingRates}</dd></div>
+          <div><dt>覆盖起点</dt><dd>{dateTime(dataStatus.data?.first_tick_ms ?? null)}</dd></div>
+          <div><dt>最新 Tick</dt><dd>{dateTime(dataStatus.data?.last_tick_ms ?? null)}</dd></div>
+          <div><dt>最新完整日</dt><dd>{dataStatus.data?.complete_through_date ?? '--'}</dd></div>
+          <div><dt>250ms 桶 / 成交</dt><dd>{compact(dataStatus.data?.tick_count ?? 0)} / {compact(dataStatus.data?.raw_trade_count ?? 0)}</dd></div>
         </dl>
-        <div className="research-forward-gate"><BarChart3 size={17} /><span>NEXT REVIEW</span><strong>3 个完整月 · 100 笔前向交易</strong></div>
+        <form onSubmit={(event) => { event.preventDefault(); updateMutation.mutate(updateDate) }}>
+          <label>更新到<input type="date" value={updateDate} max={dataStatus.data?.default_update_date ?? yesterdayUtc} onChange={(event) => setUpdateDate(event.target.value)} /></label>
+          <button className="control" type="submit" disabled={updateMutation.isPending || ['queued', 'running'].includes(updateJob.data?.status ?? '')}><RefreshCw size={15} />更新完整日</button>
+        </form>
       </section>
+      <JobProgress job={updateJob.data} />
+
+      <form className="lab-workbench" onSubmit={submitBacktest}>
+        <header className="lab-section-head"><Settings2 size={17} /><div><span>ATR GRID</span><h2>批量回测参数</h2></div><strong>{candidateCount} / 24 候选</strong></header>
+        <div className="lab-form-grid">
+          <fieldset>
+            <legend>范围与方向</legend>
+            <label>合约<select value="soxl_perp" disabled><option value="soxl_perp">SOXLUSDT 永续合约</option></select></label>
+            <div className="lab-field-pair"><label>开始日期<input type="date" value={startDate} min={dataStatus.data?.earliest_replay_date ?? undefined} onChange={(event) => setStartDate(event.target.value)} required /></label><label>结束日期<input type="date" value={endDate} max={dataStatus.data?.complete_through_date ?? dataStatus.data?.default_update_date ?? yesterdayUtc} onChange={(event) => setEndDate(event.target.value)} required /></label></div>
+            <div className="lab-label">方向</div>
+            <div className="lab-segments" role="group" aria-label="交易方向">
+              {([['long_only', '仅做多'], ['short_only', '仅做空'], ['long_short', '多空']] as const).map(([value, label]) => <button key={value} type="button" className={direction === value ? 'active' : ''} onClick={() => setDirection(value)}>{label}</button>)}
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>ATR 网格</legend>
+            <label>ATR 周期<input value={periodText} onChange={(event) => setPeriodText(event.target.value)} placeholder="28,32,35" /></label>
+            <label>ATR 倍数<input value={multiplierText} onChange={(event) => setMultiplierText(event.target.value)} placeholder="2.5,3,3.5" /></label>
+            <div className="lab-field-pair"><label>效率周期<input type="number" min="2" max="100" value={trendPeriod} onChange={(event) => setTrendPeriod(Number(event.target.value))} /></label><label>最低效率<input type="number" min="0" max="1" step="0.05" value={trendEfficiency} onChange={(event) => setTrendEfficiency(Number(event.target.value))} /></label></div>
+            <label>反向确认 ATR<input type="number" min="0" step="0.1" value={reversalAtr} onChange={(event) => setReversalAtr(Number(event.target.value))} /></label>
+          </fieldset>
+          <fieldset>
+            <legend>资金与成本</legend>
+            <div className="lab-field-pair"><label>杠杆<input type="number" min="1" max="10" value={leverage} onChange={(event) => setLeverage(Number(event.target.value))} /></label><label>仓位比例<input type="number" min="0" max="1" step="0.005" value={positionFraction} onChange={(event) => setPositionFraction(Number(event.target.value))} /></label></div>
+            <div className="lab-field-pair"><label>手续费 bps<input type="number" min="0" step="0.1" value={feeBps} onChange={(event) => setFeeBps(Number(event.target.value))} /></label><label>滑点 bps<input type="number" min="0" step="0.1" value={slippageBps} onChange={(event) => setSlippageBps(Number(event.target.value))} /></label></div>
+            <label>初始资金 USDT<input type="number" min="0" step="1000" value={initialCash} onChange={(event) => setInitialCash(Number(event.target.value))} /></label>
+            <small>目标敞口 {(leverage * positionFraction).toFixed(3)}x</small>
+          </fieldset>
+          <fieldset>
+            <legend>扩展控制</legend>
+            <label className="lab-toggle"><input type="checkbox" checked={profitEnabled} onChange={(event) => setProfitEnabled(event.target.checked)} /><span>利润保护</span></label>
+            <div className="lab-field-pair"><label>激活 ATR<input type="number" min="0" step="0.1" disabled={!profitEnabled} value={profitActivation} onChange={(event) => setProfitActivation(Number(event.target.value))} /></label><label>跟踪 ATR<input type="number" min="0" step="0.1" disabled={!profitEnabled} value={profitTrailing} onChange={(event) => setProfitTrailing(Number(event.target.value))} /></label></div>
+            <label className="lab-toggle"><input type="checkbox" checked={reentryEnabled} onChange={(event) => setReentryEnabled(event.target.checked)} /><span>延续重入</span></label>
+            <label>重入阈值 ATR<input type="number" min="0" step="0.1" disabled={!reentryEnabled} value={reentryAtr} onChange={(event) => setReentryAtr(Number(event.target.value))} /></label>
+          </fieldset>
+        </div>
+        <footer>
+          <span><CalendarDays size={14} />固定 15m K 线与单 K 线动作锁</span>
+          <button className="lab-run" type="submit" disabled={invalidGrid || busy || backtestMutation.isPending}><Play size={16} />运行 {candidateCount} 个候选</button>
+        </footer>
+      </form>
+      {(backtestMutation.error || updateMutation.error) && <div className="lab-error"><TriangleAlert size={15} />{errorMessage(backtestMutation.error || updateMutation.error)}</div>}
+      <JobProgress job={backtestJob.data} />
+
+      {report.data && selected && <>
+        <section className="lab-ranking">
+          <header className="lab-section-head"><FileBarChart size={17} /><div><span>REPORT {report.data.id}</span><h2>候选排名</h2></div><strong>{report.data.metadata.tick_count.toLocaleString()} Ticks</strong></header>
+          <div className="lab-table-scroll"><table><thead><tr><th>排名</th><th>ATR</th><th>倍数</th><th>总收益</th><th>最大回撤</th><th>交易</th><th>胜率</th><th>利润因子</th><th>期末净值</th></tr></thead><tbody>{report.data.candidates.map((candidate) => <tr key={candidate.id} className={selected.id === candidate.id ? 'selected' : ''} onClick={() => setSelectedCandidateId(candidate.id)}><td>#{candidate.rank}</td><td>{candidate.parameters.atr_period}</td><td>{candidate.parameters.atr_multiplier}</td><td className={candidate.metrics.net_return >= 0 ? 'gain' : 'loss'}>{percent(candidate.metrics.net_return)}</td><td className="loss">{percent(candidate.metrics.max_drawdown)}</td><td>{candidate.metrics.completed_trades}</td><td>{percent(candidate.metrics.win_rate)}</td><td>{candidate.metrics.profit_factor?.toFixed(2) ?? '--'}</td><td>{money(candidate.metrics.final_equity)}</td></tr>)}</tbody></table></div>
+        </section>
+        <section className="lab-result-summary">
+          <div><span>选中候选</span><strong>ATR({selected.parameters.atr_period}) × {selected.parameters.atr_multiplier}</strong></div>
+          <div><span>总收益</span><strong className={selected.metrics.net_return >= 0 ? 'gain' : 'loss'}>{percent(selected.metrics.net_return)}</strong></div>
+          <div><span>净利润</span><strong>{money(selected.metrics.net_profit)} USDT</strong></div>
+          <div><span>手续费 / 资金费</span><strong>{money(selected.metrics.total_fees)} / {money(selected.metrics.total_funding)}</strong></div>
+          <div><span>预热</span><strong>{report.data.metadata.warmup_bars} 根 {report.data.metadata.warmup_interval_minutes ?? 15}m K</strong></div>
+          <div><span>实际回放</span><strong>{dateTime(report.data.metadata.start_ms)} - {dateTime(report.data.metadata.end_ms)}</strong></div>
+        </section>
+        <div className="lab-report-grid">
+          <PerformancePanel title="每月收益" rows={selected.monthly} />
+          <PerformancePanel title="每日收益" rows={selected.daily} daily />
+        </div>
+      </>}
     </div>
   )
 }
 
-function ResearchStatus({ status }: { status: string }) {
-  const label = status === 'best' ? '最佳候选' : status === 'baseline' ? '冻结基线' : status === 'candidate' ? '邻域候选' : '排除'
-  return <span className={`research-status-pill ${status}`}>{label}</span>
-}
-
-function ParameterTable({ title, kicker, rows }: {
-  title: string
-  kicker: string
-  rows: Array<{ parameter: string; train: number; validation: number }>
-}) {
+function PerformancePanel({ title, rows, daily = false }: { title: string, rows: ResearchCandidate['daily'], daily?: boolean }) {
+  const chartRows = daily && rows.length > 90 ? rows.slice(-90) : rows
   return (
-    <section className="research-band research-parameter-band">
-      <header className="research-band-head"><div><span>{kicker}</span><h3>{title}</h3></div><strong>{rows.length} points</strong></header>
-      <table>
-        <thead><tr><th>参数</th><th>训练</th><th>验证</th><th>一致性</th></tr></thead>
-        <tbody>{rows.map((row) => {
-          const stable = row.train > 0 && row.validation > 0
-          return <tr key={row.parameter}><td>{row.parameter}</td><td className={row.train >= 0 ? 'gain' : 'loss'}>{signed(row.train)}</td><td className={row.validation >= 0 ? 'gain' : 'loss'}>{signed(row.validation)}</td><td><span className={`parameter-state ${stable ? 'stable' : 'unstable'}`}>{stable ? '正 / 正' : '断裂'}</span></td></tr>
-        })}</tbody>
-      </table>
+    <section className="lab-performance">
+      <header className="lab-section-head"><BarChart3 size={17} /><div><span>CONTINUOUS EQUITY / UTC</span><h2>{title}</h2></div><strong>{rows.length} 期</strong></header>
+      <div className="lab-return-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={chartRows} margin={{ top: 12, right: 8, left: -12, bottom: 0 }}><CartesianGrid stroke="#e3e9ed" vertical={false} /><XAxis dataKey="label" minTickGap={28} tick={{ fill: '#687782', fontSize: 9 }} axisLine={false} tickLine={false} /><YAxis tickFormatter={(value) => `${(value * 100).toFixed(0)}%`} tick={{ fill: '#687782', fontSize: 9 }} axisLine={false} tickLine={false} /><Tooltip formatter={(value) => percent(Number(value))} /><Bar dataKey="return" name="收益">{chartRows.map((row) => <Cell key={row.label} fill={row.return < 0 ? LOSS : PROFIT} />)}</Bar></BarChart></ResponsiveContainer></div>
+      <div className="lab-period-table"><table><thead><tr><th>{daily ? '日期' : '月份'}</th><th>收益</th><th>净利润</th><th>期末净值</th></tr></thead><tbody>{[...rows].reverse().map((row) => <tr key={row.label}><td>{row.label}</td><td className={row.return >= 0 ? 'gain' : 'loss'}>{percent(row.return)}</td><td>{money(row.net_profit)}</td><td>{money(row.end_equity)}</td></tr>)}</tbody></table></div>
     </section>
   )
 }

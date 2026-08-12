@@ -435,7 +435,7 @@ function App() {
     ? liveReadiness.data?.status ?? 'STARTING'
     : `${liveCount}/${instrumentCount} LIVE`
   const pageTitle = view === 'research'
-    ? 'SOXLUSDT 策略研究'
+    ? 'SOXLUSDT 回测平台'
     : view === 'warehouse'
     ? '历史数据'
     : view === 'returns'
@@ -444,7 +444,7 @@ function App() {
         ? '回测交易明细'
         : '历史策略回放'
   const pageKicker = view === 'research'
-    ? 'RESEARCH BRANCH / FROZEN BASELINE / WALK-FORWARD'
+    ? 'RESEARCH BRANCH / PARAMETER GRID / REPORTS'
     : view === 'warehouse'
     ? 'MARKET DATA / SQLITE WAL'
     : view === 'returns'
@@ -478,7 +478,7 @@ function App() {
         </nav>
         <div className="top-actions">
           <span className="research-branch-badge"><GitBranch size={14} />research/soxl-history-backtest</span>
-          <span className="research-readonly-badge"><LockKeyhole size={14} />READ ONLY</span>
+          <span className="research-readonly-badge"><LockKeyhole size={14} />NO TRADING</span>
         </div>
       </header>
 
@@ -517,7 +517,7 @@ function App() {
             )}
             <div className="scope-chips">
               {view === 'research'
-                ? <><span>SOXLUSDT</span><span>2026-05 → 2026-08</span><span>RESEARCH ONLY</span></>
+                ? <><span>SOXLUSDT</span><span>DAILY DATA</span><span>ATR GRID</span></>
                 : <><span>{account?.symbol ?? 'INITIALIZING'}</span><span>15m</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : view === 'returns' ? 'PERFORMANCE' : account?.runtime.allow_short ? 'LONG / SHORT' : 'LONG ONLY'}</span></>}
             </div>
           </div>
@@ -690,7 +690,7 @@ function LiveReadinessBand({ readiness }: { readiness?: LiveReadiness }) {
     FUTURES_TRADING_PERMISSION_MISSING: '缺少合约交易权限',
     WITHDRAWAL_PERMISSION_ENABLED: '必须关闭提现权限',
     UNKNOWN_OPEN_ORDERS: '存在未接管挂单',
-    UNMANAGED_EXISTING_POSITION: '存在未接管 SOXLB 持仓',
+    UNMANAGED_EXISTING_POSITION: '存在未接管现有持仓',
     CREDENTIALS_MISSING: '缺少 API 凭证',
     CREDENTIAL_FILE_PERMISSIONS_INSECURE: '凭证文件权限不安全',
     LEVERAGE_MISMATCH: `当前 ${readiness?.current_leverage ?? '--'}x，目标 ${readiness?.target_leverage ?? '--'}x`,

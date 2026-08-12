@@ -10,9 +10,11 @@ from mastermind_tick.backtest import (
     ReplayCandidate,
     ReplayParameters,
     _default_replay_start,
+    _replay_start_with_warmup,
 )
 from mastermind_tick.config import InstrumentSettings
 from mastermind_tick.models import Bar, FundingRate, Side, StrategySignal, Tick
+from mastermind_tick.research import _period_rows
 from mastermind_tick.strategy import ATRTickStrategy
 
 BAR_MS = 900_000
@@ -77,6 +79,10 @@ def test_default_replay_start_reserves_requested_warmup_bars() -> None:
     )
 
     assert _default_replay_start(connection, "test", 15, 3) == 3 * BAR_MS
+    assert (
+        _replay_start_with_warmup(connection, "test", 15, 0, 10, 3)
+        == 3 * BAR_MS
+    )
 
 
 @pytest.mark.parametrize("period,multiplier", [(7, 1.0), (14, 1.5), (21, 2.0)])
@@ -192,6 +198,55 @@ def test_candidate_fills_signal_on_the_next_tick() -> None:
     assert candidate.pending_signal is None
     assert broker.has_position
     assert broker.average_price == Decimal("10.005")
+
+
+def test_short_only_candidate_opens_short_and_never_opens_long() -> None:
+    strategy = ReplayATRTickStrategy(2, 1, 15, 2, 0)
+    strategy.bootstrap(bars([100, 101, 102]))
+    strategy.previous_price = Decimal("101")
+    strategy.trailing_stop = Decimal("100")
+    strategy.startup_alignment_checked = True
+    broker = ReplayBroker(
+        instrument(paper_model="futures"),
+        Decimal("10000"),
+        Decimal("0.5"),
+        Decimal("0"),
+        Decimal("0"),
+        Decimal("0"),
+    )
+    candidate = ReplayCandidate(
+        ReplayParameters(2, 1), strategy, broker, direction="short_only"
+    )
+
+    candidate.process_tick(tick("short-signal", 3 * BAR_MS, 99), [])
+    assert candidate.pending_signal is not None
+    assert candidate.pending_signal.side is Side.SELL
+    candidate.process_tick(tick("short-fill", 3 * BAR_MS + 1, 98), [])
+    assert broker.is_short
+
+    broker.fill(Side.BUY, Decimal("98"), 3 * BAR_MS + 2, reduce_only=True)
+    strategy.previous_price = Decimal("99")
+    strategy.trailing_stop = Decimal("100")
+    strategy.action_this_bar = False
+    strategy.last_action_bar_start_ms = None
+    candidate.process_tick(tick("long-cross", 4 * BAR_MS, 101), [])
+    assert candidate.pending_signal is None
+    assert not broker.has_position
+
+
+def test_period_rows_use_continuous_equity_for_daily_and_monthly_returns() -> None:
+    daily, monthly = _period_rows(
+        [
+            {"date": "2026-05-31", "timestamp_ms": 1, "equity": 110.0},
+            {"date": "2026-06-01", "timestamp_ms": 2, "equity": 99.0},
+            {"date": "2026-06-02", "timestamp_ms": 3, "equity": 108.9},
+        ],
+        100.0,
+    )
+
+    assert [row["return"] for row in daily] == pytest.approx([0.1, -0.1, 0.1])
+    assert [row["return"] for row in monthly] == pytest.approx([0.1, -0.01])
+    assert monthly[-1]["end_equity"] == pytest.approx(108.9)
 
 
 def test_mark_tracks_tick_level_max_drawdown() -> None:

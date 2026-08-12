@@ -5,8 +5,8 @@ from __future__ import annotations
 import argparse
 import json
 import sqlite3
-from collections.abc import Iterable
-from dataclasses import asdict, dataclass
+from collections.abc import Callable, Iterable
+from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from decimal import ROUND_DOWN, Decimal
 from pathlib import Path
@@ -94,6 +94,7 @@ class ReplayResult:
     profit_exit_signals: int
     continuation_reentry_signals: int
     ending_position: str
+    daily_equity: list[dict[str, Any]] = field(default_factory=list)
 
 
 class ReplayATRTickStrategy(ATRTickStrategy):
@@ -329,6 +330,8 @@ class ReplayCandidate:
     continuation_direction: str | None = None
     continuation_anchor: Decimal | None = None
     continuation_eligible_bar_ms: int | None = None
+    direction: str = "long_short"
+    daily_equity: list[dict[str, Any]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if (
@@ -400,7 +403,8 @@ class ReplayCandidate:
             tick,
             has_position=self.broker.has_position,
             has_pending_order=self.pending_signal is not None,
-            allow_short=self.broker.instrument.short_enabled,
+            allow_short=self.direction in {"short_only", "long_short"},
+            allow_long=self.direction in {"long_only", "long_short"},
             is_short=self.broker.is_short,
         )
         if signal is None:
@@ -521,6 +525,15 @@ class ReplayCandidate:
         self.continuation_anchor = None
         self.continuation_eligible_bar_ms = None
 
+    def snapshot_day(self, timestamp_ms: int, market_price: Decimal) -> None:
+        self.daily_equity.append(
+            {
+                "date": datetime.fromtimestamp(timestamp_ms / 1000, UTC).date().isoformat(),
+                "timestamp_ms": timestamp_ms,
+                "equity": float(self.broker.equity(market_price)),
+            }
+        )
+
 
 def run_parameter_grid(
     settings: Settings,
@@ -529,7 +542,14 @@ def run_parameter_grid(
     *,
     start_ms: int | None = None,
     end_ms: int | None = None,
+    direction: str | None = None,
+    progress_callback: Callable[[float], None] | None = None,
+    warmup_callback: Callable[[int], None] | None = None,
 ) -> tuple[dict[str, Any], list[ReplayResult]]:
+    if direction is None:
+        direction = "long_short" if instrument.short_enabled else "long_only"
+    if direction not in {"long_only", "short_only", "long_short"}:
+        raise ValueError(f"invalid replay direction: {direction}")
     database_uri = f"file:{settings.database_path}?mode=ro"
     with sqlite3.connect(database_uri, uri=True) as connection:
         connection.row_factory = sqlite3.Row
@@ -556,9 +576,13 @@ def run_parameter_grid(
                 settings.strategy.bar_minutes,
                 settings.warmup_bars,
             )
-        replay_start = max(
-            int(available["first_ms"]),
+        replay_start = _replay_start_with_warmup(
+            connection,
+            market_id,
+            settings.strategy.bar_minutes,
             requested_start,
+            int(available["first_ms"]),
+            settings.warmup_bars,
         )
         replay_end = min(int(available["last_ms"]), end_ms or int(available["last_ms"]))
         if replay_start >= replay_end:
@@ -567,6 +591,8 @@ def run_parameter_grid(
         warmup_bars = _load_warmup_bars(connection, market_id, replay_start, settings.warmup_bars)
         if not warmup_bars:
             raise ValueError(f"no pre-replay OHLCV warmup for {instrument.id}")
+        if warmup_callback is not None:
+            warmup_callback(len(warmup_bars))
         funding_rates = _load_funding_rates(connection, market_id, replay_start, replay_end)
 
         position_fraction = Decimal(
@@ -618,12 +644,15 @@ def run_parameter_grid(
                         slippage_bps,
                         minimum_notional,
                     ),
+                    direction=direction,
                 )
             )
 
         tick_count = 0
         raw_trade_count = 0
         last_price: Decimal | None = None
+        last_timestamp_ms: int | None = None
+        last_day: int | None = None
         rows = connection.execute(
             """
             SELECT event_id, timestamp_ms, price, open_price, high_price, low_price,
@@ -636,9 +665,14 @@ def run_parameter_grid(
             (market_id, replay_start, replay_end),
         )
         for row in rows:
+            timestamp_ms = int(row["timestamp_ms"])
+            day = timestamp_ms // 86_400_000
+            if last_day is not None and day != last_day and last_price is not None:
+                for candidate in candidates:
+                    candidate.snapshot_day(last_timestamp_ms or timestamp_ms, last_price)
             tick = Tick(
                 event_id=row["event_id"],
-                timestamp_ms=int(row["timestamp_ms"]),
+                timestamp_ms=timestamp_ms,
                 price=Decimal(row["price"]),
                 quantity=Decimal(row["quantity"]),
                 source=row["source"],
@@ -657,9 +691,17 @@ def run_parameter_grid(
                 else 1
             )
             last_price = tick.price
+            last_timestamp_ms = tick.timestamp_ms
+            last_day = day
+            if progress_callback is not None and tick_count % 100_000 == 0:
+                progress_callback((tick.timestamp_ms - replay_start) / (replay_end - replay_start))
 
     if last_price is None:
         raise ValueError(f"no aggTrade data in selected range for {instrument.id}")
+    for candidate in candidates:
+        candidate.snapshot_day(last_timestamp_ms or replay_end, last_price)
+    if progress_callback is not None:
+        progress_callback(1.0)
 
     results = [
         _candidate_result(
@@ -678,13 +720,18 @@ def run_parameter_grid(
         "instrument_id": instrument.id,
         "market_data_id": market_id,
         "allow_short": instrument.short_enabled,
+        "direction": direction,
         "symbol": instrument.symbol,
         "paper_model": instrument.paper_model,
         "start_ms": replay_start,
         "end_ms": replay_end,
+        "requested_start_ms": requested_start,
+        "requested_end_ms": end_ms,
+        "start_adjusted_for_warmup": replay_start > requested_start,
         "tick_count": tick_count,
         "raw_trade_count": raw_trade_count,
         "warmup_bars": len(warmup_bars),
+        "warmup_interval_minutes": settings.strategy.bar_minutes,
         "fee_bps": float(fee_bps),
         "slippage_bps": float(slippage_bps),
         "leverage": instrument.leverage,
@@ -753,6 +800,7 @@ def _candidate_result(
         profit_exit_signals=candidate.profit_exit_signals,
         continuation_reentry_signals=candidate.continuation_reentry_signals,
         ending_position=ending_position,
+        daily_equity=candidate.daily_equity,
     )
 
 
@@ -807,6 +855,23 @@ def _default_replay_start(
     if row is None:
         raise ValueError(f"insufficient OHLCV warmup for {instrument_id}")
     return int(row["start_ms"] if isinstance(row, sqlite3.Row) else row[0])
+
+
+def _replay_start_with_warmup(
+    connection: sqlite3.Connection,
+    instrument_id: str,
+    interval_minutes: int,
+    requested_start_ms: int,
+    first_tick_ms: int,
+    warmup_bars: int,
+) -> int:
+    earliest_ready_ms = _default_replay_start(
+        connection,
+        instrument_id,
+        interval_minutes,
+        warmup_bars,
+    )
+    return max(first_tick_ms, requested_start_ms, earliest_ready_ms)
 
 
 def _load_funding_rates(
