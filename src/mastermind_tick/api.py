@@ -53,17 +53,16 @@ class LiveFlattenRequest(BaseModel):
 
 
 class ResearchDataUpdateRequest(BaseModel):
+    instrument_id: Literal["soxl_perp", "btc_perp", "eth_perp"] = "soxl_perp"
     target_date: date
 
 
 class ResearchBacktestRequest(BaseModel):
-    instrument_id: Literal["soxl_perp"] = "soxl_perp"
+    instrument_id: Literal["soxl_perp", "btc_perp", "eth_perp"] = "soxl_perp"
     start_date: date
     end_date: date
     direction: Literal["long_only", "short_only", "long_short"] = "long_only"
-    atr_periods: list[Annotated[int, Field(ge=1, le=500)]] = Field(
-        min_length=1, max_length=24
-    )
+    atr_periods: list[Annotated[int, Field(ge=1, le=500)]] = Field(min_length=1, max_length=24)
     atr_multipliers: list[Annotated[float, Field(gt=0, le=100)]] = Field(
         min_length=1, max_length=24
     )
@@ -130,9 +129,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
             return RedirectResponse(str(request.url.replace(scheme="https")), status_code=308)
         response = await call_next(request)
         if forwarded_proto == "https":
-            response.headers.setdefault(
-                "Strict-Transport-Security", "max-age=31536000"
-            )
+            response.headers.setdefault("Strict-Transport-Security", "max-age=31536000")
         return response
 
     @app.get("/api/health")
@@ -215,9 +212,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         before_ms: Annotated[int | None, Query(gt=0)] = None,
     ) -> list[dict]:
         live_access.require(request)
-        return live_futures_equity(
-            live_store, resolved.live_futures.account_id, limit, before_ms
-        )
+        return live_futures_equity(live_store, resolved.live_futures.account_id, limit, before_ms)
 
     @app.get("/api/live/returns")
     def live_account_returns(
@@ -381,17 +376,23 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
             await engine.resume()
         return {"ok": True, "trading_enabled": engine.trading_enabled}
 
+    @app.get("/api/research/presets")
+    def research_preset_list() -> list[dict]:
+        return research_lab.preset_list()
+
     @app.get("/api/research/data-status")
-    def research_data_status() -> dict:
+    def research_data_status(
+        instrument_id: Literal["soxl_perp", "btc_perp", "eth_perp"] = "soxl_perp",
+    ) -> dict:
         try:
-            return research_lab.data_status()
+            return research_lab.data_status(instrument_id)
         except sqlite3.Error as exc:
             raise HTTPException(status_code=503, detail=f"warehouse unavailable: {exc}") from exc
 
     @app.post("/api/research/data-update", status_code=202)
     def research_data_update(payload: ResearchDataUpdateRequest) -> dict:
         try:
-            return research_lab.submit_data_update(payload.target_date)
+            return research_lab.submit_data_update(payload.instrument_id, payload.target_date)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -410,8 +411,10 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         return job
 
     @app.get("/api/research/reports")
-    def research_reports() -> list[dict]:
-        return research_lab.list_reports()
+    def research_reports(
+        instrument_id: Literal["soxl_perp", "btc_perp", "eth_perp"] | None = None,
+    ) -> list[dict]:
+        return research_lab.list_reports(instrument_id)
 
     @app.get("/api/research/reports/{report_id}")
     def research_report(report_id: str) -> dict:

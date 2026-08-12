@@ -220,9 +220,30 @@ export type LiveSession = {
   local_unlock_available: boolean
 }
 
+export type ResearchInstrumentId = 'soxl_perp' | 'btc_perp' | 'eth_perp'
+
+export type ResearchPreset = {
+  instrument_id: ResearchInstrumentId
+  symbol: string
+  display_symbol: string
+  name: string
+  history_start_date: string
+  direction: 'long_only' | 'short_only' | 'long_short'
+  atr_periods: number[]
+  atr_multipliers: number[]
+  trend_efficiency_period: number
+  minimum_trend_efficiency: number
+  reversal_confirmation_atr: number
+  leverage: number
+  position_fraction: number
+  fee_bps: number
+  slippage_bps: number
+  status: 'researched_candidate_grid' | 'baseline_unoptimized'
+}
+
 export type ResearchDataStatus = {
-  instrument_id: 'soxl_perp'
-  symbol: 'SOXLUSDT'
+  instrument_id: ResearchInstrumentId
+  symbol: string
   first_tick_ms: number | null
   last_tick_ms: number | null
   tick_count: number
@@ -261,7 +282,7 @@ export type ResearchReportSummary = {
 }
 
 export type ResearchBacktestRequest = {
-  instrument_id: 'soxl_perp'
+  instrument_id: ResearchInstrumentId
   start_date: string
   end_date: string
   direction: 'long_only' | 'short_only' | 'long_short'

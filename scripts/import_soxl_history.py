@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Download and import the SOXLUSDT Futures history used by the tick replay.
+"""Download and import Binance USD-M Futures history used by tick replay.
 
 Binance Data Vision archives are used for completed months/days.  The current
 partial day is fetched from the public REST endpoint and paginated by aggregate
@@ -72,15 +72,16 @@ def _months(start: date, end: date) -> list[tuple[int, int]]:
     return result
 
 
-def _bucket_rows(rows, symbol: str, source: str):
-    accumulator = _BucketAccumulator(symbol, source)
+def _bucket_rows(rows, instrument_id: str, symbol: str, source: str):
+    accumulator = _BucketAccumulator(instrument_id, symbol, source)
     for row in rows:
         yield from accumulator.add(row)
     yield from accumulator.finish()
 
 
 class _BucketAccumulator:
-    def __init__(self, symbol: str, source: str):
+    def __init__(self, instrument_id: str, symbol: str, source: str):
+        self.instrument_id = instrument_id
         self.symbol = symbol
         self.source = source
         self.bucket: dict[str, object] | None = None
@@ -98,7 +99,7 @@ class _BucketAccumulator:
         bucket_id = timestamp_ms // BUCKET_MS
         if self.bucket is None or self.bucket["bucket_id"] != bucket_id:
             if self.bucket is not None:
-                yield _bucket_tuple(self.bucket, self.symbol, self.source)
+                yield _bucket_tuple(self.bucket, self.instrument_id, self.symbol, self.source)
             self.bucket = {
                 "bucket_id": bucket_id,
                 "timestamp_ms": timestamp_ms,
@@ -127,15 +128,15 @@ class _BucketAccumulator:
 
     def finish(self):
         if self.bucket is not None:
-            yield _bucket_tuple(self.bucket, self.symbol, self.source)
+            yield _bucket_tuple(self.bucket, self.instrument_id, self.symbol, self.source)
             self.bucket = None
 
 
-def _bucket_tuple(bucket: dict[str, object], symbol: str, source: str) -> tuple:
+def _bucket_tuple(bucket: dict[str, object], instrument_id: str, symbol: str, source: str) -> tuple:
     received_at_ms = int(time.time() * 1000)
     return (
         f"binance-futures-rest:{symbol}:{bucket['first_trade_id']}-{bucket['last_trade_id']}",
-        "soxl_perp",
+        instrument_id,
         symbol,
         bucket["aggregate_trade_id"],
         bucket["first_trade_id"],
@@ -183,14 +184,19 @@ def _insert_tick_batch(connection: sqlite3.Connection, rows: list[tuple]) -> int
     return connection.total_changes - before
 
 
-def _import_bars(connection: sqlite3.Connection, rows: list[dict[str, str]], symbol: str) -> int:
+def _import_bars(
+    connection: sqlite3.Connection,
+    rows: list[dict[str, str]],
+    instrument_id: str,
+    symbol: str,
+) -> int:
     values = []
     now_ms = int(time.time() * 1000)
     for row in rows:
         start_ms = int(row["open_time"])
         values.append(
             (
-                "soxl_perp",
+                instrument_id,
                 symbol,
                 15,
                 start_ms,
@@ -225,7 +231,7 @@ def _import_bars(connection: sqlite3.Connection, rows: list[dict[str, str]], sym
     return connection.total_changes - before
 
 
-def _fetch_funding(symbol: str, start_ms: int, end_ms: int) -> list[tuple]:
+def _fetch_funding(instrument_id: str, symbol: str, start_ms: int, end_ms: int) -> list[tuple]:
     params = urllib.parse.urlencode(
         {"symbol": symbol, "startTime": start_ms, "endTime": end_ms, "limit": 1000}
     )
@@ -233,7 +239,7 @@ def _fetch_funding(symbol: str, start_ms: int, end_ms: int) -> list[tuple]:
     now_ms = int(time.time() * 1000)
     return [
         (
-            "soxl_perp",
+            instrument_id,
             symbol,
             int(item["fundingTime"]),
             item["fundingRate"],
@@ -247,6 +253,7 @@ def _fetch_funding(symbol: str, start_ms: int, end_ms: int) -> list[tuple]:
 
 def _fetch_current_klines(
     connection: sqlite3.Connection,
+    instrument_id: str,
     symbol: str,
     start_ms: int,
     end_ms: int,
@@ -254,8 +261,9 @@ def _fetch_current_klines(
     row = connection.execute(
         """
         SELECT MAX(start_ms) FROM ohlcv_bars
-        WHERE instrument_id = 'soxl_perp' AND interval_minutes = 15
-        """
+        WHERE instrument_id = ? AND interval_minutes = 15
+        """,
+        (instrument_id,),
     ).fetchone()
     next_start = int(row[0]) + 15 * 60_000 if row and row[0] is not None else start_ms
     inserted = 0
@@ -287,14 +295,14 @@ def _fetch_current_klines(
             for item in closed
         ]
         before = connection.total_changes
-        _import_bars(connection, rows, symbol)
+        _import_bars(connection, rows, instrument_id, symbol)
         connection.execute(
             """
             UPDATE ohlcv_bars SET source = ?
-            WHERE instrument_id = 'soxl_perp' AND interval_minutes = 15
+            WHERE instrument_id = ? AND interval_minutes = 15
               AND start_ms BETWEEN ? AND ?
             """,
-            (KLINE_REST_SOURCE, int(closed[0][0]), int(closed[-1][0])),
+            (KLINE_REST_SOURCE, instrument_id, int(closed[0][0]), int(closed[-1][0])),
         )
         inserted += connection.total_changes - before
         next_start = int(closed[-1][0]) + 15 * 60_000
@@ -305,6 +313,7 @@ def _fetch_current_klines(
 
 def _fetch_current_agg_trades(
     connection: sqlite3.Connection,
+    instrument_id: str,
     symbol: str,
     start_ms: int,
     end_ms: int,
@@ -312,13 +321,14 @@ def _fetch_current_agg_trades(
     row = connection.execute(
         """
         SELECT MAX(aggregate_trade_id), MAX(timestamp_ms)
-        FROM agg_trades WHERE instrument_id = 'soxl_perp'
-        """
+        FROM agg_trades WHERE instrument_id = ?
+        """,
+        (instrument_id,),
     ).fetchone()
     next_id = int(row[0]) + 1 if row and row[0] is not None else None
     cursor_start = max(start_ms, int(row[1]) + 1) if row and row[1] is not None else start_ms
     use_id_cursor = next_id is not None
-    accumulator = _BucketAccumulator(symbol, REST_SOURCE)
+    accumulator = _BucketAccumulator(instrument_id, symbol, REST_SOURCE)
     total = 0
     while True:
         query = {"symbol": symbol, "limit": 1000, "endTime": end_ms}
@@ -356,13 +366,9 @@ def _fetch_current_agg_trades(
         if total and total % 100_000 < 10_000:
             connection.commit()
             cursor_label = (
-                f"aggregate id {next_id:,}"
-                if next_id is not None
-                else f"timestamp {cursor_start}"
+                f"aggregate id {next_id:,}" if next_id is not None else f"timestamp {cursor_start}"
             )
-            print(
-                f"current REST ticks imported: {total:,}; next {cursor_label}", flush=True
-            )
+            print(f"current REST ticks imported: {total:,}; next {cursor_label}", flush=True)
         time.sleep(0.05)
     total += _insert_ticks(connection, accumulator.finish())
     return total
@@ -371,12 +377,14 @@ def _fetch_current_agg_trades(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--database", default="data/paper.db")
+    parser.add_argument("--instrument-id", default="soxl_perp")
     parser.add_argument("--symbol", default="SOXLUSDT")
     parser.add_argument("--start-ms", type=int, default=1778853600000)
     parser.add_argument("--end-ms", type=int, default=None)
     parser.add_argument("--archive-dir", default="data/history_soxl")
     parser.add_argument("--incremental-only", action="store_true")
     args = parser.parse_args()
+    instrument_id = args.instrument_id
     symbol = args.symbol.upper()
     end_ms = args.end_ms or int(time.time() * 1000)
     start_date = datetime.fromtimestamp(args.start_ms / 1000, UTC).date()
@@ -405,6 +413,7 @@ def main() -> None:
                             connection,
                             _bucket_rows(
                                 csv.DictReader(io.TextIOWrapper(handle, encoding="utf-8")),
+                                instrument_id,
                                 symbol,
                                 SOURCE,
                             ),
@@ -419,10 +428,11 @@ def main() -> None:
                         total_bars += _import_bars(
                             connection,
                             list(csv.DictReader(io.TextIOWrapper(handle, encoding="utf-8"))),
+                            instrument_id,
                             symbol,
                         )
             else:
-                day = month_start
+                day = max(month_start, start_date)
                 while day <= end_date:
                     name = f"{symbol}-aggTrades-{day.isoformat()}.zip"
                     url = f"{ARCHIVE_BASE}/daily/aggTrades/{symbol}/{name}"
@@ -444,6 +454,7 @@ def main() -> None:
                                 connection,
                                 _bucket_rows(
                                     csv.DictReader(io.TextIOWrapper(handle, encoding="utf-8")),
+                                    instrument_id,
                                     symbol,
                                     SOURCE,
                                 ),
@@ -468,14 +479,19 @@ def main() -> None:
                             total_bars += _import_bars(
                                 connection,
                                 list(csv.DictReader(io.TextIOWrapper(handle, encoding="utf-8"))),
+                                instrument_id,
                                 symbol,
                             )
                     day += timedelta(days=1)
             connection.commit()
-        current_ticks = _fetch_current_agg_trades(connection, symbol, args.start_ms, end_ms)
-        total_bars += _fetch_current_klines(connection, symbol, args.start_ms, end_ms)
+        current_ticks = _fetch_current_agg_trades(
+            connection, instrument_id, symbol, args.start_ms, end_ms
+        )
+        total_bars += _fetch_current_klines(
+            connection, instrument_id, symbol, args.start_ms, end_ms
+        )
         connection.commit()
-        funding = _fetch_funding(symbol, args.start_ms, end_ms)
+        funding = _fetch_funding(instrument_id, symbol, args.start_ms, end_ms)
         connection.executemany(
             """
             INSERT OR REPLACE INTO funding_rates (

@@ -32,6 +32,9 @@ def test_health_and_empty_overview(tmp_path) -> None:
         warehouse = client.get("/api/warehouse")
         live_readiness = client.get("/api/live/readiness")
         research_status = client.get("/api/research/data-status")
+        research_presets = client.get("/api/research/presets")
+        btc_status = client.get("/api/research/data-status?instrument_id=btc_perp")
+        eth_status = client.get("/api/research/data-status?instrument_id=eth_perp")
         oversized_grid = client.post(
             "/api/research/backtests",
             json={
@@ -64,6 +67,24 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert research_status.status_code == 200
     assert research_status.json()["symbol"] == "SOXLUSDT"
     assert research_status.json()["tick_count"] == 0
+    assert research_presets.status_code == 200
+    assert {item["symbol"] for item in research_presets.json()} == {
+        "SOXLUSDT",
+        "BTCUSDT",
+        "ETHUSDT",
+    }
+    assert (
+        next(item for item in research_presets.json() if item["instrument_id"] == "btc_perp")[
+            "status"
+        ]
+        == "baseline_unoptimized"
+    )
+    assert btc_status.status_code == 200
+    assert btc_status.json()["symbol"] == "BTCUSDT"
+    assert btc_status.json()["tick_count"] == 0
+    assert eth_status.status_code == 200
+    assert eth_status.json()["symbol"] == "ETHUSDT"
+    assert eth_status.json()["tick_count"] == 0
     assert oversized_grid.status_code == 400
     assert "24 candidates" in oversized_grid.json()["detail"]
 
@@ -130,9 +151,7 @@ def test_chart_endpoints_page_backwards_with_time_cursor(tmp_path) -> None:
     )
 
     with TestClient(app) as client:
-        equity = client.get(
-            f"/api/accounts/{instrument.id}/equity?limit=20&before_ms=23"
-        )
+        equity = client.get(f"/api/accounts/{instrument.id}/equity?limit=20&before_ms=23")
         ohlcv = client.get(
             f"/api/market/ohlcv?instrument_id={instrument.id}&limit=2&before_ms=1800000"
         )
@@ -216,9 +235,7 @@ def test_return_summary_uses_period_boundary_equity(tmp_path) -> None:
     )
 
     with TestClient(app) as client:
-        response = client.get(
-            f"/api/accounts/{instrument.id}/returns?timezone_offset_minutes=0"
-        )
+        response = client.get(f"/api/accounts/{instrument.id}/returns?timezone_offset_minutes=0")
         tokyo_response = client.get(
             f"/api/accounts/{instrument.id}/returns?timezone_offset_minutes=540"
         )

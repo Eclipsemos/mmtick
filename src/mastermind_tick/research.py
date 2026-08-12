@@ -9,15 +9,109 @@ import sys
 import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict, replace
+from dataclasses import asdict, dataclass, replace
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from mastermind_tick.backtest import ReplayParameters, run_parameter_grid
-from mastermind_tick.config import Settings
+from mastermind_tick.config import InstrumentSettings, Settings
 
 DAY_MS = 86_400_000
 MAX_CANDIDATES = 24
+
+
+@dataclass(frozen=True)
+class ResearchPreset:
+    instrument: InstrumentSettings
+    archive_dir: str
+    history_start_date: date
+    direction: str
+    atr_periods: tuple[int, ...]
+    atr_multipliers: tuple[float, ...]
+    trend_efficiency_period: int = 8
+    minimum_trend_efficiency: float = 0.25
+    reversal_confirmation_atr: float = 0.0
+    leverage: int = 1
+    position_fraction: float = 1.0
+    fee_bps: float = 5.0
+    slippage_bps: float = 2.0
+    status: str = "baseline_unoptimized"
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "instrument_id": self.instrument.id,
+            "symbol": self.instrument.symbol,
+            "display_symbol": self.instrument.display_symbol,
+            "name": self.instrument.name,
+            "history_start_date": self.history_start_date.isoformat(),
+            "direction": self.direction,
+            "atr_periods": list(self.atr_periods),
+            "atr_multipliers": list(self.atr_multipliers),
+            "trend_efficiency_period": self.trend_efficiency_period,
+            "minimum_trend_efficiency": self.minimum_trend_efficiency,
+            "reversal_confirmation_atr": self.reversal_confirmation_atr,
+            "leverage": self.leverage,
+            "position_fraction": self.position_fraction,
+            "fee_bps": self.fee_bps,
+            "slippage_bps": self.slippage_bps,
+            "status": self.status,
+        }
+
+
+def research_presets(settings: Settings) -> dict[str, ResearchPreset]:
+    soxl = next(item for item in settings.instruments if item.id == "soxl_perp")
+
+    def crypto(instrument_id: str, symbol: str, name: str, reference: str) -> InstrumentSettings:
+        return InstrumentSettings(
+            id=instrument_id,
+            symbol=symbol,
+            display_symbol=f"{reference}/USDT PERP",
+            name=name,
+            asset_type="crypto_perpetual",
+            venue="Binance USD-M Futures",
+            currency="USDT",
+            feed="binance_futures",
+            quantity_step=0.001,
+            reference_symbol=reference,
+            paper_model="futures",
+            leverage=1,
+            margin_mode="isolated",
+            position_fraction=1.0,
+            fee_bps=5.0,
+            slippage_bps=2.0,
+            minimum_notional=5.0,
+            allow_short=True,
+        )
+
+    return {
+        "soxl_perp": ResearchPreset(
+            instrument=soxl,
+            archive_dir="data/history_soxl",
+            history_start_date=date(2026, 5, 15),
+            direction="long_only",
+            atr_periods=(28, 32, 35),
+            atr_multipliers=(2.5, 3.0, 3.5),
+            leverage=2,
+            position_fraction=0.625,
+            status="researched_candidate_grid",
+        ),
+        "btc_perp": ResearchPreset(
+            instrument=crypto("btc_perp", "BTCUSDT", "Bitcoin USD-M Perpetual", "BTC"),
+            archive_dir="data/history_btc",
+            history_start_date=date(2026, 5, 1),
+            direction="long_short",
+            atr_periods=(14, 21, 28),
+            atr_multipliers=(2.0, 2.5, 3.0),
+        ),
+        "eth_perp": ResearchPreset(
+            instrument=crypto("eth_perp", "ETHUSDT", "Ethereum USD-M Perpetual", "ETH"),
+            archive_dir="data/history_eth",
+            history_start_date=date(2026, 5, 1),
+            direction="long_short",
+            atr_periods=(14, 21, 28),
+            atr_multipliers=(2.0, 2.5, 3.0),
+        ),
+    }
 
 
 class ResearchLab:
@@ -25,6 +119,7 @@ class ResearchLab:
 
     def __init__(self, settings: Settings):
         self.settings = settings
+        self.presets = research_presets(settings)
         self.report_dir = settings.project_root / "reports" / "backtests"
         self.report_dir.mkdir(parents=True, exist_ok=True)
         self._jobs: dict[str, dict[str, Any]] = {}
@@ -34,7 +129,11 @@ class ResearchLab:
     def close(self) -> None:
         self._executor.shutdown(wait=False, cancel_futures=True)
 
-    def data_status(self) -> dict[str, Any]:
+    def preset_list(self) -> list[dict[str, Any]]:
+        return [preset.as_dict() for preset in self.presets.values()]
+
+    def data_status(self, instrument_id: str = "soxl_perp") -> dict[str, Any]:
+        preset = self._preset(instrument_id)
         database_uri = f"file:{self.settings.database_path}?mode=ro"
         with sqlite3.connect(database_uri, uri=True) as connection:
             connection.row_factory = sqlite3.Row
@@ -46,26 +145,29 @@ class ResearchLab:
                            WHEN first_trade_id IS NOT NULL AND last_trade_id IS NOT NULL
                            THEN last_trade_id - first_trade_id + 1
                            ELSE 1 END), 0) AS raw_trade_count
-                FROM agg_trades WHERE instrument_id = 'soxl_perp'
-                """
+                FROM agg_trades WHERE instrument_id = ?
+                """,
+                (instrument_id,),
             ).fetchone()
             bar = connection.execute(
                 """
                 SELECT MAX(end_ms) AS last_bar_ms, COUNT(*) AS bar_count
                 FROM ohlcv_bars
-                WHERE instrument_id = 'soxl_perp' AND interval_minutes = 15 AND is_closed = 1
-                """
+                WHERE instrument_id = ? AND interval_minutes = 15 AND is_closed = 1
+                """,
+                (instrument_id,),
             ).fetchone()
             earliest_replay = connection.execute(
                 """
                 SELECT start_ms FROM ohlcv_bars
-                WHERE instrument_id = 'soxl_perp' AND interval_minutes = 15 AND is_closed = 1
+                WHERE instrument_id = ? AND interval_minutes = 15 AND is_closed = 1
                 ORDER BY start_ms LIMIT 1 OFFSET ?
                 """,
-                (self.settings.warmup_bars,),
+                (instrument_id, self.settings.warmup_bars),
             ).fetchone()
             funding_count = connection.execute(
-                "SELECT COUNT(*) FROM funding_rates WHERE instrument_id = 'soxl_perp'"
+                "SELECT COUNT(*) FROM funding_rates WHERE instrument_id = ?",
+                (instrument_id,),
             ).fetchone()[0]
         last_bar_ms = int(bar["last_bar_ms"]) if bar and bar["last_bar_ms"] is not None else None
         complete_through = None
@@ -79,8 +181,8 @@ class ResearchLab:
         yesterday = datetime.now(UTC).date() - timedelta(days=1)
         earliest_replay_ms = int(earliest_replay[0]) if earliest_replay else None
         return {
-            "instrument_id": "soxl_perp",
-            "symbol": "SOXLUSDT",
+            "instrument_id": instrument_id,
+            "symbol": preset.instrument.symbol,
             "first_tick_ms": int(row["first_ms"]) if row and row["first_ms"] is not None else None,
             "last_tick_ms": int(row["last_ms"]) if row and row["last_ms"] is not None else None,
             "tick_count": int(row["tick_count"]) if row else 0,
@@ -98,15 +200,24 @@ class ResearchLab:
             "database_path": str(self.settings.database_path),
         }
 
-    def submit_data_update(self, target_date: date) -> dict[str, Any]:
+    def submit_data_update(self, instrument_id: str, target_date: date) -> dict[str, Any]:
+        preset = self._preset(instrument_id)
         yesterday = datetime.now(UTC).date() - timedelta(days=1)
         if target_date > yesterday:
             raise ValueError(f"target date cannot be later than {yesterday.isoformat()} UTC")
-        job = self._new_job("data_update", {"target_date": target_date.isoformat()})
-        self._executor.submit(self._run_data_update, job["id"], target_date)
+        if target_date < preset.history_start_date:
+            raise ValueError(
+                f"target date cannot be earlier than {preset.history_start_date.isoformat()}"
+            )
+        job = self._new_job(
+            "data_update",
+            {"instrument_id": instrument_id, "target_date": target_date.isoformat()},
+        )
+        self._executor.submit(self._run_data_update, job["id"], instrument_id, target_date)
         return job
 
     def submit_backtest(self, request: dict[str, Any]) -> dict[str, Any]:
+        self._preset(request["instrument_id"])
         candidate_count = len(request["atr_periods"]) * len(request["atr_multipliers"])
         if candidate_count < 1 or candidate_count > MAX_CANDIDATES:
             raise ValueError(f"ATR grid must contain between 1 and {MAX_CANDIDATES} candidates")
@@ -140,11 +251,13 @@ class ResearchLab:
             return None
         return json.loads(path.read_text(encoding="utf-8"))
 
-    def list_reports(self) -> list[dict[str, Any]]:
+    def list_reports(self, instrument_id: str | None = None) -> list[dict[str, Any]]:
         reports = []
         for path in sorted(self.report_dir.glob("*.json"), reverse=True):
             try:
                 payload = json.loads(path.read_text(encoding="utf-8"))
+                if instrument_id and payload.get("instrument_id") != instrument_id:
+                    continue
                 reports.append(
                     {
                         "id": payload["id"],
@@ -183,7 +296,7 @@ class ResearchLab:
         with self._lock:
             self._jobs[job_id].update(values)
 
-    def _run_data_update(self, job_id: str, target_date: date) -> None:
+    def _run_data_update(self, job_id: str, instrument_id: str, target_date: date) -> None:
         self._update_job(
             job_id,
             status="running",
@@ -192,16 +305,21 @@ class ResearchLab:
             started_at=datetime.now(UTC).isoformat(),
         )
         try:
-            status = self.data_status()
-            if status["last_tick_ms"] is None:
-                raise ValueError("SOXLUSDT warehouse is empty; incremental update cannot start")
-            end_ms = int(
-                datetime.combine(
-                    target_date + timedelta(days=1), datetime.min.time(), UTC
-                ).timestamp()
-                * 1000
-            ) - 1
-            if int(status["last_tick_ms"]) >= end_ms:
+            preset = self._preset(instrument_id)
+            status = self.data_status(instrument_id)
+            end_ms = (
+                int(
+                    datetime.combine(
+                        target_date + timedelta(days=1), datetime.min.time(), UTC
+                    ).timestamp()
+                    * 1000
+                )
+                - 1
+            )
+            if (
+                status["complete_through_date"] is not None
+                and date.fromisoformat(status["complete_through_date"]) >= target_date
+            ):
                 self._update_job(
                     job_id,
                     status="completed",
@@ -216,15 +334,20 @@ class ResearchLab:
                 str(self.settings.project_root / "scripts" / "import_soxl_history.py"),
                 "--database",
                 str(self.settings.database_path),
+                "--instrument-id",
+                instrument_id,
                 "--archive-dir",
-                str(self.settings.project_root / "data" / "history_soxl"),
+                str(self.settings.project_root / preset.archive_dir),
                 "--symbol",
-                "SOXLUSDT",
+                preset.instrument.symbol,
                 "--start-ms",
-                str(int(status["last_tick_ms"]) + 1),
+                str(
+                    int(status["last_tick_ms"]) + 1
+                    if status["last_tick_ms"] is not None
+                    else _date_start_ms(preset.history_start_date)
+                ),
                 "--end-ms",
                 str(end_ms),
-                "--incremental-only",
             ]
             completed = subprocess.run(
                 command,
@@ -254,9 +377,8 @@ class ResearchLab:
             started_at=datetime.now(UTC).isoformat(),
         )
         try:
-            instrument = next(
-                item for item in self.settings.instruments if item.id == request["instrument_id"]
-            )
+            preset = self._preset(request["instrument_id"])
+            instrument = preset.instrument
             instrument = replace(
                 instrument,
                 leverage=request["leverage"],
@@ -334,6 +456,12 @@ class ResearchLab:
             )
         except Exception as exc:
             self._fail_job(job_id, exc)
+
+    def _preset(self, instrument_id: str) -> ResearchPreset:
+        preset = self.presets.get(instrument_id)
+        if preset is None:
+            raise ValueError(f"unknown research instrument: {instrument_id}")
+        return preset
 
     def _write_report(self, report: dict[str, Any]) -> None:
         json_path = self.report_dir / f"{report['id']}.json"

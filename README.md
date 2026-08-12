@@ -17,11 +17,18 @@ paper 账户、一条独立的 Binance USDⓈ-M Futures 实盘链路、Tick 级�
 | `soxl_perp_live` | Binance `SOXLUSDT` USD-M Futures | 仅做多 | Binance 实际余额 | 1.25x |
 
 Paper 账户写入 `data/paper.db`，实盘账户写入 `data/live_futures.db`；真实余额、订单与成交
-不会混入模拟账本。当前 research 分支只保留 SOXLUSDT Futures 数据。
+不会混入模拟账本。BTCUSDT 与 ETHUSDT 仅作为 research-only 回测品种，不会加入 paper 或
+live 账户，也不会被交易引擎启动。
 
-SOXL 历史原始压缩包保存在被 Git 忽略的 `data/history_soxl/`，导入后的 Tick、K 线和资金费率
-位于 `data/paper.db`。运行 `scripts/import_soxl_history.py` 做增量更新时，原始归档也会写入
-该目录，不再使用临时目录。
+各品种历史原始压缩包分别保存在被 Git 忽略的 `data/history_soxl/`、`data/history_btc/` 与
+`data/history_eth/`，导入后的 Tick、K 线和资金费率按 `instrument_id` 隔离写入
+`data/paper.db`。运行 `scripts/import_soxl_history.py` 做增量更新时，原始归档也会写入对应
+目录，不再使用临时目录。
+
+回测台内置三套品种预设：SOXL 使用已有研究候选网格；BTC 与 ETH 使用相同的中性研究基线
+（多空、ATR 周期 `14/21/28`、倍数 `2/2.5/3`、`1x` 敞口）。BTC/ETH 预设尚未做历史优化，
+其参数不是最优结论。首次点击“更新完整日”会从预设起点下载 Binance 日/月归档，之后从
+数据库的最新 Tick 继续补齐缺失的官方日归档。
 
 永续账户使用 `2x isolated` 和 62.5% 仓位预算：
 

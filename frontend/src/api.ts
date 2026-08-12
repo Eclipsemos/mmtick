@@ -1,4 +1,4 @@
-import type { AggTrade, EquityPoint, EventItem, Fill, FundingPayment, LiveReadiness, LiveSession, OhlcvBar, Order, Overview, ResearchBacktestRequest, ResearchDataStatus, ResearchJob, ResearchReport, ResearchReportSummary, ReturnSummary, WarehouseSummary } from './types'
+import type { AggTrade, EquityPoint, EventItem, Fill, FundingPayment, LiveReadiness, LiveSession, OhlcvBar, Order, Overview, ResearchBacktestRequest, ResearchDataStatus, ResearchInstrumentId, ResearchJob, ResearchPreset, ResearchReport, ResearchReportSummary, ReturnSummary, WarehouseSummary } from './types'
 
 export class ApiError extends Error {
   status: number
@@ -97,13 +97,16 @@ export const api = {
   control: async (action: 'pause' | 'resume') => {
     return postJson<{ ok: boolean; trading_enabled: boolean }>('/api/control', { action })
   },
-  researchDataStatus: () => getJson<ResearchDataStatus>('/api/research/data-status'),
-  updateResearchData: (targetDate: string) =>
-    postJson<ResearchJob>('/api/research/data-update', { target_date: targetDate }),
+  researchPresets: () => getJson<ResearchPreset[]>('/api/research/presets'),
+  researchDataStatus: (instrumentId: ResearchInstrumentId) =>
+    getJson<ResearchDataStatus>(`/api/research/data-status?instrument_id=${instrumentId}`),
+  updateResearchData: ({ instrumentId, targetDate }: { instrumentId: ResearchInstrumentId, targetDate: string }) =>
+    postJson<ResearchJob>('/api/research/data-update', { instrument_id: instrumentId, target_date: targetDate }),
   runResearchBacktest: (request: ResearchBacktestRequest) =>
     postJson<ResearchJob>('/api/research/backtests', request),
   researchJob: (jobId: string) => getJson<ResearchJob>(`/api/research/jobs/${jobId}`),
-  researchReports: () => getJson<ResearchReportSummary[]>('/api/research/reports'),
+  researchReports: (instrumentId: ResearchInstrumentId) =>
+    getJson<ResearchReportSummary[]>(`/api/research/reports?instrument_id=${instrumentId}`),
   researchReport: (reportId: string) =>
     getJson<ResearchReport>(`/api/research/reports/${reportId}`),
 }

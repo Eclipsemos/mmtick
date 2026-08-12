@@ -435,7 +435,7 @@ function App() {
     ? liveReadiness.data?.status ?? 'STARTING'
     : `${liveCount}/${instrumentCount} LIVE`
   const pageTitle = view === 'research'
-    ? 'SOXLUSDT 回测平台'
+    ? '多品种 ATR 回测平台'
     : view === 'warehouse'
     ? '历史数据'
     : view === 'returns'
@@ -517,7 +517,7 @@ function App() {
             )}
             <div className="scope-chips">
               {view === 'research'
-                ? <><span>SOXLUSDT</span><span>DAILY DATA</span><span>ATR GRID</span></>
+                ? <><span>SOXL / BTC / ETH</span><span>DAILY DATA</span><span>ATR GRID</span></>
                 : <><span>{account?.symbol ?? 'INITIALIZING'}</span><span>15m</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : view === 'returns' ? 'PERFORMANCE' : account?.runtime.allow_short ? 'LONG / SHORT' : 'LONG ONLY'}</span></>}
             </div>
           </div>

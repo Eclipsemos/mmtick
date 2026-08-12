@@ -26,6 +26,7 @@ import { api, ApiError } from './api'
 import type {
   ResearchBacktestRequest,
   ResearchCandidate,
+  ResearchInstrumentId,
   ResearchJob,
 } from './types'
 
@@ -82,6 +83,7 @@ function JobProgress({ job }: { job?: ResearchJob }) {
 
 export default function ResearchDashboard() {
   const queryClient = useQueryClient()
+  const [instrumentId, setInstrumentId] = useState<ResearchInstrumentId>('soxl_perp')
   const [updateDate, setUpdateDate] = useState(yesterdayUtc)
   const [startDate, setStartDate] = useState('2026-05-15')
   const [endDate, setEndDate] = useState(yesterdayUtc)
@@ -109,8 +111,16 @@ export default function ResearchDashboard() {
   const periods = useMemo(() => parseNumbers(periodText, true), [periodText])
   const multipliers = useMemo(() => parseNumbers(multiplierText), [multiplierText])
   const candidateCount = periods.length * multipliers.length
-  const dataStatus = useQuery({ queryKey: ['research-data-status'], queryFn: api.researchDataStatus })
-  const reports = useQuery({ queryKey: ['research-reports'], queryFn: api.researchReports })
+  const presets = useQuery({ queryKey: ['research-presets'], queryFn: api.researchPresets })
+  const preset = presets.data?.find((item) => item.instrument_id === instrumentId)
+  const dataStatus = useQuery({
+    queryKey: ['research-data-status', instrumentId],
+    queryFn: () => api.researchDataStatus(instrumentId),
+  })
+  const reports = useQuery({
+    queryKey: ['research-reports', instrumentId],
+    queryFn: () => api.researchReports(instrumentId),
+  })
   const updateJob = useQuery({
     queryKey: ['research-job', updateJobId],
     queryFn: () => api.researchJob(updateJobId),
@@ -138,6 +148,24 @@ export default function ResearchDashboard() {
   })
 
   useEffect(() => {
+    if (!preset) return
+    setDirection(preset.direction)
+    setPeriodText(preset.atr_periods.join(','))
+    setMultiplierText(preset.atr_multipliers.join(','))
+    setTrendPeriod(preset.trend_efficiency_period)
+    setTrendEfficiency(preset.minimum_trend_efficiency)
+    setReversalAtr(preset.reversal_confirmation_atr)
+    setLeverage(preset.leverage)
+    setPositionFraction(preset.position_fraction)
+    setFeeBps(preset.fee_bps)
+    setSlippageBps(preset.slippage_bps)
+    setStartDate(preset.history_start_date)
+    setUpdateJobId('')
+    setBacktestJobId('')
+    setReportId('')
+    setSelectedCandidateId('')
+  }, [preset])
+  useEffect(() => {
     if (dataStatus.data?.default_update_date) {
       setUpdateDate(dataStatus.data.default_update_date)
       setEndDate(dataStatus.data.complete_through_date ?? dataStatus.data.default_update_date)
@@ -148,9 +176,9 @@ export default function ResearchDashboard() {
   }, [dataStatus.data])
   useEffect(() => {
     if (updateJob.data?.status === 'completed') {
-      void queryClient.invalidateQueries({ queryKey: ['research-data-status'] })
+      void queryClient.invalidateQueries({ queryKey: ['research-data-status', instrumentId] })
     }
-  }, [queryClient, updateJob.data?.status])
+  }, [instrumentId, queryClient, updateJob.data?.status])
   useEffect(() => {
     if (backtestJob.data?.status === 'completed' && backtestJob.data.report_id) {
       setReportId(backtestJob.data.report_id)
@@ -173,7 +201,7 @@ export default function ResearchDashboard() {
   function submitBacktest(event: FormEvent) {
     event.preventDefault()
     backtestMutation.mutate({
-      instrument_id: 'soxl_perp', start_date: startDate, end_date: endDate, direction,
+      instrument_id: instrumentId, start_date: startDate, end_date: endDate, direction,
       atr_periods: periods, atr_multipliers: multipliers,
       trend_efficiency_period: trendPeriod,
       minimum_trend_efficiency: trendEfficiency,
@@ -189,14 +217,14 @@ export default function ResearchDashboard() {
   return (
     <div className="research-dashboard lab-dashboard">
       <section className="lab-data-band" aria-label="历史数据状态">
-        <header><Database size={18} /><div><span>MARKET DATA / UTC</span><h2>SOXLUSDT 历史数据</h2></div></header>
+        <header><Database size={18} /><div><span>MARKET DATA / UTC</span><h2>{preset?.symbol ?? '--'} 历史数据</h2></div></header>
         <dl>
           <div><dt>覆盖起点</dt><dd>{dateTime(dataStatus.data?.first_tick_ms ?? null)}</dd></div>
           <div><dt>最新 Tick</dt><dd>{dateTime(dataStatus.data?.last_tick_ms ?? null)}</dd></div>
           <div><dt>最新完整日</dt><dd>{dataStatus.data?.complete_through_date ?? '--'}</dd></div>
           <div><dt>250ms 桶 / 成交</dt><dd>{compact(dataStatus.data?.tick_count ?? 0)} / {compact(dataStatus.data?.raw_trade_count ?? 0)}</dd></div>
         </dl>
-        <form onSubmit={(event) => { event.preventDefault(); updateMutation.mutate(updateDate) }}>
+        <form onSubmit={(event) => { event.preventDefault(); updateMutation.mutate({ instrumentId, targetDate: updateDate }) }}>
           <label>更新到<input type="date" value={updateDate} max={dataStatus.data?.default_update_date ?? yesterdayUtc} onChange={(event) => setUpdateDate(event.target.value)} /></label>
           <button className="control" type="submit" disabled={updateMutation.isPending || ['queued', 'running'].includes(updateJob.data?.status ?? '')}><RefreshCw size={15} />更新完整日</button>
         </form>
@@ -208,7 +236,8 @@ export default function ResearchDashboard() {
         <div className="lab-form-grid">
           <fieldset>
             <legend>范围与方向</legend>
-            <label>合约<select value="soxl_perp" disabled><option value="soxl_perp">SOXLUSDT 永续合约</option></select></label>
+            <label>合约<select value={instrumentId} onChange={(event) => setInstrumentId(event.target.value as ResearchInstrumentId)}>{presets.data?.map((item) => <option key={item.instrument_id} value={item.instrument_id}>{item.symbol} 永续合约</option>)}</select></label>
+            <small>{preset?.status === 'baseline_unoptimized' ? '研究基线预设，尚未优化' : 'SOXL 历史候选网格'}</small>
             <div className="lab-field-pair"><label>开始日期<input type="date" value={startDate} min={dataStatus.data?.earliest_replay_date ?? undefined} onChange={(event) => setStartDate(event.target.value)} required /></label><label>结束日期<input type="date" value={endDate} max={dataStatus.data?.complete_through_date ?? dataStatus.data?.default_update_date ?? yesterdayUtc} onChange={(event) => setEndDate(event.target.value)} required /></label></div>
             <div className="lab-label">方向</div>
             <div className="lab-segments" role="group" aria-label="交易方向">

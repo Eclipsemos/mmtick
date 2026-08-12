@@ -1,7 +1,35 @@
 import { expect, test } from '@playwright/test'
 
+const researchPresets = [
+  {
+    instrument_id: 'soxl_perp', symbol: 'SOXLUSDT', display_symbol: 'SOXL/USDT PERP',
+    name: 'SOXL USD-M Perpetual', history_start_date: '2026-05-15', direction: 'long_only',
+    atr_periods: [28, 32, 35], atr_multipliers: [2.5, 3, 3.5],
+    trend_efficiency_period: 8, minimum_trend_efficiency: 0.25,
+    reversal_confirmation_atr: 0, leverage: 2, position_fraction: 0.625,
+    fee_bps: 5, slippage_bps: 2, status: 'researched_candidate_grid',
+  },
+  {
+    instrument_id: 'btc_perp', symbol: 'BTCUSDT', display_symbol: 'BTC/USDT PERP',
+    name: 'Bitcoin USD-M Perpetual', history_start_date: '2026-05-01', direction: 'long_short',
+    atr_periods: [14, 21, 28], atr_multipliers: [2, 2.5, 3],
+    trend_efficiency_period: 8, minimum_trend_efficiency: 0.25,
+    reversal_confirmation_atr: 0, leverage: 1, position_fraction: 1,
+    fee_bps: 5, slippage_bps: 2, status: 'baseline_unoptimized',
+  },
+  {
+    instrument_id: 'eth_perp', symbol: 'ETHUSDT', display_symbol: 'ETH/USDT PERP',
+    name: 'Ethereum USD-M Perpetual', history_start_date: '2026-05-01', direction: 'long_short',
+    atr_periods: [14, 21, 28], atr_multipliers: [2, 2.5, 3],
+    trend_efficiency_period: 8, minimum_trend_efficiency: 0.25,
+    reversal_confirmation_atr: 0, leverage: 1, position_fraction: 1,
+    fee_bps: 5, slippage_bps: 2, status: 'baseline_unoptimized',
+  },
+]
+
 test.beforeEach(async ({ page }) => {
-  await page.route('**/api/research/reports', (route) => route.fulfill({ json: [] }))
+  await page.route('**/api/research/presets', (route) => route.fulfill({ json: researchPresets }))
+  await page.route('**/api/research/reports?*', (route) => route.fulfill({ json: [] }))
 })
 
 test('research branch runs the ATR workbench and renders its report', async ({ page }) => {
@@ -9,13 +37,12 @@ test('research branch runs the ATR workbench and renders its report', async ({ p
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text())
   })
-  await page.route('**/api/research/data-status', (route) => route.fulfill({ json: {
+  await page.route('**/api/research/data-status?*', (route) => route.fulfill({ json: {
     instrument_id: 'soxl_perp', symbol: 'SOXLUSDT', first_tick_ms: 1778803200000,
     last_tick_ms: 1786406399000, tick_count: 10_000_000, raw_trade_count: 81_000_000,
     bar_count: 8448, funding_count: 265, complete_through_date: '2026-08-10',
     default_update_date: '2026-08-10', database_path: 'data/paper.db',
   } }))
-  await page.route('**/api/research/reports', (route) => route.fulfill({ json: [] }))
   await page.route('**/api/research/data-update', (route) => route.fulfill({ status: 202, json: {
     id: 'update-1', kind: 'data_update', status: 'queued', stage: '等待研究任务队列',
     progress: 0, created_at: '', started_at: null, completed_at: null, report_id: null,
@@ -51,7 +78,7 @@ test('research branch runs the ATR workbench and renders its report', async ({ p
   } }))
 
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'SOXLUSDT 回测平台' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '多品种 ATR 回测平台' })).toBeVisible()
   await expect(page.getByText('NO TRADING')).toBeVisible()
   await expect(page.getByRole('region', { name: '历史数据状态' })).toContainText('2026-08-10')
   await expect(page.getByLabel('合约')).toHaveValue('soxl_perp')
@@ -73,9 +100,38 @@ test('research branch runs the ATR workbench and renders its report', async ({ p
   expect(consoleErrors).toEqual([])
 })
 
+test('contract selector applies unoptimized BTC and ETH research presets', async ({ page }) => {
+  await page.route('**/api/research/data-status?*', async (route) => {
+    const instrumentId = new URL(route.request().url()).searchParams.get('instrument_id')
+    const symbol = instrumentId === 'eth_perp' ? 'ETHUSDT' : instrumentId === 'btc_perp' ? 'BTCUSDT' : 'SOXLUSDT'
+    await route.fulfill({ json: {
+      instrument_id: instrumentId, symbol, first_tick_ms: null, last_tick_ms: null,
+      tick_count: 0, raw_trade_count: 0, bar_count: 0, funding_count: 0,
+      complete_through_date: null, earliest_replay_ms: null, earliest_replay_date: null,
+      default_update_date: '2026-08-10', database_path: 'data/paper.db',
+    } })
+  })
+
+  await page.goto('/')
+  const contract = page.getByLabel('合约')
+  await expect(contract.locator('option')).toHaveCount(3)
+  await contract.selectOption('btc_perp')
+
+  await expect(page.getByRole('heading', { name: 'BTCUSDT 历史数据' })).toBeVisible()
+  await expect(page.getByText('研究基线预设，尚未优化')).toBeVisible()
+  await expect(page.getByRole('button', { name: '多空' })).toHaveClass(/active/)
+  await expect(page.getByLabel('ATR 周期')).toHaveValue('14,21,28')
+  await expect(page.getByLabel('ATR 倍数')).toHaveValue('2,2.5,3')
+  await expect(page.getByLabel('杠杆')).toHaveValue('1')
+  await expect(page.getByLabel('仓位比例')).toHaveValue('1')
+
+  await contract.selectOption('eth_perp')
+  await expect(page.getByRole('heading', { name: 'ETHUSDT 历史数据' })).toBeVisible()
+})
+
 test('research workbench fits a mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.route('**/api/research/data-status', (route) => route.fulfill({ json: {
+  await page.route('**/api/research/data-status?*', (route) => route.fulfill({ json: {
     instrument_id: 'soxl_perp', symbol: 'SOXLUSDT', first_tick_ms: 1778803200000,
     last_tick_ms: 1786406399000, tick_count: 10_000_000, raw_trade_count: 81_000_000,
     bar_count: 8448, funding_count: 265, complete_through_date: '2026-08-10',
