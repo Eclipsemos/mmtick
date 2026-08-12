@@ -19,7 +19,7 @@ in `changes.md`. Do not commit files from `data/`, `.env`, `.venv`, or `frontend
 - `.venv/bin/ruff format src tests`: format Python using the configured 100-character line limit.
 - `cd frontend && npm run build`: type-check and produce the Vite production bundle.
 - `cd frontend && npm run dev`: start the dashboard development server with `/api` proxying.
-- `./scripts/run.sh --host 127.0.0.1 --port 8100`: run the API and production dashboard locally.
+- `./scripts/run.sh --foreground --host 127.0.0.1 --port 8100`: run the API and production dashboard locally.
 - `cd frontend && npm run test:e2e`: run Playwright tests against a running service.
 
 ## Coding Style & Naming Conventions

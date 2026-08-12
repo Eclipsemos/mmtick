@@ -103,7 +103,7 @@ npm run build
 cd ..
 ```
 
-之后在项目根目录使用一键脚本启动回测平台：
+之后在项目根目录使用一键脚本后台启动回测平台：
 
 ```bash
 cd /home/spaceaic/mmtick
@@ -112,7 +112,22 @@ cd /home/spaceaic/mmtick
 
 `scripts/run.sh` 会自动使用项目的 `.venv` 和 `src/` 代码，同时提供 API 与
 `frontend/dist/` 中的生产前端。启动后，本机访问 `http://127.0.0.1:8100`；其他计算机使用
-运行机器的局域网 IP，例如 `http://10.162.133.214:8100`。在启动终端按 `Ctrl+C` 即可停止。
+运行机器的局域网 IP，例如 `http://10.162.133.214:8100`。脚本默认以 detached 模式运行，
+PID 与日志分别保存在 `data/run/research.pid` 和 `data/run/research.log`。
+
+查看状态、日志和停止服务：
+
+```bash
+./scripts/run.sh --status
+tail -f data/run/research.log
+./scripts/run.sh --stop
+```
+
+需要在终端前台运行时（例如本地调试或 Playwright 测试），增加 `--foreground`：
+
+```bash
+./scripts/run.sh --foreground --host 127.0.0.1 --port 8100
+```
 
 修改前端源码后，先重新构建再启动：
 
