@@ -77,8 +77,11 @@ def test_health_and_empty_overview(tmp_path) -> None:
         next(item for item in research_presets.json() if item["instrument_id"] == "btc_perp")[
             "status"
         ]
-        == "baseline_unoptimized"
+        == "baseline_rejected_validation"
     )
+    assert next(
+        item for item in research_presets.json() if item["instrument_id"] == "btc_perp"
+    )["history_start_date"] == "2024-01-01"
     assert btc_status.status_code == 200
     assert btc_status.json()["symbol"] == "BTCUSDT"
     assert btc_status.json()["tick_count"] == 0

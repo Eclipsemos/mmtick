@@ -1,0 +1,6410 @@
+{
+  "schema_version": 1,
+  "strategy": "SOXLUSDT multi-horizon volatility spread exploratory portfolio",
+  "status": "exploratory_post_reveal_no_clean_holdout",
+  "parameter_search_performed": true,
+  "fresh_holdout_used_for_selection": false,
+  "source_candidate": "soxl-volatility-spread-true-range-v1",
+  "timeframes": [
+    15,
+    30,
+    60
+  ],
+  "splits": {
+    "train": {
+      "start": "2026-05-17T16:00:00+00:00",
+      "end": "2026-06-30T23:59:59.999000+00:00"
+    },
+    "validation": {
+      "start": "2026-07-01T00:00:00+00:00",
+      "end": "2026-07-31T23:59:59.999000+00:00"
+    },
+    "confirmation": {
+      "start": "2026-08-01T00:00:00+00:00",
+      "end": "2026-08-10T23:59:59.999000+00:00"
+    },
+    "development": {
+      "start": "2026-05-17T16:00:00+00:00",
+      "end": "2026-08-10T23:59:59.999000+00:00"
+    },
+    "fresh_holdout": {
+      "start": "2026-08-11T00:00:00+00:00",
+      "end": "2026-08-13T23:59:59.999000+00:00"
+    },
+    "continuous": {
+      "start": "2026-05-17T16:00:00+00:00",
+      "end": "2026-08-13T23:59:59.999000+00:00"
+    }
+  },
+  "selection": {
+    "candidate_count_by_timeframe": {
+      "30": 5832,
+      "60": 5832
+    },
+    "rule": "rank 30m/60m on weaker train/validation geometric daily return with a drawdown penalty; require positive train and validation; confirmation is diagnostic only",
+    "chosen": {
+      "15": {
+        "variant": "compression_release",
+        "direction": "long_short",
+        "fast_window": 12,
+        "slow_window": 64,
+        "entry_ratio": 1.1,
+        "exit_ratio": 0.8,
+        "breakout_window": 24,
+        "stop_atr": 2.5,
+        "max_hold_bars": 96,
+        "exposure": 1.25,
+        "compression_ratio": 0.85,
+        "compression_lookback": 16,
+        "spread_measure": "true_range",
+        "minimum_volume_ratio": null
+      },
+      "30": {
+        "variant": "compression_release",
+        "direction": "long_short",
+        "fast_window": 8,
+        "slow_window": 24,
+        "entry_ratio": 1.1,
+        "exit_ratio": 0.8,
+        "breakout_window": 8,
+        "stop_atr": 2.5,
+        "max_hold_bars": 24,
+        "exposure": 1.25,
+        "compression_ratio": 0.85,
+        "compression_lookback": 16,
+        "spread_measure": "true_range",
+        "minimum_volume_ratio": null
+      },
+      "60": {
+        "variant": "expansion_breakout",
+        "direction": "long_short",
+        "fast_window": 4,
+        "slow_window": 32,
+        "entry_ratio": 1.3,
+        "exit_ratio": 0.8,
+        "breakout_window": 16,
+        "stop_atr": 3.5,
+        "max_hold_bars": 48,
+        "exposure": 1.25,
+        "compression_ratio": 0.85,
+        "compression_lookback": 16,
+        "spread_measure": "true_range",
+        "minimum_volume_ratio": null
+      }
+    },
+    "searches": {
+      "30": {
+        "candidate_count": 5832,
+        "eligible_count": 263,
+        "finalists_checked": 20,
+        "confirmation_positive_finalists": 20,
+        "chosen": {
+          "parameters": {
+            "variant": "compression_release",
+            "direction": "long_short",
+            "fast_window": 8,
+            "slow_window": 24,
+            "entry_ratio": 1.1,
+            "exit_ratio": 0.8,
+            "breakout_window": 8,
+            "stop_atr": 2.5,
+            "max_hold_bars": 24,
+            "exposure": 1.25,
+            "compression_ratio": 0.85,
+            "compression_lookback": 16,
+            "spread_measure": "true_range",
+            "minimum_volume_ratio": null
+          },
+          "selection_score": -0.0015316525316903598,
+          "train": {
+            "net_return": 0.6091178593484902,
+            "geometric_daily_return": 0.010626870885852124,
+            "max_drawdown": -0.24317046835084968,
+            "completed_trades": 52,
+            "win_rate": 0.5384615384615384,
+            "profit_factor": 1.4857000220399565,
+            "profitable_day_rate": 0.4444444444444444,
+            "target_day_rate": 0.17777777777777778,
+            "active_days": 45,
+            "final_equity": 160911.785934849,
+            "bankrupt": false
+          },
+          "validation": {
+            "net_return": 0.48311817977486843,
+            "geometric_daily_return": 0.012795583058338833,
+            "max_drawdown": -0.21844134151947175,
+            "completed_trades": 34,
+            "win_rate": 0.5588235294117647,
+            "profit_factor": 1.8338915218537537,
+            "profitable_day_rate": 0.5161290322580645,
+            "target_day_rate": 0.1935483870967742,
+            "active_days": 31,
+            "final_equity": 148311.81797748685,
+            "bankrupt": false
+          },
+          "confirmation": {
+            "net_return": 0.04965115735820979,
+            "geometric_daily_return": 0.004857547605267243,
+            "max_drawdown": -0.17821167451571898,
+            "completed_trades": 10,
+            "win_rate": 0.4,
+            "profit_factor": 1.261676570575271,
+            "profitable_day_rate": 0.5,
+            "target_day_rate": 0.2,
+            "active_days": 10,
+            "final_equity": 104965.11573582097,
+            "bankrupt": false
+          }
+        },
+        "top_finalists": [
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 8,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 8,
+              "stop_atr": 2.5,
+              "max_hold_bars": 24,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0015316525316903598,
+            "train": {
+              "net_return": 0.6091178593484902,
+              "geometric_daily_return": 0.010626870885852124,
+              "max_drawdown": -0.24317046835084968,
+              "completed_trades": 52,
+              "win_rate": 0.5384615384615384,
+              "profit_factor": 1.4857000220399565,
+              "profitable_day_rate": 0.4444444444444444,
+              "target_day_rate": 0.17777777777777778,
+              "active_days": 45,
+              "final_equity": 160911.785934849,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.48311817977486843,
+              "geometric_daily_return": 0.012795583058338833,
+              "max_drawdown": -0.21844134151947175,
+              "completed_trades": 34,
+              "win_rate": 0.5588235294117647,
+              "profit_factor": 1.8338915218537537,
+              "profitable_day_rate": 0.5161290322580645,
+              "target_day_rate": 0.1935483870967742,
+              "active_days": 31,
+              "final_equity": 148311.81797748685,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.04965115735820979,
+              "geometric_daily_return": 0.004857547605267243,
+              "max_drawdown": -0.17821167451571898,
+              "completed_trades": 10,
+              "win_rate": 0.4,
+              "profit_factor": 1.261676570575271,
+              "profitable_day_rate": 0.5,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 104965.11573582097,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.7,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 24,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0022299574139421907,
+            "train": {
+              "net_return": 0.19560098950710117,
+              "geometric_daily_return": 0.003977868110819793,
+              "max_drawdown": -0.12415651049523968,
+              "completed_trades": 17,
+              "win_rate": 0.47058823529411764,
+              "profit_factor": 1.819697602925729,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.06666666666666667,
+              "active_days": 45,
+              "final_equity": 119560.09895071012,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.13884114777745543,
+              "geometric_daily_return": 0.004202716694194475,
+              "max_drawdown": -0.07347937771561425,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.9731835451326916,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.06451612903225806,
+              "active_days": 31,
+              "final_equity": 113884.11477774555,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.2023880236447732,
+              "geometric_daily_return": 0.018601858370990598,
+              "max_drawdown": -0.04177794572204921,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.7535363125382197,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 120238.80236447732,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.7,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 48,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0022299574139421907,
+            "train": {
+              "net_return": 0.19560098950710117,
+              "geometric_daily_return": 0.003977868110819793,
+              "max_drawdown": -0.12415651049523968,
+              "completed_trades": 17,
+              "win_rate": 0.47058823529411764,
+              "profit_factor": 1.819697602925729,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.06666666666666667,
+              "active_days": 45,
+              "final_equity": 119560.09895071012,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.13884114777745543,
+              "geometric_daily_return": 0.004202716694194475,
+              "max_drawdown": -0.07347937771561425,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.9731835451326916,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.06451612903225806,
+              "active_days": 31,
+              "final_equity": 113884.11477774555,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.1334758571101102,
+              "geometric_daily_return": 0.012607704475823933,
+              "max_drawdown": -0.09746815200665616,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 2.9088545444543614,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 113347.58571101102,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.7,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 96,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0022299574139421907,
+            "train": {
+              "net_return": 0.19560098950710117,
+              "geometric_daily_return": 0.003977868110819793,
+              "max_drawdown": -0.12415651049523968,
+              "completed_trades": 17,
+              "win_rate": 0.47058823529411764,
+              "profit_factor": 1.819697602925729,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.06666666666666667,
+              "active_days": 45,
+              "final_equity": 119560.09895071012,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.13884114777745543,
+              "geometric_daily_return": 0.004202716694194475,
+              "max_drawdown": -0.07347937771561425,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.9731835451326916,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.06451612903225806,
+              "active_days": 31,
+              "final_equity": 113884.11477774555,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.1334758571101102,
+              "geometric_daily_return": 0.012607704475823933,
+              "max_drawdown": -0.09746815200665616,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 2.9088545444543614,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 113347.58571101102,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 8,
+              "stop_atr": 1.5,
+              "max_hold_bars": 24,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.002568305789865722,
+            "train": {
+              "net_return": 0.2588697888917778,
+              "geometric_daily_return": 0.005128982326619402,
+              "max_drawdown": -0.11600120001651672,
+              "completed_trades": 23,
+              "win_rate": 0.4782608695652174,
+              "profit_factor": 1.7888203303032097,
+              "profitable_day_rate": 0.24444444444444444,
+              "target_day_rate": 0.08888888888888889,
+              "active_days": 45,
+              "final_equity": 125886.97888917779,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.10519616359847918,
+              "geometric_daily_return": 0.003231754210960114,
+              "max_drawdown": -0.0471508647150243,
+              "completed_trades": 8,
+              "win_rate": 0.5,
+              "profit_factor": 2.4903779427337924,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.03225806451612903,
+              "active_days": 31,
+              "final_equity": 110519.61635984792,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.1233694381653519,
+              "geometric_daily_return": 0.011701189120767008,
+              "max_drawdown": -0.106663451113153,
+              "completed_trades": 8,
+              "win_rate": 0.375,
+              "profit_factor": 1.8216101498151869,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 112336.94381653519,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 8,
+              "stop_atr": 1.5,
+              "max_hold_bars": 48,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.002568305789865722,
+            "train": {
+              "net_return": 0.2588697888917778,
+              "geometric_daily_return": 0.005128982326619402,
+              "max_drawdown": -0.11600120001651672,
+              "completed_trades": 23,
+              "win_rate": 0.4782608695652174,
+              "profit_factor": 1.7888203303032097,
+              "profitable_day_rate": 0.24444444444444444,
+              "target_day_rate": 0.08888888888888889,
+              "active_days": 45,
+              "final_equity": 125886.97888917779,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.10519616359847918,
+              "geometric_daily_return": 0.003231754210960114,
+              "max_drawdown": -0.0471508647150243,
+              "completed_trades": 8,
+              "win_rate": 0.5,
+              "profit_factor": 2.4903779427337924,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.03225806451612903,
+              "active_days": 31,
+              "final_equity": 110519.61635984792,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.1199864066120975,
+              "geometric_daily_return": 0.01139610122662793,
+              "max_drawdown": -0.11300337989010593,
+              "completed_trades": 8,
+              "win_rate": 0.375,
+              "profit_factor": 1.8013150872945247,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 111998.64066120975,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 8,
+              "stop_atr": 1.5,
+              "max_hold_bars": 96,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.002568305789865722,
+            "train": {
+              "net_return": 0.2588697888917778,
+              "geometric_daily_return": 0.005128982326619402,
+              "max_drawdown": -0.11600120001651672,
+              "completed_trades": 23,
+              "win_rate": 0.4782608695652174,
+              "profit_factor": 1.7888203303032097,
+              "profitable_day_rate": 0.24444444444444444,
+              "target_day_rate": 0.08888888888888889,
+              "active_days": 45,
+              "final_equity": 125886.97888917779,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.10519616359847918,
+              "geometric_daily_return": 0.003231754210960114,
+              "max_drawdown": -0.0471508647150243,
+              "completed_trades": 8,
+              "win_rate": 0.5,
+              "profit_factor": 2.4903779427337924,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.03225806451612903,
+              "active_days": 31,
+              "final_equity": 110519.61635984792,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.1199864066120975,
+              "geometric_daily_return": 0.01139610122662793,
+              "max_drawdown": -0.11300337989010593,
+              "completed_trades": 8,
+              "win_rate": 0.375,
+              "profit_factor": 1.8013150872945247,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 111998.64066120975,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 8,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 8,
+              "stop_atr": 2.5,
+              "max_hold_bars": 48,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.002711338614573875,
+            "train": {
+              "net_return": 0.5951955834399408,
+              "geometric_daily_return": 0.010431731753905105,
+              "max_drawdown": -0.2628614073695796,
+              "completed_trades": 52,
+              "win_rate": 0.5384615384615384,
+              "profit_factor": 1.4742849215099856,
+              "profitable_day_rate": 0.4444444444444444,
+              "target_day_rate": 0.17777777777777778,
+              "active_days": 45,
+              "final_equity": 159519.55834399408,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.3915645424404916,
+              "geometric_daily_return": 0.010715999221104333,
+              "max_drawdown": -0.21844134151947175,
+              "completed_trades": 33,
+              "win_rate": 0.5454545454545454,
+              "profit_factor": 1.698472837688641,
+              "profitable_day_rate": 0.5161290322580645,
+              "target_day_rate": 0.1935483870967742,
+              "active_days": 31,
+              "final_equity": 139156.45424404915,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 1.1319843385609092e-05,
+              "geometric_daily_return": 1.1319785724328568e-06,
+              "max_drawdown": -0.20893097361240828,
+              "completed_trades": 10,
+              "win_rate": 0.4,
+              "profit_factor": 1.0000623406492075,
+              "profitable_day_rate": 0.5,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 100001.13198433856,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 8,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 8,
+              "stop_atr": 2.5,
+              "max_hold_bars": 96,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.002711338614573875,
+            "train": {
+              "net_return": 0.5951955834399408,
+              "geometric_daily_return": 0.010431731753905105,
+              "max_drawdown": -0.2628614073695796,
+              "completed_trades": 52,
+              "win_rate": 0.5384615384615384,
+              "profit_factor": 1.4742849215099856,
+              "profitable_day_rate": 0.4444444444444444,
+              "target_day_rate": 0.17777777777777778,
+              "active_days": 45,
+              "final_equity": 159519.55834399408,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.3915645424404916,
+              "geometric_daily_return": 0.010715999221104333,
+              "max_drawdown": -0.21844134151947175,
+              "completed_trades": 33,
+              "win_rate": 0.5454545454545454,
+              "profit_factor": 1.698472837688641,
+              "profitable_day_rate": 0.5161290322580645,
+              "target_day_rate": 0.1935483870967742,
+              "active_days": 31,
+              "final_equity": 139156.45424404915,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 1.1319843385609092e-05,
+              "geometric_daily_return": 1.1319785724328568e-06,
+              "max_drawdown": -0.20893097361240828,
+              "completed_trades": 10,
+              "win_rate": 0.4,
+              "profit_factor": 1.0000623406492075,
+              "profitable_day_rate": 0.5,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 100001.13198433856,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.7,
+              "breakout_window": 24,
+              "stop_atr": 1.5,
+              "max_hold_bars": 24,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0031635355085828697,
+            "train": {
+              "net_return": 0.11459805505127944,
+              "geometric_daily_return": 0.0024138832067119864,
+              "max_drawdown": -0.11154837430589712,
+              "completed_trades": 15,
+              "win_rate": 0.4666666666666667,
+              "profit_factor": 1.5853246775786811,
+              "profitable_day_rate": 0.17777777777777778,
+              "target_day_rate": 0.044444444444444446,
+              "active_days": 45,
+              "final_equity": 111459.80550512794,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.13884114777745543,
+              "geometric_daily_return": 0.004202716694194475,
+              "max_drawdown": -0.07347937771561425,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.9731835451326916,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.06451612903225806,
+              "active_days": 31,
+              "final_equity": 113884.11477774555,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.2470368923858376,
+              "geometric_daily_return": 0.02232252595031614,
+              "max_drawdown": -0.02909739609560597,
+              "completed_trades": 4,
+              "win_rate": 0.75,
+              "profit_factor": 8.732064153001225,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 124703.68923858376,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.7,
+              "breakout_window": 24,
+              "stop_atr": 1.5,
+              "max_hold_bars": 48,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0031635355085828697,
+            "train": {
+              "net_return": 0.11459805505127944,
+              "geometric_daily_return": 0.0024138832067119864,
+              "max_drawdown": -0.11154837430589712,
+              "completed_trades": 15,
+              "win_rate": 0.4666666666666667,
+              "profit_factor": 1.5853246775786811,
+              "profitable_day_rate": 0.17777777777777778,
+              "target_day_rate": 0.044444444444444446,
+              "active_days": 45,
+              "final_equity": 111459.80550512794,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.13884114777745543,
+              "geometric_daily_return": 0.004202716694194475,
+              "max_drawdown": -0.07347937771561425,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.9731835451326916,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.06451612903225806,
+              "active_days": 31,
+              "final_equity": 113884.11477774555,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.1755653171811526,
+              "geometric_daily_return": 0.016306437395072537,
+              "max_drawdown": -0.08552492579504738,
+              "completed_trades": 4,
+              "win_rate": 0.75,
+              "profit_factor": 6.82913768290363,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 117556.53171811526,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.7,
+              "breakout_window": 24,
+              "stop_atr": 1.5,
+              "max_hold_bars": 96,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0031635355085828697,
+            "train": {
+              "net_return": 0.11459805505127944,
+              "geometric_daily_return": 0.0024138832067119864,
+              "max_drawdown": -0.11154837430589712,
+              "completed_trades": 15,
+              "win_rate": 0.4666666666666667,
+              "profit_factor": 1.5853246775786811,
+              "profitable_day_rate": 0.17777777777777778,
+              "target_day_rate": 0.044444444444444446,
+              "active_days": 45,
+              "final_equity": 111459.80550512794,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.13884114777745543,
+              "geometric_daily_return": 0.004202716694194475,
+              "max_drawdown": -0.07347937771561425,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.9731835451326916,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.06451612903225806,
+              "active_days": 31,
+              "final_equity": 113884.11477774555,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.1755653171811526,
+              "geometric_daily_return": 0.016306437395072537,
+              "max_drawdown": -0.08552492579504738,
+              "completed_trades": 4,
+              "win_rate": 0.75,
+              "profit_factor": 6.82913768290363,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 117556.53171811526,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 24,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0031780344697739287,
+            "train": {
+              "net_return": 0.16344228095240315,
+              "geometric_daily_return": 0.0033697335944979923,
+              "max_drawdown": -0.12415635475086376,
+              "completed_trades": 17,
+              "win_rate": 0.47058823529411764,
+              "profit_factor": 1.6612529569102845,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.06666666666666667,
+              "active_days": 45,
+              "final_equity": 116344.22809524031,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.09831950009031153,
+              "geometric_daily_return": 0.0030297832677692593,
+              "max_drawdown": -0.0434936535050615,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.183111716915314,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.03225806451612903,
+              "active_days": 31,
+              "final_equity": 109831.95000903115,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.2023880236447732,
+              "geometric_daily_return": 0.018601858370990598,
+              "max_drawdown": -0.04177794572204921,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.7535363125382197,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 120238.80236447732,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 48,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0031780344697739287,
+            "train": {
+              "net_return": 0.16344228095240315,
+              "geometric_daily_return": 0.0033697335944979923,
+              "max_drawdown": -0.12415635475086376,
+              "completed_trades": 17,
+              "win_rate": 0.47058823529411764,
+              "profit_factor": 1.6612529569102845,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.06666666666666667,
+              "active_days": 45,
+              "final_equity": 116344.22809524031,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.09831950009031153,
+              "geometric_daily_return": 0.0030297832677692593,
+              "max_drawdown": -0.0434936535050615,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.183111716915314,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.03225806451612903,
+              "active_days": 31,
+              "final_equity": 109831.95000903115,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.1906627119064882,
+              "geometric_daily_return": 0.017604163705780662,
+              "max_drawdown": -0.05193303326853541,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.6156675648569063,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 119066.27119064883,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 96,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0031780344697739287,
+            "train": {
+              "net_return": 0.16344228095240315,
+              "geometric_daily_return": 0.0033697335944979923,
+              "max_drawdown": -0.12415635475086376,
+              "completed_trades": 17,
+              "win_rate": 0.47058823529411764,
+              "profit_factor": 1.6612529569102845,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.06666666666666667,
+              "active_days": 45,
+              "final_equity": 116344.22809524031,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.09831950009031153,
+              "geometric_daily_return": 0.0030297832677692593,
+              "max_drawdown": -0.0434936535050615,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.183111716915314,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.03225806451612903,
+              "active_days": 31,
+              "final_equity": 109831.95000903115,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.1906627119064882,
+              "geometric_daily_return": 0.017604163705780662,
+              "max_drawdown": -0.05193303326853541,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.6156675648569063,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 119066.27119064883,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 24,
+              "stop_atr": 1.5,
+              "max_hold_bars": 24,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.00427722029275489,
+            "train": {
+              "net_return": 0.08461774571439275,
+              "geometric_daily_return": 0.0018066882496807768,
+              "max_drawdown": -0.12167817084871332,
+              "completed_trades": 15,
+              "win_rate": 0.4666666666666667,
+              "profit_factor": 1.4129121912332407,
+              "profitable_day_rate": 0.17777777777777778,
+              "target_day_rate": 0.044444444444444446,
+              "active_days": 45,
+              "final_equity": 108461.77457143928,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.09831950009031153,
+              "geometric_daily_return": 0.0030297832677692593,
+              "max_drawdown": -0.0434936535050615,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.183111716915314,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.03225806451612903,
+              "active_days": 31,
+              "final_equity": 109831.95000903115,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.2470368923858376,
+              "geometric_daily_return": 0.02232252595031614,
+              "max_drawdown": -0.02909739609560597,
+              "completed_trades": 4,
+              "win_rate": 0.75,
+              "profit_factor": 8.732064153001225,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 124703.68923858376,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 24,
+              "stop_atr": 1.5,
+              "max_hold_bars": 48,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.00427722029275489,
+            "train": {
+              "net_return": 0.08461774571439275,
+              "geometric_daily_return": 0.0018066882496807768,
+              "max_drawdown": -0.12167817084871332,
+              "completed_trades": 15,
+              "win_rate": 0.4666666666666667,
+              "profit_factor": 1.4129121912332407,
+              "profitable_day_rate": 0.17777777777777778,
+              "target_day_rate": 0.044444444444444446,
+              "active_days": 45,
+              "final_equity": 108461.77457143928,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.09831950009031153,
+              "geometric_daily_return": 0.0030297832677692593,
+              "max_drawdown": -0.0434936535050615,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.183111716915314,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.03225806451612903,
+              "active_days": 31,
+              "final_equity": 109831.95000903115,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.2348758593538094,
+              "geometric_daily_return": 0.021321160561137864,
+              "max_drawdown": -0.03938711714944703,
+              "completed_trades": 4,
+              "win_rate": 0.75,
+              "profit_factor": 8.423781543598615,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 123487.58593538094,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 24,
+              "stop_atr": 1.5,
+              "max_hold_bars": 96,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.00427722029275489,
+            "train": {
+              "net_return": 0.08461774571439275,
+              "geometric_daily_return": 0.0018066882496807768,
+              "max_drawdown": -0.12167817084871332,
+              "completed_trades": 15,
+              "win_rate": 0.4666666666666667,
+              "profit_factor": 1.4129121912332407,
+              "profitable_day_rate": 0.17777777777777778,
+              "target_day_rate": 0.044444444444444446,
+              "active_days": 45,
+              "final_equity": 108461.77457143928,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.09831950009031153,
+              "geometric_daily_return": 0.0030297832677692593,
+              "max_drawdown": -0.0434936535050615,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 3.183111716915314,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.03225806451612903,
+              "active_days": 31,
+              "final_equity": 109831.95000903115,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.2348758593538094,
+              "geometric_daily_return": 0.021321160561137864,
+              "max_drawdown": -0.03938711714944703,
+              "completed_trades": 4,
+              "win_rate": 0.75,
+              "profit_factor": 8.423781543598615,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 123487.58593538094,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.7,
+              "breakout_window": 8,
+              "stop_atr": 1.5,
+              "max_hold_bars": 24,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.004321943831853928,
+            "train": {
+              "net_return": 0.32396385571931335,
+              "geometric_daily_return": 0.0062557114701427,
+              "max_drawdown": -0.11041155871464879,
+              "completed_trades": 23,
+              "win_rate": 0.4782608695652174,
+              "profit_factor": 2.065869094259583,
+              "profitable_day_rate": 0.24444444444444444,
+              "target_day_rate": 0.08888888888888889,
+              "active_days": 45,
+              "final_equity": 132396.38557193134,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.08477990835389364,
+              "geometric_daily_return": 0.0026285167980537594,
+              "max_drawdown": -0.13900921259815374,
+              "completed_trades": 8,
+              "win_rate": 0.375,
+              "profit_factor": 1.6462598766626775,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.06451612903225806,
+              "active_days": 31,
+              "final_equity": 108477.99083538937,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.1233694381653519,
+              "geometric_daily_return": 0.011701189120767008,
+              "max_drawdown": -0.106663451113153,
+              "completed_trades": 8,
+              "win_rate": 0.375,
+              "profit_factor": 1.8216101498151869,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 112336.94381653519,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_only",
+              "fast_window": 12,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.7,
+              "breakout_window": 8,
+              "stop_atr": 1.5,
+              "max_hold_bars": 48,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.004321943831853928,
+            "train": {
+              "net_return": 0.32396385571931335,
+              "geometric_daily_return": 0.0062557114701427,
+              "max_drawdown": -0.11041155871464879,
+              "completed_trades": 23,
+              "win_rate": 0.4782608695652174,
+              "profit_factor": 2.065869094259583,
+              "profitable_day_rate": 0.24444444444444444,
+              "target_day_rate": 0.08888888888888889,
+              "active_days": 45,
+              "final_equity": 132396.38557193134,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.08477990835389364,
+              "geometric_daily_return": 0.0026285167980537594,
+              "max_drawdown": -0.13900921259815374,
+              "completed_trades": 8,
+              "win_rate": 0.375,
+              "profit_factor": 1.6462598766626775,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.06451612903225806,
+              "active_days": 31,
+              "final_equity": 108477.99083538937,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.0662439580315522,
+              "geometric_daily_return": 0.006434830457057172,
+              "max_drawdown": -0.1555658341895031,
+              "completed_trades": 8,
+              "win_rate": 0.375,
+              "profit_factor": 1.4629692019447444,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.2,
+              "active_days": 10,
+              "final_equity": 106624.39580315522,
+              "bankrupt": false
+            }
+          }
+        ]
+      },
+      "60": {
+        "candidate_count": 5832,
+        "eligible_count": 186,
+        "finalists_checked": 20,
+        "confirmation_positive_finalists": 7,
+        "chosen": {
+          "parameters": {
+            "variant": "expansion_breakout",
+            "direction": "long_short",
+            "fast_window": 4,
+            "slow_window": 32,
+            "entry_ratio": 1.3,
+            "exit_ratio": 0.8,
+            "breakout_window": 16,
+            "stop_atr": 3.5,
+            "max_hold_bars": 48,
+            "exposure": 1.25,
+            "compression_ratio": 0.85,
+            "compression_lookback": 16,
+            "spread_measure": "true_range",
+            "minimum_volume_ratio": null
+          },
+          "selection_score": -0.0056725104153797674,
+          "train": {
+            "net_return": 0.3934045023705711,
+            "geometric_daily_return": 0.0073994647348729625,
+            "max_drawdown": -0.2614395030050546,
+            "completed_trades": 27,
+            "win_rate": 0.5925925925925926,
+            "profit_factor": 1.4896876983694674,
+            "profitable_day_rate": 0.3333333333333333,
+            "target_day_rate": 0.17777777777777778,
+            "active_days": 45,
+            "final_equity": 139340.4502370571,
+            "bankrupt": false
+          },
+          "validation": {
+            "net_return": 0.2904340779294374,
+            "geometric_daily_return": 0.008259037160210925,
+            "max_drawdown": -0.22343430458227773,
+            "completed_trades": 14,
+            "win_rate": 0.2857142857142857,
+            "profit_factor": 1.8838124864375578,
+            "profitable_day_rate": 0.1935483870967742,
+            "target_day_rate": 0.0967741935483871,
+            "active_days": 31,
+            "final_equity": 129043.40779294373,
+            "bankrupt": false
+          },
+          "confirmation": {
+            "net_return": 0.041981514954785845,
+            "geometric_daily_return": 0.004120887924637273,
+            "max_drawdown": -0.17421567893774415,
+            "completed_trades": 5,
+            "win_rate": 0.6,
+            "profit_factor": 1.4474696099604119,
+            "profitable_day_rate": 0.3,
+            "target_day_rate": 0.0,
+            "active_days": 10,
+            "final_equity": 104198.15149547858,
+            "bankrupt": false
+          }
+        },
+        "top_finalists": [
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 8,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 24,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0034517573762336846,
+            "train": {
+              "net_return": 0.38560713060155183,
+              "geometric_daily_return": 0.007273846948706586,
+              "max_drawdown": -0.14848323004427316,
+              "completed_trades": 25,
+              "win_rate": 0.48,
+              "profit_factor": 1.6712405646181185,
+              "profitable_day_rate": 0.3333333333333333,
+              "target_day_rate": 0.1111111111111111,
+              "active_days": 45,
+              "final_equity": 138560.7130601552,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.1322885670001781,
+              "geometric_daily_return": 0.004015811692476889,
+              "max_drawdown": -0.14935138137421147,
+              "completed_trades": 13,
+              "win_rate": 0.46153846153846156,
+              "profit_factor": 1.3919458243684637,
+              "profitable_day_rate": 0.25806451612903225,
+              "target_day_rate": 0.0967741935483871,
+              "active_days": 31,
+              "final_equity": 113228.85670001782,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": -0.013818680590381752,
+              "geometric_daily_return": -0.0013905370423222818,
+              "max_drawdown": -0.12848964908847635,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 0.8793045204316696,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.1,
+              "active_days": 10,
+              "final_equity": 98618.13194096183,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 8,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 48,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0034517573762336846,
+            "train": {
+              "net_return": 0.38560713060155183,
+              "geometric_daily_return": 0.007273846948706586,
+              "max_drawdown": -0.14848323004427316,
+              "completed_trades": 25,
+              "win_rate": 0.48,
+              "profit_factor": 1.6712405646181185,
+              "profitable_day_rate": 0.3333333333333333,
+              "target_day_rate": 0.1111111111111111,
+              "active_days": 45,
+              "final_equity": 138560.7130601552,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.1322885670001781,
+              "geometric_daily_return": 0.004015811692476889,
+              "max_drawdown": -0.14935138137421147,
+              "completed_trades": 13,
+              "win_rate": 0.46153846153846156,
+              "profit_factor": 1.3919458243684637,
+              "profitable_day_rate": 0.25806451612903225,
+              "target_day_rate": 0.0967741935483871,
+              "active_days": 31,
+              "final_equity": 113228.85670001782,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": -0.013818680590381752,
+              "geometric_daily_return": -0.0013905370423222818,
+              "max_drawdown": -0.12848964908847635,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 0.8793045204316696,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.1,
+              "active_days": 10,
+              "final_equity": 98618.13194096183,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 8,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.8,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 96,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0034517573762336846,
+            "train": {
+              "net_return": 0.38560713060155183,
+              "geometric_daily_return": 0.007273846948706586,
+              "max_drawdown": -0.14848323004427316,
+              "completed_trades": 25,
+              "win_rate": 0.48,
+              "profit_factor": 1.6712405646181185,
+              "profitable_day_rate": 0.3333333333333333,
+              "target_day_rate": 0.1111111111111111,
+              "active_days": 45,
+              "final_equity": 138560.7130601552,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.1322885670001781,
+              "geometric_daily_return": 0.004015811692476889,
+              "max_drawdown": -0.14935138137421147,
+              "completed_trades": 13,
+              "win_rate": 0.46153846153846156,
+              "profit_factor": 1.3919458243684637,
+              "profitable_day_rate": 0.25806451612903225,
+              "target_day_rate": 0.0967741935483871,
+              "active_days": 31,
+              "final_equity": 113228.85670001782,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": -0.013818680590381752,
+              "geometric_daily_return": -0.0013905370423222818,
+              "max_drawdown": -0.12848964908847635,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 0.8793045204316696,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.1,
+              "active_days": 10,
+              "final_equity": 98618.13194096183,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 8,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.7,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 24,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0049059424692057645,
+            "train": {
+              "net_return": 0.23811206400155957,
+              "geometric_daily_return": 0.0047576750854367855,
+              "max_drawdown": -0.19327235109285099,
+              "completed_trades": 25,
+              "win_rate": 0.44,
+              "profit_factor": 1.3839237537179856,
+              "profitable_day_rate": 0.3111111111111111,
+              "target_day_rate": 0.08888888888888889,
+              "active_days": 45,
+              "final_equity": 123811.20640015596,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.15977581627640247,
+              "geometric_daily_return": 0.004792956892840428,
+              "max_drawdown": -0.16048505066097535,
+              "completed_trades": 13,
+              "win_rate": 0.46153846153846156,
+              "profit_factor": 1.4644747008767554,
+              "profitable_day_rate": 0.25806451612903225,
+              "target_day_rate": 0.12903225806451613,
+              "active_days": 31,
+              "final_equity": 115977.58162764025,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": -0.013818680590381752,
+              "geometric_daily_return": -0.0013905370423222818,
+              "max_drawdown": -0.12848964908847635,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 0.8793045204316696,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.1,
+              "active_days": 10,
+              "final_equity": 98618.13194096183,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 8,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.7,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 48,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0049059424692057645,
+            "train": {
+              "net_return": 0.23811206400155957,
+              "geometric_daily_return": 0.0047576750854367855,
+              "max_drawdown": -0.19327235109285099,
+              "completed_trades": 25,
+              "win_rate": 0.44,
+              "profit_factor": 1.3839237537179856,
+              "profitable_day_rate": 0.3111111111111111,
+              "target_day_rate": 0.08888888888888889,
+              "active_days": 45,
+              "final_equity": 123811.20640015596,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.15977581627640247,
+              "geometric_daily_return": 0.004792956892840428,
+              "max_drawdown": -0.16048505066097535,
+              "completed_trades": 13,
+              "win_rate": 0.46153846153846156,
+              "profit_factor": 1.4644747008767554,
+              "profitable_day_rate": 0.25806451612903225,
+              "target_day_rate": 0.12903225806451613,
+              "active_days": 31,
+              "final_equity": 115977.58162764025,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": -0.013818680590381752,
+              "geometric_daily_return": -0.0013905370423222818,
+              "max_drawdown": -0.12848964908847635,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 0.8793045204316696,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.1,
+              "active_days": 10,
+              "final_equity": 98618.13194096183,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 8,
+              "slow_window": 24,
+              "entry_ratio": 1.1,
+              "exit_ratio": 0.7,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 96,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0049059424692057645,
+            "train": {
+              "net_return": 0.23811206400155957,
+              "geometric_daily_return": 0.0047576750854367855,
+              "max_drawdown": -0.19327235109285099,
+              "completed_trades": 25,
+              "win_rate": 0.44,
+              "profit_factor": 1.3839237537179856,
+              "profitable_day_rate": 0.3111111111111111,
+              "target_day_rate": 0.08888888888888889,
+              "active_days": 45,
+              "final_equity": 123811.20640015596,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.15977581627640247,
+              "geometric_daily_return": 0.004792956892840428,
+              "max_drawdown": -0.16048505066097535,
+              "completed_trades": 13,
+              "win_rate": 0.46153846153846156,
+              "profit_factor": 1.4644747008767554,
+              "profitable_day_rate": 0.25806451612903225,
+              "target_day_rate": 0.12903225806451613,
+              "active_days": 31,
+              "final_equity": 115977.58162764025,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": -0.013818680590381752,
+              "geometric_daily_return": -0.0013905370423222818,
+              "max_drawdown": -0.12848964908847635,
+              "completed_trades": 6,
+              "win_rate": 0.5,
+              "profit_factor": 0.8793045204316696,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.1,
+              "active_days": 10,
+              "final_equity": 98618.13194096183,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "expansion_breakout",
+              "direction": "long_short",
+              "fast_window": 4,
+              "slow_window": 32,
+              "entry_ratio": 1.3,
+              "exit_ratio": 0.7,
+              "breakout_window": 16,
+              "stop_atr": 3.5,
+              "max_hold_bars": 48,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.00535356400806632,
+            "train": {
+              "net_return": 0.4493697739452528,
+              "geometric_daily_return": 0.008281409909561388,
+              "max_drawdown": -0.2526759143345016,
+              "completed_trades": 27,
+              "win_rate": 0.5925925925925926,
+              "profit_factor": 1.5741284685726262,
+              "profitable_day_rate": 0.35555555555555557,
+              "target_day_rate": 0.2,
+              "active_days": 45,
+              "final_equity": 144936.97739452528,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.5002513499950566,
+              "geometric_daily_return": 0.013170906779325753,
+              "max_drawdown": -0.27269947835255415,
+              "completed_trades": 13,
+              "win_rate": 0.38461538461538464,
+              "profit_factor": 2.478868876781966,
+              "profitable_day_rate": 0.2903225806451613,
+              "target_day_rate": 0.12903225806451613,
+              "active_days": 31,
+              "final_equity": 150025.13499950565,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": -0.09260150761042556,
+              "geometric_daily_return": -0.009670296364292175,
+              "max_drawdown": -0.18756170962286464,
+              "completed_trades": 5,
+              "win_rate": 0.2,
+              "profit_factor": 0.37177896332571575,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.0,
+              "active_days": 10,
+              "final_equity": 90739.84923895744,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "expansion_breakout",
+              "direction": "long_short",
+              "fast_window": 4,
+              "slow_window": 32,
+              "entry_ratio": 1.3,
+              "exit_ratio": 0.7,
+              "breakout_window": 16,
+              "stop_atr": 3.5,
+              "max_hold_bars": 96,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.00535356400806632,
+            "train": {
+              "net_return": 0.4493697739452528,
+              "geometric_daily_return": 0.008281409909561388,
+              "max_drawdown": -0.2526759143345016,
+              "completed_trades": 27,
+              "win_rate": 0.5925925925925926,
+              "profit_factor": 1.5741284685726262,
+              "profitable_day_rate": 0.35555555555555557,
+              "target_day_rate": 0.2,
+              "active_days": 45,
+              "final_equity": 144936.97739452528,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.5002513499950566,
+              "geometric_daily_return": 0.013170906779325753,
+              "max_drawdown": -0.27269947835255415,
+              "completed_trades": 13,
+              "win_rate": 0.38461538461538464,
+              "profit_factor": 2.478868876781966,
+              "profitable_day_rate": 0.2903225806451613,
+              "target_day_rate": 0.12903225806451613,
+              "active_days": 31,
+              "final_equity": 150025.13499950565,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": -0.09260150761042556,
+              "geometric_daily_return": -0.009670296364292175,
+              "max_drawdown": -0.18756170962286464,
+              "completed_trades": 5,
+              "win_rate": 0.2,
+              "profit_factor": 0.37177896332571575,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.0,
+              "active_days": 10,
+              "final_equity": 90739.84923895744,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 8,
+              "slow_window": 32,
+              "entry_ratio": 1.3,
+              "exit_ratio": 0.7,
+              "breakout_window": 16,
+              "stop_atr": 3.5,
+              "max_hold_bars": 24,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.00552524897369553,
+            "train": {
+              "net_return": 0.22787908969170723,
+              "geometric_daily_return": 0.00457238523583503,
+              "max_drawdown": -0.2019526841906112,
+              "completed_trades": 13,
+              "win_rate": 0.6153846153846154,
+              "profit_factor": 1.738497133761058,
+              "profitable_day_rate": 0.24444444444444444,
+              "target_day_rate": 0.13333333333333333,
+              "active_days": 45,
+              "final_equity": 122787.90896917072,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.28745950073386967,
+              "geometric_daily_return": 0.008183981281785213,
+              "max_drawdown": -0.11385588509591066,
+              "completed_trades": 7,
+              "win_rate": 0.5714285714285714,
+              "profit_factor": 2.7977338938616643,
+              "profitable_day_rate": 0.16129032258064516,
+              "target_day_rate": 0.0967741935483871,
+              "active_days": 31,
+              "final_equity": 128745.95007338696,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": -0.11806225519051773,
+              "geometric_daily_return": -0.012484791149905305,
+              "max_drawdown": -0.1534874665289989,
+              "completed_trades": 3,
+              "win_rate": 0.0,
+              "profit_factor": 0.0,
+              "profitable_day_rate": 0.1,
+              "target_day_rate": 0.0,
+              "active_days": 10,
+              "final_equity": 88193.77448094822,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 8,
+              "slow_window": 32,
+              "entry_ratio": 1.3,
+              "exit_ratio": 0.7,
+              "breakout_window": 24,
+              "stop_atr": 3.5,
+              "max_hold_bars": 24,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.00552524897369553,
+            "train": {
+              "net_return": 0.22787908969170723,
+              "geometric_daily_return": 0.00457238523583503,
+              "max_drawdown": -0.2019526841906112,
+              "completed_trades": 13,
+              "win_rate": 0.6153846153846154,
+              "profit_factor": 1.738497133761058,
+              "profitable_day_rate": 0.24444444444444444,
+              "target_day_rate": 0.13333333333333333,
+              "active_days": 45,
+              "final_equity": 122787.90896917072,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.28745950073386967,
+              "geometric_daily_return": 0.008183981281785213,
+              "max_drawdown": -0.11385588509591066,
+              "completed_trades": 7,
+              "win_rate": 0.5714285714285714,
+              "profit_factor": 2.7977338938616643,
+              "profitable_day_rate": 0.16129032258064516,
+              "target_day_rate": 0.0967741935483871,
+              "active_days": 31,
+              "final_equity": 128745.95007338696,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": -0.11806225519051773,
+              "geometric_daily_return": -0.012484791149905305,
+              "max_drawdown": -0.1534874665289989,
+              "completed_trades": 3,
+              "win_rate": 0.0,
+              "profit_factor": 0.0,
+              "profitable_day_rate": 0.1,
+              "target_day_rate": 0.0,
+              "active_days": 10,
+              "final_equity": 88193.77448094822,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 8,
+              "slow_window": 32,
+              "entry_ratio": 1.3,
+              "exit_ratio": 0.8,
+              "breakout_window": 16,
+              "stop_atr": 3.5,
+              "max_hold_bars": 24,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.00560423398392315,
+            "train": {
+              "net_return": 0.26439289577555275,
+              "geometric_daily_return": 0.005226769541944787,
+              "max_drawdown": -0.20004787155845244,
+              "completed_trades": 13,
+              "win_rate": 0.6153846153846154,
+              "profit_factor": 1.9525668797882234,
+              "profitable_day_rate": 0.26666666666666666,
+              "target_day_rate": 0.13333333333333333,
+              "active_days": 45,
+              "final_equity": 126439.28957755528,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.14573229855887104,
+              "geometric_daily_return": 0.004398159593999473,
+              "max_drawdown": -0.166319019543522,
+              "completed_trades": 7,
+              "win_rate": 0.42857142857142855,
+              "profit_factor": 1.8693825441543963,
+              "profitable_day_rate": 0.12903225806451613,
+              "target_day_rate": 0.06451612903225806,
+              "active_days": 31,
+              "final_equity": 114573.2298558871,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": -0.11806225519051773,
+              "geometric_daily_return": -0.012484791149905305,
+              "max_drawdown": -0.1534874665289989,
+              "completed_trades": 3,
+              "win_rate": 0.0,
+              "profit_factor": 0.0,
+              "profitable_day_rate": 0.1,
+              "target_day_rate": 0.0,
+              "active_days": 10,
+              "final_equity": 88193.77448094822,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "expansion_breakout",
+              "direction": "long_short",
+              "fast_window": 4,
+              "slow_window": 32,
+              "entry_ratio": 1.3,
+              "exit_ratio": 0.8,
+              "breakout_window": 16,
+              "stop_atr": 3.5,
+              "max_hold_bars": 48,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0056725104153797674,
+            "train": {
+              "net_return": 0.3934045023705711,
+              "geometric_daily_return": 0.0073994647348729625,
+              "max_drawdown": -0.2614395030050546,
+              "completed_trades": 27,
+              "win_rate": 0.5925925925925926,
+              "profit_factor": 1.4896876983694674,
+              "profitable_day_rate": 0.3333333333333333,
+              "target_day_rate": 0.17777777777777778,
+              "active_days": 45,
+              "final_equity": 139340.4502370571,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.2904340779294374,
+              "geometric_daily_return": 0.008259037160210925,
+              "max_drawdown": -0.22343430458227773,
+              "completed_trades": 14,
+              "win_rate": 0.2857142857142857,
+              "profit_factor": 1.8838124864375578,
+              "profitable_day_rate": 0.1935483870967742,
+              "target_day_rate": 0.0967741935483871,
+              "active_days": 31,
+              "final_equity": 129043.40779294373,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.041981514954785845,
+              "geometric_daily_return": 0.004120887924637273,
+              "max_drawdown": -0.17421567893774415,
+              "completed_trades": 5,
+              "win_rate": 0.6,
+              "profit_factor": 1.4474696099604119,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.0,
+              "active_days": 10,
+              "final_equity": 104198.15149547858,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "expansion_breakout",
+              "direction": "long_short",
+              "fast_window": 4,
+              "slow_window": 32,
+              "entry_ratio": 1.3,
+              "exit_ratio": 0.8,
+              "breakout_window": 16,
+              "stop_atr": 3.5,
+              "max_hold_bars": 96,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0056725104153797674,
+            "train": {
+              "net_return": 0.3934045023705711,
+              "geometric_daily_return": 0.0073994647348729625,
+              "max_drawdown": -0.2614395030050546,
+              "completed_trades": 27,
+              "win_rate": 0.5925925925925926,
+              "profit_factor": 1.4896876983694674,
+              "profitable_day_rate": 0.3333333333333333,
+              "target_day_rate": 0.17777777777777778,
+              "active_days": 45,
+              "final_equity": 139340.4502370571,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.2904340779294374,
+              "geometric_daily_return": 0.008259037160210925,
+              "max_drawdown": -0.22343430458227773,
+              "completed_trades": 14,
+              "win_rate": 0.2857142857142857,
+              "profit_factor": 1.8838124864375578,
+              "profitable_day_rate": 0.1935483870967742,
+              "target_day_rate": 0.0967741935483871,
+              "active_days": 31,
+              "final_equity": 129043.40779294373,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.041981514954785845,
+              "geometric_daily_return": 0.004120887924637273,
+              "max_drawdown": -0.17421567893774415,
+              "completed_trades": 5,
+              "win_rate": 0.6,
+              "profit_factor": 1.4474696099604119,
+              "profitable_day_rate": 0.3,
+              "target_day_rate": 0.0,
+              "active_days": 10,
+              "final_equity": 104198.15149547858,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 4,
+              "slow_window": 32,
+              "entry_ratio": 1.3,
+              "exit_ratio": 0.7,
+              "breakout_window": 16,
+              "stop_atr": 3.5,
+              "max_hold_bars": 48,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0057394424369047355,
+            "train": {
+              "net_return": 0.42461787425035846,
+              "geometric_daily_return": 0.007895531480722973,
+              "max_drawdown": -0.25267584710335883,
+              "completed_trades": 25,
+              "win_rate": 0.56,
+              "profit_factor": 1.5465411499674746,
+              "profitable_day_rate": 0.35555555555555557,
+              "target_day_rate": 0.2,
+              "active_days": 45,
+              "final_equity": 142461.78742503584,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.5002513499950566,
+              "geometric_daily_return": 0.013170906779325753,
+              "max_drawdown": -0.27269947835255415,
+              "completed_trades": 13,
+              "win_rate": 0.38461538461538464,
+              "profit_factor": 2.478868876781966,
+              "profitable_day_rate": 0.2903225806451613,
+              "target_day_rate": 0.12903225806451613,
+              "active_days": 31,
+              "final_equity": 150025.13499950565,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": -0.14740274872144554,
+              "geometric_daily_return": -0.015820322839317114,
+              "max_drawdown": -0.18756170962286464,
+              "completed_trades": 4,
+              "win_rate": 0.0,
+              "profit_factor": 0.0,
+              "profitable_day_rate": 0.1,
+              "target_day_rate": 0.0,
+              "active_days": 10,
+              "final_equity": 85259.72512785545,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 4,
+              "slow_window": 32,
+              "entry_ratio": 1.3,
+              "exit_ratio": 0.7,
+              "breakout_window": 16,
+              "stop_atr": 3.5,
+              "max_hold_bars": 96,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.0057394424369047355,
+            "train": {
+              "net_return": 0.42461787425035846,
+              "geometric_daily_return": 0.007895531480722973,
+              "max_drawdown": -0.25267584710335883,
+              "completed_trades": 25,
+              "win_rate": 0.56,
+              "profit_factor": 1.5465411499674746,
+              "profitable_day_rate": 0.35555555555555557,
+              "target_day_rate": 0.2,
+              "active_days": 45,
+              "final_equity": 142461.78742503584,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.5002513499950566,
+              "geometric_daily_return": 0.013170906779325753,
+              "max_drawdown": -0.27269947835255415,
+              "completed_trades": 13,
+              "win_rate": 0.38461538461538464,
+              "profit_factor": 2.478868876781966,
+              "profitable_day_rate": 0.2903225806451613,
+              "target_day_rate": 0.12903225806451613,
+              "active_days": 31,
+              "final_equity": 150025.13499950565,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": -0.14740274872144554,
+              "geometric_daily_return": -0.015820322839317114,
+              "max_drawdown": -0.18756170962286464,
+              "completed_trades": 4,
+              "win_rate": 0.0,
+              "profit_factor": 0.0,
+              "profitable_day_rate": 0.1,
+              "target_day_rate": 0.0,
+              "active_days": 10,
+              "final_equity": 85259.72512785545,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 4,
+              "slow_window": 32,
+              "entry_ratio": 1.3,
+              "exit_ratio": 0.7,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 24,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.005961445487590913,
+            "train": {
+              "net_return": 0.17992569037728826,
+              "geometric_daily_return": 0.003683466510500333,
+              "max_drawdown": -0.16046946328249304,
+              "completed_trades": 26,
+              "win_rate": 0.38461538461538464,
+              "profit_factor": 1.3054856064623164,
+              "profitable_day_rate": 0.28888888888888886,
+              "target_day_rate": 0.13333333333333333,
+              "active_days": 45,
+              "final_equity": 117992.56903772883,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.0659400043695773,
+              "geometric_daily_return": 0.0020620276765337398,
+              "max_drawdown": -0.15542740201842867,
+              "completed_trades": 15,
+              "win_rate": 0.26666666666666666,
+              "profit_factor": 1.2868417139498174,
+              "profitable_day_rate": 0.1935483870967742,
+              "target_day_rate": 0.03225806451612903,
+              "active_days": 31,
+              "final_equity": 106594.00043695774,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.02799474154024105,
+              "geometric_daily_return": 0.0027648202638130837,
+              "max_drawdown": -0.08074844253108762,
+              "completed_trades": 5,
+              "win_rate": 0.6,
+              "profit_factor": 1.3851849953555686,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.1,
+              "active_days": 10,
+              "final_equity": 102799.47415402411,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 4,
+              "slow_window": 32,
+              "entry_ratio": 1.3,
+              "exit_ratio": 0.7,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 48,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.005961445487590913,
+            "train": {
+              "net_return": 0.17992569037728826,
+              "geometric_daily_return": 0.003683466510500333,
+              "max_drawdown": -0.16046946328249304,
+              "completed_trades": 26,
+              "win_rate": 0.38461538461538464,
+              "profit_factor": 1.3054856064623164,
+              "profitable_day_rate": 0.28888888888888886,
+              "target_day_rate": 0.13333333333333333,
+              "active_days": 45,
+              "final_equity": 117992.56903772883,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.0659400043695773,
+              "geometric_daily_return": 0.0020620276765337398,
+              "max_drawdown": -0.15542740201842867,
+              "completed_trades": 15,
+              "win_rate": 0.26666666666666666,
+              "profit_factor": 1.2868417139498174,
+              "profitable_day_rate": 0.1935483870967742,
+              "target_day_rate": 0.03225806451612903,
+              "active_days": 31,
+              "final_equity": 106594.00043695774,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.02799474154024105,
+              "geometric_daily_return": 0.0027648202638130837,
+              "max_drawdown": -0.08074844253108762,
+              "completed_trades": 5,
+              "win_rate": 0.6,
+              "profit_factor": 1.3851849953555686,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.1,
+              "active_days": 10,
+              "final_equity": 102799.47415402411,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 4,
+              "slow_window": 32,
+              "entry_ratio": 1.3,
+              "exit_ratio": 0.7,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 96,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.005961445487590913,
+            "train": {
+              "net_return": 0.17992569037728826,
+              "geometric_daily_return": 0.003683466510500333,
+              "max_drawdown": -0.16046946328249304,
+              "completed_trades": 26,
+              "win_rate": 0.38461538461538464,
+              "profit_factor": 1.3054856064623164,
+              "profitable_day_rate": 0.28888888888888886,
+              "target_day_rate": 0.13333333333333333,
+              "active_days": 45,
+              "final_equity": 117992.56903772883,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.0659400043695773,
+              "geometric_daily_return": 0.0020620276765337398,
+              "max_drawdown": -0.15542740201842867,
+              "completed_trades": 15,
+              "win_rate": 0.26666666666666666,
+              "profit_factor": 1.2868417139498174,
+              "profitable_day_rate": 0.1935483870967742,
+              "target_day_rate": 0.03225806451612903,
+              "active_days": 31,
+              "final_equity": 106594.00043695774,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.02799474154024105,
+              "geometric_daily_return": 0.0027648202638130837,
+              "max_drawdown": -0.08074844253108762,
+              "completed_trades": 5,
+              "win_rate": 0.6,
+              "profit_factor": 1.3851849953555686,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.1,
+              "active_days": 10,
+              "final_equity": 102799.47415402411,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 4,
+              "slow_window": 32,
+              "entry_ratio": 1.3,
+              "exit_ratio": 0.8,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 24,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.005996662021810942,
+            "train": {
+              "net_return": 0.1332361621741709,
+              "geometric_daily_return": 0.002783364163547297,
+              "max_drawdown": -0.1690195919576601,
+              "completed_trades": 26,
+              "win_rate": 0.38461538461538464,
+              "profit_factor": 1.227795353548244,
+              "profitable_day_rate": 0.26666666666666666,
+              "target_day_rate": 0.1111111111111111,
+              "active_days": 45,
+              "final_equity": 113323.61621741709,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.07895246474271485,
+              "geometric_daily_return": 0.0024543175760720626,
+              "max_drawdown": -0.1451172837956186,
+              "completed_trades": 15,
+              "win_rate": 0.26666666666666666,
+              "profit_factor": 1.3623942733144552,
+              "profitable_day_rate": 0.1935483870967742,
+              "target_day_rate": 0.03225806451612903,
+              "active_days": 31,
+              "final_equity": 107895.24647427148,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.02799474154024105,
+              "geometric_daily_return": 0.0027648202638130837,
+              "max_drawdown": -0.08074844253108762,
+              "completed_trades": 5,
+              "win_rate": 0.6,
+              "profit_factor": 1.3851849953555686,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.1,
+              "active_days": 10,
+              "final_equity": 102799.47415402411,
+              "bankrupt": false
+            }
+          },
+          {
+            "parameters": {
+              "variant": "compression_release",
+              "direction": "long_short",
+              "fast_window": 4,
+              "slow_window": 32,
+              "entry_ratio": 1.3,
+              "exit_ratio": 0.8,
+              "breakout_window": 16,
+              "stop_atr": 1.5,
+              "max_hold_bars": 48,
+              "exposure": 1.25,
+              "compression_ratio": 0.85,
+              "compression_lookback": 16,
+              "spread_measure": "true_range",
+              "minimum_volume_ratio": null
+            },
+            "selection_score": -0.005996662021810942,
+            "train": {
+              "net_return": 0.1332361621741709,
+              "geometric_daily_return": 0.002783364163547297,
+              "max_drawdown": -0.1690195919576601,
+              "completed_trades": 26,
+              "win_rate": 0.38461538461538464,
+              "profit_factor": 1.227795353548244,
+              "profitable_day_rate": 0.26666666666666666,
+              "target_day_rate": 0.1111111111111111,
+              "active_days": 45,
+              "final_equity": 113323.61621741709,
+              "bankrupt": false
+            },
+            "validation": {
+              "net_return": 0.07895246474271485,
+              "geometric_daily_return": 0.0024543175760720626,
+              "max_drawdown": -0.1451172837956186,
+              "completed_trades": 15,
+              "win_rate": 0.26666666666666666,
+              "profit_factor": 1.3623942733144552,
+              "profitable_day_rate": 0.1935483870967742,
+              "target_day_rate": 0.03225806451612903,
+              "active_days": 31,
+              "final_equity": 107895.24647427148,
+              "bankrupt": false
+            },
+            "confirmation": {
+              "net_return": 0.02799474154024105,
+              "geometric_daily_return": 0.0027648202638130837,
+              "max_drawdown": -0.08074844253108762,
+              "completed_trades": 5,
+              "win_rate": 0.6,
+              "profit_factor": 1.3851849953555686,
+              "profitable_day_rate": 0.2,
+              "target_day_rate": 0.1,
+              "active_days": 10,
+              "final_equity": 102799.47415402411,
+              "bankrupt": false
+            }
+          }
+        ]
+      }
+    }
+  },
+  "portfolio": {
+    "weights": {
+      "equal": {
+        "15": 0.3333333333333333,
+        "30": 0.3333333333333333,
+        "60": 0.3333333333333333
+      },
+      "inverse_volatility": {
+        "15": 0.3753951845760587,
+        "30": 0.284463236236761,
+        "60": 0.34014157918718024
+      }
+    },
+    "selected_scheme_by_train_validation": "equal",
+    "schemes": {
+      "equal": {
+        "weights": {
+          "15": 0.3333333333333333,
+          "30": 0.3333333333333333,
+          "60": 0.3333333333333333
+        },
+        "periods": {
+          "train": {
+            "net_return": 0.673349612109287,
+            "geometric_daily_return": 0.011769342161252583,
+            "max_daily_close_drawdown": -0.138198273277238,
+            "days": 44
+          },
+          "validation": {
+            "net_return": 0.41682875632022065,
+            "geometric_daily_return": 0.011302789699155769,
+            "max_daily_close_drawdown": -0.06207407182800473,
+            "days": 31
+          },
+          "confirmation": {
+            "net_return": 0.057054471984509414,
+            "geometric_daily_return": 0.005564046132581213,
+            "max_daily_close_drawdown": -0.06781611854979153,
+            "days": 10
+          },
+          "development": {
+            "net_return": 1.5061174361494003,
+            "geometric_daily_return": 0.010867268149834297,
+            "max_daily_close_drawdown": -0.138198273277238,
+            "days": 85
+          },
+          "fresh_holdout": {
+            "net_return": -0.04526123634875556,
+            "geometric_daily_return": -0.01532060090711096,
+            "max_daily_close_drawdown": -0.046178525934578496,
+            "days": 3
+          },
+          "continuous": {
+            "net_return": 1.3926874625541052,
+            "geometric_daily_return": 0.009963136596105038,
+            "max_daily_close_drawdown": -0.138198273277238,
+            "days": 88
+          }
+        },
+        "scales": {
+          "1": {
+            "approximate_total_exposure": 1.25,
+            "development": {
+              "net_return": 1.5061174361494003,
+              "geometric_daily_return": 0.010867268149834297,
+              "max_daily_close_drawdown": -0.138198273277238,
+              "days": 85
+            },
+            "fresh_holdout": {
+              "net_return": -0.04526123634875556,
+              "geometric_daily_return": -0.01532060090711096,
+              "max_daily_close_drawdown": -0.046178525934578496,
+              "days": 3
+            }
+          },
+          "1.6": {
+            "approximate_total_exposure": 2.0,
+            "development": {
+              "net_return": 3.0462975869394473,
+              "geometric_daily_return": 0.01658069165239695,
+              "max_daily_close_drawdown": -0.2158385332527133,
+              "days": 85
+            },
+            "fresh_holdout": {
+              "net_return": -0.07268215170472736,
+              "geometric_daily_return": -0.024839264441444797,
+              "max_daily_close_drawdown": -0.0738856414953255,
+              "days": 3
+            }
+          },
+          "2.4": {
+            "approximate_total_exposure": 3.0,
+            "development": {
+              "net_return": 6.1154507812635694,
+              "geometric_daily_return": 0.023354045651499344,
+              "max_daily_close_drawdown": -0.31342931859105505,
+              "days": 85
+            },
+            "fresh_holdout": {
+              "net_return": -0.10952064423287389,
+              "geometric_daily_return": -0.037927165606654434,
+              "max_daily_close_drawdown": -0.11082846224298837,
+              "days": 3
+            }
+          },
+          "4": {
+            "approximate_total_exposure": 5.0,
+            "development": {
+              "net_return": 16.516816427305884,
+              "geometric_daily_return": 0.03425798952302994,
+              "max_daily_close_drawdown": -0.4892413364871937,
+              "days": 85
+            },
+            "fresh_holdout": {
+              "net_return": -0.18401571739699685,
+              "geometric_daily_return": -0.06554025410975117,
+              "max_daily_close_drawdown": -0.18471410373831387,
+              "days": 3
+            }
+          },
+          "6": {
+            "approximate_total_exposure": 7.5,
+            "development": {
+              "net_return": 35.4237568176831,
+              "geometric_daily_return": 0.04320397257953568,
+              "max_daily_close_drawdown": -0.6752581662942665,
+              "days": 85
+            },
+            "fresh_holdout": {
+              "net_return": -0.2783039369891268,
+              "geometric_daily_return": -0.10301582990970348,
+              "max_daily_close_drawdown": -0.2783039369891268,
+              "days": 3
+            }
+          },
+          "8": {
+            "approximate_total_exposure": 10.0,
+            "development": {
+              "net_return": 46.26814890369723,
+              "geometric_daily_return": 0.046407411464534976,
+              "max_daily_close_drawdown": -0.8272818843461756,
+              "days": 85
+            },
+            "fresh_holdout": {
+              "net_return": -0.37337595866144424,
+              "geometric_daily_return": -0.14427211473733514,
+              "max_daily_close_drawdown": -0.37337595866144424,
+              "days": 3
+            }
+          }
+        }
+      },
+      "inverse_volatility": {
+        "weights": {
+          "15": 0.3753951845760587,
+          "30": 0.284463236236761,
+          "60": 0.34014157918718024
+        },
+        "periods": {
+          "train": {
+            "net_return": 0.6837062120114321,
+            "geometric_daily_return": 0.011911231347813356,
+            "max_daily_close_drawdown": -0.1278760277808516,
+            "days": 44
+          },
+          "validation": {
+            "net_return": 0.41181629284612664,
+            "geometric_daily_return": 0.011187179032964956,
+            "max_daily_close_drawdown": -0.054187212850124844,
+            "days": 31
+          },
+          "confirmation": {
+            "net_return": 0.05752322843594482,
+            "geometric_daily_return": 0.00560862951118013,
+            "max_daily_close_drawdown": -0.06546883727671693,
+            "days": 10
+          },
+          "development": {
+            "net_return": 1.5138214005170383,
+            "geometric_daily_return": 0.010903771205958535,
+            "max_daily_close_drawdown": -0.1278760277808516,
+            "days": 85
+          },
+          "fresh_holdout": {
+            "net_return": -0.04098252570739647,
+            "geometric_daily_return": -0.013851829141574346,
+            "max_daily_close_drawdown": -0.04226991713716621,
+            "days": 3
+          },
+          "continuous": {
+            "net_return": 1.4107986503465453,
+            "geometric_daily_return": 0.010049685965138222,
+            "max_daily_close_drawdown": -0.1278760277808516,
+            "days": 88
+          }
+        },
+        "scales": {
+          "1": {
+            "approximate_total_exposure": 1.25,
+            "development": {
+              "net_return": 1.5138214005170383,
+              "geometric_daily_return": 0.010903771205958535,
+              "max_daily_close_drawdown": -0.1278760277808516,
+              "days": 85
+            },
+            "fresh_holdout": {
+              "net_return": -0.04098252570739647,
+              "geometric_daily_return": -0.013851829141574346,
+              "max_daily_close_drawdown": -0.04226991713716621,
+              "days": 3
+            }
+          },
+          "1.6": {
+            "approximate_total_exposure": 2.0,
+            "development": {
+              "net_return": 3.0804431268242007,
+              "geometric_daily_return": 0.016681198240529937,
+              "max_daily_close_drawdown": -0.2000218047579484,
+              "days": 85
+            },
+            "fresh_holdout": {
+              "net_return": -0.06583557956868169,
+              "geometric_daily_return": -0.022445211503174134,
+              "max_daily_close_drawdown": -0.06763186741946592,
+              "days": 3
+            }
+          },
+          "2.4": {
+            "approximate_total_exposure": 3.0,
+            "development": {
+              "net_return": 6.25588421400046,
+              "geometric_daily_return": 0.023589373938454727,
+              "max_daily_close_drawdown": -0.2910603840250289,
+              "days": 85
+            },
+            "fresh_holdout": {
+              "net_return": -0.09925391662710581,
+              "geometric_daily_return": -0.034243898127746086,
+              "max_daily_close_drawdown": -0.10144780112919893,
+              "days": 3
+            }
+          },
+          "4": {
+            "approximate_total_exposure": 5.0,
+            "development": {
+              "net_return": 17.537015619702675,
+              "geometric_daily_return": 0.03494701308720716,
+              "max_daily_close_drawdown": -0.4562474067276475,
+              "days": 85
+            },
+            "fresh_holdout": {
+              "net_return": -0.1669400875800574,
+              "geometric_daily_return": -0.05906690194938924,
+              "max_daily_close_drawdown": -0.16907966854866485,
+              "days": 3
+            }
+          },
+          "6": {
+            "approximate_total_exposure": 7.5,
+            "development": {
+              "net_return": 40.85458658742622,
+              "geometric_daily_return": 0.04491106969091607,
+              "max_daily_close_drawdown": -0.6331707085160244,
+              "days": 85
+            },
+            "fresh_holdout": {
+              "net_return": -0.2528279375578083,
+              "geometric_daily_return": -0.09258307597766402,
+              "max_daily_close_drawdown": -0.2536195028229974,
+              "days": 3
+            }
+          },
+          "8": {
+            "approximate_total_exposure": 10.0,
+            "development": {
+              "net_return": 62.73362170142634,
+              "geometric_daily_return": 0.050093247625561776,
+              "max_daily_close_drawdown": -0.780130634912837,
+              "days": 85
+            },
+            "fresh_holdout": {
+              "net_return": -0.3396960011937745,
+              "geometric_daily_return": -0.12920757502436708,
+              "max_daily_close_drawdown": -0.3396960011937745,
+              "days": 3
+            }
+          }
+        }
+      }
+    },
+    "development_daily_correlation": {
+      "15": {
+        "15": 1.0,
+        "30": 0.4373627923706862,
+        "60": 0.14500171743657794
+      },
+      "30": {
+        "15": 0.4373627923706862,
+        "30": 1.0,
+        "60": 0.4811311296545962
+      },
+      "60": {
+        "15": 0.14500171743657794,
+        "30": 0.4811311296545962,
+        "60": 1.0
+      }
+    },
+    "decision": {
+      "diagnostic_cap_total_exposure": 3.0,
+      "achieved_by_diagnostic_cap": false,
+      "reason": "Use the train/validation-selected risk weighting for comparison; the 3x total exposure cap is diagnostic and has no shared intraday liquidation model."
+    }
+  },
+  "target": {
+    "geometric_daily_return": 0.05,
+    "achieved_by_safe_cap": false,
+    "diagnostic_cap_total_exposure": 3.0
+  },
+  "sleeves": {
+    "15": {
+      "timeframe_minutes": 15,
+      "parameters": {
+        "variant": "compression_release",
+        "direction": "long_short",
+        "fast_window": 12,
+        "slow_window": 64,
+        "entry_ratio": 1.1,
+        "exit_ratio": 0.8,
+        "breakout_window": 24,
+        "stop_atr": 2.5,
+        "max_hold_bars": 96,
+        "exposure": 1.25,
+        "compression_ratio": 0.85,
+        "compression_lookback": 16,
+        "spread_measure": "true_range",
+        "minimum_volume_ratio": null
+      },
+      "bars": 8680,
+      "results": {
+        "train": {
+          "net_return": 0.8890829281598902,
+          "geometric_daily_return": 0.014235743090379005,
+          "max_drawdown": -0.11110133011465059,
+          "completed_trades": 30,
+          "win_rate": 0.4666666666666667,
+          "profit_factor": 3.279126966334826,
+          "profitable_day_rate": 0.28888888888888886,
+          "target_day_rate": 0.15555555555555556,
+          "active_days": 45,
+          "final_equity": 188908.29281598903,
+          "bankrupt": false
+        },
+        "validation": {
+          "net_return": 0.3969226726855792,
+          "geometric_daily_return": 0.010841304539736196,
+          "max_drawdown": -0.11108085244664426,
+          "completed_trades": 25,
+          "win_rate": 0.44,
+          "profit_factor": 2.801223645250837,
+          "profitable_day_rate": 0.3870967741935484,
+          "target_day_rate": 0.12903225806451613,
+          "active_days": 31,
+          "final_equity": 139692.26726855792,
+          "bankrupt": false
+        },
+        "confirmation": {
+          "net_return": 0.061899664526247816,
+          "geometric_daily_return": 0.006024015894270818,
+          "max_drawdown": -0.09611736888199622,
+          "completed_trades": 9,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.490224947911179,
+          "profitable_day_rate": 0.2,
+          "target_day_rate": 0.1,
+          "active_days": 10,
+          "final_equity": 106189.96645262478,
+          "bankrupt": false
+        },
+        "development": {
+          "net_return": 1.8022553324532562,
+          "geometric_daily_return": 0.012053748917006502,
+          "max_drawdown": -0.11110133011465059,
+          "completed_trades": 64,
+          "win_rate": 0.4375,
+          "profit_factor": 2.581490637619494,
+          "profitable_day_rate": 0.313953488372093,
+          "target_day_rate": 0.13953488372093023,
+          "active_days": 86,
+          "final_equity": 280225.5332453256,
+          "bankrupt": false
+        },
+        "fresh_holdout": {
+          "net_return": 0.0073910745578975,
+          "geometric_daily_return": 0.0024576465446770612,
+          "max_drawdown": -0.03285044585432869,
+          "completed_trades": 3,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.249218180598456,
+          "profitable_day_rate": 0.3333333333333333,
+          "target_day_rate": 0.0,
+          "active_days": 3,
+          "final_equity": 100739.10745578975,
+          "bankrupt": false
+        },
+        "continuous": {
+          "net_return": 1.82296687745536,
+          "geometric_daily_return": 0.011728793160478146,
+          "max_drawdown": -0.11760574686561966,
+          "completed_trades": 67,
+          "win_rate": 0.43283582089552236,
+          "profit_factor": 2.4909358243719857,
+          "profitable_day_rate": 0.3146067415730337,
+          "target_day_rate": 0.1348314606741573,
+          "active_days": 89,
+          "final_equity": 282296.687745536,
+          "bankrupt": false
+        }
+      },
+      "daily": {
+        "train": [
+          [
+            "2026-05-17",
+            -0.0031105091063385
+          ],
+          [
+            "2026-05-18",
+            0.04310389074017433
+          ],
+          [
+            "2026-05-19",
+            -0.04697338760085703
+          ],
+          [
+            "2026-05-20",
+            0.01313105868864079
+          ],
+          [
+            "2026-05-21",
+            0.0
+          ],
+          [
+            "2026-05-22",
+            -0.009887543509624584
+          ],
+          [
+            "2026-05-23",
+            0.0
+          ],
+          [
+            "2026-05-24",
+            0.0
+          ],
+          [
+            "2026-05-25",
+            0.0
+          ],
+          [
+            "2026-05-26",
+            0.09138441112982533
+          ],
+          [
+            "2026-05-27",
+            0.05394820601524273
+          ],
+          [
+            "2026-05-28",
+            0.013201404783816801
+          ],
+          [
+            "2026-05-29",
+            0.0
+          ],
+          [
+            "2026-05-30",
+            0.0
+          ],
+          [
+            "2026-05-31",
+            -0.008098085797331232
+          ],
+          [
+            "2026-06-01",
+            -0.022118134257367358
+          ],
+          [
+            "2026-06-02",
+            -0.002779901810556387
+          ],
+          [
+            "2026-06-03",
+            -0.014989199650907673
+          ],
+          [
+            "2026-06-04",
+            0.020454397448320102
+          ],
+          [
+            "2026-06-05",
+            0.19671870424081647
+          ],
+          [
+            "2026-06-06",
+            0.0
+          ],
+          [
+            "2026-06-07",
+            0.0
+          ],
+          [
+            "2026-06-08",
+            -0.0474162734160652
+          ],
+          [
+            "2026-06-09",
+            0.26664149335986426
+          ],
+          [
+            "2026-06-10",
+            0.0
+          ],
+          [
+            "2026-06-11",
+            -0.017994159937280204
+          ],
+          [
+            "2026-06-12",
+            0.0
+          ],
+          [
+            "2026-06-13",
+            0.0
+          ],
+          [
+            "2026-06-14",
+            0.007435018604071699
+          ],
+          [
+            "2026-06-15",
+            0.0
+          ],
+          [
+            "2026-06-16",
+            0.0
+          ],
+          [
+            "2026-06-17",
+            0.0
+          ],
+          [
+            "2026-06-18",
+            0.029016975841320243
+          ],
+          [
+            "2026-06-19",
+            0.0
+          ],
+          [
+            "2026-06-20",
+            -0.01450721412151963
+          ],
+          [
+            "2026-06-21",
+            -0.006608945203134426
+          ],
+          [
+            "2026-06-22",
+            -0.008082006055636583
+          ],
+          [
+            "2026-06-23",
+            0.11440134560929796
+          ],
+          [
+            "2026-06-24",
+            -0.049297513108789465
+          ],
+          [
+            "2026-06-25",
+            0.060955381836683344
+          ],
+          [
+            "2026-06-26",
+            0.0
+          ],
+          [
+            "2026-06-27",
+            -0.014116621308434607
+          ],
+          [
+            "2026-06-28",
+            0.0
+          ],
+          [
+            "2026-06-29",
+            0.060197402733795174
+          ],
+          [
+            "2026-06-30",
+            0.0
+          ]
+        ],
+        "validation": [
+          [
+            "2026-07-01",
+            0.0
+          ],
+          [
+            "2026-07-02",
+            0.0
+          ],
+          [
+            "2026-07-03",
+            0.0
+          ],
+          [
+            "2026-07-04",
+            0.0
+          ],
+          [
+            "2026-07-05",
+            0.00678478699329
+          ],
+          [
+            "2026-07-06",
+            0.0042360760831279065
+          ],
+          [
+            "2026-07-07",
+            0.0106525609352263
+          ],
+          [
+            "2026-07-08",
+            -0.01756152265854911
+          ],
+          [
+            "2026-07-09",
+            -0.025826664638130298
+          ],
+          [
+            "2026-07-10",
+            0.0
+          ],
+          [
+            "2026-07-11",
+            -0.013697748871804544
+          ],
+          [
+            "2026-07-12",
+            -0.006349204464935476
+          ],
+          [
+            "2026-07-13",
+            0.017500909372512613
+          ],
+          [
+            "2026-07-14",
+            0.0
+          ],
+          [
+            "2026-07-15",
+            0.17914622580922115
+          ],
+          [
+            "2026-07-16",
+            -0.01336984941394138
+          ],
+          [
+            "2026-07-17",
+            -0.05717725753465062
+          ],
+          [
+            "2026-07-18",
+            0.0
+          ],
+          [
+            "2026-07-19",
+            0.054468830142500244
+          ],
+          [
+            "2026-07-20",
+            -0.02178598895252574
+          ],
+          [
+            "2026-07-21",
+            -0.007116345334145741
+          ],
+          [
+            "2026-07-22",
+            0.0
+          ],
+          [
+            "2026-07-23",
+            0.0
+          ],
+          [
+            "2026-07-24",
+            0.054089821436309964
+          ],
+          [
+            "2026-07-25",
+            0.0
+          ],
+          [
+            "2026-07-26",
+            0.016793102186430254
+          ],
+          [
+            "2026-07-27",
+            0.11987208082496979
+          ],
+          [
+            "2026-07-28",
+            0.04802681098868786
+          ],
+          [
+            "2026-07-29",
+            -0.014477778824471267
+          ],
+          [
+            "2026-07-30",
+            0.011118538695955808
+          ],
+          [
+            "2026-07-31",
+            0.017279294021232943
+          ]
+        ],
+        "confirmation": [
+          [
+            "2026-08-01",
+            0.0
+          ],
+          [
+            "2026-08-02",
+            0.0
+          ],
+          [
+            "2026-08-03",
+            -0.0077540425011348
+          ],
+          [
+            "2026-08-04",
+            0.14792695487698096
+          ],
+          [
+            "2026-08-05",
+            -0.002302870049435477
+          ],
+          [
+            "2026-08-06",
+            0.0
+          ],
+          [
+            "2026-08-07",
+            -0.007665563358303741
+          ],
+          [
+            "2026-08-08",
+            0.00013024810244399964
+          ],
+          [
+            "2026-08-09",
+            -0.005784318317245777
+          ],
+          [
+            "2026-08-10",
+            -0.052987013525835194
+          ]
+        ],
+        "development": [
+          [
+            "2026-05-17",
+            -0.0031105091063385
+          ],
+          [
+            "2026-05-18",
+            0.04310389074017433
+          ],
+          [
+            "2026-05-19",
+            -0.04697338760085703
+          ],
+          [
+            "2026-05-20",
+            0.01313105868864079
+          ],
+          [
+            "2026-05-21",
+            0.0
+          ],
+          [
+            "2026-05-22",
+            -0.009887543509624584
+          ],
+          [
+            "2026-05-23",
+            0.0
+          ],
+          [
+            "2026-05-24",
+            0.0
+          ],
+          [
+            "2026-05-25",
+            0.0
+          ],
+          [
+            "2026-05-26",
+            0.09138441112982533
+          ],
+          [
+            "2026-05-27",
+            0.05394820601524273
+          ],
+          [
+            "2026-05-28",
+            0.013201404783816801
+          ],
+          [
+            "2026-05-29",
+            0.0
+          ],
+          [
+            "2026-05-30",
+            0.0
+          ],
+          [
+            "2026-05-31",
+            -0.008098085797331232
+          ],
+          [
+            "2026-06-01",
+            -0.022118134257367358
+          ],
+          [
+            "2026-06-02",
+            -0.002779901810556387
+          ],
+          [
+            "2026-06-03",
+            -0.014989199650907673
+          ],
+          [
+            "2026-06-04",
+            0.020454397448320102
+          ],
+          [
+            "2026-06-05",
+            0.19671870424081647
+          ],
+          [
+            "2026-06-06",
+            0.0
+          ],
+          [
+            "2026-06-07",
+            0.0
+          ],
+          [
+            "2026-06-08",
+            -0.0474162734160652
+          ],
+          [
+            "2026-06-09",
+            0.26664149335986426
+          ],
+          [
+            "2026-06-10",
+            0.0
+          ],
+          [
+            "2026-06-11",
+            -0.017994159937280204
+          ],
+          [
+            "2026-06-12",
+            0.0
+          ],
+          [
+            "2026-06-13",
+            0.0
+          ],
+          [
+            "2026-06-14",
+            0.007435018604071699
+          ],
+          [
+            "2026-06-15",
+            0.0
+          ],
+          [
+            "2026-06-16",
+            0.0
+          ],
+          [
+            "2026-06-17",
+            0.0
+          ],
+          [
+            "2026-06-18",
+            0.029016975841320243
+          ],
+          [
+            "2026-06-19",
+            0.0
+          ],
+          [
+            "2026-06-20",
+            -0.01450721412151963
+          ],
+          [
+            "2026-06-21",
+            -0.006608945203134426
+          ],
+          [
+            "2026-06-22",
+            -0.008082006055636583
+          ],
+          [
+            "2026-06-23",
+            0.11440134560929796
+          ],
+          [
+            "2026-06-24",
+            -0.049297513108789465
+          ],
+          [
+            "2026-06-25",
+            0.060955381836683344
+          ],
+          [
+            "2026-06-26",
+            0.0
+          ],
+          [
+            "2026-06-27",
+            -0.014116621308434607
+          ],
+          [
+            "2026-06-28",
+            0.0
+          ],
+          [
+            "2026-06-29",
+            0.060197402733795174
+          ],
+          [
+            "2026-06-30",
+            0.0
+          ],
+          [
+            "2026-07-01",
+            0.0
+          ],
+          [
+            "2026-07-02",
+            0.0
+          ],
+          [
+            "2026-07-03",
+            0.0
+          ],
+          [
+            "2026-07-04",
+            0.0
+          ],
+          [
+            "2026-07-05",
+            0.006784865465794716
+          ],
+          [
+            "2026-07-06",
+            0.0042361909775222055
+          ],
+          [
+            "2026-07-07",
+            0.010652568793286816
+          ],
+          [
+            "2026-07-08",
+            -0.017561477771905695
+          ],
+          [
+            "2026-07-09",
+            -0.02582673123615148
+          ],
+          [
+            "2026-07-10",
+            0.0
+          ],
+          [
+            "2026-07-11",
+            -0.013697892389863386
+          ],
+          [
+            "2026-07-12",
+            -0.006349232787518947
+          ],
+          [
+            "2026-07-13",
+            0.017500812869089905
+          ],
+          [
+            "2026-07-14",
+            0.0
+          ],
+          [
+            "2026-07-15",
+            0.17914803733268017
+          ],
+          [
+            "2026-07-16",
+            -0.013369926667639705
+          ],
+          [
+            "2026-07-17",
+            -0.057177168953468784
+          ],
+          [
+            "2026-07-18",
+            0.0
+          ],
+          [
+            "2026-07-19",
+            0.05446874651328693
+          ],
+          [
+            "2026-07-20",
+            -0.021785997653063455
+          ],
+          [
+            "2026-07-21",
+            -0.007116392357080173
+          ],
+          [
+            "2026-07-22",
+            0.0
+          ],
+          [
+            "2026-07-23",
+            0.0
+          ],
+          [
+            "2026-07-24",
+            0.05408998225491021
+          ],
+          [
+            "2026-07-25",
+            0.0
+          ],
+          [
+            "2026-07-26",
+            0.016793154016289828
+          ],
+          [
+            "2026-07-27",
+            0.11987184882630698
+          ],
+          [
+            "2026-07-28",
+            0.0480269908574237
+          ],
+          [
+            "2026-07-29",
+            -0.014477815273567616
+          ],
+          [
+            "2026-07-30",
+            0.011118531106913444
+          ],
+          [
+            "2026-07-31",
+            0.0172793445851983
+          ],
+          [
+            "2026-08-01",
+            0.0
+          ],
+          [
+            "2026-08-02",
+            0.0
+          ],
+          [
+            "2026-08-03",
+            -0.007754179112167308
+          ],
+          [
+            "2026-08-04",
+            0.1479277052170279
+          ],
+          [
+            "2026-08-05",
+            -0.002302877808934375
+          ],
+          [
+            "2026-08-06",
+            0.0
+          ],
+          [
+            "2026-08-07",
+            -0.007665581865415459
+          ],
+          [
+            "2026-08-08",
+            0.0001302489812207104
+          ],
+          [
+            "2026-08-09",
+            -0.0057843242612791255
+          ],
+          [
+            "2026-08-10",
+            -0.05298707864881155
+          ]
+        ],
+        "fresh_holdout": [
+          [
+            "2026-08-11",
+            -0.0166215883743357
+          ],
+          [
+            "2026-08-12",
+            0.037674325733811256
+          ],
+          [
+            "2026-08-13",
+            -0.01277451661716173
+          ]
+        ],
+        "continuous": [
+          [
+            "2026-05-17",
+            -0.0031105091063385
+          ],
+          [
+            "2026-05-18",
+            0.04310389074017433
+          ],
+          [
+            "2026-05-19",
+            -0.04697338760085703
+          ],
+          [
+            "2026-05-20",
+            0.01313105868864079
+          ],
+          [
+            "2026-05-21",
+            0.0
+          ],
+          [
+            "2026-05-22",
+            -0.009887543509624584
+          ],
+          [
+            "2026-05-23",
+            0.0
+          ],
+          [
+            "2026-05-24",
+            0.0
+          ],
+          [
+            "2026-05-25",
+            0.0
+          ],
+          [
+            "2026-05-26",
+            0.09138441112982533
+          ],
+          [
+            "2026-05-27",
+            0.05394820601524273
+          ],
+          [
+            "2026-05-28",
+            0.013201404783816801
+          ],
+          [
+            "2026-05-29",
+            0.0
+          ],
+          [
+            "2026-05-30",
+            0.0
+          ],
+          [
+            "2026-05-31",
+            -0.008098085797331232
+          ],
+          [
+            "2026-06-01",
+            -0.022118134257367358
+          ],
+          [
+            "2026-06-02",
+            -0.002779901810556387
+          ],
+          [
+            "2026-06-03",
+            -0.014989199650907673
+          ],
+          [
+            "2026-06-04",
+            0.020454397448320102
+          ],
+          [
+            "2026-06-05",
+            0.19671870424081647
+          ],
+          [
+            "2026-06-06",
+            0.0
+          ],
+          [
+            "2026-06-07",
+            0.0
+          ],
+          [
+            "2026-06-08",
+            -0.0474162734160652
+          ],
+          [
+            "2026-06-09",
+            0.26664149335986426
+          ],
+          [
+            "2026-06-10",
+            0.0
+          ],
+          [
+            "2026-06-11",
+            -0.017994159937280204
+          ],
+          [
+            "2026-06-12",
+            0.0
+          ],
+          [
+            "2026-06-13",
+            0.0
+          ],
+          [
+            "2026-06-14",
+            0.007435018604071699
+          ],
+          [
+            "2026-06-15",
+            0.0
+          ],
+          [
+            "2026-06-16",
+            0.0
+          ],
+          [
+            "2026-06-17",
+            0.0
+          ],
+          [
+            "2026-06-18",
+            0.029016975841320243
+          ],
+          [
+            "2026-06-19",
+            0.0
+          ],
+          [
+            "2026-06-20",
+            -0.01450721412151963
+          ],
+          [
+            "2026-06-21",
+            -0.006608945203134426
+          ],
+          [
+            "2026-06-22",
+            -0.008082006055636583
+          ],
+          [
+            "2026-06-23",
+            0.11440134560929796
+          ],
+          [
+            "2026-06-24",
+            -0.049297513108789465
+          ],
+          [
+            "2026-06-25",
+            0.060955381836683344
+          ],
+          [
+            "2026-06-26",
+            0.0
+          ],
+          [
+            "2026-06-27",
+            -0.014116621308434607
+          ],
+          [
+            "2026-06-28",
+            0.0
+          ],
+          [
+            "2026-06-29",
+            0.060197402733795174
+          ],
+          [
+            "2026-06-30",
+            0.0
+          ],
+          [
+            "2026-07-01",
+            0.0
+          ],
+          [
+            "2026-07-02",
+            0.0
+          ],
+          [
+            "2026-07-03",
+            0.0
+          ],
+          [
+            "2026-07-04",
+            0.0
+          ],
+          [
+            "2026-07-05",
+            0.006784865465794716
+          ],
+          [
+            "2026-07-06",
+            0.0042361909775222055
+          ],
+          [
+            "2026-07-07",
+            0.010652568793286816
+          ],
+          [
+            "2026-07-08",
+            -0.017561477771905695
+          ],
+          [
+            "2026-07-09",
+            -0.02582673123615148
+          ],
+          [
+            "2026-07-10",
+            0.0
+          ],
+          [
+            "2026-07-11",
+            -0.013697892389863386
+          ],
+          [
+            "2026-07-12",
+            -0.006349232787518947
+          ],
+          [
+            "2026-07-13",
+            0.017500812869089905
+          ],
+          [
+            "2026-07-14",
+            0.0
+          ],
+          [
+            "2026-07-15",
+            0.17914803733268017
+          ],
+          [
+            "2026-07-16",
+            -0.013369926667639705
+          ],
+          [
+            "2026-07-17",
+            -0.057177168953468784
+          ],
+          [
+            "2026-07-18",
+            0.0
+          ],
+          [
+            "2026-07-19",
+            0.05446874651328693
+          ],
+          [
+            "2026-07-20",
+            -0.021785997653063455
+          ],
+          [
+            "2026-07-21",
+            -0.007116392357080173
+          ],
+          [
+            "2026-07-22",
+            0.0
+          ],
+          [
+            "2026-07-23",
+            0.0
+          ],
+          [
+            "2026-07-24",
+            0.05408998225491021
+          ],
+          [
+            "2026-07-25",
+            0.0
+          ],
+          [
+            "2026-07-26",
+            0.016793154016289828
+          ],
+          [
+            "2026-07-27",
+            0.11987184882630698
+          ],
+          [
+            "2026-07-28",
+            0.0480269908574237
+          ],
+          [
+            "2026-07-29",
+            -0.014477815273567616
+          ],
+          [
+            "2026-07-30",
+            0.011118531106913444
+          ],
+          [
+            "2026-07-31",
+            0.0172793445851983
+          ],
+          [
+            "2026-08-01",
+            0.0
+          ],
+          [
+            "2026-08-02",
+            0.0
+          ],
+          [
+            "2026-08-03",
+            -0.007754179112167308
+          ],
+          [
+            "2026-08-04",
+            0.1479277052170279
+          ],
+          [
+            "2026-08-05",
+            -0.002302877808934375
+          ],
+          [
+            "2026-08-06",
+            0.0
+          ],
+          [
+            "2026-08-07",
+            -0.007665581865415459
+          ],
+          [
+            "2026-08-08",
+            0.0001302489812207104
+          ],
+          [
+            "2026-08-09",
+            -0.0057843242612791255
+          ],
+          [
+            "2026-08-10",
+            -0.05298707864881155
+          ],
+          [
+            "2026-08-11",
+            -0.016621583486911663
+          ],
+          [
+            "2026-08-12",
+            0.037674407642130155
+          ],
+          [
+            "2026-08-13",
+            -0.012774645993144934
+          ]
+        ]
+      },
+      "development_tick_path": {
+        "tick_observations": 1278237,
+        "completed_trades": 64,
+        "final_equity": 280225.5332453256,
+        "minimum_equity": 92587.60067667883,
+        "max_drawdown": -0.135859109307776,
+        "max_drawdown_at": "2026-07-09T14:21:29.742000+00:00"
+      }
+    },
+    "30": {
+      "timeframe_minutes": 30,
+      "parameters": {
+        "variant": "compression_release",
+        "direction": "long_short",
+        "fast_window": 8,
+        "slow_window": 24,
+        "entry_ratio": 1.1,
+        "exit_ratio": 0.8,
+        "breakout_window": 8,
+        "stop_atr": 2.5,
+        "max_hold_bars": 24,
+        "exposure": 1.25,
+        "compression_ratio": 0.85,
+        "compression_lookback": 16,
+        "spread_measure": "true_range",
+        "minimum_volume_ratio": null
+      },
+      "bars": 4340,
+      "results": {
+        "train": {
+          "net_return": 0.6091178593484902,
+          "geometric_daily_return": 0.010626870885852124,
+          "max_drawdown": -0.24317046835084968,
+          "completed_trades": 52,
+          "win_rate": 0.5384615384615384,
+          "profit_factor": 1.4857000220399565,
+          "profitable_day_rate": 0.4444444444444444,
+          "target_day_rate": 0.17777777777777778,
+          "active_days": 45,
+          "final_equity": 160911.785934849,
+          "bankrupt": false
+        },
+        "validation": {
+          "net_return": 0.48311817977486843,
+          "geometric_daily_return": 0.012795583058338833,
+          "max_drawdown": -0.21844134151947175,
+          "completed_trades": 34,
+          "win_rate": 0.5588235294117647,
+          "profit_factor": 1.8338915218537537,
+          "profitable_day_rate": 0.5161290322580645,
+          "target_day_rate": 0.1935483870967742,
+          "active_days": 31,
+          "final_equity": 148311.81797748685,
+          "bankrupt": false
+        },
+        "confirmation": {
+          "net_return": 0.04965115735820979,
+          "geometric_daily_return": 0.004857547605267243,
+          "max_drawdown": -0.17821167451571898,
+          "completed_trades": 10,
+          "win_rate": 0.4,
+          "profit_factor": 1.261676570575271,
+          "profitable_day_rate": 0.5,
+          "target_day_rate": 0.2,
+          "active_days": 10,
+          "final_equity": 104965.11573582097,
+          "bankrupt": false
+        },
+        "development": {
+          "net_return": 1.5050022751591998,
+          "geometric_daily_return": 0.01073499755439955,
+          "max_drawdown": -0.296848638610523,
+          "completed_trades": 96,
+          "win_rate": 0.53125,
+          "profit_factor": 1.570253991574602,
+          "profitable_day_rate": 0.47674418604651164,
+          "target_day_rate": 0.18604651162790697,
+          "active_days": 86,
+          "final_equity": 250500.22751591998,
+          "bankrupt": false
+        },
+        "fresh_holdout": {
+          "net_return": -0.0896353283052166,
+          "geometric_daily_return": -0.03081846356869189,
+          "max_drawdown": -0.12102672049869659,
+          "completed_trades": 4,
+          "win_rate": 0.25,
+          "profit_factor": 0.2778457975186173,
+          "profitable_day_rate": 0.3333333333333333,
+          "target_day_rate": 0.0,
+          "active_days": 3,
+          "final_equity": 91036.46716947835,
+          "bankrupt": false
+        },
+        "continuous": {
+          "net_return": 1.2804651777617295,
+          "geometric_daily_return": 0.0093057218979542,
+          "max_drawdown": -0.296848638610523,
+          "completed_trades": 100,
+          "win_rate": 0.52,
+          "profit_factor": 1.4340404343396933,
+          "profitable_day_rate": 0.47191011235955055,
+          "target_day_rate": 0.1797752808988764,
+          "active_days": 89,
+          "final_equity": 228046.51777617296,
+          "bankrupt": false
+        }
+      },
+      "daily": {
+        "train": [
+          [
+            "2026-05-17",
+            0.0
+          ],
+          [
+            "2026-05-18",
+            -0.055297800041018134
+          ],
+          [
+            "2026-05-19",
+            0.011990594345701568
+          ],
+          [
+            "2026-05-20",
+            0.0
+          ],
+          [
+            "2026-05-21",
+            0.0011499339651958366
+          ],
+          [
+            "2026-05-22",
+            -0.021163822525700975
+          ],
+          [
+            "2026-05-23",
+            0.0
+          ],
+          [
+            "2026-05-24",
+            0.0
+          ],
+          [
+            "2026-05-25",
+            0.04278819328099354
+          ],
+          [
+            "2026-05-26",
+            0.04442345886960342
+          ],
+          [
+            "2026-05-27",
+            0.0208646223256502
+          ],
+          [
+            "2026-05-28",
+            -0.04623976529243174
+          ],
+          [
+            "2026-05-29",
+            -0.020644051050650408
+          ],
+          [
+            "2026-05-30",
+            0.0
+          ],
+          [
+            "2026-05-31",
+            0.0028660729935578774
+          ],
+          [
+            "2026-06-01",
+            -0.019943604468031933
+          ],
+          [
+            "2026-06-02",
+            0.17043789888084707
+          ],
+          [
+            "2026-06-03",
+            -0.08565448643993728
+          ],
+          [
+            "2026-06-04",
+            0.052402033183381914
+          ],
+          [
+            "2026-06-05",
+            0.2091469125596644
+          ],
+          [
+            "2026-06-06",
+            0.0005842484014459148
+          ],
+          [
+            "2026-06-07",
+            0.0
+          ],
+          [
+            "2026-06-08",
+            -0.09479295105740908
+          ],
+          [
+            "2026-06-09",
+            0.18809494162183776
+          ],
+          [
+            "2026-06-10",
+            0.015368918257476789
+          ],
+          [
+            "2026-06-11",
+            0.0054899391388063806
+          ],
+          [
+            "2026-06-12",
+            0.02179956331964986
+          ],
+          [
+            "2026-06-13",
+            0.0
+          ],
+          [
+            "2026-06-14",
+            -0.06518730782588354
+          ],
+          [
+            "2026-06-15",
+            0.043099383760436795
+          ],
+          [
+            "2026-06-16",
+            0.17103062693113485
+          ],
+          [
+            "2026-06-17",
+            -0.05376192185529717
+          ],
+          [
+            "2026-06-18",
+            0.05092639032803022
+          ],
+          [
+            "2026-06-19",
+            -0.002708405589733482
+          ],
+          [
+            "2026-06-20",
+            -0.01717484603736639
+          ],
+          [
+            "2026-06-21",
+            0.0082555726852593
+          ],
+          [
+            "2026-06-22",
+            -0.007797830844814913
+          ],
+          [
+            "2026-06-23",
+            0.21551468600879137
+          ],
+          [
+            "2026-06-24",
+            -0.02575083627606667
+          ],
+          [
+            "2026-06-25",
+            -0.1410226465834722
+          ],
+          [
+            "2026-06-26",
+            -0.06583862430278584
+          ],
+          [
+            "2026-06-27",
+            -0.020625151516704642
+          ],
+          [
+            "2026-06-28",
+            0.0
+          ],
+          [
+            "2026-06-29",
+            0.06220867387256696
+          ],
+          [
+            "2026-06-30",
+            0.0
+          ]
+        ],
+        "validation": [
+          [
+            "2026-07-01",
+            0.0816705179833499
+          ],
+          [
+            "2026-07-02",
+            -0.037610214446721024
+          ],
+          [
+            "2026-07-03",
+            0.01208086135164976
+          ],
+          [
+            "2026-07-04",
+            0.0
+          ],
+          [
+            "2026-07-05",
+            -0.006053101898704245
+          ],
+          [
+            "2026-07-06",
+            -0.02724972577039794
+          ],
+          [
+            "2026-07-07",
+            -0.003633932939322254
+          ],
+          [
+            "2026-07-08",
+            -0.1382195242767294
+          ],
+          [
+            "2026-07-09",
+            0.1354553111786153
+          ],
+          [
+            "2026-07-10",
+            -0.026442957395235635
+          ],
+          [
+            "2026-07-11",
+            -0.002377085801557912
+          ],
+          [
+            "2026-07-12",
+            0.005751372040542907
+          ],
+          [
+            "2026-07-13",
+            0.1516955921291021
+          ],
+          [
+            "2026-07-14",
+            0.016013014457989444
+          ],
+          [
+            "2026-07-15",
+            0.06176124879162415
+          ],
+          [
+            "2026-07-16",
+            0.11824940037941888
+          ],
+          [
+            "2026-07-17",
+            -0.004332387529462378
+          ],
+          [
+            "2026-07-18",
+            -0.023332898742586757
+          ],
+          [
+            "2026-07-19",
+            0.014706866818414408
+          ],
+          [
+            "2026-07-20",
+            0.021729826671910608
+          ],
+          [
+            "2026-07-21",
+            0.04997240205226533
+          ],
+          [
+            "2026-07-22",
+            -0.06144054293710489
+          ],
+          [
+            "2026-07-23",
+            0.0
+          ],
+          [
+            "2026-07-24",
+            -0.04738066637027366
+          ],
+          [
+            "2026-07-25",
+            0.00647124874588637
+          ],
+          [
+            "2026-07-26",
+            0.03406951967395713
+          ],
+          [
+            "2026-07-27",
+            0.08730662564690554
+          ],
+          [
+            "2026-07-28",
+            0.0
+          ],
+          [
+            "2026-07-29",
+            0.0
+          ],
+          [
+            "2026-07-30",
+            0.005289344853603314
+          ],
+          [
+            "2026-07-31",
+            0.02200378920819771
+          ]
+        ],
+        "confirmation": [
+          [
+            "2026-08-01",
+            -0.0171493497794242
+          ],
+          [
+            "2026-08-02",
+            0.0709197196218513
+          ],
+          [
+            "2026-08-03",
+            0.12062004805462678
+          ],
+          [
+            "2026-08-04",
+            0.0
+          ],
+          [
+            "2026-08-05",
+            -0.05304381648419609
+          ],
+          [
+            "2026-08-06",
+            -0.0025930926553625216
+          ],
+          [
+            "2026-08-07",
+            -0.07133224885415435
+          ],
+          [
+            "2026-08-08",
+            0.0034662637779821785
+          ],
+          [
+            "2026-08-09",
+            0.007763746568582907
+          ],
+          [
+            "2026-08-10",
+            0.0032704682300822357
+          ]
+        ],
+        "development": [
+          [
+            "2026-05-17",
+            0.0
+          ],
+          [
+            "2026-05-18",
+            -0.055297800041018134
+          ],
+          [
+            "2026-05-19",
+            0.011990594345701568
+          ],
+          [
+            "2026-05-20",
+            0.0
+          ],
+          [
+            "2026-05-21",
+            0.0011499339651958366
+          ],
+          [
+            "2026-05-22",
+            -0.021163822525700975
+          ],
+          [
+            "2026-05-23",
+            0.0
+          ],
+          [
+            "2026-05-24",
+            0.0
+          ],
+          [
+            "2026-05-25",
+            0.04278819328099354
+          ],
+          [
+            "2026-05-26",
+            0.04442345886960342
+          ],
+          [
+            "2026-05-27",
+            0.0208646223256502
+          ],
+          [
+            "2026-05-28",
+            -0.04623976529243174
+          ],
+          [
+            "2026-05-29",
+            -0.020644051050650408
+          ],
+          [
+            "2026-05-30",
+            0.0
+          ],
+          [
+            "2026-05-31",
+            0.0028660729935578774
+          ],
+          [
+            "2026-06-01",
+            -0.019943604468031933
+          ],
+          [
+            "2026-06-02",
+            0.17043789888084707
+          ],
+          [
+            "2026-06-03",
+            -0.08565448643993728
+          ],
+          [
+            "2026-06-04",
+            0.052402033183381914
+          ],
+          [
+            "2026-06-05",
+            0.2091469125596644
+          ],
+          [
+            "2026-06-06",
+            0.0005842484014459148
+          ],
+          [
+            "2026-06-07",
+            0.0
+          ],
+          [
+            "2026-06-08",
+            -0.09479295105740908
+          ],
+          [
+            "2026-06-09",
+            0.18809494162183776
+          ],
+          [
+            "2026-06-10",
+            0.015368918257476789
+          ],
+          [
+            "2026-06-11",
+            0.0054899391388063806
+          ],
+          [
+            "2026-06-12",
+            0.02179956331964986
+          ],
+          [
+            "2026-06-13",
+            0.0
+          ],
+          [
+            "2026-06-14",
+            -0.06518730782588354
+          ],
+          [
+            "2026-06-15",
+            0.043099383760436795
+          ],
+          [
+            "2026-06-16",
+            0.17103062693113485
+          ],
+          [
+            "2026-06-17",
+            -0.05376192185529717
+          ],
+          [
+            "2026-06-18",
+            0.05092639032803022
+          ],
+          [
+            "2026-06-19",
+            -0.002708405589733482
+          ],
+          [
+            "2026-06-20",
+            -0.01717484603736639
+          ],
+          [
+            "2026-06-21",
+            0.0082555726852593
+          ],
+          [
+            "2026-06-22",
+            -0.007797830844814913
+          ],
+          [
+            "2026-06-23",
+            0.21551468600879137
+          ],
+          [
+            "2026-06-24",
+            -0.02575083627606667
+          ],
+          [
+            "2026-06-25",
+            -0.1410226465834722
+          ],
+          [
+            "2026-06-26",
+            -0.06583862430278584
+          ],
+          [
+            "2026-06-27",
+            -0.020625151516704642
+          ],
+          [
+            "2026-06-28",
+            0.0
+          ],
+          [
+            "2026-06-29",
+            0.06220867387256696
+          ],
+          [
+            "2026-06-30",
+            0.0
+          ],
+          [
+            "2026-07-01",
+            0.08167009974287948
+          ],
+          [
+            "2026-07-02",
+            -0.03761047168353212
+          ],
+          [
+            "2026-07-03",
+            0.01208088178571643
+          ],
+          [
+            "2026-07-04",
+            0.0
+          ],
+          [
+            "2026-07-05",
+            -0.006053098024122494
+          ],
+          [
+            "2026-07-06",
+            -0.02724945820859779
+          ],
+          [
+            "2026-07-07",
+            -0.0036337188554859054
+          ],
+          [
+            "2026-07-08",
+            -0.13822024746590159
+          ],
+          [
+            "2026-07-09",
+            0.13545685566123863
+          ],
+          [
+            "2026-07-10",
+            -0.026443103030603227
+          ],
+          [
+            "2026-07-11",
+            -0.0023770868055635265
+          ],
+          [
+            "2026-07-12",
+            0.005751327278057972
+          ],
+          [
+            "2026-07-13",
+            0.15169511434304073
+          ],
+          [
+            "2026-07-14",
+            0.016013088050522407
+          ],
+          [
+            "2026-07-15",
+            0.06176141030623984
+          ],
+          [
+            "2026-07-16",
+            0.11824983470299916
+          ],
+          [
+            "2026-07-17",
+            -0.004332377769559754
+          ],
+          [
+            "2026-07-18",
+            -0.023332901226035478
+          ],
+          [
+            "2026-07-19",
+            0.014706883781799088
+          ],
+          [
+            "2026-07-20",
+            0.021729791485244728
+          ],
+          [
+            "2026-07-21",
+            0.04997222915740568
+          ],
+          [
+            "2026-07-22",
+            -0.061440543184720114
+          ],
+          [
+            "2026-07-23",
+            0.0
+          ],
+          [
+            "2026-07-24",
+            -0.04738081753262443
+          ],
+          [
+            "2026-07-25",
+            0.00647124113065808
+          ],
+          [
+            "2026-07-26",
+            0.03406951445719971
+          ],
+          [
+            "2026-07-27",
+            0.08730638130771572
+          ],
+          [
+            "2026-07-28",
+            0.0
+          ],
+          [
+            "2026-07-29",
+            0.0
+          ],
+          [
+            "2026-07-30",
+            0.005289345091734243
+          ],
+          [
+            "2026-07-31",
+            0.022003811581964978
+          ],
+          [
+            "2026-08-01",
+            -0.01714944533880634
+          ],
+          [
+            "2026-08-02",
+            0.07091978908320877
+          ],
+          [
+            "2026-08-03",
+            0.12062006570672724
+          ],
+          [
+            "2026-08-04",
+            0.0
+          ],
+          [
+            "2026-08-05",
+            -0.05304391762496636
+          ],
+          [
+            "2026-08-06",
+            -0.002593102461075215
+          ],
+          [
+            "2026-08-07",
+            -0.07133274861047194
+          ],
+          [
+            "2026-08-08",
+            0.0034662610249480462
+          ],
+          [
+            "2026-08-09",
+            0.007763762051763654
+          ],
+          [
+            "2026-08-10",
+            0.003270191142675536
+          ]
+        ],
+        "fresh_holdout": [
+          [
+            "2026-08-11",
+            -0.0283055944138548
+          ],
+          [
+            "2026-08-12",
+            0.035491422038624244
+          ],
+          [
+            "2026-08-13",
+            -0.0952279252027511
+          ]
+        ],
+        "continuous": [
+          [
+            "2026-05-17",
+            0.0
+          ],
+          [
+            "2026-05-18",
+            -0.055297800041018134
+          ],
+          [
+            "2026-05-19",
+            0.011990594345701568
+          ],
+          [
+            "2026-05-20",
+            0.0
+          ],
+          [
+            "2026-05-21",
+            0.0011499339651958366
+          ],
+          [
+            "2026-05-22",
+            -0.021163822525700975
+          ],
+          [
+            "2026-05-23",
+            0.0
+          ],
+          [
+            "2026-05-24",
+            0.0
+          ],
+          [
+            "2026-05-25",
+            0.04278819328099354
+          ],
+          [
+            "2026-05-26",
+            0.04442345886960342
+          ],
+          [
+            "2026-05-27",
+            0.0208646223256502
+          ],
+          [
+            "2026-05-28",
+            -0.04623976529243174
+          ],
+          [
+            "2026-05-29",
+            -0.020644051050650408
+          ],
+          [
+            "2026-05-30",
+            0.0
+          ],
+          [
+            "2026-05-31",
+            0.0028660729935578774
+          ],
+          [
+            "2026-06-01",
+            -0.019943604468031933
+          ],
+          [
+            "2026-06-02",
+            0.17043789888084707
+          ],
+          [
+            "2026-06-03",
+            -0.08565448643993728
+          ],
+          [
+            "2026-06-04",
+            0.052402033183381914
+          ],
+          [
+            "2026-06-05",
+            0.2091469125596644
+          ],
+          [
+            "2026-06-06",
+            0.0005842484014459148
+          ],
+          [
+            "2026-06-07",
+            0.0
+          ],
+          [
+            "2026-06-08",
+            -0.09479295105740908
+          ],
+          [
+            "2026-06-09",
+            0.18809494162183776
+          ],
+          [
+            "2026-06-10",
+            0.015368918257476789
+          ],
+          [
+            "2026-06-11",
+            0.0054899391388063806
+          ],
+          [
+            "2026-06-12",
+            0.02179956331964986
+          ],
+          [
+            "2026-06-13",
+            0.0
+          ],
+          [
+            "2026-06-14",
+            -0.06518730782588354
+          ],
+          [
+            "2026-06-15",
+            0.043099383760436795
+          ],
+          [
+            "2026-06-16",
+            0.17103062693113485
+          ],
+          [
+            "2026-06-17",
+            -0.05376192185529717
+          ],
+          [
+            "2026-06-18",
+            0.05092639032803022
+          ],
+          [
+            "2026-06-19",
+            -0.002708405589733482
+          ],
+          [
+            "2026-06-20",
+            -0.01717484603736639
+          ],
+          [
+            "2026-06-21",
+            0.0082555726852593
+          ],
+          [
+            "2026-06-22",
+            -0.007797830844814913
+          ],
+          [
+            "2026-06-23",
+            0.21551468600879137
+          ],
+          [
+            "2026-06-24",
+            -0.02575083627606667
+          ],
+          [
+            "2026-06-25",
+            -0.1410226465834722
+          ],
+          [
+            "2026-06-26",
+            -0.06583862430278584
+          ],
+          [
+            "2026-06-27",
+            -0.020625151516704642
+          ],
+          [
+            "2026-06-28",
+            0.0
+          ],
+          [
+            "2026-06-29",
+            0.06220867387256696
+          ],
+          [
+            "2026-06-30",
+            0.0
+          ],
+          [
+            "2026-07-01",
+            0.08167009974287948
+          ],
+          [
+            "2026-07-02",
+            -0.03761047168353212
+          ],
+          [
+            "2026-07-03",
+            0.01208088178571643
+          ],
+          [
+            "2026-07-04",
+            0.0
+          ],
+          [
+            "2026-07-05",
+            -0.006053098024122494
+          ],
+          [
+            "2026-07-06",
+            -0.02724945820859779
+          ],
+          [
+            "2026-07-07",
+            -0.0036337188554859054
+          ],
+          [
+            "2026-07-08",
+            -0.13822024746590159
+          ],
+          [
+            "2026-07-09",
+            0.13545685566123863
+          ],
+          [
+            "2026-07-10",
+            -0.026443103030603227
+          ],
+          [
+            "2026-07-11",
+            -0.0023770868055635265
+          ],
+          [
+            "2026-07-12",
+            0.005751327278057972
+          ],
+          [
+            "2026-07-13",
+            0.15169511434304073
+          ],
+          [
+            "2026-07-14",
+            0.016013088050522407
+          ],
+          [
+            "2026-07-15",
+            0.06176141030623984
+          ],
+          [
+            "2026-07-16",
+            0.11824983470299916
+          ],
+          [
+            "2026-07-17",
+            -0.004332377769559754
+          ],
+          [
+            "2026-07-18",
+            -0.023332901226035478
+          ],
+          [
+            "2026-07-19",
+            0.014706883781799088
+          ],
+          [
+            "2026-07-20",
+            0.021729791485244728
+          ],
+          [
+            "2026-07-21",
+            0.04997222915740568
+          ],
+          [
+            "2026-07-22",
+            -0.061440543184720114
+          ],
+          [
+            "2026-07-23",
+            0.0
+          ],
+          [
+            "2026-07-24",
+            -0.04738081753262443
+          ],
+          [
+            "2026-07-25",
+            0.00647124113065808
+          ],
+          [
+            "2026-07-26",
+            0.03406951445719971
+          ],
+          [
+            "2026-07-27",
+            0.08730638130771572
+          ],
+          [
+            "2026-07-28",
+            0.0
+          ],
+          [
+            "2026-07-29",
+            0.0
+          ],
+          [
+            "2026-07-30",
+            0.005289345091734243
+          ],
+          [
+            "2026-07-31",
+            0.022003811581964978
+          ],
+          [
+            "2026-08-01",
+            -0.01714944533880634
+          ],
+          [
+            "2026-08-02",
+            0.07091978908320877
+          ],
+          [
+            "2026-08-03",
+            0.12062006570672724
+          ],
+          [
+            "2026-08-04",
+            0.0
+          ],
+          [
+            "2026-08-05",
+            -0.05304391762496636
+          ],
+          [
+            "2026-08-06",
+            -0.002593102461075215
+          ],
+          [
+            "2026-08-07",
+            -0.07133274861047194
+          ],
+          [
+            "2026-08-08",
+            0.0034662610249480462
+          ],
+          [
+            "2026-08-09",
+            0.007763762051763654
+          ],
+          [
+            "2026-08-10",
+            0.003270191142675536
+          ],
+          [
+            "2026-08-11",
+            -0.028305618564929146
+          ],
+          [
+            "2026-08-12",
+            0.03549152120831627
+          ],
+          [
+            "2026-08-13",
+            -0.09522814650125731
+          ]
+        ]
+      },
+      "development_tick_path": {
+        "tick_observations": 2893605,
+        "completed_trades": 96,
+        "final_equity": 250500.22751591998,
+        "minimum_equity": 86450.31226490419,
+        "max_drawdown": -0.32013248508164477,
+        "max_drawdown_at": "2026-07-08T15:26:31.492000+00:00"
+      }
+    },
+    "60": {
+      "timeframe_minutes": 60,
+      "parameters": {
+        "variant": "expansion_breakout",
+        "direction": "long_short",
+        "fast_window": 4,
+        "slow_window": 32,
+        "entry_ratio": 1.3,
+        "exit_ratio": 0.8,
+        "breakout_window": 16,
+        "stop_atr": 3.5,
+        "max_hold_bars": 48,
+        "exposure": 1.25,
+        "compression_ratio": 0.85,
+        "compression_lookback": 16,
+        "spread_measure": "true_range",
+        "minimum_volume_ratio": null
+      },
+      "bars": 2170,
+      "results": {
+        "train": {
+          "net_return": 0.3934045023705711,
+          "geometric_daily_return": 0.0073994647348729625,
+          "max_drawdown": -0.2614395030050546,
+          "completed_trades": 27,
+          "win_rate": 0.5925925925925926,
+          "profit_factor": 1.4896876983694674,
+          "profitable_day_rate": 0.3333333333333333,
+          "target_day_rate": 0.17777777777777778,
+          "active_days": 45,
+          "final_equity": 139340.4502370571,
+          "bankrupt": false
+        },
+        "validation": {
+          "net_return": 0.2904340779294374,
+          "geometric_daily_return": 0.008259037160210925,
+          "max_drawdown": -0.22343430458227773,
+          "completed_trades": 14,
+          "win_rate": 0.2857142857142857,
+          "profit_factor": 1.8838124864375578,
+          "profitable_day_rate": 0.1935483870967742,
+          "target_day_rate": 0.0967741935483871,
+          "active_days": 31,
+          "final_equity": 129043.40779294373,
+          "bankrupt": false
+        },
+        "confirmation": {
+          "net_return": 0.041981514954785845,
+          "geometric_daily_return": 0.004120887924637273,
+          "max_drawdown": -0.17421567893774415,
+          "completed_trades": 5,
+          "win_rate": 0.6,
+          "profit_factor": 1.4474696099604119,
+          "profitable_day_rate": 0.3,
+          "target_day_rate": 0.0,
+          "active_days": 10,
+          "final_equity": 104198.15149547858,
+          "bankrupt": false
+        },
+        "development": {
+          "net_return": 0.8735848192205167,
+          "geometric_daily_return": 0.007327337910185028,
+          "max_drawdown": -0.2614395030050546,
+          "completed_trades": 46,
+          "win_rate": 0.5,
+          "profit_factor": 1.610910891165807,
+          "profitable_day_rate": 0.27906976744186046,
+          "target_day_rate": 0.12790697674418605,
+          "active_days": 86,
+          "final_equity": 187358.48192205167,
+          "bankrupt": false
+        },
+        "fresh_holdout": {
+          "net_return": -0.0537591495995728,
+          "geometric_daily_return": -0.01825078115558698,
+          "max_drawdown": -0.06592101408463934,
+          "completed_trades": 2,
+          "win_rate": 0.0,
+          "profit_factor": 0.0,
+          "profitable_day_rate": 0.0,
+          "target_day_rate": 0.0,
+          "active_days": 3,
+          "final_equity": 94624.08504004272,
+          "bankrupt": false
+        },
+        "continuous": {
+          "net_return": 0.7730934975577574,
+          "geometric_daily_return": 0.0064558707725566045,
+          "max_drawdown": -0.2614395030050546,
+          "completed_trades": 48,
+          "win_rate": 0.4791666666666667,
+          "profit_factor": 1.5050564114609037,
+          "profitable_day_rate": 0.2696629213483146,
+          "target_day_rate": 0.12359550561797752,
+          "active_days": 89,
+          "final_equity": 177309.34975577574,
+          "bankrupt": false
+        }
+      },
+      "daily": {
+        "train": [
+          [
+            "2026-05-17",
+            0.0
+          ],
+          [
+            "2026-05-18",
+            -0.04248584902795807
+          ],
+          [
+            "2026-05-19",
+            -0.03402105346882339
+          ],
+          [
+            "2026-05-20",
+            0.0
+          ],
+          [
+            "2026-05-21",
+            0.0
+          ],
+          [
+            "2026-05-22",
+            0.0
+          ],
+          [
+            "2026-05-23",
+            -0.042951730907939155
+          ],
+          [
+            "2026-05-24",
+            0.01729034263831707
+          ],
+          [
+            "2026-05-25",
+            -0.01567176872056524
+          ],
+          [
+            "2026-05-26",
+            0.06254344416300842
+          ],
+          [
+            "2026-05-27",
+            0.06362252751217574
+          ],
+          [
+            "2026-05-28",
+            -0.005839975698006695
+          ],
+          [
+            "2026-05-29",
+            0.0
+          ],
+          [
+            "2026-05-30",
+            0.0
+          ],
+          [
+            "2026-05-31",
+            -0.0070982930349297165
+          ],
+          [
+            "2026-06-01",
+            -0.03007380770582373
+          ],
+          [
+            "2026-06-02",
+            0.06365879151578116
+          ],
+          [
+            "2026-06-03",
+            0.0
+          ],
+          [
+            "2026-06-04",
+            -0.1483100894332221
+          ],
+          [
+            "2026-06-05",
+            0.16092557298811708
+          ],
+          [
+            "2026-06-06",
+            0.02233530798730409
+          ],
+          [
+            "2026-06-07",
+            0.0
+          ],
+          [
+            "2026-06-08",
+            0.12892784829560977
+          ],
+          [
+            "2026-06-09",
+            0.04849606708914943
+          ],
+          [
+            "2026-06-10",
+            0.0
+          ],
+          [
+            "2026-06-11",
+            0.08907686529168725
+          ],
+          [
+            "2026-06-12",
+            0.0
+          ],
+          [
+            "2026-06-13",
+            0.0
+          ],
+          [
+            "2026-06-14",
+            -0.0382212527885304
+          ],
+          [
+            "2026-06-15",
+            0.04389807739180015
+          ],
+          [
+            "2026-06-16",
+            0.11664951479924435
+          ],
+          [
+            "2026-06-17",
+            -0.0016886614661840592
+          ],
+          [
+            "2026-06-18",
+            0.0
+          ],
+          [
+            "2026-06-19",
+            0.0
+          ],
+          [
+            "2026-06-20",
+            0.0
+          ],
+          [
+            "2026-06-21",
+            0.0
+          ],
+          [
+            "2026-06-22",
+            0.022432124337263066
+          ],
+          [
+            "2026-06-23",
+            0.1526986207541064
+          ],
+          [
+            "2026-06-24",
+            0.016530480087316807
+          ],
+          [
+            "2026-06-25",
+            -0.19233922198329736
+          ],
+          [
+            "2026-06-26",
+            0.0
+          ],
+          [
+            "2026-06-27",
+            0.0
+          ],
+          [
+            "2026-06-28",
+            0.0
+          ],
+          [
+            "2026-06-29",
+            -0.0653099281278205
+          ],
+          [
+            "2026-06-30",
+            0.035508414612165265
+          ]
+        ],
+        "validation": [
+          [
+            "2026-07-01",
+            0.11644349307405102
+          ],
+          [
+            "2026-07-02",
+            0.1604349197082211
+          ],
+          [
+            "2026-07-03",
+            0.0
+          ],
+          [
+            "2026-07-04",
+            0.0
+          ],
+          [
+            "2026-07-05",
+            0.0
+          ],
+          [
+            "2026-07-06",
+            -0.04136835495186344
+          ],
+          [
+            "2026-07-07",
+            0.026125913345445312
+          ],
+          [
+            "2026-07-08",
+            -0.00015260261966820192
+          ],
+          [
+            "2026-07-09",
+            0.0
+          ],
+          [
+            "2026-07-10",
+            0.0
+          ],
+          [
+            "2026-07-11",
+            0.0
+          ],
+          [
+            "2026-07-12",
+            0.0
+          ],
+          [
+            "2026-07-13",
+            0.18754728086279016
+          ],
+          [
+            "2026-07-14",
+            -0.0015418363408331963
+          ],
+          [
+            "2026-07-15",
+            -0.00869113819298032
+          ],
+          [
+            "2026-07-16",
+            -0.0001789130871718812
+          ],
+          [
+            "2026-07-17",
+            0.0
+          ],
+          [
+            "2026-07-18",
+            0.0
+          ],
+          [
+            "2026-07-19",
+            -0.012444943845046824
+          ],
+          [
+            "2026-07-20",
+            -0.0813102865929215
+          ],
+          [
+            "2026-07-21",
+            -0.0005730890585146594
+          ],
+          [
+            "2026-07-22",
+            -0.025169808216901457
+          ],
+          [
+            "2026-07-23",
+            0.0
+          ],
+          [
+            "2026-07-24",
+            0.0
+          ],
+          [
+            "2026-07-25",
+            0.0
+          ],
+          [
+            "2026-07-26",
+            0.016034279526556703
+          ],
+          [
+            "2026-07-27",
+            0.016271981439553784
+          ],
+          [
+            "2026-07-28",
+            -0.0531969073390107
+          ],
+          [
+            "2026-07-29",
+            -0.0018229193631518993
+          ],
+          [
+            "2026-07-30",
+            -0.0009566519958400428
+          ],
+          [
+            "2026-07-31",
+            0.0
+          ]
+        ],
+        "confirmation": [
+          [
+            "2026-08-01",
+            0.0
+          ],
+          [
+            "2026-08-02",
+            0.03410682557549905
+          ],
+          [
+            "2026-08-03",
+            0.03748689636308775
+          ],
+          [
+            "2026-08-04",
+            0.0
+          ],
+          [
+            "2026-08-05",
+            0.0
+          ],
+          [
+            "2026-08-06",
+            -0.041064313516340226
+          ],
+          [
+            "2026-08-07",
+            0.0
+          ],
+          [
+            "2026-08-08",
+            0.0
+          ],
+          [
+            "2026-08-09",
+            0.0
+          ],
+          [
+            "2026-08-10",
+            0.012797238638555038
+          ]
+        ],
+        "development": [
+          [
+            "2026-05-17",
+            0.0
+          ],
+          [
+            "2026-05-18",
+            -0.04248584902795807
+          ],
+          [
+            "2026-05-19",
+            -0.03402105346882339
+          ],
+          [
+            "2026-05-20",
+            0.0
+          ],
+          [
+            "2026-05-21",
+            0.0
+          ],
+          [
+            "2026-05-22",
+            0.0
+          ],
+          [
+            "2026-05-23",
+            -0.042951730907939155
+          ],
+          [
+            "2026-05-24",
+            0.01729034263831707
+          ],
+          [
+            "2026-05-25",
+            -0.01567176872056524
+          ],
+          [
+            "2026-05-26",
+            0.06254344416300842
+          ],
+          [
+            "2026-05-27",
+            0.06362252751217574
+          ],
+          [
+            "2026-05-28",
+            -0.005839975698006695
+          ],
+          [
+            "2026-05-29",
+            0.0
+          ],
+          [
+            "2026-05-30",
+            0.0
+          ],
+          [
+            "2026-05-31",
+            -0.0070982930349297165
+          ],
+          [
+            "2026-06-01",
+            -0.03007380770582373
+          ],
+          [
+            "2026-06-02",
+            0.06365879151578116
+          ],
+          [
+            "2026-06-03",
+            0.0
+          ],
+          [
+            "2026-06-04",
+            -0.1483100894332221
+          ],
+          [
+            "2026-06-05",
+            0.16092557298811708
+          ],
+          [
+            "2026-06-06",
+            0.02233530798730409
+          ],
+          [
+            "2026-06-07",
+            0.0
+          ],
+          [
+            "2026-06-08",
+            0.12892784829560977
+          ],
+          [
+            "2026-06-09",
+            0.04849606708914943
+          ],
+          [
+            "2026-06-10",
+            0.0
+          ],
+          [
+            "2026-06-11",
+            0.08907686529168725
+          ],
+          [
+            "2026-06-12",
+            0.0
+          ],
+          [
+            "2026-06-13",
+            0.0
+          ],
+          [
+            "2026-06-14",
+            -0.0382212527885304
+          ],
+          [
+            "2026-06-15",
+            0.04389807739180015
+          ],
+          [
+            "2026-06-16",
+            0.11664951479924435
+          ],
+          [
+            "2026-06-17",
+            -0.0016886614661840592
+          ],
+          [
+            "2026-06-18",
+            0.0
+          ],
+          [
+            "2026-06-19",
+            0.0
+          ],
+          [
+            "2026-06-20",
+            0.0
+          ],
+          [
+            "2026-06-21",
+            0.0
+          ],
+          [
+            "2026-06-22",
+            0.022432124337263066
+          ],
+          [
+            "2026-06-23",
+            0.1526986207541064
+          ],
+          [
+            "2026-06-24",
+            0.016530480087316807
+          ],
+          [
+            "2026-06-25",
+            -0.19233922198329736
+          ],
+          [
+            "2026-06-26",
+            0.0
+          ],
+          [
+            "2026-06-27",
+            0.0
+          ],
+          [
+            "2026-06-28",
+            0.0
+          ],
+          [
+            "2026-06-29",
+            -0.0653099281278205
+          ],
+          [
+            "2026-06-30",
+            0.035508414612165265
+          ],
+          [
+            "2026-07-01",
+            0.11644323447701692
+          ],
+          [
+            "2026-07-02",
+            0.16043460057606262
+          ],
+          [
+            "2026-07-03",
+            0.0
+          ],
+          [
+            "2026-07-04",
+            0.0
+          ],
+          [
+            "2026-07-05",
+            0.0
+          ],
+          [
+            "2026-07-06",
+            -0.04136868438691108
+          ],
+          [
+            "2026-07-07",
+            0.026125898646342398
+          ],
+          [
+            "2026-07-08",
+            -0.00015260253599609817
+          ],
+          [
+            "2026-07-09",
+            0.0
+          ],
+          [
+            "2026-07-10",
+            0.0
+          ],
+          [
+            "2026-07-11",
+            0.0
+          ],
+          [
+            "2026-07-12",
+            0.0
+          ],
+          [
+            "2026-07-13",
+            0.18754918132374412
+          ],
+          [
+            "2026-07-14",
+            -0.001541849497166044
+          ],
+          [
+            "2026-07-15",
+            -0.008691194989763012
+          ],
+          [
+            "2026-07-16",
+            -0.00017891354546796154
+          ],
+          [
+            "2026-07-17",
+            0.0
+          ],
+          [
+            "2026-07-18",
+            0.0
+          ],
+          [
+            "2026-07-19",
+            -0.012444994931188757
+          ],
+          [
+            "2026-07-20",
+            -0.08131050607035524
+          ],
+          [
+            "2026-07-21",
+            -0.0005730908653663244
+          ],
+          [
+            "2026-07-22",
+            -0.025169770908247395
+          ],
+          [
+            "2026-07-23",
+            0.0
+          ],
+          [
+            "2026-07-24",
+            0.0
+          ],
+          [
+            "2026-07-25",
+            0.0
+          ],
+          [
+            "2026-07-26",
+            0.016034307742787888
+          ],
+          [
+            "2026-07-27",
+            0.016271996421617963
+          ],
+          [
+            "2026-07-28",
+            -0.053197126586267206
+          ],
+          [
+            "2026-07-29",
+            -0.0018229241560621683
+          ],
+          [
+            "2026-07-30",
+            -0.0009566545157105909
+          ],
+          [
+            "2026-07-31",
+            0.0
+          ],
+          [
+            "2026-08-01",
+            0.0
+          ],
+          [
+            "2026-08-02",
+            0.034106879797782895
+          ],
+          [
+            "2026-08-03",
+            0.03748710126579273
+          ],
+          [
+            "2026-08-04",
+            0.0
+          ],
+          [
+            "2026-08-05",
+            0.0
+          ],
+          [
+            "2026-08-06",
+            -0.04106435647236292
+          ],
+          [
+            "2026-08-07",
+            0.0
+          ],
+          [
+            "2026-08-08",
+            0.0
+          ],
+          [
+            "2026-08-09",
+            0.0
+          ],
+          [
+            "2026-08-10",
+            0.01279754003474914
+          ]
+        ],
+        "fresh_holdout": [
+          [
+            "2026-08-11",
+            0.0
+          ],
+          [
+            "2026-08-12",
+            -0.0239580506454674
+          ],
+          [
+            "2026-08-13",
+            -0.03053260054428316
+          ]
+        ],
+        "continuous": [
+          [
+            "2026-05-17",
+            0.0
+          ],
+          [
+            "2026-05-18",
+            -0.04248584902795807
+          ],
+          [
+            "2026-05-19",
+            -0.03402105346882339
+          ],
+          [
+            "2026-05-20",
+            0.0
+          ],
+          [
+            "2026-05-21",
+            0.0
+          ],
+          [
+            "2026-05-22",
+            0.0
+          ],
+          [
+            "2026-05-23",
+            -0.042951730907939155
+          ],
+          [
+            "2026-05-24",
+            0.01729034263831707
+          ],
+          [
+            "2026-05-25",
+            -0.01567176872056524
+          ],
+          [
+            "2026-05-26",
+            0.06254344416300842
+          ],
+          [
+            "2026-05-27",
+            0.06362252751217574
+          ],
+          [
+            "2026-05-28",
+            -0.005839975698006695
+          ],
+          [
+            "2026-05-29",
+            0.0
+          ],
+          [
+            "2026-05-30",
+            0.0
+          ],
+          [
+            "2026-05-31",
+            -0.0070982930349297165
+          ],
+          [
+            "2026-06-01",
+            -0.03007380770582373
+          ],
+          [
+            "2026-06-02",
+            0.06365879151578116
+          ],
+          [
+            "2026-06-03",
+            0.0
+          ],
+          [
+            "2026-06-04",
+            -0.1483100894332221
+          ],
+          [
+            "2026-06-05",
+            0.16092557298811708
+          ],
+          [
+            "2026-06-06",
+            0.02233530798730409
+          ],
+          [
+            "2026-06-07",
+            0.0
+          ],
+          [
+            "2026-06-08",
+            0.12892784829560977
+          ],
+          [
+            "2026-06-09",
+            0.04849606708914943
+          ],
+          [
+            "2026-06-10",
+            0.0
+          ],
+          [
+            "2026-06-11",
+            0.08907686529168725
+          ],
+          [
+            "2026-06-12",
+            0.0
+          ],
+          [
+            "2026-06-13",
+            0.0
+          ],
+          [
+            "2026-06-14",
+            -0.0382212527885304
+          ],
+          [
+            "2026-06-15",
+            0.04389807739180015
+          ],
+          [
+            "2026-06-16",
+            0.11664951479924435
+          ],
+          [
+            "2026-06-17",
+            -0.0016886614661840592
+          ],
+          [
+            "2026-06-18",
+            0.0
+          ],
+          [
+            "2026-06-19",
+            0.0
+          ],
+          [
+            "2026-06-20",
+            0.0
+          ],
+          [
+            "2026-06-21",
+            0.0
+          ],
+          [
+            "2026-06-22",
+            0.022432124337263066
+          ],
+          [
+            "2026-06-23",
+            0.1526986207541064
+          ],
+          [
+            "2026-06-24",
+            0.016530480087316807
+          ],
+          [
+            "2026-06-25",
+            -0.19233922198329736
+          ],
+          [
+            "2026-06-26",
+            0.0
+          ],
+          [
+            "2026-06-27",
+            0.0
+          ],
+          [
+            "2026-06-28",
+            0.0
+          ],
+          [
+            "2026-06-29",
+            -0.0653099281278205
+          ],
+          [
+            "2026-06-30",
+            0.035508414612165265
+          ],
+          [
+            "2026-07-01",
+            0.11644323447701692
+          ],
+          [
+            "2026-07-02",
+            0.16043460057606262
+          ],
+          [
+            "2026-07-03",
+            0.0
+          ],
+          [
+            "2026-07-04",
+            0.0
+          ],
+          [
+            "2026-07-05",
+            0.0
+          ],
+          [
+            "2026-07-06",
+            -0.04136868438691108
+          ],
+          [
+            "2026-07-07",
+            0.026125898646342398
+          ],
+          [
+            "2026-07-08",
+            -0.00015260253599609817
+          ],
+          [
+            "2026-07-09",
+            0.0
+          ],
+          [
+            "2026-07-10",
+            0.0
+          ],
+          [
+            "2026-07-11",
+            0.0
+          ],
+          [
+            "2026-07-12",
+            0.0
+          ],
+          [
+            "2026-07-13",
+            0.18754918132374412
+          ],
+          [
+            "2026-07-14",
+            -0.001541849497166044
+          ],
+          [
+            "2026-07-15",
+            -0.008691194989763012
+          ],
+          [
+            "2026-07-16",
+            -0.00017891354546796154
+          ],
+          [
+            "2026-07-17",
+            0.0
+          ],
+          [
+            "2026-07-18",
+            0.0
+          ],
+          [
+            "2026-07-19",
+            -0.012444994931188757
+          ],
+          [
+            "2026-07-20",
+            -0.08131050607035524
+          ],
+          [
+            "2026-07-21",
+            -0.0005730908653663244
+          ],
+          [
+            "2026-07-22",
+            -0.025169770908247395
+          ],
+          [
+            "2026-07-23",
+            0.0
+          ],
+          [
+            "2026-07-24",
+            0.0
+          ],
+          [
+            "2026-07-25",
+            0.0
+          ],
+          [
+            "2026-07-26",
+            0.016034307742787888
+          ],
+          [
+            "2026-07-27",
+            0.016271996421617963
+          ],
+          [
+            "2026-07-28",
+            -0.053197126586267206
+          ],
+          [
+            "2026-07-29",
+            -0.0018229241560621683
+          ],
+          [
+            "2026-07-30",
+            -0.0009566545157105909
+          ],
+          [
+            "2026-07-31",
+            0.0
+          ],
+          [
+            "2026-08-01",
+            0.0
+          ],
+          [
+            "2026-08-02",
+            0.034106879797782895
+          ],
+          [
+            "2026-08-03",
+            0.03748710126579273
+          ],
+          [
+            "2026-08-04",
+            0.0
+          ],
+          [
+            "2026-08-05",
+            0.0
+          ],
+          [
+            "2026-08-06",
+            -0.04106435647236292
+          ],
+          [
+            "2026-08-07",
+            0.0
+          ],
+          [
+            "2026-08-08",
+            0.0
+          ],
+          [
+            "2026-08-09",
+            0.0
+          ],
+          [
+            "2026-08-10",
+            0.01358654387605453
+          ],
+          [
+            "2026-08-11",
+            -0.0006477823935497088
+          ],
+          [
+            "2026-08-12",
+            -0.023958300425425034
+          ],
+          [
+            "2026-08-13",
+            -0.03053278530933319
+          ]
+        ]
+      },
+      "development_tick_path": {
+        "tick_observations": 2578213,
+        "completed_trades": 46,
+        "final_equity": 187358.48192205167,
+        "minimum_equity": 85446.28434491385,
+        "max_drawdown": -0.2782740565526726,
+        "max_drawdown_at": "2026-06-30T14:01:39.740000+00:00"
+      }
+    }
+  },
+  "limitations": [
+    "30m and 60m bars are deterministic aggregations of closed 15m bars.",
+    "Portfolio combination is daily rebalanced and has no shared intraday margin model.",
+    "August 11-13 was already revealed in the prior study and is diagnostic only here.",
+    "No parameter or portfolio approval is granted; new forward evidence starts August 14."
+  ]
+}

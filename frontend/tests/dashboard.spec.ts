@@ -11,11 +11,11 @@ const researchPresets = [
   },
   {
     instrument_id: 'btc_perp', symbol: 'BTCUSDT', display_symbol: 'BTC/USDT PERP',
-    name: 'Bitcoin USD-M Perpetual', history_start_date: '2026-05-01', direction: 'long_short',
+    name: 'Bitcoin USD-M Perpetual', history_start_date: '2024-01-01', direction: 'long_short',
     atr_periods: [14, 21, 28], atr_multipliers: [2, 2.5, 3],
     trend_efficiency_period: 8, minimum_trend_efficiency: 0.25,
     reversal_confirmation_atr: 0, leverage: 1, position_fraction: 1,
-    fee_bps: 5, slippage_bps: 2, status: 'baseline_unoptimized',
+    fee_bps: 5, slippage_bps: 2, status: 'baseline_rejected_validation',
   },
   {
     instrument_id: 'eth_perp', symbol: 'ETHUSDT', display_symbol: 'ETH/USDT PERP',

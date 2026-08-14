@@ -12,6 +12,42 @@ market data.
   was available. These files are retained for provenance and are not current recommendations.
 - `experiments/`: optional destination for new exploratory output. Promote an experiment into the
   full-history tree only after documenting its data range, costs, split method, and limitations.
+- `experiments/*/forward/`: deterministic monitoring output for frozen parameters. Forward reports
+  must not run a search or count UTC dates on or before the candidate evidence lock.
+- `experiments/soxl_volatility_spread/2026-08-14-multihorizon/`: exploratory 15m/30m/60m
+  volatility-spread ensemble; it has no clean post-reveal holdout and is not a candidate approval.
+- `experiments/soxl_volatility_spread/2026-08-14-state-filter/`: exploratory 15m-state entry
+  filters layered on the higher-horizon sleeves; no filter combination is approved.
+- `experiments/soxl_volatility_spread/2026-08-14-compression-fade/`: exploratory compressed-range
+  mean-reversion sleeve. Its train/validation portfolio selection assigned it zero weight, so it
+  is rejected as an additive return source and is not a candidate approval.
+- `experiments/soxl_volatility_spread/2026-08-14-risk-budget/`: closed-bar spread-strength entry
+  sizing. It reduced diagnostic drawdown only by reducing return, so it is rejected as a route to
+  the 5% daily target and is not a candidate approval.
+- `experiments/soxl_volatility_spread/2026-08-14-cross-asset/`: BTC 15m volatility-state filters
+  for the frozen SOXL signal. The best split result had lower development return and worse Tick
+  drawdown than the fixed baseline, so it is rejected and is not a candidate approval.
+- `experiments/soxl_volatility_spread/2026-08-14-5m/`: 5m volatility-spread replay constructed
+  from persisted 250ms trades. No candidate passed train/validation, so this time scale is rejected
+  before forward monitoring.
+- `experiments/soxl_volatility_spread/2026-08-14-acceleration/`: 15m spread-acceleration and
+  first-cross entry gates. Stable selection chose no gate, so the hypothesis is rejected rather
+  than promoted as a new strategy.
+- `experiments/soxl_volatility_spread/2026-08-14-protocol.md`: discovery stop rule and forward
+  evidence protocol. It freezes parameter searching through the current evidence lock to prevent
+  data-snooping against the revealed diagnostic interval.
+- `experiments/btc_atr/2026-08-14-baseline/`: BTCUSDT 15m ATR baseline study after expanding the
+  warehouse to 2024-01-01. The training winner failed both July validation and August confirmation,
+  so no BTC strategy or leverage setting is approved.
+- `experiments/btc_strategy_families/2026-08-14/`: 1h, 4h, and daily BTCUSDT comparison of EMA
+  trend, Donchian breakout, time-series momentum, and RSI mean reversion. No strategy meets the
+  25% monthly objective; the sole three-split-positive EMA lead remains unapproved.
+- `experiments/btc_eth_pair/2026-08-14/`: OHLCV-level equal-notional BTC/ETH ratio EMA, momentum,
+  and mean-reversion research. The selected pair was positive but underperformed the benchmark and
+  missed the monthly target; it is rejected and not a Tick-level approval.
+- `experiments/btc_regime_breakout/2026-08-14/`: daily EMA direction filtered 4h BTC Donchian
+  breakouts. The development winner went flat during confirmation, while the faster long/short
+  variant failed confirmation; no regime-filtered candidate is approved.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment

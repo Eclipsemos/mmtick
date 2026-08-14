@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "candidate_id": "soxl-volatility-spread-true-range-v1",
+  "instrument_id": "soxl_perp",
+  "symbol": "SOXLUSDT",
+  "candidate_status": "insufficient_fresh_evidence",
+  "approved_for_trading": false,
+  "parameter_hash_sha256": "ca22aa999501b91fdcb3ad4adbec0a0afb6cbebda61765cf3fd9f7158eb32e2a",
+  "parameters": {
+    "variant": "compression_release",
+    "direction": "long_short",
+    "fast_window": 12,
+    "slow_window": 64,
+    "entry_ratio": 1.1,
+    "exit_ratio": 0.8,
+    "breakout_window": 24,
+    "stop_atr": 2.5,
+    "max_hold_bars": 96,
+    "exposure": 1.25,
+    "compression_ratio": 0.85,
+    "compression_lookback": 16,
+    "spread_measure": "true_range",
+    "minimum_volume_ratio": null
+  },
+  "source_report": "reports/experiments/soxl_volatility_spread/2026-08-14-v2/results.json",
+  "evidence_lock_date": "2026-08-13",
+  "forward_evidence_start_date": "2026-08-14",
+  "continuous_replay_start_ms": 1779033600000,
+  "parameter_search_performed": false,
+  "costs": {
+    "fee_bps_per_fill": 5.0,
+    "slippage_bps_per_fill": 2.0,
+    "funding_included": true,
+    "initial_equity": "100000"
+  },
+  "status": "awaiting_data",
+  "message": "No complete UTC day is available on or after 2026-08-14.",
+  "data_through_date": null,
+  "forward": {
+    "net_return": 0.0,
+    "geometric_daily_return": 0.0,
+    "max_daily_close_drawdown": 0.0,
+    "complete_days": 0,
+    "completed_trades": 0,
+    "win_rate": null,
+    "profit_factor": null,
+    "profitable_day_rate": 0.0,
+    "days_at_or_above_target": 0,
+    "target_day_rate": 0.0,
+    "daily_returns": [],
+    "trades": []
+  },
+  "gates": {
+    "interim_review_ready": false,
+    "approval_review_sample_ready": false,
+    "minimum_complete_days_for_interim_review": 30,
+    "minimum_completed_trades_for_interim_review": 20,
+    "minimum_complete_days_for_approval_review": 90,
+    "minimum_completed_trades_for_approval_review": 100
+  },
+  "target": {
+    "geometric_daily_return": 0.05,
+    "observed_in_available_sample": false,
+    "achieved": false,
+    "evaluable": false
+  }
+}

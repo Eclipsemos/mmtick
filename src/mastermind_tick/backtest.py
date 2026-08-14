@@ -556,15 +556,19 @@ def run_parameter_grid(
         market_id = instrument.market_id
         available = connection.execute(
             """
-            SELECT MIN(timestamp_ms) AS first_ms, MAX(timestamp_ms) AS last_ms,
-                   COUNT(*) AS tick_count,
-                   COALESCE(SUM(
-                       CASE WHEN first_trade_id IS NOT NULL AND last_trade_id IS NOT NULL
-                            THEN last_trade_id - first_trade_id + 1 ELSE 1 END
-                   ), 0) AS raw_trade_count
-            FROM agg_trades WHERE instrument_id = ?
+            SELECT
+                (
+                    SELECT timestamp_ms FROM agg_trades
+                    WHERE instrument_id = ?
+                    ORDER BY timestamp_ms ASC LIMIT 1
+                ) AS first_ms,
+                (
+                    SELECT timestamp_ms FROM agg_trades
+                    WHERE instrument_id = ?
+                    ORDER BY timestamp_ms DESC LIMIT 1
+                ) AS last_ms
             """,
-            (market_id,),
+            (market_id, market_id),
         ).fetchone()
         if available is None or available["first_ms"] is None:
             raise ValueError(f"no aggTrade data for {instrument.id}")

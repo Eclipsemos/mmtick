@@ -1,0 +1,1627 @@
+{
+  "schema_version": 1,
+  "strategy": "soxl-volatility-spread-true-range-v1",
+  "parameter_hash_sha256": "ca22aa999501b91fdcb3ad4adbec0a0afb6cbebda61765cf3fd9f7158eb32e2a",
+  "parameter_search_performed": false,
+  "source_period": {
+    "development_start": "2026-05-17T16:00:00+00:00",
+    "development_end": "2026-08-10T23:59:59.999000+00:00",
+    "first_partial_utc_day_excluded_from_bootstrap": "2026-05-17",
+    "fresh_holdout_start": "2026-08-11T00:00:00+00:00",
+    "fresh_holdout_end": "2026-08-13T23:59:59.999000+00:00"
+  },
+  "method": {
+    "name": "circular moving-block bootstrap of complete UTC daily returns",
+    "simulations_per_row": 10000,
+    "seed": 20260814,
+    "horizons_days": [
+      30,
+      90
+    ],
+    "block_sizes_days": [
+      1,
+      3,
+      7
+    ],
+    "fresh_holdout_resampled": false,
+    "liquidation_modeled": false,
+    "warning": "Bootstrap assumes the short development distribution can recur; it does not model regime shifts, liquidation, market impact, or exchange failure."
+  },
+  "target": {
+    "geometric_daily_return": 0.05,
+    "required_30_day_equity_multiple": 4.321942375150668,
+    "required_90_day_equity_multiple": 80.73036504912677,
+    "diagnostic_tick_drawdown_guard": -0.3
+  },
+  "rows": [
+    {
+      "exposure": 1.25,
+      "development_empirical": {
+        "net_return": 1.8109989703484337,
+        "geometric_daily_return": 0.012233517983845088,
+        "max_daily_close_drawdown": -0.06978264106513732,
+        "complete_days": 85,
+        "profitable_day_rate": 0.3176470588235294,
+        "target_day_rate": 0.1411764705882353,
+        "days_at_or_above_target": 12
+      },
+      "development_full_replay": {
+        "net_return": 1.8022553324532562,
+        "geometric_daily_return": 0.012053748917006502,
+        "max_15m_close_drawdown": -0.11110133011465059,
+        "completed_trades": 64
+      },
+      "development_tick_path": {
+        "tick_observations": 1278237,
+        "completed_trades": 64,
+        "final_equity": 280225.5332453256,
+        "minimum_equity": 92587.60067667883,
+        "max_drawdown": -0.135859109307776,
+        "max_drawdown_at": "2026-07-09T14:21:29.742000+00:00"
+      },
+      "fresh_holdout": {
+        "net_return": 0.007391027063894162,
+        "geometric_daily_return": 0.002457630790872134,
+        "max_daily_close_drawdown": -0.016621583486911673,
+        "days": 3,
+        "daily_returns": [
+          {
+            "date": "2026-08-11",
+            "return": -0.016621583486911663
+          },
+          {
+            "date": "2026-08-12",
+            "return": 0.037674407642130155
+          },
+          {
+            "date": "2026-08-13",
+            "return": -0.012774645993144934
+          }
+        ]
+      },
+      "bootstrap": [
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 1,
+          "simulations": 10000,
+          "seed": 20263815,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0001,
+          "probability_terminal_loss": 0.0673,
+          "probability_daily_close_drawdown_30": 0.0004,
+          "probability_daily_close_drawdown_50": 0.0,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": -0.0009707896141090911,
+            "p25": 0.005865897986328916,
+            "median": 0.011537669456389232,
+            "p75": 0.017881444936570845,
+            "p95": 0.027704829955414585
+          },
+          "terminal_return": {
+            "p05": -0.028717420561658467,
+            "p25": 0.19179767410736415,
+            "median": 0.4107881832936797,
+            "p75": 0.7018290360455594,
+            "p95": 1.2701362746663842
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.1718202468401687,
+            "p25": -0.11215791858142313,
+            "median": -0.07985833848045909,
+            "p75": -0.05819626845734582,
+            "p95": -0.03178347115302366
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 3,
+          "simulations": 10000,
+          "seed": 20263817,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0,
+          "probability_terminal_loss": 0.0445,
+          "probability_daily_close_drawdown_30": 0.0,
+          "probability_daily_close_drawdown_50": 0.0,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.00024839544587272914,
+            "p25": 0.006726118755433663,
+            "median": 0.011720643026743804,
+            "p75": 0.017165757411307714,
+            "p95": 0.02514769277410467
+          },
+          "terminal_return": {
+            "p05": 0.007478765994016797,
+            "p25": 0.22275679858502562,
+            "median": 0.4184640759327005,
+            "p75": 0.6662951901223964,
+            "p95": 1.1066537467722608
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.14197375478725693,
+            "p25": -0.09739758133491574,
+            "median": -0.07234922498608581,
+            "p75": -0.05717716895346869,
+            "p95": -0.03497759081027285
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 7,
+          "simulations": 10000,
+          "seed": 20263821,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0,
+          "probability_terminal_loss": 0.0289,
+          "probability_daily_close_drawdown_30": 0.0,
+          "probability_daily_close_drawdown_50": 0.0,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.0015551275300498717,
+            "p25": 0.007524202937013003,
+            "median": 0.011905732239406719,
+            "p75": 0.016780987746560894,
+            "p95": 0.024118096891811547
+          },
+          "terminal_return": {
+            "p05": 0.0477212740361445,
+            "p25": 0.25217384871103093,
+            "median": 0.42626978960723505,
+            "p75": 0.6474889459820694,
+            "p95": 1.0440956932987009
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.12596516036190594,
+            "p25": -0.08632113012232268,
+            "median": -0.06978264106513732,
+            "p75": -0.050238000926439985,
+            "p95": -0.03480704959356988
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 1,
+          "simulations": 10000,
+          "seed": 20269815,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0,
+          "probability_terminal_loss": 0.0034,
+          "probability_daily_close_drawdown_30": 0.0081,
+          "probability_daily_close_drawdown_50": 0.0,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.004183466064114638,
+            "p25": 0.008695844010295384,
+            "median": 0.01199690139728049,
+            "p75": 0.01561981216805819,
+            "p95": 0.020926331261196026
+          },
+          "terminal_return": {
+            "p05": 0.45604896646616716,
+            "p25": 1.1798210006365366,
+            "median": 1.9250038903445477,
+            "p75": 3.0346399497982204,
+            "p95": 5.44906062652087
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.2322796087615032,
+            "p25": -0.16159836621760246,
+            "median": -0.12663362819178092,
+            "p75": -0.09966099470297948,
+            "p95": -0.07009185463585066
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 3,
+          "simulations": 10000,
+          "seed": 20269817,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0,
+          "probability_terminal_loss": 0.0008,
+          "probability_daily_close_drawdown_30": 0.001,
+          "probability_daily_close_drawdown_50": 0.0,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.0052097582703263595,
+            "p25": 0.00923008277663162,
+            "median": 0.012210638282789676,
+            "p75": 0.015217441152514999,
+            "p95": 0.019779858173224717
+          },
+          "terminal_return": {
+            "p05": 0.5962563384708434,
+            "p25": 1.2862139011482014,
+            "median": 1.9811289836074968,
+            "p75": 2.8932862468278424,
+            "p95": 4.828793801000975
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.18610945446764132,
+            "p25": -0.13493262403889147,
+            "median": -0.10979857395056147,
+            "p75": -0.08789125492477201,
+            "p95": -0.06640460571067985
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 7,
+          "simulations": 10000,
+          "seed": 20269821,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0,
+          "probability_terminal_loss": 0.0,
+          "probability_daily_close_drawdown_30": 0.0,
+          "probability_daily_close_drawdown_50": 0.0,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.006151203256009275,
+            "p25": 0.009593700617795742,
+            "median": 0.012172808173913863,
+            "p75": 0.01486690135583163,
+            "p95": 0.019078350741051336
+          },
+          "terminal_return": {
+            "p05": 0.7365711504653639,
+            "p25": 1.3615486199698958,
+            "median": 1.971118212393282,
+            "p75": 2.774139843877409,
+            "p95": 4.478754065583273
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.16310020961994953,
+            "p25": -0.11894864707790967,
+            "median": -0.09669606359579597,
+            "p75": -0.07699571307956565,
+            "p95": -0.06401453532201118
+          }
+        }
+      ]
+    },
+    {
+      "exposure": 2.0,
+      "development_empirical": {
+        "net_return": 3.7508180424626794,
+        "geometric_daily_return": 0.018502222782610822,
+        "max_daily_close_drawdown": -0.1109185095570503,
+        "complete_days": 85,
+        "profitable_day_rate": 0.3176470588235294,
+        "target_day_rate": 0.16470588235294117,
+        "days_at_or_above_target": 14
+      },
+      "development_full_replay": {
+        "net_return": 3.7271741020088607,
+        "geometric_daily_return": 0.018226052149136196,
+        "max_15m_close_drawdown": -0.1722019216380208,
+        "completed_trades": 64
+      },
+      "development_tick_path": {
+        "tick_observations": 1278237,
+        "completed_trades": 64,
+        "final_equity": 472717.4102008861,
+        "minimum_equity": 87720.56911260453,
+        "max_drawdown": -0.20945116758752239,
+        "max_drawdown_at": "2026-07-09T14:21:29.742000+00:00"
+      },
+      "fresh_holdout": {
+        "net_return": 0.01098636611494519,
+        "geometric_daily_return": 0.003648792161124348,
+        "max_daily_close_drawdown": -0.02659456924521264,
+        "days": 3,
+        "daily_returns": [
+          {
+            "date": "2026-08-11",
+            "return": -0.026594569245212658
+          },
+          {
+            "date": "2026-08-12",
+            "return": 0.06027917308645062
+          },
+          {
+            "date": "2026-08-13",
+            "return": -0.02043941198185034
+          }
+        ]
+      },
+      "bootstrap": [
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 1,
+          "simulations": 10000,
+          "seed": 20263815,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0186,
+          "probability_terminal_loss": 0.0731,
+          "probability_daily_close_drawdown_30": 0.0242,
+          "probability_daily_close_drawdown_50": 0.0001,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": -0.0019418251730179024,
+            "p25": 0.008694870080656225,
+            "median": 0.01748761080671213,
+            "p75": 0.027305608191030895,
+            "p95": 0.04252596607843187
+          },
+          "terminal_return": {
+            "p05": -0.05664384814721956,
+            "p25": 0.29656521168345895,
+            "median": 0.6821855397500505,
+            "p75": 1.2438290672132502,
+            "p95": 2.4882405090129778
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.2643319703742766,
+            "p25": -0.17577757251652096,
+            "median": -0.12673810733192292,
+            "p75": -0.09270177258655501,
+            "p95": -0.05061213420226229
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 3,
+          "simulations": 10000,
+          "seed": 20263817,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0067,
+          "probability_terminal_loss": 0.0493,
+          "probability_daily_close_drawdown_30": 0.0051,
+          "probability_daily_close_drawdown_50": 0.0,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.00010597370549263463,
+            "p25": 0.010020349189382383,
+            "median": 0.017784734367075394,
+            "p75": 0.026100788707167977,
+            "p95": 0.03858578021224094
+          },
+          "terminal_return": {
+            "p05": 0.003184101235876935,
+            "p25": 0.3486638401942863,
+            "median": 0.6969849088430633,
+            "p75": 1.166210432681141,
+            "p95": 2.113659837705712
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.22073340695969867,
+            "p25": -0.15340067794701492,
+            "median": -0.11547887127226564,
+            "p75": -0.09148365149531323,
+            "p95": -0.05567930929274131
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 7,
+          "simulations": 10000,
+          "seed": 20263821,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0043,
+          "probability_terminal_loss": 0.0334,
+          "probability_daily_close_drawdown_30": 0.0006,
+          "probability_daily_close_drawdown_50": 0.0,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.0019963999266563014,
+            "p25": 0.011285663742061025,
+            "median": 0.018135600581418165,
+            "p75": 0.025589529150963575,
+            "p95": 0.036708615293374956
+          },
+          "terminal_return": {
+            "p05": 0.06165849877673187,
+            "p25": 0.40028207530982113,
+            "median": 0.7146232362334785,
+            "p75": 1.1340635444634777,
+            "p95": 1.9491796547783384
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.19788440798888576,
+            "p25": -0.1367920986642677,
+            "median": -0.1109185095570503,
+            "p75": -0.08013080779901571,
+            "p95": -0.055377116340163686
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 1,
+          "simulations": 10000,
+          "seed": 20269815,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0004,
+          "probability_terminal_loss": 0.0043,
+          "probability_daily_close_drawdown_30": 0.1177,
+          "probability_daily_close_drawdown_50": 0.0021,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.00604291253959971,
+            "p25": 0.013042980371184065,
+            "median": 0.018168099543414362,
+            "p75": 0.023717995205724984,
+            "p95": 0.032029713685804234
+          },
+          "terminal_return": {
+            "p05": 0.7198300270150335,
+            "p25": 2.2100252093447965,
+            "median": 4.055379182126934,
+            "p75": 7.245754026427871,
+            "p95": 16.07253999756811
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.3510392605819177,
+            "p25": -0.24973749059010464,
+            "median": -0.1977123672575118,
+            "p75": -0.1569799428030978,
+            "p95": -0.11120169696041086
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 3,
+          "simulations": 10000,
+          "seed": 20269817,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0,
+          "probability_terminal_loss": 0.0011,
+          "probability_daily_close_drawdown_30": 0.0364,
+          "probability_daily_close_drawdown_50": 0.0001,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.007667711184900905,
+            "p25": 0.013866561411278289,
+            "median": 0.018489799365710158,
+            "p75": 0.023101122832857535,
+            "p95": 0.03018256089199212
+          },
+          "terminal_return": {
+            "p05": 0.9886613680542151,
+            "p25": 2.45359953285722,
+            "median": 4.201175885672933,
+            "p75": 6.81035037147322,
+            "p95": 13.53039598882201
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.285327981727379,
+            "p25": -0.21052018087596283,
+            "median": -0.17242252443522943,
+            "p75": -0.13850771511588855,
+            "p95": -0.10560659960307904
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 7,
+          "simulations": 10000,
+          "seed": 20269821,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0,
+          "probability_terminal_loss": 0.0001,
+          "probability_daily_close_drawdown_30": 0.0129,
+          "probability_daily_close_drawdown_50": 0.0,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.009109506407276114,
+            "p25": 0.01445882865241005,
+            "median": 0.018454621262533943,
+            "p75": 0.022578349940181708,
+            "p95": 0.028996795087994468
+          },
+          "terminal_return": {
+            "p05": 1.2617613888100163,
+            "p25": 2.6399745538540973,
+            "median": 4.1850324968784385,
+            "p75": 6.459220126437009,
+            "p95": 12.099719438730117
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.2534319696311473,
+            "p25": -0.18692773639386803,
+            "median": -0.15342272380051025,
+            "p75": -0.12288051413905965,
+            "p95": -0.10345749881191876
+          }
+        }
+      ]
+    },
+    {
+      "exposure": 3.0,
+      "development_empirical": {
+        "net_return": 7.728217589830397,
+        "geometric_daily_return": 0.025816576103744326,
+        "max_daily_close_drawdown": -0.16491021131878547,
+        "complete_days": 85,
+        "profitable_day_rate": 0.3176470588235294,
+        "target_day_rate": 0.17647058823529413,
+        "days_at_or_above_target": 15
+      },
+      "development_full_replay": {
+        "net_return": 7.663059156923523,
+        "geometric_daily_return": 0.02542323630385357,
+        "max_15m_close_drawdown": -0.24777004405895403,
+        "completed_trades": 64
+      },
+      "development_tick_path": {
+        "tick_observations": 1278237,
+        "completed_trades": 64,
+        "final_equity": 866305.9156923522,
+        "minimum_equity": 80741.97223913018,
+        "max_drawdown": -0.3012978359435091,
+        "max_drawdown_at": "2026-05-19T13:37:40.239000+00:00"
+      },
+      "fresh_holdout": {
+        "net_return": 0.014822272991061425,
+        "geometric_daily_return": 0.004916545627839719,
+        "max_daily_close_drawdown": -0.03989186859169358,
+        "days": 3,
+        "daily_returns": [
+          {
+            "date": "2026-08-11",
+            "return": -0.03989186859169361
+          },
+          {
+            "date": "2026-08-12",
+            "return": 0.09041878624375778
+          },
+          {
+            "date": "2026-08-13",
+            "return": -0.030659144977573355
+          }
+        ]
+      },
+      "bootstrap": [
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 1,
+          "simulations": 10000,
+          "seed": 20263815,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.1156,
+          "probability_terminal_loss": 0.0809,
+          "probability_daily_close_drawdown_30": 0.1446,
+          "probability_daily_close_drawdown_50": 0.0047,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": -0.0037246313635513942,
+            "p25": 0.011822719864500786,
+            "median": 0.02444956658985553,
+            "p75": 0.03878995158366633,
+            "p95": 0.06046755901885135
+          },
+          "terminal_return": {
+            "p05": -0.10590884841872347,
+            "p25": 0.42276381256420287,
+            "median": 1.0640370781706443,
+            "p75": 2.1320753324617554,
+            "p95": 4.8199822316329035
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.37567901034793977,
+            "p25": -0.2570779288755024,
+            "median": -0.18704795547007103,
+            "p75": -0.13880281045565115,
+            "p95": -0.07574140893680097
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 3,
+          "simulations": 10000,
+          "seed": 20263817,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0828,
+          "probability_terminal_loss": 0.0551,
+          "probability_daily_close_drawdown_30": 0.0724,
+          "probability_daily_close_drawdown_50": 0.0003,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": -0.0004846405122768494,
+            "p25": 0.013677584893186157,
+            "median": 0.024832430055497068,
+            "p75": 0.0368715788482441,
+            "p95": 0.05456409061437855
+          },
+          "terminal_return": {
+            "p05": -0.014437456962378598,
+            "p25": 0.5031256845894188,
+            "median": 1.0873044462935229,
+            "p75": 1.9631191355938225,
+            "p95": 3.9225412907503068
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.31818403499007014,
+            "p25": -0.2248142843377795,
+            "median": -0.17093074360097749,
+            "p75": -0.13643032046670156,
+            "p95": -0.08341800015132558
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 7,
+          "simulations": 10000,
+          "seed": 20263821,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0625,
+          "probability_terminal_loss": 0.0373,
+          "probability_daily_close_drawdown_30": 0.0369,
+          "probability_daily_close_drawdown_50": 0.0,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.0020295860965752325,
+            "p25": 0.015439465831301513,
+            "median": 0.025383341650101365,
+            "p75": 0.036037572209302926,
+            "p95": 0.05168792382716282
+          },
+          "terminal_return": {
+            "p05": 0.06271387259991094,
+            "p25": 0.5835112660423267,
+            "median": 1.1212298599451926,
+            "p75": 1.8924454014436585,
+            "p95": 3.5353062006141345
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.2878249928270943,
+            "p25": -0.20226055238260066,
+            "median": -0.16491021131878536,
+            "p75": -0.11885984769990698,
+            "p95": -0.08288938717511642
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 1,
+          "simulations": 10000,
+          "seed": 20269815,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0223,
+          "probability_terminal_loss": 0.0056,
+          "probability_daily_close_drawdown_30": 0.4492,
+          "probability_daily_close_drawdown_50": 0.042,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.007818962705041588,
+            "p25": 0.017959139792367462,
+            "median": 0.02537347787832256,
+            "p75": 0.033402814823264404,
+            "p95": 0.0453674048518188
+          },
+          "terminal_return": {
+            "p05": 1.015706544898507,
+            "p25": 3.9628499602750695,
+            "median": 8.536459927615073,
+            "p75": 18.242771149996656,
+            "p95": 53.2257913390045
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.4853535020450439,
+            "p25": -0.35739605720668643,
+            "median": -0.2870912190929426,
+            "p75": -0.23021843536192654,
+            "p95": -0.1649099802494271
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 3,
+          "simulations": 10000,
+          "seed": 20269817,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0096,
+          "probability_terminal_loss": 0.0018,
+          "probability_daily_close_drawdown_30": 0.2695,
+          "probability_daily_close_drawdown_50": 0.0072,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.010241866761581887,
+            "p25": 0.019121596390402784,
+            "median": 0.02575271411512714,
+            "p75": 0.03245470202187889,
+            "p95": 0.04254935487444368
+          },
+          "terminal_return": {
+            "p05": 1.5019732516012223,
+            "p25": 4.499718250525814,
+            "median": 8.859178501943328,
+            "p75": 16.717016310706093,
+            "p95": 41.53007976099247
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.405539172342662,
+            "p25": -0.3050798236482847,
+            "median": -0.25227717827334784,
+            "p75": -0.20465373129288644,
+            "p95": -0.15754106760630232
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 7,
+          "simulations": 10000,
+          "seed": 20269821,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.0039,
+          "probability_terminal_loss": 0.0002,
+          "probability_daily_close_drawdown_30": 0.1574,
+          "probability_daily_close_drawdown_50": 0.0016,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.012257307193558033,
+            "p25": 0.020034981479511438,
+            "median": 0.02579267418079445,
+            "p75": 0.03169837752752708,
+            "p95": 0.040791169818794194
+          },
+          "terminal_return": {
+            "p05": 1.9935247245530645,
+            "p25": 4.961505232001229,
+            "median": 8.893805896412802,
+            "p75": 15.586214627822716,
+            "p95": 35.536246368444424
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.36292542327469546,
+            "p25": -0.2736001413179041,
+            "median": -0.22616783505789284,
+            "p75": -0.18151253465781048,
+            "p95": -0.1542299872564958
+          }
+        }
+      ]
+    },
+    {
+      "exposure": 5.0,
+      "development_empirical": {
+        "net_return": 21.70377020104905,
+        "geometric_daily_return": 0.03741875208201373,
+        "max_daily_close_drawdown": -0.2699579102693661,
+        "complete_days": 85,
+        "profitable_day_rate": 0.3176470588235294,
+        "target_day_rate": 0.24705882352941178,
+        "days_at_or_above_target": 21
+      },
+      "development_full_replay": {
+        "net_return": 21.421287232944284,
+        "geometric_daily_return": 0.0368247487297515,
+        "max_15m_close_drawdown": -0.38086499325086925,
+        "completed_trades": 64
+      },
+      "development_tick_path": {
+        "tick_observations": 1278237,
+        "completed_trades": 64,
+        "final_equity": 2242128.723294428,
+        "minimum_equity": 65106.98590893717,
+        "max_drawdown": -0.4830039739696474,
+        "max_drawdown_at": "2026-05-19T13:37:40.239000+00:00"
+      },
+      "fresh_holdout": {
+        "net_return": 0.019302461448801544,
+        "geometric_daily_return": 0.006393193786626616,
+        "max_daily_close_drawdown": -0.06648644883884647,
+        "days": 3,
+        "daily_returns": [
+          {
+            "date": "2026-08-11",
+            "return": -0.06648644883884648
+          },
+          {
+            "date": "2026-08-12",
+            "return": 0.15069798003644552
+          },
+          {
+            "date": "2026-08-13",
+            "return": -0.05109858214629929
+          }
+        ]
+      },
+      "bootstrap": [
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 1,
+          "simulations": 10000,
+          "seed": 20263815,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.3244,
+          "probability_terminal_loss": 0.0993,
+          "probability_daily_close_drawdown_30": 0.5086,
+          "probability_daily_close_drawdown_50": 0.1031,
+          "probability_daily_close_drawdown_80": 0.0003,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": -0.00871945945178292,
+            "p25": 0.01578207450260477,
+            "median": 0.035594732678383534,
+            "p75": 0.057788833051970245,
+            "p95": 0.09139134127135283
+          },
+          "terminal_return": {
+            "p05": -0.2310511268009543,
+            "p25": 0.5996182015027676,
+            "median": 1.855584361582062,
+            "p75": 4.394726265880493,
+            "p95": 12.785264950301528
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.5620386915424774,
+            "p25": -0.4050394267300811,
+            "median": -0.30283475898800805,
+            "p75": -0.22870947407383002,
+            "p95": -0.12655756207847277
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 3,
+          "simulations": 10000,
+          "seed": 20263817,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.3027,
+          "probability_terminal_loss": 0.0693,
+          "probability_daily_close_drawdown_30": 0.428,
+          "probability_daily_close_drawdown_50": 0.043,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": -0.003637117274543598,
+            "p25": 0.01860365449965512,
+            "median": 0.036010573446040306,
+            "p75": 0.0547010616472427,
+            "p95": 0.08218972122868279
+          },
+          "terminal_return": {
+            "p05": -0.1035496682134853,
+            "p25": 0.7384287654340598,
+            "median": 1.890184959798563,
+            "p75": 3.941758515437943,
+            "p95": 9.693063332327876
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.489900976232723,
+            "p25": -0.35922762734503655,
+            "median": -0.27833411294189275,
+            "p75": -0.22499766721614745,
+            "p95": -0.13731896815651254
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 7,
+          "simulations": 10000,
+          "seed": 20263821,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.2959,
+          "probability_terminal_loss": 0.0495,
+          "probability_daily_close_drawdown_30": 0.3227,
+          "probability_daily_close_drawdown_50": 0.0212,
+          "probability_daily_close_drawdown_80": 0.0,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.00029781526696974985,
+            "p25": 0.021464368730377492,
+            "median": 0.03696670479521702,
+            "p75": 0.05359874003121501,
+            "p95": 0.07764144688750842
+          },
+          "terminal_return": {
+            "p05": 0.008973198632876746,
+            "p25": 0.8910223346320776,
+            "median": 1.9712854173026948,
+            "p75": 3.7891371894418144,
+            "p95": 8.42385488334857
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.45260594418259203,
+            "p25": -0.32624767999621296,
+            "median": -0.2699579102693661,
+            "p75": -0.1971902809377052,
+            "p95": -0.13526669239448869
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 1,
+          "simulations": 10000,
+          "seed": 20269815,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.239,
+          "probability_terminal_loss": 0.0114,
+          "probability_daily_close_drawdown_30": 0.8988,
+          "probability_daily_close_drawdown_50": 0.3511,
+          "probability_daily_close_drawdown_80": 0.0076,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.009393995436844405,
+            "p25": 0.025243409053204824,
+            "median": 0.036836034831464914,
+            "p75": 0.049348957041776775,
+            "p95": 0.06792628496759832
+          },
+          "terminal_return": {
+            "p05": 1.3198746802616277,
+            "p25": 8.428199480788646,
+            "median": 24.936264542697195,
+            "p75": 75.34739405254956,
+            "p95": 369.4376581635355
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.6926006272572012,
+            "p25": -0.5405385507095577,
+            "median": -0.4476673148040593,
+            "p75": -0.3671257777153106,
+            "p95": -0.2693913443538262
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 3,
+          "simulations": 10000,
+          "seed": 20269817,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.2031,
+          "probability_terminal_loss": 0.0032,
+          "probability_daily_close_drawdown_30": 0.8434,
+          "probability_daily_close_drawdown_50": 0.1877,
+          "probability_daily_close_drawdown_80": 0.0008,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.013197079935488387,
+            "p25": 0.02708850754360481,
+            "median": 0.03736478323022385,
+            "p75": 0.047723689325927465,
+            "p95": 0.06343160187608296
+          },
+          "terminal_return": {
+            "p05": 2.254270527824198,
+            "p25": 10.08430020202298,
+            "median": 26.154078870180154,
+            "p75": 65.4062139347212,
+            "p95": 252.43149471094114
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.6015863244941068,
+            "p25": -0.4734082431900136,
+            "median": -0.39882018512370854,
+            "p75": -0.3297581661431179,
+            "p95": -0.2584003344084998
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 7,
+          "simulations": 10000,
+          "seed": 20269821,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.1788,
+          "probability_terminal_loss": 0.0007,
+          "probability_daily_close_drawdown_30": 0.7446,
+          "probability_daily_close_drawdown_50": 0.1078,
+          "probability_daily_close_drawdown_80": 0.0001,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.016306595036564307,
+            "p25": 0.028464210643920462,
+            "median": 0.03740232435094215,
+            "p75": 0.046589252115185664,
+            "p95": 0.06071865628474361
+          },
+          "terminal_return": {
+            "p05": 3.287725201474168,
+            "p25": 11.503353287167988,
+            "median": 26.242659738347605,
+            "p75": 59.23714024318684,
+            "p95": 200.3810858266944
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.5519523039464496,
+            "p25": -0.4327898838445517,
+            "median": -0.3623194440795791,
+            "p75": -0.29886137949215397,
+            "p95": -0.25353434595263646
+          }
+        }
+      ]
+    },
+    {
+      "exposure": 7.5,
+      "development_empirical": {
+        "net_return": 49.21779794289204,
+        "geometric_daily_return": 0.04715287678192892,
+        "max_daily_close_drawdown": -0.39576340858640346,
+        "complete_days": 85,
+        "profitable_day_rate": 0.3176470588235294,
+        "target_day_rate": 0.27058823529411763,
+        "days_at_or_above_target": 23
+      },
+      "development_full_replay": {
+        "net_return": 48.28057435696498,
+        "geometric_daily_return": 0.046362763741526924,
+        "max_15m_close_drawdown": -0.5184585079250461,
+        "completed_trades": 64
+      },
+      "development_tick_path": {
+        "tick_observations": 1278237,
+        "completed_trades": 64,
+        "final_equity": 4928057.4356964985,
+        "minimum_equity": 42417.460253390054,
+        "max_drawdown": -0.6958180990229402,
+        "max_drawdown_at": "2026-05-19T13:37:40.239000+00:00"
+      },
+      "fresh_holdout": {
+        "net_return": 0.01917181098893872,
+        "geometric_daily_return": 0.006350193350304956,
+        "max_daily_close_drawdown": -0.09972967360397,
+        "days": 3,
+        "daily_returns": [
+          {
+            "date": "2026-08-11",
+            "return": -0.09972967360397003
+          },
+          {
+            "date": "2026-08-12",
+            "return": 0.22604699045628338
+          },
+          {
+            "date": "2026-08-13",
+            "return": -0.07664787757253735
+          }
+        ]
+      },
+      "bootstrap": [
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 1,
+          "simulations": 10000,
+          "seed": 20263815,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.4549,
+          "probability_terminal_loss": 0.1276,
+          "probability_daily_close_drawdown_30": 0.8325,
+          "probability_daily_close_drawdown_50": 0.3706,
+          "probability_daily_close_drawdown_80": 0.0173,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": -0.01810988144151581,
+            "p25": 0.01709152236052064,
+            "median": 0.045086236931181745,
+            "p75": 0.07611407854749574,
+            "p95": 0.12335645901516692
+          },
+          "terminal_return": {
+            "p05": -0.42205475442680707,
+            "p25": 0.6626508500885646,
+            "median": 2.754601599629202,
+            "p75": 8.031283257541128,
+            "p95": 31.773862830912186
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.7329450749710693,
+            "p25": -0.5645324827705955,
+            "median": -0.4370081208241936,
+            "p75": -0.34306424863953167,
+            "p95": -0.18923977483913498
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 3,
+          "simulations": 10000,
+          "seed": 20263817,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.4504,
+          "probability_terminal_loss": 0.0931,
+          "probability_daily_close_drawdown_30": 0.7962,
+          "probability_daily_close_drawdown_50": 0.2689,
+          "probability_daily_close_drawdown_80": 0.004,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": -0.010657328904423717,
+            "p25": 0.02150028356184369,
+            "median": 0.04533060134295319,
+            "p75": 0.07129224008567386,
+            "p95": 0.10995294951364033
+          },
+          "terminal_return": {
+            "p05": -0.27489277941086704,
+            "p25": 0.8930180215270436,
+            "median": 2.7810283643965255,
+            "p75": 6.892940114064661,
+            "p95": 21.863203856366876
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.6634660035366211,
+            "p25": -0.5109906955481969,
+            "median": -0.40652047113784706,
+            "p75": -0.32828453862800244,
+            "p95": -0.20434434474231078
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 7,
+          "simulations": 10000,
+          "seed": 20263821,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.465,
+          "probability_terminal_loss": 0.0692,
+          "probability_daily_close_drawdown_30": 0.7433,
+          "probability_daily_close_drawdown_50": 0.1877,
+          "probability_daily_close_drawdown_80": 0.0007,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": -0.0054875729799950135,
+            "p25": 0.025139657459334275,
+            "median": 0.04699361302858163,
+            "p75": 0.07029505665372593,
+            "p95": 0.10324035347715008
+          },
+          "terminal_return": {
+            "p05": -0.15217457433039352,
+            "p25": 1.106158421639766,
+            "median": 2.965710170371457,
+            "p75": 6.675480752792055,
+            "p95": 18.059177949497965
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.62561729277129,
+            "p25": -0.46666210674721076,
+            "median": -0.39576340858640346,
+            "p75": -0.2957855343857536,
+            "p95": -0.2019589098535783
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 1,
+          "simulations": 10000,
+          "seed": 20269815,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.4433,
+          "probability_terminal_loss": 0.024,
+          "probability_daily_close_drawdown_30": 0.9957,
+          "probability_daily_close_drawdown_50": 0.7887,
+          "probability_daily_close_drawdown_80": 0.1086,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.007471115564803722,
+            "p25": 0.030036700204287337,
+            "median": 0.04643373591542588,
+            "p75": 0.06389649800440544,
+            "p95": 0.09025844919266202
+          },
+          "terminal_return": {
+            "p05": 0.9540441531236343,
+            "p25": 13.346411603980524,
+            "median": 58.436867975338615,
+            "p75": 262.599243629983,
+            "p95": 2384.8959072227653
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.854544667005645,
+            "p25": -0.7175193725415894,
+            "median": -0.61488157046978,
+            "p75": -0.5185623872310662,
+            "p95": -0.3929104719299704
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 3,
+          "simulations": 10000,
+          "seed": 20269817,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.4478,
+          "probability_terminal_loss": 0.0083,
+          "probability_daily_close_drawdown_30": 0.9948,
+          "probability_daily_close_drawdown_50": 0.674,
+          "probability_daily_close_drawdown_80": 0.0343,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.013416545650784695,
+            "p25": 0.03291202352347383,
+            "median": 0.047120020241407046,
+            "p75": 0.06157772948470219,
+            "p95": 0.08346644177323574
+          },
+          "terminal_return": {
+            "p05": 2.3183268903703036,
+            "p25": 17.437411817759966,
+            "median": 62.04950829959091,
+            "p75": 215.6017739364794,
+            "p95": 1358.5413859543476
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.7774686514403901,
+            "p25": -0.6447463911121917,
+            "median": -0.5587260986831432,
+            "p75": -0.47190965039739796,
+            "p95": -0.38088761424186024
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 7,
+          "simulations": 10000,
+          "seed": 20269821,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.4439,
+          "probability_terminal_loss": 0.004,
+          "probability_daily_close_drawdown_30": 0.9879,
+          "probability_daily_close_drawdown_50": 0.5402,
+          "probability_daily_close_drawdown_80": 0.014,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.01741840195150576,
+            "p25": 0.03476671994859415,
+            "median": 0.0472669466029475,
+            "p75": 0.060142796462119286,
+            "p95": 0.07941649517960532
+          },
+          "terminal_return": {
+            "p05": 3.7311097411948237,
+            "p25": 20.668094875912566,
+            "median": 62.85070633203276,
+            "p75": 190.77545111980007,
+            "p95": 969.5425022299179
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.7327788477512726,
+            "p25": -0.6020438743412202,
+            "median": -0.5149834914876972,
+            "p75": -0.4376899863319794,
+            "p95": -0.3749749511796703
+          }
+        }
+      ]
+    },
+    {
+      "exposure": 10.0,
+      "development_empirical": {
+        "net_return": 74.69099437447002,
+        "geometric_daily_return": 0.052219636859025975,
+        "max_daily_close_drawdown": -0.5154532364713982,
+        "complete_days": 85,
+        "profitable_day_rate": 0.3176470588235294,
+        "target_day_rate": 0.29411764705882354,
+        "days_at_or_above_target": 25
+      },
+      "development_full_replay": {
+        "net_return": 72.80748193927866,
+        "geometric_daily_return": 0.051288945005265596,
+        "max_15m_close_drawdown": -0.6326711205025176,
+        "completed_trades": 64
+      },
+      "development_tick_path": {
+        "tick_observations": 1278237,
+        "completed_trades": 64,
+        "final_equity": 7380748.193927866,
+        "minimum_equity": 16232.505257121156,
+        "max_drawdown": -0.8945456454749747,
+        "max_drawdown_at": "2026-05-19T13:37:40.239000+00:00"
+      },
+      "fresh_holdout": {
+        "net_return": 0.013031861829276847,
+        "geometric_daily_return": 0.004325219448434003,
+        "max_daily_close_drawdown": -0.13297289784230537,
+        "days": 3,
+        "daily_returns": [
+          {
+            "date": "2026-08-11",
+            "return": -0.13297289784230534
+          },
+          {
+            "date": "2026-08-12",
+            "return": 0.30139598479177643
+          },
+          {
+            "date": "2026-08-13",
+            "return": -0.10219717141822596
+          }
+        ]
+      },
+      "bootstrap": [
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 1,
+          "simulations": 10000,
+          "seed": 20263815,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.5001,
+          "probability_terminal_loss": 0.1643,
+          "probability_daily_close_drawdown_30": 0.9221,
+          "probability_daily_close_drawdown_50": 0.6228,
+          "probability_daily_close_drawdown_80": 0.1018,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": -0.03131255938643518,
+            "p25": 0.01451443531300084,
+            "median": 0.050015041192438936,
+            "p75": 0.089363200135337,
+            "p95": 0.14904356779929134
+          },
+          "terminal_return": {
+            "p05": -0.6149562575918508,
+            "p25": 0.5408023537836231,
+            "median": 3.3238002796085993,
+            "p75": 12.037100330696202,
+            "p95": 63.57958215625466
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.8512312365451477,
+            "p25": -0.6955669169420501,
+            "median": -0.5602705787900819,
+            "p75": -0.4481742254926119,
+            "p95": -0.2546388027807343
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 3,
+          "simulations": 10000,
+          "seed": 20263817,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.4992,
+          "probability_terminal_loss": 0.1233,
+          "probability_daily_close_drawdown_30": 0.9362,
+          "probability_daily_close_drawdown_50": 0.597,
+          "probability_daily_close_drawdown_80": 0.0456,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": -0.020196192467802125,
+            "p25": 0.02057420102108093,
+            "median": 0.04989295513668546,
+            "p75": 0.08301982058722074,
+            "p95": 0.1319833512443911
+          },
+          "terminal_return": {
+            "p05": -0.45778221421477616,
+            "p25": 0.842204019758301,
+            "median": 3.308743684650964,
+            "p75": 9.941884993497474,
+            "p95": 40.22884657991345
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.7932537164623703,
+            "p25": -0.6414188424263432,
+            "median": -0.5259853147336743,
+            "p75": -0.42679366989364786,
+            "p95": -0.27242842369064024
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 30,
+          "block_size": 7,
+          "simulations": 10000,
+          "seed": 20263821,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.5237,
+          "probability_terminal_loss": 0.101,
+          "probability_daily_close_drawdown_30": 0.9431,
+          "probability_daily_close_drawdown_50": 0.5556,
+          "probability_daily_close_drawdown_80": 0.0263,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": -0.015224363099547488,
+            "p25": 0.02491815475071274,
+            "median": 0.052432848463303094,
+            "p75": 0.0820130694729439,
+            "p95": 0.12326119077060875
+          },
+          "terminal_return": {
+            "p05": -0.3688699276155284,
+            "p25": 1.092548763466893,
+            "median": 3.63267516679274,
+            "p75": 9.640822470540074,
+            "p95": 31.69059165952128
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.7613446703042457,
+            "p25": -0.5976797709568371,
+            "median": -0.5154532364713982,
+            "p75": -0.3943807073767942,
+            "p95": -0.2732830465553087
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 1,
+          "simulations": 10000,
+          "seed": 20269815,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.5171,
+          "probability_terminal_loss": 0.0449,
+          "probability_daily_close_drawdown_30": 0.9994,
+          "probability_daily_close_drawdown_50": 0.9574,
+          "probability_daily_close_drawdown_80": 0.3601,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.001525702818852638,
+            "p25": 0.030342576796162368,
+            "median": 0.051406458112899234,
+            "p75": 0.07387934322663109,
+            "p95": 0.10703782686227718
+          },
+          "terminal_return": {
+            "p05": 0.14706761783127753,
+            "p25": 13.734933806590933,
+            "median": 90.06628615587442,
+            "p75": 609.9337064773514,
+            "p95": 9431.385791910967
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.9409935988211791,
+            "p25": -0.842570198401378,
+            "median": -0.7481676274842004,
+            "p75": -0.6486927610442015,
+            "p95": -0.509962395147071
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 3,
+          "simulations": 10000,
+          "seed": 20269817,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.5338,
+          "probability_terminal_loss": 0.0208,
+          "probability_daily_close_drawdown_30": 0.9997,
+          "probability_daily_close_drawdown_50": 0.9444,
+          "probability_daily_close_drawdown_80": 0.2012,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.00950779511703408,
+            "p25": 0.0343132534288067,
+            "median": 0.05220207912288122,
+            "p75": 0.07057121944870359,
+            "p95": 0.09868116388742638
+          },
+          "terminal_return": {
+            "p05": 1.3435322722501473,
+            "p25": 19.829942736768675,
+            "median": 96.48190453556631,
+            "p75": 461.80788909158014,
+            "p95": 4768.262316296344
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.8919621700472223,
+            "p25": -0.779197328093349,
+            "median": -0.6921761930003617,
+            "p75": -0.6003150791665721,
+            "p95": -0.49409599326004117
+          }
+        },
+        {
+          "method": "circular_moving_block_bootstrap",
+          "source_days": 85,
+          "horizon_days": 90,
+          "block_size": 7,
+          "simulations": 10000,
+          "seed": 20269821,
+          "target_geometric_daily_return": 0.05,
+          "probability_target_reached": 0.5406,
+          "probability_terminal_loss": 0.0121,
+          "probability_daily_close_drawdown_30": 0.9998,
+          "probability_daily_close_drawdown_50": 0.9327,
+          "probability_daily_close_drawdown_80": 0.1299,
+          "probability_daily_close_ruin": 0.0,
+          "geometric_daily_return": {
+            "p05": 0.014196312784105047,
+            "p25": 0.036693016825995406,
+            "median": 0.05249154178171356,
+            "p75": 0.06893588848798454,
+            "p95": 0.09305714035413455
+          },
+          "terminal_return": {
+            "p05": 2.5561695355974896,
+            "p25": 24.616251992133396,
+            "median": 98.92526445506095,
+            "p75": 402.31952792851683,
+            "p95": 3004.09319993521
+          },
+          "max_daily_close_drawdown": {
+            "p05": -0.8601939838161203,
+            "p25": -0.7429805634917412,
+            "median": -0.6520587145969854,
+            "p75": -0.5662437432765661,
+            "p95": -0.4873688285581199
+          }
+        }
+      ]
+    }
+  ],
+  "decision": {
+    "status": "target_not_supported",
+    "tested_exposure_meeting_target_and_tick_drawdown_guard": false,
+    "reason": "No tested exposure reaches 5% development geometric daily return while remaining inside the diagnostic 30% Tick-path drawdown guard."
+  }
+}

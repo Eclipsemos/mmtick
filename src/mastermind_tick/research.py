@@ -98,10 +98,11 @@ def research_presets(settings: Settings) -> dict[str, ResearchPreset]:
         "btc_perp": ResearchPreset(
             instrument=crypto("btc_perp", "BTCUSDT", "Bitcoin USD-M Perpetual", "BTC"),
             archive_dir="data/history_btc",
-            history_start_date=date(2026, 5, 1),
+            history_start_date=date(2024, 1, 1),
             direction="long_short",
             atr_periods=(14, 21, 28),
             atr_multipliers=(2.0, 2.5, 3.0),
+            status="baseline_rejected_validation",
         ),
         "eth_perp": ResearchPreset(
             instrument=crypto("eth_perp", "ETHUSDT", "Ethereum USD-M Perpetual", "ETH"),

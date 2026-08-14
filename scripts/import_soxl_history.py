@@ -232,23 +232,38 @@ def _import_bars(
 
 
 def _fetch_funding(instrument_id: str, symbol: str, start_ms: int, end_ms: int) -> list[tuple]:
-    params = urllib.parse.urlencode(
-        {"symbol": symbol, "startTime": start_ms, "endTime": end_ms, "limit": 1000}
-    )
-    payload = json.loads(_get(f"{REST_BASE}/fundingRate?{params}"))
     now_ms = int(time.time() * 1000)
-    return [
-        (
-            instrument_id,
-            symbol,
-            int(item["fundingTime"]),
-            item["fundingRate"],
-            item["markPrice"],
-            FUNDING_SOURCE,
-            now_ms,
+    result: list[tuple] = []
+    cursor = start_ms
+    while cursor <= end_ms:
+        params = urllib.parse.urlencode(
+            {"symbol": symbol, "startTime": cursor, "endTime": end_ms, "limit": 1000}
         )
-        for item in payload
-    ]
+        payload = json.loads(_get(f"{REST_BASE}/fundingRate?{params}"))
+        if not payload:
+            break
+        result.extend(
+            (
+                instrument_id,
+                symbol,
+                int(item["fundingTime"]),
+                item["fundingRate"],
+                item["markPrice"],
+                FUNDING_SOURCE,
+                now_ms,
+            )
+            for item in payload
+            if start_ms <= int(item["fundingTime"]) <= end_ms
+        )
+        last_time = int(payload[-1]["fundingTime"])
+        if len(payload) < 1000 or last_time >= end_ms:
+            break
+        next_cursor = last_time + 1
+        if next_cursor <= cursor:
+            raise RuntimeError("funding endpoint returned a non-advancing page")
+        cursor = next_cursor
+        time.sleep(0.05)
+    return result
 
 
 def _fetch_current_klines(
@@ -278,7 +293,7 @@ def _fetch_current_klines(
             }
         )
         payload = json.loads(_get(f"{REST_BASE}/klines?{query}"))
-        closed = [item for item in payload if int(item[6]) < end_ms]
+        closed = [item for item in payload if int(item[6]) <= end_ms]
         if not closed:
             break
         rows = [
@@ -320,13 +335,22 @@ def _fetch_current_agg_trades(
 ) -> int:
     row = connection.execute(
         """
-        SELECT MAX(aggregate_trade_id), MAX(timestamp_ms)
-        FROM agg_trades WHERE instrument_id = ?
+        SELECT aggregate_trade_id, timestamp_ms
+        FROM agg_trades
+        WHERE instrument_id = ?
+        ORDER BY timestamp_ms DESC
+        LIMIT 1
         """,
         (instrument_id,),
     ).fetchone()
+    # Completed archive days already contain the final bucket; avoid querying the
+    # REST endpoint with a fromId that falls just beyond its historical window.
+    if row and row[1] is not None and int(row[1]) >= end_ms - 1_000:
+        return 0
     next_id = int(row[0]) + 1 if row and row[0] is not None else None
     cursor_start = max(start_ms, int(row[1]) + 1) if row and row[1] is not None else start_ms
+    if cursor_start > end_ms:
+        return 0
     use_id_cursor = next_id is not None
     accumulator = _BucketAccumulator(instrument_id, symbol, REST_SOURCE)
     total = 0
@@ -383,6 +407,11 @@ def main() -> None:
     parser.add_argument("--end-ms", type=int, default=None)
     parser.add_argument("--archive-dir", default="data/history_soxl")
     parser.add_argument("--incremental-only", action="store_true")
+    parser.add_argument(
+        "--bars-only",
+        action="store_true",
+        help="download/import 15m OHLCV and funding without aggregate trades",
+    )
     args = parser.parse_args()
     instrument_id = args.instrument_id
     symbol = args.symbol.upper()
@@ -401,23 +430,26 @@ def main() -> None:
             next_month = date(year + (month == 12), 1 if month == 12 else month + 1, 1)
             monthly_complete = next_month <= end_date
             if monthly_complete:
-                name = f"{symbol}-aggTrades-{year:04d}-{month:02d}.zip"
-                url = f"{ARCHIVE_BASE}/monthly/aggTrades/{symbol}/{name}"
-                path = archive_dir / name
-                if not path.exists():
-                    path.write_bytes(_get(url))
-                with zipfile.ZipFile(path) as archive:
-                    csv_name = next(name for name in archive.namelist() if name.endswith(".csv"))
-                    with archive.open(csv_name) as handle:
-                        total_ticks += _insert_ticks(
-                            connection,
-                            _bucket_rows(
-                                csv.DictReader(io.TextIOWrapper(handle, encoding="utf-8")),
-                                instrument_id,
-                                symbol,
-                                SOURCE,
-                            ),
+                if not args.bars_only:
+                    name = f"{symbol}-aggTrades-{year:04d}-{month:02d}.zip"
+                    url = f"{ARCHIVE_BASE}/monthly/aggTrades/{symbol}/{name}"
+                    path = archive_dir / name
+                    if not path.exists():
+                        path.write_bytes(_get(url))
+                    with zipfile.ZipFile(path) as archive:
+                        csv_name = next(
+                            name for name in archive.namelist() if name.endswith(".csv")
                         )
+                        with archive.open(csv_name) as handle:
+                            total_ticks += _insert_ticks(
+                                connection,
+                                _bucket_rows(
+                                    csv.DictReader(io.TextIOWrapper(handle, encoding="utf-8")),
+                                    instrument_id,
+                                    symbol,
+                                    SOURCE,
+                                ),
+                            )
                 kname = f"{symbol}-15m-{year:04d}-{month:02d}.zip"
                 kpath = archive_dir / kname
                 if not kpath.exists():
@@ -434,31 +466,32 @@ def main() -> None:
             else:
                 day = max(month_start, start_date)
                 while day <= end_date:
-                    name = f"{symbol}-aggTrades-{day.isoformat()}.zip"
-                    url = f"{ARCHIVE_BASE}/daily/aggTrades/{symbol}/{name}"
-                    path = archive_dir / name
-                    if not path.exists():
-                        try:
-                            path.write_bytes(_get(url))
-                        except urllib.error.HTTPError as exc:
-                            if exc.code == 404:
-                                day += timedelta(days=1)
-                                continue
-                            raise
-                    with zipfile.ZipFile(path) as archive:
-                        csv_name = next(
-                            name for name in archive.namelist() if name.endswith(".csv")
-                        )
-                        with archive.open(csv_name) as handle:
-                            total_ticks += _insert_ticks(
-                                connection,
-                                _bucket_rows(
-                                    csv.DictReader(io.TextIOWrapper(handle, encoding="utf-8")),
-                                    instrument_id,
-                                    symbol,
-                                    SOURCE,
-                                ),
+                    if not args.bars_only:
+                        name = f"{symbol}-aggTrades-{day.isoformat()}.zip"
+                        url = f"{ARCHIVE_BASE}/daily/aggTrades/{symbol}/{name}"
+                        path = archive_dir / name
+                        if not path.exists():
+                            try:
+                                path.write_bytes(_get(url))
+                            except urllib.error.HTTPError as exc:
+                                if exc.code == 404:
+                                    day += timedelta(days=1)
+                                    continue
+                                raise
+                        with zipfile.ZipFile(path) as archive:
+                            csv_name = next(
+                                name for name in archive.namelist() if name.endswith(".csv")
                             )
+                            with archive.open(csv_name) as handle:
+                                total_ticks += _insert_ticks(
+                                    connection,
+                                    _bucket_rows(
+                                        csv.DictReader(io.TextIOWrapper(handle, encoding="utf-8")),
+                                        instrument_id,
+                                        symbol,
+                                        SOURCE,
+                                    ),
+                                )
                     kname = f"{symbol}-15m-{day.isoformat()}.zip"
                     kpath = archive_dir / kname
                     if not kpath.exists():
@@ -484,8 +517,12 @@ def main() -> None:
                             )
                     day += timedelta(days=1)
             connection.commit()
-        current_ticks = _fetch_current_agg_trades(
-            connection, instrument_id, symbol, args.start_ms, end_ms
+        current_ticks = (
+            0
+            if args.bars_only
+            else _fetch_current_agg_trades(
+                connection, instrument_id, symbol, args.start_ms, end_ms
+            )
         )
         total_bars += _fetch_current_klines(
             connection, instrument_id, symbol, args.start_ms, end_ms

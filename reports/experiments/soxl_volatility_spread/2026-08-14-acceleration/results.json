@@ -1,0 +1,1954 @@
+{
+  "schema_version": 1,
+  "strategy": "SOXLUSDT accelerating volatility-spread release",
+  "status": "rejected_acceleration_gate_not_selected",
+  "parameter_search_performed": true,
+  "fresh_holdout_used_for_selection": false,
+  "gate_definition": "The ratio filter is evaluated at the SOXL closed signal bar. An allowed entry must have either an upward ratio delta above its gate or a first upward threshold cross.",
+  "acceleration_gate_selected": false,
+  "splits": {
+    "train": {
+      "start": "2026-05-17T16:00:00+00:00",
+      "end": "2026-06-30T23:59:59.999000+00:00"
+    },
+    "validation": {
+      "start": "2026-07-01T00:00:00+00:00",
+      "end": "2026-07-31T23:59:59.999000+00:00"
+    },
+    "confirmation": {
+      "start": "2026-08-01T00:00:00+00:00",
+      "end": "2026-08-10T23:59:59.999000+00:00"
+    },
+    "development": {
+      "start": "2026-05-17T16:00:00+00:00",
+      "end": "2026-08-10T23:59:59.999000+00:00"
+    },
+    "revealed_diagnostic": {
+      "start": "2026-08-11T00:00:00+00:00",
+      "end": "2026-08-13T23:59:59.999000+00:00"
+    }
+  },
+  "selection": {
+    "candidate_count": 480,
+    "eligible_count": 248,
+    "finalists_checked": 20,
+    "confirmation_positive_finalists": 8,
+    "rule": "positive train and validation, then positive August 1-10 confirmation",
+    "selected": {
+      "parameters": {
+        "variant": "compression_release",
+        "direction": "long_short",
+        "fast_window": 12,
+        "slow_window": 64,
+        "entry_ratio": 1.1,
+        "exit_ratio": 0.8,
+        "breakout_window": 24,
+        "stop_atr": 2.5,
+        "max_hold_bars": 48,
+        "exposure": 1.25,
+        "compression_ratio": 0.85,
+        "compression_lookback": 16,
+        "spread_measure": "true_range",
+        "minimum_volume_ratio": null
+      },
+      "gate": {
+        "mode": "none",
+        "minimum": 0.0,
+        "name": "none"
+      },
+      "selection_score": -0.016934027988926452,
+      "train": {
+        "net_return": 0.8890829281598902,
+        "geometric_daily_return": 0.014235743090379005,
+        "max_drawdown": -0.11110133011465059,
+        "completed_trades": 30,
+        "win_rate": 0.4666666666666667,
+        "profit_factor": 3.279126966334826,
+        "target_day_rate": 0.15555555555555556
+      },
+      "validation": {
+        "net_return": 0.3969226726855792,
+        "geometric_daily_return": 0.010841304539736196,
+        "max_drawdown": -0.11108085244664426,
+        "completed_trades": 25,
+        "win_rate": 0.44,
+        "profit_factor": 2.801223645250837,
+        "target_day_rate": 0.12903225806451613
+      },
+      "confirmation": {
+        "net_return": 0.061899664526247816,
+        "geometric_daily_return": 0.006024015894270818,
+        "max_drawdown": -0.09611736888199622,
+        "completed_trades": 9,
+        "win_rate": 0.3333333333333333,
+        "profit_factor": 1.490224947911179,
+        "target_day_rate": 0.1
+      }
+    },
+    "finalists": [
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 24,
+          "slow_window": 96,
+          "entry_ratio": 1.0,
+          "exit_ratio": 0.6,
+          "breakout_window": 24,
+          "stop_atr": 2.0,
+          "max_hold_bars": 48,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "cross",
+          "minimum": 0.0,
+          "name": "first_cross"
+        },
+        "selection_score": -0.010778750834088614,
+        "train": {
+          "net_return": 0.0871831987966207,
+          "geometric_daily_return": 0.0018592847768874599,
+          "max_drawdown": -0.03951297584431408,
+          "completed_trades": 9,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 2.108605809847332,
+          "target_day_rate": 0.022222222222222223
+        },
+        "validation": {
+          "net_return": 0.0814003588473041,
+          "geometric_daily_return": 0.002527602880147306,
+          "max_drawdown": -0.0505521424439043,
+          "completed_trades": 8,
+          "win_rate": 0.5,
+          "profit_factor": 2.9029566097101673,
+          "target_day_rate": 0.03225806451612903
+        },
+        "confirmation": {
+          "net_return": 0.0007620524864457,
+          "geometric_daily_return": 7.617912867052823e-05,
+          "max_drawdown": -0.06443558861143078,
+          "completed_trades": 1,
+          "win_rate": 1.0,
+          "profit_factor": null,
+          "target_day_rate": 0.0
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 24,
+          "slow_window": 96,
+          "entry_ratio": 1.0,
+          "exit_ratio": 0.6,
+          "breakout_window": 24,
+          "stop_atr": 2.0,
+          "max_hold_bars": 96,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "cross",
+          "minimum": 0.0,
+          "name": "first_cross"
+        },
+        "selection_score": -0.010778750834088614,
+        "train": {
+          "net_return": 0.0871831987966207,
+          "geometric_daily_return": 0.0018592847768874599,
+          "max_drawdown": -0.03951297584431408,
+          "completed_trades": 9,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 2.108605809847332,
+          "target_day_rate": 0.022222222222222223
+        },
+        "validation": {
+          "net_return": 0.0814003588473041,
+          "geometric_daily_return": 0.002527602880147306,
+          "max_drawdown": -0.0505521424439043,
+          "completed_trades": 8,
+          "win_rate": 0.5,
+          "profit_factor": 2.9029566097101673,
+          "target_day_rate": 0.03225806451612903
+        },
+        "confirmation": {
+          "net_return": 0.0007620524864457,
+          "geometric_daily_return": 7.617912867052823e-05,
+          "max_drawdown": -0.06443558861143078,
+          "completed_trades": 1,
+          "win_rate": 1.0,
+          "profit_factor": null,
+          "target_day_rate": 0.0
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 24,
+          "slow_window": 96,
+          "entry_ratio": 1.0,
+          "exit_ratio": 0.8,
+          "breakout_window": 24,
+          "stop_atr": 2.0,
+          "max_hold_bars": 48,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "cross",
+          "minimum": 0.0,
+          "name": "first_cross"
+        },
+        "selection_score": -0.010778750834088614,
+        "train": {
+          "net_return": 0.0871831987966207,
+          "geometric_daily_return": 0.0018592847768874599,
+          "max_drawdown": -0.03951297584431408,
+          "completed_trades": 9,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 2.108605809847332,
+          "target_day_rate": 0.022222222222222223
+        },
+        "validation": {
+          "net_return": 0.0814003588473041,
+          "geometric_daily_return": 0.002527602880147306,
+          "max_drawdown": -0.0505521424439043,
+          "completed_trades": 8,
+          "win_rate": 0.5,
+          "profit_factor": 2.9029566097101673,
+          "target_day_rate": 0.03225806451612903
+        },
+        "confirmation": {
+          "net_return": 0.0007620524864457,
+          "geometric_daily_return": 7.617912867052823e-05,
+          "max_drawdown": -0.06443558861143078,
+          "completed_trades": 1,
+          "win_rate": 1.0,
+          "profit_factor": null,
+          "target_day_rate": 0.0
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 24,
+          "slow_window": 96,
+          "entry_ratio": 1.0,
+          "exit_ratio": 0.8,
+          "breakout_window": 24,
+          "stop_atr": 2.0,
+          "max_hold_bars": 96,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "cross",
+          "minimum": 0.0,
+          "name": "first_cross"
+        },
+        "selection_score": -0.010778750834088614,
+        "train": {
+          "net_return": 0.0871831987966207,
+          "geometric_daily_return": 0.0018592847768874599,
+          "max_drawdown": -0.03951297584431408,
+          "completed_trades": 9,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 2.108605809847332,
+          "target_day_rate": 0.022222222222222223
+        },
+        "validation": {
+          "net_return": 0.0814003588473041,
+          "geometric_daily_return": 0.002527602880147306,
+          "max_drawdown": -0.0505521424439043,
+          "completed_trades": 8,
+          "win_rate": 0.5,
+          "profit_factor": 2.9029566097101673,
+          "target_day_rate": 0.03225806451612903
+        },
+        "confirmation": {
+          "net_return": 0.0007620524864457,
+          "geometric_daily_return": 7.617912867052823e-05,
+          "max_drawdown": -0.06443558861143078,
+          "completed_trades": 1,
+          "win_rate": 1.0,
+          "profit_factor": null,
+          "target_day_rate": 0.0
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 24,
+          "slow_window": 96,
+          "entry_ratio": 1.0,
+          "exit_ratio": 0.8,
+          "breakout_window": 24,
+          "stop_atr": 2.5,
+          "max_hold_bars": 48,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "cross",
+          "minimum": 0.0,
+          "name": "first_cross"
+        },
+        "selection_score": -0.0110117116435067,
+        "train": {
+          "net_return": 0.519520410671232,
+          "geometric_daily_return": 0.009341018986372962,
+          "max_drawdown": -0.053019867226648754,
+          "completed_trades": 9,
+          "win_rate": 0.6666666666666666,
+          "profit_factor": 7.77397818152821,
+          "target_day_rate": 0.06666666666666667
+        },
+        "validation": {
+          "net_return": 0.0719324284578297,
+          "geometric_daily_return": 0.0022432551631554887,
+          "max_drawdown": -0.05055223437147865,
+          "completed_trades": 8,
+          "win_rate": 0.5,
+          "profit_factor": 2.3303706445972603,
+          "target_day_rate": 0.03225806451612903
+        },
+        "confirmation": {
+          "net_return": 0.0007620524864457,
+          "geometric_daily_return": 7.617912867052823e-05,
+          "max_drawdown": -0.06443558861143078,
+          "completed_trades": 1,
+          "win_rate": 1.0,
+          "profit_factor": null,
+          "target_day_rate": 0.0
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 24,
+          "slow_window": 96,
+          "entry_ratio": 1.0,
+          "exit_ratio": 0.8,
+          "breakout_window": 24,
+          "stop_atr": 2.5,
+          "max_hold_bars": 96,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "cross",
+          "minimum": 0.0,
+          "name": "first_cross"
+        },
+        "selection_score": -0.0110117116435067,
+        "train": {
+          "net_return": 0.519520410671232,
+          "geometric_daily_return": 0.009341018986372962,
+          "max_drawdown": -0.053019867226648754,
+          "completed_trades": 9,
+          "win_rate": 0.6666666666666666,
+          "profit_factor": 7.77397818152821,
+          "target_day_rate": 0.06666666666666667
+        },
+        "validation": {
+          "net_return": 0.0719324284578297,
+          "geometric_daily_return": 0.0022432551631554887,
+          "max_drawdown": -0.05055223437147865,
+          "completed_trades": 8,
+          "win_rate": 0.5,
+          "profit_factor": 2.3303706445972603,
+          "target_day_rate": 0.03225806451612903
+        },
+        "confirmation": {
+          "net_return": 0.0007620524864457,
+          "geometric_daily_return": 7.617912867052823e-05,
+          "max_drawdown": -0.06443558861143078,
+          "completed_trades": 1,
+          "win_rate": 1.0,
+          "profit_factor": null,
+          "target_day_rate": 0.0
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 24,
+          "slow_window": 96,
+          "entry_ratio": 1.0,
+          "exit_ratio": 0.6,
+          "breakout_window": 24,
+          "stop_atr": 2.5,
+          "max_hold_bars": 48,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "cross",
+          "minimum": 0.0,
+          "name": "first_cross"
+        },
+        "selection_score": -0.011211683408732603,
+        "train": {
+          "net_return": 0.519520410671232,
+          "geometric_daily_return": 0.009341018986372962,
+          "max_drawdown": -0.053019867226648754,
+          "completed_trades": 9,
+          "win_rate": 0.6666666666666666,
+          "profit_factor": 7.77397818152821,
+          "target_day_rate": 0.06666666666666667
+        },
+        "validation": {
+          "net_return": 0.0653220637713536,
+          "geometric_daily_return": 0.002043283397929585,
+          "max_drawdown": -0.05055223437147865,
+          "completed_trades": 8,
+          "win_rate": 0.375,
+          "profit_factor": 2.1978615933644523,
+          "target_day_rate": 0.03225806451612903
+        },
+        "confirmation": {
+          "net_return": 0.0007620524864457,
+          "geometric_daily_return": 7.617912867052823e-05,
+          "max_drawdown": -0.06443558861143078,
+          "completed_trades": 1,
+          "win_rate": 1.0,
+          "profit_factor": null,
+          "target_day_rate": 0.0
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 24,
+          "slow_window": 96,
+          "entry_ratio": 1.0,
+          "exit_ratio": 0.6,
+          "breakout_window": 24,
+          "stop_atr": 2.5,
+          "max_hold_bars": 96,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "cross",
+          "minimum": 0.0,
+          "name": "first_cross"
+        },
+        "selection_score": -0.011211683408732603,
+        "train": {
+          "net_return": 0.519520410671232,
+          "geometric_daily_return": 0.009341018986372962,
+          "max_drawdown": -0.053019867226648754,
+          "completed_trades": 9,
+          "win_rate": 0.6666666666666666,
+          "profit_factor": 7.77397818152821,
+          "target_day_rate": 0.06666666666666667
+        },
+        "validation": {
+          "net_return": 0.0653220637713536,
+          "geometric_daily_return": 0.002043283397929585,
+          "max_drawdown": -0.05055223437147865,
+          "completed_trades": 8,
+          "win_rate": 0.375,
+          "profit_factor": 2.1978615933644523,
+          "target_day_rate": 0.03225806451612903
+        },
+        "confirmation": {
+          "net_return": 0.0007620524864457,
+          "geometric_daily_return": 7.617912867052823e-05,
+          "max_drawdown": -0.06443558861143078,
+          "completed_trades": 1,
+          "win_rate": 1.0,
+          "profit_factor": null,
+          "target_day_rate": 0.0
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 24,
+          "slow_window": 96,
+          "entry_ratio": 1.0,
+          "exit_ratio": 0.6,
+          "breakout_window": 12,
+          "stop_atr": 2.0,
+          "max_hold_bars": 48,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "cross",
+          "minimum": 0.0,
+          "name": "first_cross"
+        },
+        "selection_score": -0.016822633508871223,
+        "train": {
+          "net_return": 0.0505789868061284,
+          "geometric_daily_return": 0.0010970775320293669,
+          "max_drawdown": -0.058484864172016086,
+          "completed_trades": 13,
+          "win_rate": 0.3076923076923077,
+          "profit_factor": 1.3306714210562733,
+          "target_day_rate": 0.022222222222222223
+        },
+        "validation": {
+          "net_return": 0.0816987928348898,
+          "geometric_daily_return": 0.0025365264459666914,
+          "max_drawdown": -0.07167884416360236,
+          "completed_trades": 11,
+          "win_rate": 0.45454545454545453,
+          "profit_factor": 2.048902951850335,
+          "target_day_rate": 0.03225806451612903
+        },
+        "confirmation": {
+          "net_return": 0.0007620524864457,
+          "geometric_daily_return": 7.617912867052823e-05,
+          "max_drawdown": -0.06443558861143078,
+          "completed_trades": 1,
+          "win_rate": 1.0,
+          "profit_factor": null,
+          "target_day_rate": 0.0
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 24,
+          "slow_window": 96,
+          "entry_ratio": 1.0,
+          "exit_ratio": 0.6,
+          "breakout_window": 12,
+          "stop_atr": 2.0,
+          "max_hold_bars": 96,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "cross",
+          "minimum": 0.0,
+          "name": "first_cross"
+        },
+        "selection_score": -0.016822633508871223,
+        "train": {
+          "net_return": 0.0505789868061284,
+          "geometric_daily_return": 0.0010970775320293669,
+          "max_drawdown": -0.058484864172016086,
+          "completed_trades": 13,
+          "win_rate": 0.3076923076923077,
+          "profit_factor": 1.3306714210562733,
+          "target_day_rate": 0.022222222222222223
+        },
+        "validation": {
+          "net_return": 0.0816987928348898,
+          "geometric_daily_return": 0.0025365264459666914,
+          "max_drawdown": -0.07167884416360236,
+          "completed_trades": 11,
+          "win_rate": 0.45454545454545453,
+          "profit_factor": 2.048902951850335,
+          "target_day_rate": 0.03225806451612903
+        },
+        "confirmation": {
+          "net_return": 0.0007620524864457,
+          "geometric_daily_return": 7.617912867052823e-05,
+          "max_drawdown": -0.06443558861143078,
+          "completed_trades": 1,
+          "win_rate": 1.0,
+          "profit_factor": null,
+          "target_day_rate": 0.0
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 24,
+          "slow_window": 96,
+          "entry_ratio": 1.0,
+          "exit_ratio": 0.8,
+          "breakout_window": 12,
+          "stop_atr": 2.0,
+          "max_hold_bars": 48,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "cross",
+          "minimum": 0.0,
+          "name": "first_cross"
+        },
+        "selection_score": -0.016822633508871223,
+        "train": {
+          "net_return": 0.0505789868061284,
+          "geometric_daily_return": 0.0010970775320293669,
+          "max_drawdown": -0.058484864172016086,
+          "completed_trades": 13,
+          "win_rate": 0.3076923076923077,
+          "profit_factor": 1.3306714210562733,
+          "target_day_rate": 0.022222222222222223
+        },
+        "validation": {
+          "net_return": 0.0816987928348898,
+          "geometric_daily_return": 0.0025365264459666914,
+          "max_drawdown": -0.07167884416360236,
+          "completed_trades": 11,
+          "win_rate": 0.45454545454545453,
+          "profit_factor": 2.048902951850335,
+          "target_day_rate": 0.03225806451612903
+        },
+        "confirmation": {
+          "net_return": 0.0007620524864457,
+          "geometric_daily_return": 7.617912867052823e-05,
+          "max_drawdown": -0.06443558861143078,
+          "completed_trades": 1,
+          "win_rate": 1.0,
+          "profit_factor": null,
+          "target_day_rate": 0.0
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 24,
+          "slow_window": 96,
+          "entry_ratio": 1.0,
+          "exit_ratio": 0.8,
+          "breakout_window": 12,
+          "stop_atr": 2.0,
+          "max_hold_bars": 96,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "cross",
+          "minimum": 0.0,
+          "name": "first_cross"
+        },
+        "selection_score": -0.016822633508871223,
+        "train": {
+          "net_return": 0.0505789868061284,
+          "geometric_daily_return": 0.0010970775320293669,
+          "max_drawdown": -0.058484864172016086,
+          "completed_trades": 13,
+          "win_rate": 0.3076923076923077,
+          "profit_factor": 1.3306714210562733,
+          "target_day_rate": 0.022222222222222223
+        },
+        "validation": {
+          "net_return": 0.0816987928348898,
+          "geometric_daily_return": 0.0025365264459666914,
+          "max_drawdown": -0.07167884416360236,
+          "completed_trades": 11,
+          "win_rate": 0.45454545454545453,
+          "profit_factor": 2.048902951850335,
+          "target_day_rate": 0.03225806451612903
+        },
+        "confirmation": {
+          "net_return": 0.0007620524864457,
+          "geometric_daily_return": 7.617912867052823e-05,
+          "max_drawdown": -0.06443558861143078,
+          "completed_trades": 1,
+          "win_rate": 1.0,
+          "profit_factor": null,
+          "target_day_rate": 0.0
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 12,
+          "slow_window": 64,
+          "entry_ratio": 1.1,
+          "exit_ratio": 0.8,
+          "breakout_window": 24,
+          "stop_atr": 2.5,
+          "max_hold_bars": 48,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "none",
+          "minimum": 0.0,
+          "name": "none"
+        },
+        "selection_score": -0.016934027988926452,
+        "train": {
+          "net_return": 0.8890829281598902,
+          "geometric_daily_return": 0.014235743090379005,
+          "max_drawdown": -0.11110133011465059,
+          "completed_trades": 30,
+          "win_rate": 0.4666666666666667,
+          "profit_factor": 3.279126966334826,
+          "target_day_rate": 0.15555555555555556
+        },
+        "validation": {
+          "net_return": 0.3969226726855792,
+          "geometric_daily_return": 0.010841304539736196,
+          "max_drawdown": -0.11108085244664426,
+          "completed_trades": 25,
+          "win_rate": 0.44,
+          "profit_factor": 2.801223645250837,
+          "target_day_rate": 0.12903225806451613
+        },
+        "confirmation": {
+          "net_return": 0.061899664526247816,
+          "geometric_daily_return": 0.006024015894270818,
+          "max_drawdown": -0.09611736888199622,
+          "completed_trades": 9,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.490224947911179,
+          "target_day_rate": 0.1
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 12,
+          "slow_window": 64,
+          "entry_ratio": 1.1,
+          "exit_ratio": 0.8,
+          "breakout_window": 24,
+          "stop_atr": 2.5,
+          "max_hold_bars": 48,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "delta",
+          "minimum": 0.0,
+          "name": "delta_0"
+        },
+        "selection_score": -0.016934027988926452,
+        "train": {
+          "net_return": 0.671878975963262,
+          "geometric_daily_return": 0.011486538959700754,
+          "max_drawdown": -0.11110133011465059,
+          "completed_trades": 29,
+          "win_rate": 0.4482758620689655,
+          "profit_factor": 2.7913379994595835,
+          "target_day_rate": 0.13333333333333333
+        },
+        "validation": {
+          "net_return": 0.3969226726855792,
+          "geometric_daily_return": 0.010841304539736196,
+          "max_drawdown": -0.11108085244664426,
+          "completed_trades": 25,
+          "win_rate": 0.44,
+          "profit_factor": 2.801223645250837,
+          "target_day_rate": 0.12903225806451613
+        },
+        "confirmation": {
+          "net_return": 0.061899664526247816,
+          "geometric_daily_return": 0.006024015894270818,
+          "max_drawdown": -0.09611736888199622,
+          "completed_trades": 9,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.490224947911179,
+          "target_day_rate": 0.1
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 12,
+          "slow_window": 64,
+          "entry_ratio": 1.1,
+          "exit_ratio": 0.8,
+          "breakout_window": 24,
+          "stop_atr": 2.5,
+          "max_hold_bars": 96,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "none",
+          "minimum": 0.0,
+          "name": "none"
+        },
+        "selection_score": -0.016934027988926452,
+        "train": {
+          "net_return": 0.8890829281598902,
+          "geometric_daily_return": 0.014235743090379005,
+          "max_drawdown": -0.11110133011465059,
+          "completed_trades": 30,
+          "win_rate": 0.4666666666666667,
+          "profit_factor": 3.279126966334826,
+          "target_day_rate": 0.15555555555555556
+        },
+        "validation": {
+          "net_return": 0.3969226726855792,
+          "geometric_daily_return": 0.010841304539736196,
+          "max_drawdown": -0.11108085244664426,
+          "completed_trades": 25,
+          "win_rate": 0.44,
+          "profit_factor": 2.801223645250837,
+          "target_day_rate": 0.12903225806451613
+        },
+        "confirmation": {
+          "net_return": 0.061899664526247816,
+          "geometric_daily_return": 0.006024015894270818,
+          "max_drawdown": -0.09611736888199622,
+          "completed_trades": 9,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.490224947911179,
+          "target_day_rate": 0.1
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 12,
+          "slow_window": 64,
+          "entry_ratio": 1.1,
+          "exit_ratio": 0.8,
+          "breakout_window": 24,
+          "stop_atr": 2.5,
+          "max_hold_bars": 96,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "delta",
+          "minimum": 0.0,
+          "name": "delta_0"
+        },
+        "selection_score": -0.016934027988926452,
+        "train": {
+          "net_return": 0.671878975963262,
+          "geometric_daily_return": 0.011486538959700754,
+          "max_drawdown": -0.11110133011465059,
+          "completed_trades": 29,
+          "win_rate": 0.4482758620689655,
+          "profit_factor": 2.7913379994595835,
+          "target_day_rate": 0.13333333333333333
+        },
+        "validation": {
+          "net_return": 0.3969226726855792,
+          "geometric_daily_return": 0.010841304539736196,
+          "max_drawdown": -0.11108085244664426,
+          "completed_trades": 25,
+          "win_rate": 0.44,
+          "profit_factor": 2.801223645250837,
+          "target_day_rate": 0.12903225806451613
+        },
+        "confirmation": {
+          "net_return": 0.061899664526247816,
+          "geometric_daily_return": 0.006024015894270818,
+          "max_drawdown": -0.09611736888199622,
+          "completed_trades": 9,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.490224947911179,
+          "target_day_rate": 0.1
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 12,
+          "slow_window": 64,
+          "entry_ratio": 1.0,
+          "exit_ratio": 0.8,
+          "breakout_window": 24,
+          "stop_atr": 2.5,
+          "max_hold_bars": 48,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "delta",
+          "minimum": 0.0,
+          "name": "delta_0"
+        },
+        "selection_score": -0.017724336534689574,
+        "train": {
+          "net_return": 0.7223216284670441,
+          "geometric_daily_return": 0.01215490353074311,
+          "max_drawdown": -0.11951696026173074,
+          "completed_trades": 39,
+          "win_rate": 0.38461538461538464,
+          "profit_factor": 2.172646730924373,
+          "target_day_rate": 0.15555555555555556
+        },
+        "validation": {
+          "net_return": 0.45958353284595155,
+          "geometric_daily_return": 0.012273128208340367,
+          "max_drawdown": -0.11025989904030224,
+          "completed_trades": 33,
+          "win_rate": 0.45454545454545453,
+          "profit_factor": 1.9787778295983003,
+          "target_day_rate": 0.1935483870967742
+        },
+        "confirmation": {
+          "net_return": 0.04408322406913959,
+          "geometric_daily_return": 0.004323238631278592,
+          "max_drawdown": -0.15139792010520206,
+          "completed_trades": 12,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.2825563550550478,
+          "target_day_rate": 0.1
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 12,
+          "slow_window": 64,
+          "entry_ratio": 1.0,
+          "exit_ratio": 0.8,
+          "breakout_window": 24,
+          "stop_atr": 2.5,
+          "max_hold_bars": 96,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "delta",
+          "minimum": 0.0,
+          "name": "delta_0"
+        },
+        "selection_score": -0.017724336534689574,
+        "train": {
+          "net_return": 0.7223216284670441,
+          "geometric_daily_return": 0.01215490353074311,
+          "max_drawdown": -0.11951696026173074,
+          "completed_trades": 39,
+          "win_rate": 0.38461538461538464,
+          "profit_factor": 2.172646730924373,
+          "target_day_rate": 0.15555555555555556
+        },
+        "validation": {
+          "net_return": 0.45958353284595155,
+          "geometric_daily_return": 0.012273128208340367,
+          "max_drawdown": -0.11025989904030224,
+          "completed_trades": 33,
+          "win_rate": 0.45454545454545453,
+          "profit_factor": 1.9787778295983003,
+          "target_day_rate": 0.1935483870967742
+        },
+        "confirmation": {
+          "net_return": 0.04408322406913959,
+          "geometric_daily_return": 0.004323238631278592,
+          "max_drawdown": -0.15139792010520206,
+          "completed_trades": 12,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.2825563550550478,
+          "target_day_rate": 0.1
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 12,
+          "slow_window": 64,
+          "entry_ratio": 1.1,
+          "exit_ratio": 0.6,
+          "breakout_window": 24,
+          "stop_atr": 2.5,
+          "max_hold_bars": 48,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "none",
+          "minimum": 0.0,
+          "name": "none"
+        },
+        "selection_score": -0.017974693716653223,
+        "train": {
+          "net_return": 0.8296131330903536,
+          "geometric_daily_return": 0.0135150591650397,
+          "max_drawdown": -0.11334639080565845,
+          "completed_trades": 30,
+          "win_rate": 0.43333333333333335,
+          "profit_factor": 3.1037524138225994,
+          "target_day_rate": 0.15555555555555556
+        },
+        "validation": {
+          "net_return": 0.4923490939608504,
+          "geometric_daily_return": 0.012998316079598338,
+          "max_drawdown": -0.12389203918500624,
+          "completed_trades": 25,
+          "win_rate": 0.48,
+          "profit_factor": 3.197308680266267,
+          "target_day_rate": 0.12903225806451613
+        },
+        "confirmation": {
+          "net_return": 0.08245042710867617,
+          "geometric_daily_return": 0.007954206444597878,
+          "max_drawdown": -0.08458869410124054,
+          "completed_trades": 9,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.646074003502221,
+          "target_day_rate": 0.1
+        }
+      },
+      {
+        "parameters": {
+          "variant": "compression_release",
+          "direction": "long_short",
+          "fast_window": 12,
+          "slow_window": 64,
+          "entry_ratio": 1.1,
+          "exit_ratio": 0.6,
+          "breakout_window": 24,
+          "stop_atr": 2.5,
+          "max_hold_bars": 96,
+          "exposure": 1.25,
+          "compression_ratio": 0.85,
+          "compression_lookback": 16,
+          "spread_measure": "true_range",
+          "minimum_volume_ratio": null
+        },
+        "gate": {
+          "mode": "none",
+          "minimum": 0.0,
+          "name": "none"
+        },
+        "selection_score": -0.017974693716653223,
+        "train": {
+          "net_return": 0.8071981352406822,
+          "geometric_daily_return": 0.013237464162923374,
+          "max_drawdown": -0.11334639080565845,
+          "completed_trades": 30,
+          "win_rate": 0.43333333333333335,
+          "profit_factor": 3.062766591757303,
+          "target_day_rate": 0.15555555555555556
+        },
+        "validation": {
+          "net_return": 0.4923490939608504,
+          "geometric_daily_return": 0.012998316079598338,
+          "max_drawdown": -0.12389203918500624,
+          "completed_trades": 25,
+          "win_rate": 0.48,
+          "profit_factor": 3.197308680266267,
+          "target_day_rate": 0.12903225806451613
+        },
+        "confirmation": {
+          "net_return": 0.021913063967550828,
+          "geometric_daily_return": 0.0021699933903482904,
+          "max_drawdown": -0.11571832528138208,
+          "completed_trades": 9,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.1778356713786653,
+          "target_day_rate": 0.1
+        }
+      }
+    ]
+  },
+  "acceleration": {
+    "results": {
+      "train": {
+        "net_return": 0.8890829281598902,
+        "geometric_daily_return": 0.014235743090379005,
+        "max_drawdown": -0.11110133011465059,
+        "completed_trades": 30,
+        "win_rate": 0.4666666666666667,
+        "profit_factor": 3.279126966334826,
+        "target_day_rate": 0.15555555555555556
+      },
+      "validation": {
+        "net_return": 0.3969226726855792,
+        "geometric_daily_return": 0.010841304539736196,
+        "max_drawdown": -0.11108085244664426,
+        "completed_trades": 25,
+        "win_rate": 0.44,
+        "profit_factor": 2.801223645250837,
+        "target_day_rate": 0.12903225806451613
+      },
+      "confirmation": {
+        "net_return": 0.061899664526247816,
+        "geometric_daily_return": 0.006024015894270818,
+        "max_drawdown": -0.09611736888199622,
+        "completed_trades": 9,
+        "win_rate": 0.3333333333333333,
+        "profit_factor": 1.490224947911179,
+        "target_day_rate": 0.1
+      },
+      "development": {
+        "net_return": 1.8022553324532562,
+        "geometric_daily_return": 0.012053748917006502,
+        "max_drawdown": -0.11110133011465059,
+        "completed_trades": 64,
+        "win_rate": 0.4375,
+        "profit_factor": 2.581490637619494,
+        "target_day_rate": 0.13953488372093023
+      },
+      "revealed_diagnostic": {
+        "net_return": 0.0073910745578975,
+        "geometric_daily_return": 0.0024576465446770612,
+        "max_drawdown": -0.03285044585432869,
+        "completed_trades": 3,
+        "win_rate": 0.3333333333333333,
+        "profit_factor": 1.249218180598456,
+        "target_day_rate": 0.0
+      }
+    },
+    "daily": {
+      "train": [
+        [
+          "2026-05-17",
+          -0.0031105091063385
+        ],
+        [
+          "2026-05-18",
+          0.04310389074017433
+        ],
+        [
+          "2026-05-19",
+          -0.04697338760085703
+        ],
+        [
+          "2026-05-20",
+          0.01313105868864079
+        ],
+        [
+          "2026-05-21",
+          0.0
+        ],
+        [
+          "2026-05-22",
+          -0.009887543509624584
+        ],
+        [
+          "2026-05-23",
+          0.0
+        ],
+        [
+          "2026-05-24",
+          0.0
+        ],
+        [
+          "2026-05-25",
+          0.0
+        ],
+        [
+          "2026-05-26",
+          0.09138441112982533
+        ],
+        [
+          "2026-05-27",
+          0.05394820601524273
+        ],
+        [
+          "2026-05-28",
+          0.013201404783816801
+        ],
+        [
+          "2026-05-29",
+          0.0
+        ],
+        [
+          "2026-05-30",
+          0.0
+        ],
+        [
+          "2026-05-31",
+          -0.008098085797331232
+        ],
+        [
+          "2026-06-01",
+          -0.022118134257367358
+        ],
+        [
+          "2026-06-02",
+          -0.002779901810556387
+        ],
+        [
+          "2026-06-03",
+          -0.014989199650907673
+        ],
+        [
+          "2026-06-04",
+          0.020454397448320102
+        ],
+        [
+          "2026-06-05",
+          0.19671870424081647
+        ],
+        [
+          "2026-06-06",
+          0.0
+        ],
+        [
+          "2026-06-07",
+          0.0
+        ],
+        [
+          "2026-06-08",
+          -0.0474162734160652
+        ],
+        [
+          "2026-06-09",
+          0.26664149335986426
+        ],
+        [
+          "2026-06-10",
+          0.0
+        ],
+        [
+          "2026-06-11",
+          -0.017994159937280204
+        ],
+        [
+          "2026-06-12",
+          0.0
+        ],
+        [
+          "2026-06-13",
+          0.0
+        ],
+        [
+          "2026-06-14",
+          0.007435018604071699
+        ],
+        [
+          "2026-06-15",
+          0.0
+        ],
+        [
+          "2026-06-16",
+          0.0
+        ],
+        [
+          "2026-06-17",
+          0.0
+        ],
+        [
+          "2026-06-18",
+          0.029016975841320243
+        ],
+        [
+          "2026-06-19",
+          0.0
+        ],
+        [
+          "2026-06-20",
+          -0.01450721412151963
+        ],
+        [
+          "2026-06-21",
+          -0.006608945203134426
+        ],
+        [
+          "2026-06-22",
+          -0.008082006055636583
+        ],
+        [
+          "2026-06-23",
+          0.11440134560929796
+        ],
+        [
+          "2026-06-24",
+          -0.049297513108789465
+        ],
+        [
+          "2026-06-25",
+          0.060955381836683344
+        ],
+        [
+          "2026-06-26",
+          0.0
+        ],
+        [
+          "2026-06-27",
+          -0.014116621308434607
+        ],
+        [
+          "2026-06-28",
+          0.0
+        ],
+        [
+          "2026-06-29",
+          0.060197402733795174
+        ],
+        [
+          "2026-06-30",
+          0.0
+        ]
+      ],
+      "validation": [
+        [
+          "2026-07-01",
+          0.0
+        ],
+        [
+          "2026-07-02",
+          0.0
+        ],
+        [
+          "2026-07-03",
+          0.0
+        ],
+        [
+          "2026-07-04",
+          0.0
+        ],
+        [
+          "2026-07-05",
+          0.00678478699329
+        ],
+        [
+          "2026-07-06",
+          0.0042360760831279065
+        ],
+        [
+          "2026-07-07",
+          0.0106525609352263
+        ],
+        [
+          "2026-07-08",
+          -0.01756152265854911
+        ],
+        [
+          "2026-07-09",
+          -0.025826664638130298
+        ],
+        [
+          "2026-07-10",
+          0.0
+        ],
+        [
+          "2026-07-11",
+          -0.013697748871804544
+        ],
+        [
+          "2026-07-12",
+          -0.006349204464935476
+        ],
+        [
+          "2026-07-13",
+          0.017500909372512613
+        ],
+        [
+          "2026-07-14",
+          0.0
+        ],
+        [
+          "2026-07-15",
+          0.17914622580922115
+        ],
+        [
+          "2026-07-16",
+          -0.01336984941394138
+        ],
+        [
+          "2026-07-17",
+          -0.05717725753465062
+        ],
+        [
+          "2026-07-18",
+          0.0
+        ],
+        [
+          "2026-07-19",
+          0.054468830142500244
+        ],
+        [
+          "2026-07-20",
+          -0.02178598895252574
+        ],
+        [
+          "2026-07-21",
+          -0.007116345334145741
+        ],
+        [
+          "2026-07-22",
+          0.0
+        ],
+        [
+          "2026-07-23",
+          0.0
+        ],
+        [
+          "2026-07-24",
+          0.054089821436309964
+        ],
+        [
+          "2026-07-25",
+          0.0
+        ],
+        [
+          "2026-07-26",
+          0.016793102186430254
+        ],
+        [
+          "2026-07-27",
+          0.11987208082496979
+        ],
+        [
+          "2026-07-28",
+          0.04802681098868786
+        ],
+        [
+          "2026-07-29",
+          -0.014477778824471267
+        ],
+        [
+          "2026-07-30",
+          0.011118538695955808
+        ],
+        [
+          "2026-07-31",
+          0.017279294021232943
+        ]
+      ],
+      "confirmation": [
+        [
+          "2026-08-01",
+          0.0
+        ],
+        [
+          "2026-08-02",
+          0.0
+        ],
+        [
+          "2026-08-03",
+          -0.0077540425011348
+        ],
+        [
+          "2026-08-04",
+          0.14792695487698096
+        ],
+        [
+          "2026-08-05",
+          -0.002302870049435477
+        ],
+        [
+          "2026-08-06",
+          0.0
+        ],
+        [
+          "2026-08-07",
+          -0.007665563358303741
+        ],
+        [
+          "2026-08-08",
+          0.00013024810244399964
+        ],
+        [
+          "2026-08-09",
+          -0.005784318317245777
+        ],
+        [
+          "2026-08-10",
+          -0.052987013525835194
+        ]
+      ],
+      "development": [
+        [
+          "2026-05-17",
+          -0.0031105091063385
+        ],
+        [
+          "2026-05-18",
+          0.04310389074017433
+        ],
+        [
+          "2026-05-19",
+          -0.04697338760085703
+        ],
+        [
+          "2026-05-20",
+          0.01313105868864079
+        ],
+        [
+          "2026-05-21",
+          0.0
+        ],
+        [
+          "2026-05-22",
+          -0.009887543509624584
+        ],
+        [
+          "2026-05-23",
+          0.0
+        ],
+        [
+          "2026-05-24",
+          0.0
+        ],
+        [
+          "2026-05-25",
+          0.0
+        ],
+        [
+          "2026-05-26",
+          0.09138441112982533
+        ],
+        [
+          "2026-05-27",
+          0.05394820601524273
+        ],
+        [
+          "2026-05-28",
+          0.013201404783816801
+        ],
+        [
+          "2026-05-29",
+          0.0
+        ],
+        [
+          "2026-05-30",
+          0.0
+        ],
+        [
+          "2026-05-31",
+          -0.008098085797331232
+        ],
+        [
+          "2026-06-01",
+          -0.022118134257367358
+        ],
+        [
+          "2026-06-02",
+          -0.002779901810556387
+        ],
+        [
+          "2026-06-03",
+          -0.014989199650907673
+        ],
+        [
+          "2026-06-04",
+          0.020454397448320102
+        ],
+        [
+          "2026-06-05",
+          0.19671870424081647
+        ],
+        [
+          "2026-06-06",
+          0.0
+        ],
+        [
+          "2026-06-07",
+          0.0
+        ],
+        [
+          "2026-06-08",
+          -0.0474162734160652
+        ],
+        [
+          "2026-06-09",
+          0.26664149335986426
+        ],
+        [
+          "2026-06-10",
+          0.0
+        ],
+        [
+          "2026-06-11",
+          -0.017994159937280204
+        ],
+        [
+          "2026-06-12",
+          0.0
+        ],
+        [
+          "2026-06-13",
+          0.0
+        ],
+        [
+          "2026-06-14",
+          0.007435018604071699
+        ],
+        [
+          "2026-06-15",
+          0.0
+        ],
+        [
+          "2026-06-16",
+          0.0
+        ],
+        [
+          "2026-06-17",
+          0.0
+        ],
+        [
+          "2026-06-18",
+          0.029016975841320243
+        ],
+        [
+          "2026-06-19",
+          0.0
+        ],
+        [
+          "2026-06-20",
+          -0.01450721412151963
+        ],
+        [
+          "2026-06-21",
+          -0.006608945203134426
+        ],
+        [
+          "2026-06-22",
+          -0.008082006055636583
+        ],
+        [
+          "2026-06-23",
+          0.11440134560929796
+        ],
+        [
+          "2026-06-24",
+          -0.049297513108789465
+        ],
+        [
+          "2026-06-25",
+          0.060955381836683344
+        ],
+        [
+          "2026-06-26",
+          0.0
+        ],
+        [
+          "2026-06-27",
+          -0.014116621308434607
+        ],
+        [
+          "2026-06-28",
+          0.0
+        ],
+        [
+          "2026-06-29",
+          0.060197402733795174
+        ],
+        [
+          "2026-06-30",
+          0.0
+        ],
+        [
+          "2026-07-01",
+          0.0
+        ],
+        [
+          "2026-07-02",
+          0.0
+        ],
+        [
+          "2026-07-03",
+          0.0
+        ],
+        [
+          "2026-07-04",
+          0.0
+        ],
+        [
+          "2026-07-05",
+          0.006784865465794716
+        ],
+        [
+          "2026-07-06",
+          0.0042361909775222055
+        ],
+        [
+          "2026-07-07",
+          0.010652568793286816
+        ],
+        [
+          "2026-07-08",
+          -0.017561477771905695
+        ],
+        [
+          "2026-07-09",
+          -0.02582673123615148
+        ],
+        [
+          "2026-07-10",
+          0.0
+        ],
+        [
+          "2026-07-11",
+          -0.013697892389863386
+        ],
+        [
+          "2026-07-12",
+          -0.006349232787518947
+        ],
+        [
+          "2026-07-13",
+          0.017500812869089905
+        ],
+        [
+          "2026-07-14",
+          0.0
+        ],
+        [
+          "2026-07-15",
+          0.17914803733268017
+        ],
+        [
+          "2026-07-16",
+          -0.013369926667639705
+        ],
+        [
+          "2026-07-17",
+          -0.057177168953468784
+        ],
+        [
+          "2026-07-18",
+          0.0
+        ],
+        [
+          "2026-07-19",
+          0.05446874651328693
+        ],
+        [
+          "2026-07-20",
+          -0.021785997653063455
+        ],
+        [
+          "2026-07-21",
+          -0.007116392357080173
+        ],
+        [
+          "2026-07-22",
+          0.0
+        ],
+        [
+          "2026-07-23",
+          0.0
+        ],
+        [
+          "2026-07-24",
+          0.05408998225491021
+        ],
+        [
+          "2026-07-25",
+          0.0
+        ],
+        [
+          "2026-07-26",
+          0.016793154016289828
+        ],
+        [
+          "2026-07-27",
+          0.11987184882630698
+        ],
+        [
+          "2026-07-28",
+          0.0480269908574237
+        ],
+        [
+          "2026-07-29",
+          -0.014477815273567616
+        ],
+        [
+          "2026-07-30",
+          0.011118531106913444
+        ],
+        [
+          "2026-07-31",
+          0.0172793445851983
+        ],
+        [
+          "2026-08-01",
+          0.0
+        ],
+        [
+          "2026-08-02",
+          0.0
+        ],
+        [
+          "2026-08-03",
+          -0.007754179112167308
+        ],
+        [
+          "2026-08-04",
+          0.1479277052170279
+        ],
+        [
+          "2026-08-05",
+          -0.002302877808934375
+        ],
+        [
+          "2026-08-06",
+          0.0
+        ],
+        [
+          "2026-08-07",
+          -0.007665581865415459
+        ],
+        [
+          "2026-08-08",
+          0.0001302489812207104
+        ],
+        [
+          "2026-08-09",
+          -0.0057843242612791255
+        ],
+        [
+          "2026-08-10",
+          -0.05298707864881155
+        ]
+      ],
+      "revealed_diagnostic": [
+        [
+          "2026-08-11",
+          -0.0166215883743357
+        ],
+        [
+          "2026-08-12",
+          0.037674325733811256
+        ],
+        [
+          "2026-08-13",
+          -0.01277451661716173
+        ]
+      ]
+    },
+    "development_tick_path": {
+      "tick_observations": 1278237,
+      "completed_trades": 64,
+      "final_equity": 280225.5332453256,
+      "minimum_equity": 92587.60067667883,
+      "max_drawdown": -0.135859109307776,
+      "max_drawdown_at": "2026-07-09T14:21:29.742000+00:00"
+    }
+  },
+  "frozen_15m_baseline": {
+    "parameters": {
+      "variant": "compression_release",
+      "direction": "long_short",
+      "fast_window": 12,
+      "slow_window": 64,
+      "entry_ratio": 1.1,
+      "exit_ratio": 0.8,
+      "breakout_window": 24,
+      "stop_atr": 2.5,
+      "max_hold_bars": 96,
+      "exposure": 1.25,
+      "compression_ratio": 0.85,
+      "compression_lookback": 16,
+      "spread_measure": "true_range",
+      "minimum_volume_ratio": null
+    },
+    "results": {
+      "train": {
+        "net_return": 0.8890829281598902,
+        "geometric_daily_return": 0.014235743090379005,
+        "max_drawdown": -0.11110133011465059,
+        "completed_trades": 30,
+        "win_rate": 0.4666666666666667,
+        "profit_factor": 3.279126966334826,
+        "target_day_rate": 0.15555555555555556
+      },
+      "validation": {
+        "net_return": 0.3969226726855792,
+        "geometric_daily_return": 0.010841304539736196,
+        "max_drawdown": -0.11108085244664426,
+        "completed_trades": 25,
+        "win_rate": 0.44,
+        "profit_factor": 2.801223645250837,
+        "target_day_rate": 0.12903225806451613
+      },
+      "confirmation": {
+        "net_return": 0.061899664526247816,
+        "geometric_daily_return": 0.006024015894270818,
+        "max_drawdown": -0.09611736888199622,
+        "completed_trades": 9,
+        "win_rate": 0.3333333333333333,
+        "profit_factor": 1.490224947911179,
+        "target_day_rate": 0.1
+      },
+      "development": {
+        "net_return": 1.8022553324532562,
+        "geometric_daily_return": 0.012053748917006502,
+        "max_drawdown": -0.11110133011465059,
+        "completed_trades": 64,
+        "win_rate": 0.4375,
+        "profit_factor": 2.581490637619494,
+        "target_day_rate": 0.13953488372093023
+      },
+      "revealed_diagnostic": {
+        "net_return": 0.0073910745578975,
+        "geometric_daily_return": 0.0024576465446770612,
+        "max_drawdown": -0.03285044585432869,
+        "completed_trades": 3,
+        "win_rate": 0.3333333333333333,
+        "profit_factor": 1.249218180598456,
+        "target_day_rate": 0.0
+      }
+    }
+  },
+  "target": {
+    "geometric_daily_return": 0.05,
+    "achieved": false
+  },
+  "limitations": [
+    "This parameter search has no clean holdout after selection.",
+    "August 11-13 was already revealed and is diagnostic only.",
+    "Liquidation and shared intraday portfolio margin are not modeled."
+  ]
+}
