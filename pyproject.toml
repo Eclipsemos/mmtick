@@ -25,6 +25,7 @@ mmtick-profit-backtest = "mastermind_tick.profit_backtest:main"
 mmtick-rebuild = "mastermind_tick.rebuild:main"
 mmtick-recover = "mastermind_tick.recovery:main"
 mmtick-live-preflight = "mastermind_tick.live_preflight:main"
+mmtick-history = "mastermind_tick.historical_data:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mastermind_tick"]

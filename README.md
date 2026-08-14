@@ -191,6 +191,15 @@ POST /api/live/flatten            {"confirm":"FLATTEN_SOXLUSDT"}
 
 ## 回放与 paper 重建
 
+完整 SOXLUSDT 研究数据使用 Binance 官方 USD-M 月度/日度 `aggTrades` 归档，并用最近两天
+REST 数据衔接。下载文件会校验官方 SHA-256，逐档验证 aggregate trade ID 连续性，然后按生产
+行情相同的 250 ms 粒度写入独立研究库；不会改动 paper 或实盘账本：
+
+```bash
+PYTHONPATH=src .venv/bin/python -m mastermind_tick.historical_data \
+  --database data/soxlusdt_history.db
+```
+
 使用已持久化的 `agg_trades` 做 Tick 级 ATR 参数回放：
 
 ```bash
