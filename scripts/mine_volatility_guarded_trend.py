@@ -479,6 +479,10 @@ def _audit_payload(row: dict[str, Any] | None) -> dict[str, Any] | None:
         "config": row["row"]["config"].as_dict(),
         "counts": row["counts"],
         "development_score": [float(value) for value in row["row"]["score"]],
+        "development": {
+            cost: {split: _result_payload(result) for split, result in values.items()}
+            for cost, values in row["row"]["results"].items()
+        },
         "confirmation": {cost: _result_payload(result) for cost, result in row["results"].items()},
     }
 
