@@ -190,6 +190,12 @@ market data.
   a confirmation-informed local neighborhood has 134 eligible controls and 5 reused-confirmation
   7/7 results. The representative 7/7 is explicitly marked post-confirmation refinement, not
   approved for trading, and partial August is excluded.
+- `experiments/walkforward_volatility_guard/2026-08-15/`: a formal 2021-2023 training and
+  2024-2025 validation search freezes daily BTC/ETH MACD, prior-day volatility routing, leverage,
+  and monthly locks before auditing reused 2026 confirmation. The 120-route shortlist produces
+  278 development-risk-eligible controls, but none reaches +15% in all seven complete months under
+  both cost models. The development-selected result reaches only 4/7 and misses April, May, and
+  July, so the walk-forward hypothesis is rejected and partial August is excluded.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
