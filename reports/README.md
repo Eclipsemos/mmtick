@@ -60,6 +60,8 @@ market data.
   version control; reports retain the split metrics, costs, configuration, and rejection decision.
 - `experiments/btc_order_flow/`: causal BTC aggregate-trade order-flow searches with reported and
   tick-rule direction sources evaluated independently.
+- `experiments/cross_asset_factor/`: causal BTC/ETH common-regime, rotation, relative-value, and
+  adaptive factor-efficacy portfolios with development-only exposure selection.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
