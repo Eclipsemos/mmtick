@@ -196,6 +196,27 @@ market data.
   278 development-risk-eligible controls, but none reaches +15% in all seven complete months under
   both cost models. The development-selected result reaches only 4/7 and misses April, May, and
   July, so the walk-forward hypothesis is rejected and partial August is excluded.
+- `experiments/calendar_month_router/2026-08-15/`: fixed month-of-year BTC/ETH daily MACD maps are
+  learned on 2021-2023, while routing and risk controls are selected on 2024-2025. The selected
+  long/short calendar reaches 5/7 complete 2026 months under both cost models but loses in May and
+  July; none of 1,630 development-risk-eligible controls reaches strict 7/7.
+- `experiments/expanding_calendar_router/2026-08-15/`: calendar mappings are rebuilt causally for
+  each 2023-2025 validation year, then refit on all 2021-2025 data before 2026 confirmation. The
+  development-selected long-only top-three calendar reaches 6/7 under base and stress costs and
+  fixes July, but loses 25.45%/20.94% in May. No one of 3,819 eligible controls reaches 7/7.
+- `experiments/momentum_calendar_router/2026-08-15/`: prior-day BTC momentum switches between
+  expanding long-only and long/short month maps. The development selection remains 6/7 and loses
+  in May under both cost models; all 4,731 eligible controls fail strict 7/7, rejecting daily
+  momentum as the missing downside source.
+- `experiments/multiscale_calendar_router/2026-08-15/` and
+  `experiments/fast_multiscale_calendar_router/2026-08-15/`: confirmation-informed family audits
+  add 1h/4h candidates to the expanding calendar or isolate them from daily candidates. Neither
+  family produces a strict configuration; mixed intervals reach at most 6/7 diagnostically and
+  fast-only intervals reach at most 4/7 under both costs.
+- `experiments/drawdown_calendar_router/2026-08-15/`: a causal month-to-date loss trigger switches
+  persistently from long-only to long/short calendar maps on the following day. The selected rule
+  remains 6/7 and deepens the May loss, while none of 2,985 development-risk-eligible controls
+  reaches strict 7/7. This post-confirmation mechanism extension is rejected.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
