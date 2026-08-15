@@ -1,0 +1,4267 @@
+{
+  "generated_at": "2026-08-15T17:34:26.605668+00:00",
+  "strategy": "development-selected defensive factor with causal monthly risk locks",
+  "data": {
+    "btc_perp": {
+      "first_bar": "2020-01-01T00:00:00+00:00",
+      "last_bar": "2026-08-11T23:59:59.999000+00:00"
+    },
+    "eth_perp": {
+      "first_bar": "2020-01-01T00:00:00+00:00",
+      "last_bar": "2026-08-11T23:59:59.999000+00:00"
+    }
+  },
+  "protocol": {
+    "discovery": {
+      "start": "2021-01-01",
+      "end": "2023-12-31"
+    },
+    "validation": {
+      "start": "2024-01-01",
+      "end": "2025-12-31"
+    },
+    "confirmation": {
+      "start": "2026-01-01",
+      "end": "2026-08-10"
+    },
+    "strict_confirmation_end": "2026-07-31",
+    "partial_august_excluded": true,
+    "confirmation_used_for_selection": false,
+    "factor_selection": "rank only by factor returns during frozen-baseline negative months in both development splits"
+  },
+  "search": {
+    "candidate_count": 2988,
+    "conditional_eligible_count": 78,
+    "shortlist_size": 78,
+    "configuration_grid_per_factor": 210,
+    "development_risk_eligible_count": 4,
+    "state_weights": [
+      0.5,
+      0.65,
+      0.75,
+      0.85,
+      0.9
+    ],
+    "leverages": [
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ],
+    "monthly_loss_limits": [
+      0.1,
+      0.15,
+      0.2
+    ],
+    "monthly_profit_targets": [
+      0.16,
+      0.18
+    ],
+    "top_conditional_factors": [
+      {
+        "candidate": {
+          "id": "event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-12x4h-underreaction-long_short",
+          "instrument_id": "btc_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "eth_perp",
+            "normalization_days": 15,
+            "threshold": 2.0,
+            "hold_bars": 12,
+            "response_gate": "underreaction",
+            "signal_mode": "reversal",
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.8,
+            "average_return": 0.025623243861668612,
+            "worst_return": -0.1730541457177959
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.7,
+            "average_return": 0.029054867529192712,
+            "worst_return": -0.061024777806156644
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-8x4h-underreaction-long_short",
+          "instrument_id": "btc_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "eth_perp",
+            "normalization_days": 15,
+            "threshold": 2.0,
+            "hold_bars": 8,
+            "response_gate": "underreaction",
+            "signal_mode": "reversal",
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.7333333333333333,
+            "average_return": 0.023614039916995913,
+            "worst_return": -0.0643766235097816
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.7,
+            "average_return": 0.024161973544270667,
+            "worst_return": -0.05105362963342795
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-eth_perp-to-eth_perp-continuation-30d-threshold-2p5-hold-4x4h-none-long_only",
+          "instrument_id": "eth_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "eth_perp",
+            "normalization_days": 30,
+            "threshold": 2.5,
+            "hold_bars": 4,
+            "response_gate": "none",
+            "signal_mode": "continuation",
+            "direction": "long_only"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.6666666666666666,
+            "average_return": 0.007562510663729975,
+            "worst_return": -0.2064780499184487
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.7,
+            "average_return": 0.020325498367407154,
+            "worst_return": -0.05736458324571366
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-eth_perp-to-eth_perp-continuation-15d-threshold-2p5-hold-4x4h-none-long_only",
+          "instrument_id": "eth_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "eth_perp",
+            "normalization_days": 15,
+            "threshold": 2.5,
+            "hold_bars": 4,
+            "response_gate": "none",
+            "signal_mode": "continuation",
+            "direction": "long_only"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.6666666666666666,
+            "average_return": 0.0005919848502551764,
+            "worst_return": -0.21169719068325588
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.7,
+            "average_return": 0.022801167446485828,
+            "worst_return": -0.0573645944168275
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-btc_perp-to-btc_perp-reversal-60d-threshold-2p5-hold-8x4h-none-long_short",
+          "instrument_id": "btc_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "btc_perp",
+            "normalization_days": 60,
+            "threshold": 2.5,
+            "hold_bars": 8,
+            "response_gate": "none",
+            "signal_mode": "reversal",
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.6,
+            "average_return": 0.028355595322842146,
+            "worst_return": -0.060223184770821385
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.7,
+            "average_return": 0.024906703110748326,
+            "worst_return": -0.02125583077346812
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-btc_perp-to-btc_perp-reversal-60d-threshold-2-hold-8x4h-none-long_short",
+          "instrument_id": "btc_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "btc_perp",
+            "normalization_days": 60,
+            "threshold": 2.0,
+            "hold_bars": 8,
+            "response_gate": "none",
+            "signal_mode": "reversal",
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.7333333333333333,
+            "average_return": 0.04424164215682683,
+            "worst_return": -0.08087397010318921
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.6,
+            "average_return": 0.019402200939274077,
+            "worst_return": -0.08002410818821017
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-btc_perp-to-btc_perp-reversal-60d-threshold-2-hold-8x4h-none-long_only",
+          "instrument_id": "btc_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "btc_perp",
+            "normalization_days": 60,
+            "threshold": 2.0,
+            "hold_bars": 8,
+            "response_gate": "none",
+            "signal_mode": "reversal",
+            "direction": "long_only"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.6,
+            "average_return": 0.018432127430385074,
+            "worst_return": -0.19534615217240967
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.6,
+            "average_return": 0.01582349260998631,
+            "worst_return": -0.06016397139177351
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-eth_perp-to-eth_perp-continuation-60d-threshold-2-hold-2x4h-none-long_short",
+          "instrument_id": "eth_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "eth_perp",
+            "normalization_days": 60,
+            "threshold": 2.0,
+            "hold_bars": 2,
+            "response_gate": "none",
+            "signal_mode": "continuation",
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.6666666666666666,
+            "average_return": 0.026655133487161052,
+            "worst_return": -0.139262968579161
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.6,
+            "average_return": 0.011873432450874863,
+            "worst_return": -0.06957580142991317
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-eth_perp-to-btc_perp-reversal-60d-threshold-1p5-hold-8x4h-underreaction-long_short",
+          "instrument_id": "btc_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "eth_perp",
+            "normalization_days": 60,
+            "threshold": 1.5,
+            "hold_bars": 8,
+            "response_gate": "underreaction",
+            "signal_mode": "reversal",
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.6,
+            "average_return": 0.010971776417596774,
+            "worst_return": -0.07314115543829164
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.6,
+            "average_return": 0.011980159655596071,
+            "worst_return": -0.05275408398392242
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-eth_perp-to-btc_perp-reversal-15d-threshold-1p5-hold-8x4h-underreaction-long_short",
+          "instrument_id": "btc_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "eth_perp",
+            "normalization_days": 15,
+            "threshold": 1.5,
+            "hold_bars": 8,
+            "response_gate": "underreaction",
+            "signal_mode": "reversal",
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.7333333333333333,
+            "average_return": 0.01058139457276248,
+            "worst_return": -0.08160913234471587
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.6,
+            "average_return": 0.013103718902913359,
+            "worst_return": -0.09550703322892826
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "btc_perp-bollinger_reversion-1440m-20-2p0-long_short",
+          "instrument_id": "btc_perp",
+          "family": "bollinger_reversion",
+          "interval_minutes": 1440,
+          "parameters": {
+            "period": 20,
+            "deviations": 2.0,
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.6,
+            "average_return": 0.008984834386259601,
+            "worst_return": -0.20991334966554373
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.7,
+            "average_return": 0.03290284361321604,
+            "worst_return": -0.119489880468412
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-btc_perp-to-btc_perp-reversal-60d-threshold-2p5-hold-8x4h-none-long_only",
+          "instrument_id": "btc_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "btc_perp",
+            "normalization_days": 60,
+            "threshold": 2.5,
+            "hold_bars": 8,
+            "response_gate": "none",
+            "signal_mode": "reversal",
+            "direction": "long_only"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.6,
+            "average_return": 0.008706761934086515,
+            "worst_return": -0.11498111093585696
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.8,
+            "average_return": 0.026231774630325305,
+            "worst_return": -0.016274219716478237
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-btc_perp-to-btc_perp-reversal-15d-threshold-2-hold-12x4h-none-long_short",
+          "instrument_id": "btc_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "btc_perp",
+            "normalization_days": 15,
+            "threshold": 2.0,
+            "hold_bars": 12,
+            "response_gate": "none",
+            "signal_mode": "reversal",
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.6,
+            "average_return": 0.026406424698252967,
+            "worst_return": -0.11290988750471466
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.6,
+            "average_return": 0.008478108937974823,
+            "worst_return": -0.12730331980719584
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-eth_perp-to-btc_perp-reversal-60d-threshold-2-hold-12x4h-underreaction-long_short",
+          "instrument_id": "btc_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "eth_perp",
+            "normalization_days": 60,
+            "threshold": 2.0,
+            "hold_bars": 12,
+            "response_gate": "underreaction",
+            "signal_mode": "reversal",
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.6,
+            "average_return": 0.021157940617419227,
+            "worst_return": -0.1071634619384007
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.6,
+            "average_return": 0.00779033729466952,
+            "worst_return": -0.06777708415650811
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-eth_perp-to-btc_perp-reversal-30d-threshold-2-hold-12x4h-underreaction-long_short",
+          "instrument_id": "btc_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "eth_perp",
+            "normalization_days": 30,
+            "threshold": 2.0,
+            "hold_bars": 12,
+            "response_gate": "underreaction",
+            "signal_mode": "reversal",
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.6,
+            "average_return": 0.007688221486291279,
+            "worst_return": -0.11682870322609616
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.7,
+            "average_return": 0.021667649473297423,
+            "worst_return": -0.05487400772642293
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "eth_perp-240m-long_short-range_z-volume_z-sub-threshold-1",
+          "instrument_id": "eth_perp",
+          "family": "expression",
+          "interval_minutes": 240,
+          "parameters": {
+            "formula": "(range_z sub volume_z)",
+            "tokens": [
+              "range_z",
+              "volume_z",
+              "SUB"
+            ],
+            "threshold": 1.0,
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.6,
+            "average_return": 0.006984197290424691,
+            "worst_return": -0.11671655161871398
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.6,
+            "average_return": 0.03227822827591705,
+            "worst_return": -0.10448128460295489
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-btc_perp-to-btc_perp-continuation-30d-threshold-2p5-hold-4x4h-none-long_only",
+          "instrument_id": "btc_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "btc_perp",
+            "normalization_days": 30,
+            "threshold": 2.5,
+            "hold_bars": 4,
+            "response_gate": "none",
+            "signal_mode": "continuation",
+            "direction": "long_only"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.6,
+            "average_return": 0.004351674448294922,
+            "worst_return": -0.05037574179953642
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.6,
+            "average_return": 0.002091707797623854,
+            "worst_return": -0.02895485643832058
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-eth_perp-to-btc_perp-reversal-30d-threshold-2p5-hold-8x4h-none-long_short",
+          "instrument_id": "btc_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "eth_perp",
+            "normalization_days": 30,
+            "threshold": 2.5,
+            "hold_bars": 8,
+            "response_gate": "none",
+            "signal_mode": "reversal",
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.5333333333333333,
+            "average_return": 0.03184273923842815,
+            "worst_return": -0.13581485049504882
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.6,
+            "average_return": 0.024824636292334928,
+            "worst_return": -0.06606574516834668
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-8x4h-none-long_short",
+          "instrument_id": "btc_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "eth_perp",
+            "normalization_days": 15,
+            "threshold": 2.0,
+            "hold_bars": 8,
+            "response_gate": "none",
+            "signal_mode": "reversal",
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.5333333333333333,
+            "average_return": 0.04473260060775742,
+            "worst_return": -0.10443374674502631
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.7,
+            "average_return": 0.023615474216827942,
+            "worst_return": -0.08382526265613988
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "event-eth_perp-to-eth_perp-continuation-30d-threshold-1p5-hold-12x4h-none-long_short",
+          "instrument_id": "eth_perp",
+          "family": "shock_event",
+          "interval_minutes": 240,
+          "parameters": {
+            "source": "eth_perp",
+            "normalization_days": 30,
+            "threshold": 1.5,
+            "hold_bars": 12,
+            "response_gate": "none",
+            "signal_mode": "continuation",
+            "direction": "long_short"
+          }
+        },
+        "conditional": {
+          "discovery": {
+            "month_count": 15,
+            "positive_rate": 0.5333333333333333,
+            "average_return": 0.06977889992955659,
+            "worst_return": -0.20808899943294895
+          },
+          "validation": {
+            "month_count": 10,
+            "positive_rate": 0.7,
+            "average_return": 0.018299644117789296,
+            "worst_return": -0.060569884679357394
+          }
+        }
+      }
+    ]
+  },
+  "selection": {
+    "development_selected": {
+      "config": {
+        "id": "defensive-event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-8x4h-none-long_short-state0.5-lev1.5-loss0.20-profit0.16",
+        "candidate_id": "event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-8x4h-none-long_short",
+        "state_weight": 0.5,
+        "factor_weight": 0.5,
+        "leverage": 1.5,
+        "monthly_loss_limit": 0.2,
+        "monthly_profit_target": 0.16
+      },
+      "score": [
+        0.20833333333333334,
+        1.2916666666666667,
+        0.6111111111111112,
+        -0.24080916141883363,
+        0.7166835101290419,
+        -0.32217270030003875
+      ],
+      "development": {
+        "base": {
+          "discovery": {
+            "initial_equity": 100000.0,
+            "final_equity": 1282603.5975139262,
+            "net_return": 11.826035975139261,
+            "max_drawdown": -0.28064707035997477,
+            "bankrupt": false,
+            "daily_returns": [],
+            "monthly_returns": [
+              {
+                "label": "2021-01",
+                "return": 0.7923707898746121
+              },
+              {
+                "label": "2021-02",
+                "return": 0.11722191446023125
+              },
+              {
+                "label": "2021-03",
+                "return": -0.16655485135410422
+              },
+              {
+                "label": "2021-04",
+                "return": 0.22022548933053146
+              },
+              {
+                "label": "2021-05",
+                "return": -0.05057621236709313
+              },
+              {
+                "label": "2021-06",
+                "return": -0.058769179631710904
+              },
+              {
+                "label": "2021-07",
+                "return": 0.20012095221456574
+              },
+              {
+                "label": "2021-08",
+                "return": 0.20562415875219817
+              },
+              {
+                "label": "2021-09",
+                "return": -0.06702379591082966
+              },
+              {
+                "label": "2021-10",
+                "return": 0.0503716029698667
+              },
+              {
+                "label": "2021-11",
+                "return": 0.1867437521427617
+              },
+              {
+                "label": "2021-12",
+                "return": -0.1627083421813736
+              },
+              {
+                "label": "2022-01",
+                "return": 0.22682724396770873
+              },
+              {
+                "label": "2022-02",
+                "return": 0.22559144229456649
+              },
+              {
+                "label": "2022-03",
+                "return": -0.06527057723867345
+              },
+              {
+                "label": "2022-04",
+                "return": -0.04687349338499871
+              },
+              {
+                "label": "2022-05",
+                "return": -0.015486979939532516
+              },
+              {
+                "label": "2022-06",
+                "return": 0.047506336562980284
+              },
+              {
+                "label": "2022-07",
+                "return": 0.08905054949525935
+              },
+              {
+                "label": "2022-08",
+                "return": 0.1619186063514536
+              },
+              {
+                "label": "2022-09",
+                "return": -0.13556675747196892
+              },
+              {
+                "label": "2022-10",
+                "return": 0.20156466199573314
+              },
+              {
+                "label": "2022-11",
+                "return": 0.05416737326684169
+              },
+              {
+                "label": "2022-12",
+                "return": 0.19436064824961413
+              },
+              {
+                "label": "2023-01",
+                "return": 0.19970424601207967
+              },
+              {
+                "label": "2023-02",
+                "return": 0.17859874882372892
+              },
+              {
+                "label": "2023-03",
+                "return": 0.2355139847816368
+              },
+              {
+                "label": "2023-04",
+                "return": -0.18898978427860944
+              },
+              {
+                "label": "2023-05",
+                "return": -0.049055991935487736
+              },
+              {
+                "label": "2023-06",
+                "return": 0.060863573886181
+              },
+              {
+                "label": "2023-07",
+                "return": -0.045636477484285454
+              },
+              {
+                "label": "2023-08",
+                "return": 0.4001500143913523
+              },
+              {
+                "label": "2023-09",
+                "return": -0.060899080075914054
+              },
+              {
+                "label": "2023-10",
+                "return": 0.03299450182944923
+              },
+              {
+                "label": "2023-11",
+                "return": 0.22700320186893796
+              },
+              {
+                "label": "2023-12",
+                "return": -0.037494040145887315
+              }
+            ],
+            "positive_month_rate": 0.6111111111111112,
+            "target_25pct_month_rate": 0.05555555555555555,
+            "worst_month": -0.18898978427860944,
+            "target_15pct_month_rate": 0.4166666666666667
+          },
+          "validation": {
+            "initial_equity": 100000.0,
+            "final_equity": 227829.49294655529,
+            "net_return": 1.278294929465553,
+            "max_drawdown": -0.26922216446487,
+            "bankrupt": false,
+            "daily_returns": [],
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.11448028268005883
+              },
+              {
+                "label": "2024-02",
+                "return": 0.05899096160449326
+              },
+              {
+                "label": "2024-03",
+                "return": 0.020313512437585533
+              },
+              {
+                "label": "2024-04",
+                "return": -0.17765900722193045
+              },
+              {
+                "label": "2024-05",
+                "return": -0.003906731544860416
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0388355543115012
+              },
+              {
+                "label": "2024-07",
+                "return": -0.022776177677427296
+              },
+              {
+                "label": "2024-08",
+                "return": 0.04131520065257242
+              },
+              {
+                "label": "2024-09",
+                "return": 0.008119781623318107
+              },
+              {
+                "label": "2024-10",
+                "return": -0.002269367289020251
+              },
+              {
+                "label": "2024-11",
+                "return": 0.18309449791438576
+              },
+              {
+                "label": "2024-12",
+                "return": 0.03776014697417697
+              },
+              {
+                "label": "2025-01",
+                "return": -0.09860056712821001
+              },
+              {
+                "label": "2025-02",
+                "return": 0.2159785146616934
+              },
+              {
+                "label": "2025-03",
+                "return": -0.0020446474342813437
+              },
+              {
+                "label": "2025-04",
+                "return": 0.1688633267960658
+              },
+              {
+                "label": "2025-05",
+                "return": 0.01449845412461949
+              },
+              {
+                "label": "2025-06",
+                "return": 0.18400382264541096
+              },
+              {
+                "label": "2025-07",
+                "return": 0.051575048817634625
+              },
+              {
+                "label": "2025-08",
+                "return": 0.036458433494849875
+              },
+              {
+                "label": "2025-09",
+                "return": -0.21358142618873063
+              },
+              {
+                "label": "2025-10",
+                "return": 0.17402556715791295
+              },
+              {
+                "label": "2025-11",
+                "return": 0.1774982624496887
+              },
+              {
+                "label": "2025-12",
+                "return": -0.027726346144640087
+              }
+            ],
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.0,
+            "worst_month": -0.21358142618873063,
+            "target_15pct_month_rate": 0.25
+          }
+        },
+        "stress": {
+          "discovery": {
+            "initial_equity": 100000.0,
+            "final_equity": 888502.9933830578,
+            "net_return": 7.885029933830578,
+            "max_drawdown": -0.32077570419280466,
+            "bankrupt": false,
+            "daily_returns": [],
+            "monthly_returns": [
+              {
+                "label": "2021-01",
+                "return": 0.7821678328189876
+              },
+              {
+                "label": "2021-02",
+                "return": 0.10251902464913074
+              },
+              {
+                "label": "2021-03",
+                "return": -0.18565697427699815
+              },
+              {
+                "label": "2021-04",
+                "return": 0.2109053156546166
+              },
+              {
+                "label": "2021-05",
+                "return": -0.06591570997799297
+              },
+              {
+                "label": "2021-06",
+                "return": -0.07185960823701007
+              },
+              {
+                "label": "2021-07",
+                "return": 0.18422928960399393
+              },
+              {
+                "label": "2021-08",
+                "return": 0.20461176937758274
+              },
+              {
+                "label": "2021-09",
+                "return": -0.08819663252422873
+              },
+              {
+                "label": "2021-10",
+                "return": 0.0352497264573716
+              },
+              {
+                "label": "2021-11",
+                "return": 0.1877452077418435
+              },
+              {
+                "label": "2021-12",
+                "return": -0.18511071660276948
+              },
+              {
+                "label": "2022-01",
+                "return": 0.23320063630586002
+              },
+              {
+                "label": "2022-02",
+                "return": 0.22443328274660795
+              },
+              {
+                "label": "2022-03",
+                "return": -0.08745556448049807
+              },
+              {
+                "label": "2022-04",
+                "return": -0.06350171568054831
+              },
+              {
+                "label": "2022-05",
+                "return": -0.028865494660231163
+              },
+              {
+                "label": "2022-06",
+                "return": 0.022141474687246712
+              },
+              {
+                "label": "2022-07",
+                "return": 0.07805926592134743
+              },
+              {
+                "label": "2022-08",
+                "return": 0.16387656583079593
+              },
+              {
+                "label": "2022-09",
+                "return": -0.15276548441609208
+              },
+              {
+                "label": "2022-10",
+                "return": 0.2124230337256993
+              },
+              {
+                "label": "2022-11",
+                "return": 0.04313962057974842
+              },
+              {
+                "label": "2022-12",
+                "return": 0.19929754065953456
+              },
+              {
+                "label": "2023-01",
+                "return": 0.2051919080341144
+              },
+              {
+                "label": "2023-02",
+                "return": 0.18067638849835907
+              },
+              {
+                "label": "2023-03",
+                "return": 0.24102293826606
+              },
+              {
+                "label": "2023-04",
+                "return": -0.20563998179137957
+              },
+              {
+                "label": "2023-05",
+                "return": -0.07159307878107898
+              },
+              {
+                "label": "2023-06",
+                "return": 0.04250782391475655
+              },
+              {
+                "label": "2023-07",
+                "return": -0.06183571642514791
+              },
+              {
+                "label": "2023-08",
+                "return": 0.41362022847335606
+              },
+              {
+                "label": "2023-09",
+                "return": -0.0803338776735866
+              },
+              {
+                "label": "2023-10",
+                "return": 0.01379616722662061
+              },
+              {
+                "label": "2023-11",
+                "return": 0.23851991101527892
+              },
+              {
+                "label": "2023-12",
+                "return": -0.054935793397743043
+              }
+            ],
+            "positive_month_rate": 0.6111111111111112,
+            "target_25pct_month_rate": 0.05555555555555555,
+            "worst_month": -0.20563998179137957,
+            "target_15pct_month_rate": 0.4166666666666667
+          },
+          "validation": {
+            "initial_equity": 100000.0,
+            "final_equity": 171668.35101290417,
+            "net_return": 0.7166835101290419,
+            "max_drawdown": -0.32217270030003875,
+            "bankrupt": false,
+            "daily_returns": [],
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.09127854464437736
+              },
+              {
+                "label": "2024-02",
+                "return": 0.04732072069792305
+              },
+              {
+                "label": "2024-03",
+                "return": 0.0033255555251096424
+              },
+              {
+                "label": "2024-04",
+                "return": -0.1959999468254144
+              },
+              {
+                "label": "2024-05",
+                "return": -0.01968795748606075
+              },
+              {
+                "label": "2024-06",
+                "return": 0.03166458755860438
+              },
+              {
+                "label": "2024-07",
+                "return": -0.03808058571821554
+              },
+              {
+                "label": "2024-08",
+                "return": 0.019406826588006416
+              },
+              {
+                "label": "2024-09",
+                "return": -0.007267964690013297
+              },
+              {
+                "label": "2024-10",
+                "return": -0.011278364013691892
+              },
+              {
+                "label": "2024-11",
+                "return": 0.19581890920354939
+              },
+              {
+                "label": "2024-12",
+                "return": 0.02472162122231962
+              },
+              {
+                "label": "2025-01",
+                "return": -0.11093018660636551
+              },
+              {
+                "label": "2025-02",
+                "return": 0.23468166038212537
+              },
+              {
+                "label": "2025-03",
+                "return": -0.03404223470712618
+              },
+              {
+                "label": "2025-04",
+                "return": 0.129968710310749
+              },
+              {
+                "label": "2025-05",
+                "return": 0.006818094467774576
+              },
+              {
+                "label": "2025-06",
+                "return": 0.1857709920029907
+              },
+              {
+                "label": "2025-07",
+                "return": 0.04352795531756524
+              },
+              {
+                "label": "2025-08",
+                "return": 0.02844501688295366
+              },
+              {
+                "label": "2025-09",
+                "return": -0.24080916141883363
+              },
+              {
+                "label": "2025-10",
+                "return": 0.16859675684529984
+              },
+              {
+                "label": "2025-11",
+                "return": 0.1995383721067371
+              },
+              {
+                "label": "2025-12",
+                "return": -0.04450527708882645
+              }
+            ],
+            "positive_month_rate": 0.625,
+            "target_25pct_month_rate": 0.0,
+            "worst_month": -0.24080916141883363,
+            "target_15pct_month_rate": 0.20833333333333334
+          }
+        }
+      },
+      "confirmation": {
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 198154.8136605135,
+          "net_return": 0.9815481366051351,
+          "max_drawdown": -0.2879356593101048,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.3095778695171757
+            },
+            {
+              "label": "2026-02",
+              "return": 0.467856093579744
+            },
+            {
+              "label": "2026-03",
+              "return": 0.1895244906939377
+            },
+            {
+              "label": "2026-04",
+              "return": 0.09794885913104795
+            },
+            {
+              "label": "2026-05",
+              "return": -0.24729242578743874
+            },
+            {
+              "label": "2026-06",
+              "return": 0.16007079443531586
+            },
+            {
+              "label": "2026-07",
+              "return": -0.10080626277737785
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.24729242578743874,
+          "target_15pct_month_rate": 0.5714285714285714
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 171629.12699756183,
+          "net_return": 0.7162912699756183,
+          "max_drawdown": -0.32786954921208983,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.25136617401422534
+            },
+            {
+              "label": "2026-02",
+              "return": 0.45621029023903575
+            },
+            {
+              "label": "2026-03",
+              "return": 0.17805484166834726
+            },
+            {
+              "label": "2026-04",
+              "return": 0.07923127611384237
+            },
+            {
+              "label": "2026-05",
+              "return": -0.2827954574776614
+            },
+            {
+              "label": "2026-06",
+              "return": 0.17813835997297553
+            },
+            {
+              "label": "2026-07",
+              "return": -0.12032506175827433
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.2827954574776614,
+          "target_15pct_month_rate": 0.5714285714285714
+        }
+      },
+      "target_month_counts": {
+        "base": 4,
+        "stress": 4
+      },
+      "strict_7_of_7": false
+    },
+    "top_development_configurations": [
+      {
+        "config": {
+          "id": "defensive-event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-8x4h-none-long_short-state0.5-lev1.5-loss0.20-profit0.16",
+          "candidate_id": "event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-8x4h-none-long_short",
+          "state_weight": 0.5,
+          "factor_weight": 0.5,
+          "leverage": 1.5,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.20833333333333334,
+          1.2916666666666667,
+          0.6111111111111112,
+          -0.24080916141883363,
+          0.7166835101290419,
+          -0.32217270030003875
+        ],
+        "development": {
+          "base": {
+            "discovery": {
+              "initial_equity": 100000.0,
+              "final_equity": 1282603.5975139262,
+              "net_return": 11.826035975139261,
+              "max_drawdown": -0.28064707035997477,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2021-01",
+                  "return": 0.7923707898746121
+                },
+                {
+                  "label": "2021-02",
+                  "return": 0.11722191446023125
+                },
+                {
+                  "label": "2021-03",
+                  "return": -0.16655485135410422
+                },
+                {
+                  "label": "2021-04",
+                  "return": 0.22022548933053146
+                },
+                {
+                  "label": "2021-05",
+                  "return": -0.05057621236709313
+                },
+                {
+                  "label": "2021-06",
+                  "return": -0.058769179631710904
+                },
+                {
+                  "label": "2021-07",
+                  "return": 0.20012095221456574
+                },
+                {
+                  "label": "2021-08",
+                  "return": 0.20562415875219817
+                },
+                {
+                  "label": "2021-09",
+                  "return": -0.06702379591082966
+                },
+                {
+                  "label": "2021-10",
+                  "return": 0.0503716029698667
+                },
+                {
+                  "label": "2021-11",
+                  "return": 0.1867437521427617
+                },
+                {
+                  "label": "2021-12",
+                  "return": -0.1627083421813736
+                },
+                {
+                  "label": "2022-01",
+                  "return": 0.22682724396770873
+                },
+                {
+                  "label": "2022-02",
+                  "return": 0.22559144229456649
+                },
+                {
+                  "label": "2022-03",
+                  "return": -0.06527057723867345
+                },
+                {
+                  "label": "2022-04",
+                  "return": -0.04687349338499871
+                },
+                {
+                  "label": "2022-05",
+                  "return": -0.015486979939532516
+                },
+                {
+                  "label": "2022-06",
+                  "return": 0.047506336562980284
+                },
+                {
+                  "label": "2022-07",
+                  "return": 0.08905054949525935
+                },
+                {
+                  "label": "2022-08",
+                  "return": 0.1619186063514536
+                },
+                {
+                  "label": "2022-09",
+                  "return": -0.13556675747196892
+                },
+                {
+                  "label": "2022-10",
+                  "return": 0.20156466199573314
+                },
+                {
+                  "label": "2022-11",
+                  "return": 0.05416737326684169
+                },
+                {
+                  "label": "2022-12",
+                  "return": 0.19436064824961413
+                },
+                {
+                  "label": "2023-01",
+                  "return": 0.19970424601207967
+                },
+                {
+                  "label": "2023-02",
+                  "return": 0.17859874882372892
+                },
+                {
+                  "label": "2023-03",
+                  "return": 0.2355139847816368
+                },
+                {
+                  "label": "2023-04",
+                  "return": -0.18898978427860944
+                },
+                {
+                  "label": "2023-05",
+                  "return": -0.049055991935487736
+                },
+                {
+                  "label": "2023-06",
+                  "return": 0.060863573886181
+                },
+                {
+                  "label": "2023-07",
+                  "return": -0.045636477484285454
+                },
+                {
+                  "label": "2023-08",
+                  "return": 0.4001500143913523
+                },
+                {
+                  "label": "2023-09",
+                  "return": -0.060899080075914054
+                },
+                {
+                  "label": "2023-10",
+                  "return": 0.03299450182944923
+                },
+                {
+                  "label": "2023-11",
+                  "return": 0.22700320186893796
+                },
+                {
+                  "label": "2023-12",
+                  "return": -0.037494040145887315
+                }
+              ],
+              "positive_month_rate": 0.6111111111111112,
+              "target_25pct_month_rate": 0.05555555555555555,
+              "worst_month": -0.18898978427860944,
+              "target_15pct_month_rate": 0.4166666666666667
+            },
+            "validation": {
+              "initial_equity": 100000.0,
+              "final_equity": 227829.49294655529,
+              "net_return": 1.278294929465553,
+              "max_drawdown": -0.26922216446487,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.11448028268005883
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.05899096160449326
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.020313512437585533
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.17765900722193045
+                },
+                {
+                  "label": "2024-05",
+                  "return": -0.003906731544860416
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.0388355543115012
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.022776177677427296
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.04131520065257242
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.008119781623318107
+                },
+                {
+                  "label": "2024-10",
+                  "return": -0.002269367289020251
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.18309449791438576
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.03776014697417697
+                },
+                {
+                  "label": "2025-01",
+                  "return": -0.09860056712821001
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.2159785146616934
+                },
+                {
+                  "label": "2025-03",
+                  "return": -0.0020446474342813437
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.1688633267960658
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.01449845412461949
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.18400382264541096
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.051575048817634625
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.036458433494849875
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.21358142618873063
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.17402556715791295
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.1774982624496887
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.027726346144640087
+                }
+              ],
+              "positive_month_rate": 0.6666666666666666,
+              "target_25pct_month_rate": 0.0,
+              "worst_month": -0.21358142618873063,
+              "target_15pct_month_rate": 0.25
+            }
+          },
+          "stress": {
+            "discovery": {
+              "initial_equity": 100000.0,
+              "final_equity": 888502.9933830578,
+              "net_return": 7.885029933830578,
+              "max_drawdown": -0.32077570419280466,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2021-01",
+                  "return": 0.7821678328189876
+                },
+                {
+                  "label": "2021-02",
+                  "return": 0.10251902464913074
+                },
+                {
+                  "label": "2021-03",
+                  "return": -0.18565697427699815
+                },
+                {
+                  "label": "2021-04",
+                  "return": 0.2109053156546166
+                },
+                {
+                  "label": "2021-05",
+                  "return": -0.06591570997799297
+                },
+                {
+                  "label": "2021-06",
+                  "return": -0.07185960823701007
+                },
+                {
+                  "label": "2021-07",
+                  "return": 0.18422928960399393
+                },
+                {
+                  "label": "2021-08",
+                  "return": 0.20461176937758274
+                },
+                {
+                  "label": "2021-09",
+                  "return": -0.08819663252422873
+                },
+                {
+                  "label": "2021-10",
+                  "return": 0.0352497264573716
+                },
+                {
+                  "label": "2021-11",
+                  "return": 0.1877452077418435
+                },
+                {
+                  "label": "2021-12",
+                  "return": -0.18511071660276948
+                },
+                {
+                  "label": "2022-01",
+                  "return": 0.23320063630586002
+                },
+                {
+                  "label": "2022-02",
+                  "return": 0.22443328274660795
+                },
+                {
+                  "label": "2022-03",
+                  "return": -0.08745556448049807
+                },
+                {
+                  "label": "2022-04",
+                  "return": -0.06350171568054831
+                },
+                {
+                  "label": "2022-05",
+                  "return": -0.028865494660231163
+                },
+                {
+                  "label": "2022-06",
+                  "return": 0.022141474687246712
+                },
+                {
+                  "label": "2022-07",
+                  "return": 0.07805926592134743
+                },
+                {
+                  "label": "2022-08",
+                  "return": 0.16387656583079593
+                },
+                {
+                  "label": "2022-09",
+                  "return": -0.15276548441609208
+                },
+                {
+                  "label": "2022-10",
+                  "return": 0.2124230337256993
+                },
+                {
+                  "label": "2022-11",
+                  "return": 0.04313962057974842
+                },
+                {
+                  "label": "2022-12",
+                  "return": 0.19929754065953456
+                },
+                {
+                  "label": "2023-01",
+                  "return": 0.2051919080341144
+                },
+                {
+                  "label": "2023-02",
+                  "return": 0.18067638849835907
+                },
+                {
+                  "label": "2023-03",
+                  "return": 0.24102293826606
+                },
+                {
+                  "label": "2023-04",
+                  "return": -0.20563998179137957
+                },
+                {
+                  "label": "2023-05",
+                  "return": -0.07159307878107898
+                },
+                {
+                  "label": "2023-06",
+                  "return": 0.04250782391475655
+                },
+                {
+                  "label": "2023-07",
+                  "return": -0.06183571642514791
+                },
+                {
+                  "label": "2023-08",
+                  "return": 0.41362022847335606
+                },
+                {
+                  "label": "2023-09",
+                  "return": -0.0803338776735866
+                },
+                {
+                  "label": "2023-10",
+                  "return": 0.01379616722662061
+                },
+                {
+                  "label": "2023-11",
+                  "return": 0.23851991101527892
+                },
+                {
+                  "label": "2023-12",
+                  "return": -0.054935793397743043
+                }
+              ],
+              "positive_month_rate": 0.6111111111111112,
+              "target_25pct_month_rate": 0.05555555555555555,
+              "worst_month": -0.20563998179137957,
+              "target_15pct_month_rate": 0.4166666666666667
+            },
+            "validation": {
+              "initial_equity": 100000.0,
+              "final_equity": 171668.35101290417,
+              "net_return": 0.7166835101290419,
+              "max_drawdown": -0.32217270030003875,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.09127854464437736
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.04732072069792305
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.0033255555251096424
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.1959999468254144
+                },
+                {
+                  "label": "2024-05",
+                  "return": -0.01968795748606075
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.03166458755860438
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.03808058571821554
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.019406826588006416
+                },
+                {
+                  "label": "2024-09",
+                  "return": -0.007267964690013297
+                },
+                {
+                  "label": "2024-10",
+                  "return": -0.011278364013691892
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.19581890920354939
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.02472162122231962
+                },
+                {
+                  "label": "2025-01",
+                  "return": -0.11093018660636551
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.23468166038212537
+                },
+                {
+                  "label": "2025-03",
+                  "return": -0.03404223470712618
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.129968710310749
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.006818094467774576
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.1857709920029907
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.04352795531756524
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.02844501688295366
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.24080916141883363
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.16859675684529984
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.1995383721067371
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.04450527708882645
+                }
+              ],
+              "positive_month_rate": 0.625,
+              "target_25pct_month_rate": 0.0,
+              "worst_month": -0.24080916141883363,
+              "target_15pct_month_rate": 0.20833333333333334
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "defensive-event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-8x4h-none-long_short-state0.5-lev1.5-loss0.15-profit0.16",
+          "candidate_id": "event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-8x4h-none-long_short",
+          "state_weight": 0.5,
+          "factor_weight": 0.5,
+          "leverage": 1.5,
+          "monthly_loss_limit": 0.15,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.20833333333333334,
+          1.2916666666666667,
+          0.6111111111111112,
+          -0.24080916141883363,
+          0.7725425195744974,
+          -0.3230255680897664
+        ],
+        "development": {
+          "base": {
+            "discovery": {
+              "initial_equity": 100000.0,
+              "final_equity": 1148757.42171015,
+              "net_return": 10.487574217101502,
+              "max_drawdown": -0.30164427515746817,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2021-01",
+                  "return": 0.7923707898746121
+                },
+                {
+                  "label": "2021-02",
+                  "return": 0.11722191446023125
+                },
+                {
+                  "label": "2021-03",
+                  "return": -0.15205049034517015
+                },
+                {
+                  "label": "2021-04",
+                  "return": 0.21894425159375494
+                },
+                {
+                  "label": "2021-05",
+                  "return": -0.1732166714553003
+                },
+                {
+                  "label": "2021-06",
+                  "return": -0.05975747199309761
+                },
+                {
+                  "label": "2021-07",
+                  "return": 0.20012095221456574
+                },
+                {
+                  "label": "2021-08",
+                  "return": 0.20562415875219817
+                },
+                {
+                  "label": "2021-09",
+                  "return": -0.06702379591082966
+                },
+                {
+                  "label": "2021-10",
+                  "return": 0.0503716029698667
+                },
+                {
+                  "label": "2021-11",
+                  "return": 0.1867437521427617
+                },
+                {
+                  "label": "2021-12",
+                  "return": -0.1528178624781134
+                },
+                {
+                  "label": "2022-01",
+                  "return": 0.22554451741002016
+                },
+                {
+                  "label": "2022-02",
+                  "return": 0.22559144229456649
+                },
+                {
+                  "label": "2022-03",
+                  "return": -0.06527057723867345
+                },
+                {
+                  "label": "2022-04",
+                  "return": -0.04687349338499871
+                },
+                {
+                  "label": "2022-05",
+                  "return": -0.015486979939532516
+                },
+                {
+                  "label": "2022-06",
+                  "return": 0.047506336562980284
+                },
+                {
+                  "label": "2022-07",
+                  "return": 0.08905054949525935
+                },
+                {
+                  "label": "2022-08",
+                  "return": 0.1619186063514536
+                },
+                {
+                  "label": "2022-09",
+                  "return": -0.13556675747196892
+                },
+                {
+                  "label": "2022-10",
+                  "return": 0.20156466199573314
+                },
+                {
+                  "label": "2022-11",
+                  "return": 0.05416737326684169
+                },
+                {
+                  "label": "2022-12",
+                  "return": 0.19436064824961413
+                },
+                {
+                  "label": "2023-01",
+                  "return": 0.19970424601207967
+                },
+                {
+                  "label": "2023-02",
+                  "return": 0.17859874882372892
+                },
+                {
+                  "label": "2023-03",
+                  "return": 0.2355139847816368
+                },
+                {
+                  "label": "2023-04",
+                  "return": -0.18631358882330049
+                },
+                {
+                  "label": "2023-05",
+                  "return": -0.05004659467541364
+                },
+                {
+                  "label": "2023-06",
+                  "return": 0.060863573886181
+                },
+                {
+                  "label": "2023-07",
+                  "return": -0.045636477484285454
+                },
+                {
+                  "label": "2023-08",
+                  "return": 0.4001500143913523
+                },
+                {
+                  "label": "2023-09",
+                  "return": -0.060899080075914054
+                },
+                {
+                  "label": "2023-10",
+                  "return": 0.03299450182944923
+                },
+                {
+                  "label": "2023-11",
+                  "return": 0.22700320186893796
+                },
+                {
+                  "label": "2023-12",
+                  "return": -0.037494040145887315
+                }
+              ],
+              "positive_month_rate": 0.6111111111111112,
+              "target_25pct_month_rate": 0.05555555555555555,
+              "worst_month": -0.18631358882330049,
+              "target_15pct_month_rate": 0.4166666666666667
+            },
+            "validation": {
+              "initial_equity": 100000.0,
+              "final_equity": 234721.27892190337,
+              "net_return": 1.3472127892190335,
+              "max_drawdown": -0.24843392374662823,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.11448028268005883
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.05899096160449326
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.020313512437585533
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.15191465434986295
+                },
+                {
+                  "label": "2024-05",
+                  "return": -0.004927084874316077
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.0388355543115012
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.022776177677427296
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.04131520065257242
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.008119781623318107
+                },
+                {
+                  "label": "2024-10",
+                  "return": -0.002269367289020251
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.18309449791438576
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.03776014697417697
+                },
+                {
+                  "label": "2025-01",
+                  "return": -0.09860056712821001
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.2159785146616934
+                },
+                {
+                  "label": "2025-03",
+                  "return": -0.0020446474342813437
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.1688633267960658
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.01449845412461949
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.18400382264541096
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.051575048817634625
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.036458433494849875
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.21358142618873063
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.17402556715791295
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.1774982624496887
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.027726346144640087
+                }
+              ],
+              "positive_month_rate": 0.6666666666666666,
+              "target_25pct_month_rate": 0.0,
+              "worst_month": -0.21358142618873063,
+              "target_15pct_month_rate": 0.25
+            }
+          },
+          "stress": {
+            "discovery": {
+              "initial_equity": 100000.0,
+              "final_equity": 790748.9578246275,
+              "net_return": 6.907489578246275,
+              "max_drawdown": -0.3230255680897664,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2021-01",
+                  "return": 0.7821678328189876
+                },
+                {
+                  "label": "2021-02",
+                  "return": 0.10251902464913074
+                },
+                {
+                  "label": "2021-03",
+                  "return": -0.1696383785171934
+                },
+                {
+                  "label": "2021-04",
+                  "return": 0.2081807744447363
+                },
+                {
+                  "label": "2021-05",
+                  "return": -0.19060257251466656
+                },
+                {
+                  "label": "2021-06",
+                  "return": -0.0739479241184768
+                },
+                {
+                  "label": "2021-07",
+                  "return": 0.18422928960399393
+                },
+                {
+                  "label": "2021-08",
+                  "return": 0.20461176937758274
+                },
+                {
+                  "label": "2021-09",
+                  "return": -0.08819663252422873
+                },
+                {
+                  "label": "2021-10",
+                  "return": 0.0352497264573716
+                },
+                {
+                  "label": "2021-11",
+                  "return": 0.1877452077418435
+                },
+                {
+                  "label": "2021-12",
+                  "return": -0.17061933234305324
+                },
+                {
+                  "label": "2022-01",
+                  "return": 0.2304367035118124
+                },
+                {
+                  "label": "2022-02",
+                  "return": 0.22443328274660795
+                },
+                {
+                  "label": "2022-03",
+                  "return": -0.08745556448049807
+                },
+                {
+                  "label": "2022-04",
+                  "return": -0.06350171568054831
+                },
+                {
+                  "label": "2022-05",
+                  "return": -0.028865494660231163
+                },
+                {
+                  "label": "2022-06",
+                  "return": 0.022141474687246712
+                },
+                {
+                  "label": "2022-07",
+                  "return": 0.07805926592134743
+                },
+                {
+                  "label": "2022-08",
+                  "return": 0.16387656583079593
+                },
+                {
+                  "label": "2022-09",
+                  "return": -0.15393871681561125
+                },
+                {
+                  "label": "2022-10",
+                  "return": 0.20969470838935114
+                },
+                {
+                  "label": "2022-11",
+                  "return": 0.04313962057974842
+                },
+                {
+                  "label": "2022-12",
+                  "return": 0.19929754065953456
+                },
+                {
+                  "label": "2023-01",
+                  "return": 0.2051919080341144
+                },
+                {
+                  "label": "2023-02",
+                  "return": 0.18067638849835907
+                },
+                {
+                  "label": "2023-03",
+                  "return": 0.24102293826606
+                },
+                {
+                  "label": "2023-04",
+                  "return": -0.20563998179137957
+                },
+                {
+                  "label": "2023-05",
+                  "return": -0.07159307878107898
+                },
+                {
+                  "label": "2023-06",
+                  "return": 0.04250782391475655
+                },
+                {
+                  "label": "2023-07",
+                  "return": -0.06183571642514791
+                },
+                {
+                  "label": "2023-08",
+                  "return": 0.41362022847335606
+                },
+                {
+                  "label": "2023-09",
+                  "return": -0.0803338776735866
+                },
+                {
+                  "label": "2023-10",
+                  "return": 0.01379616722662061
+                },
+                {
+                  "label": "2023-11",
+                  "return": 0.23851991101527892
+                },
+                {
+                  "label": "2023-12",
+                  "return": -0.054935793397743043
+                }
+              ],
+              "positive_month_rate": 0.6111111111111112,
+              "target_25pct_month_rate": 0.05555555555555555,
+              "worst_month": -0.20563998179137957,
+              "target_15pct_month_rate": 0.4166666666666667
+            },
+            "validation": {
+              "initial_equity": 100000.0,
+              "final_equity": 177254.25195744974,
+              "net_return": 0.7725425195744974,
+              "max_drawdown": -0.30011693911113935,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.09127854464437736
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.04732072069792305
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.0033255555251096424
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.16801175509378238
+                },
+                {
+                  "label": "2024-05",
+                  "return": -0.02184055841507952
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.03166458755860438
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.03808058571821554
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.019406826588006416
+                },
+                {
+                  "label": "2024-09",
+                  "return": -0.007267964690013297
+                },
+                {
+                  "label": "2024-10",
+                  "return": -0.011278364013691892
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.19581890920354939
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.02472162122231962
+                },
+                {
+                  "label": "2025-01",
+                  "return": -0.11093018660636551
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.23468166038212537
+                },
+                {
+                  "label": "2025-03",
+                  "return": -0.03404223470712618
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.129968710310749
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.006818094467774576
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.1857709920029907
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.04352795531756524
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.02844501688295366
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.24080916141883363
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.16859675684529984
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.1995383721067371
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.04450527708882645
+                }
+              ],
+              "positive_month_rate": 0.625,
+              "target_25pct_month_rate": 0.0,
+              "worst_month": -0.24080916141883363,
+              "target_15pct_month_rate": 0.20833333333333334
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "defensive-event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-8x4h-none-long_short-state0.5-lev1.5-loss0.20-profit0.18",
+          "candidate_id": "event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-8x4h-none-long_short",
+          "state_weight": 0.5,
+          "factor_weight": 0.5,
+          "leverage": 1.5,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.18
+        },
+        "score": [
+          0.16666666666666666,
+          1.1527777777777777,
+          0.5833333333333334,
+          -0.24080916141883363,
+          0.45079257780489307,
+          -0.3321908164111401
+        ],
+        "development": {
+          "base": {
+            "discovery": {
+              "initial_equity": 100000.0,
+              "final_equity": 1263887.8149194138,
+              "net_return": 11.638878149194138,
+              "max_drawdown": -0.28064707035997477,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2021-01",
+                  "return": 0.7923707898746121
+                },
+                {
+                  "label": "2021-02",
+                  "return": 0.11722191446023125
+                },
+                {
+                  "label": "2021-03",
+                  "return": -0.16655485135410422
+                },
+                {
+                  "label": "2021-04",
+                  "return": 0.22022548933053146
+                },
+                {
+                  "label": "2021-05",
+                  "return": -0.05057621236709313
+                },
+                {
+                  "label": "2021-06",
+                  "return": -0.058769179631710904
+                },
+                {
+                  "label": "2021-07",
+                  "return": 0.20012095221456574
+                },
+                {
+                  "label": "2021-08",
+                  "return": 0.20562415875219817
+                },
+                {
+                  "label": "2021-09",
+                  "return": -0.06702379591082966
+                },
+                {
+                  "label": "2021-10",
+                  "return": 0.0503716029698667
+                },
+                {
+                  "label": "2021-11",
+                  "return": 0.1867437521427617
+                },
+                {
+                  "label": "2021-12",
+                  "return": -0.1627083421813736
+                },
+                {
+                  "label": "2022-01",
+                  "return": 0.22682724396770873
+                },
+                {
+                  "label": "2022-02",
+                  "return": 0.22559144229456649
+                },
+                {
+                  "label": "2022-03",
+                  "return": -0.06527057723867345
+                },
+                {
+                  "label": "2022-04",
+                  "return": -0.04687349338499871
+                },
+                {
+                  "label": "2022-05",
+                  "return": -0.015486979939532516
+                },
+                {
+                  "label": "2022-06",
+                  "return": 0.047506336562980284
+                },
+                {
+                  "label": "2022-07",
+                  "return": 0.08905054949525935
+                },
+                {
+                  "label": "2022-08",
+                  "return": 0.14107747393502892
+                },
+                {
+                  "label": "2022-09",
+                  "return": -0.13467486141115725
+                },
+                {
+                  "label": "2022-10",
+                  "return": 0.20156466199573314
+                },
+                {
+                  "label": "2022-11",
+                  "return": 0.05416737326684169
+                },
+                {
+                  "label": "2022-12",
+                  "return": 0.19436064824961413
+                },
+                {
+                  "label": "2023-01",
+                  "return": 0.19970424601207967
+                },
+                {
+                  "label": "2023-02",
+                  "return": 0.1813940038201153
+                },
+                {
+                  "label": "2023-03",
+                  "return": 0.2355139847816368
+                },
+                {
+                  "label": "2023-04",
+                  "return": -0.18898978427860944
+                },
+                {
+                  "label": "2023-05",
+                  "return": -0.049055991935487736
+                },
+                {
+                  "label": "2023-06",
+                  "return": 0.060863573886181
+                },
+                {
+                  "label": "2023-07",
+                  "return": -0.045636477484285454
+                },
+                {
+                  "label": "2023-08",
+                  "return": 0.4001500143913523
+                },
+                {
+                  "label": "2023-09",
+                  "return": -0.060899080075914054
+                },
+                {
+                  "label": "2023-10",
+                  "return": 0.03299450182944923
+                },
+                {
+                  "label": "2023-11",
+                  "return": 0.22700320186893796
+                },
+                {
+                  "label": "2023-12",
+                  "return": -0.037494040145887315
+                }
+              ],
+              "positive_month_rate": 0.6111111111111112,
+              "target_25pct_month_rate": 0.05555555555555555,
+              "worst_month": -0.18898978427860944,
+              "target_15pct_month_rate": 0.3888888888888889
+            },
+            "validation": {
+              "initial_equity": 100000.0,
+              "final_equity": 200595.18038279898,
+              "net_return": 1.0059518038279898,
+              "max_drawdown": -0.2813629178120042,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.11448028268005883
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.05899096160449326
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.020313512437585533
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.17765900722193045
+                },
+                {
+                  "label": "2024-05",
+                  "return": -0.003906731544860416
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.0388355543115012
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.022776177677427296
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.04131520065257242
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.008119781623318107
+                },
+                {
+                  "label": "2024-10",
+                  "return": -0.002269367289020251
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.18309449791438576
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.03776014697417697
+                },
+                {
+                  "label": "2025-01",
+                  "return": -0.09860056712821001
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.2159785146616934
+                },
+                {
+                  "label": "2025-03",
+                  "return": -0.0020446474342813437
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.15017721081978616
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.015550914156937084
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.18400382264541096
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.051575048817634625
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.036458433494849875
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.21358142618873063
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.007190717825564762
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.2268326578109868
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.027726346144640087
+                }
+              ],
+              "positive_month_rate": 0.6666666666666666,
+              "target_25pct_month_rate": 0.0,
+              "worst_month": -0.21358142618873063,
+              "target_15pct_month_rate": 0.20833333333333334
+            }
+          },
+          "stress": {
+            "discovery": {
+              "initial_equity": 100000.0,
+              "final_equity": 870466.7673091418,
+              "net_return": 7.704667673091418,
+              "max_drawdown": -0.32077570419280466,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2021-01",
+                  "return": 0.7821678328189876
+                },
+                {
+                  "label": "2021-02",
+                  "return": 0.10251902464913074
+                },
+                {
+                  "label": "2021-03",
+                  "return": -0.18565697427699815
+                },
+                {
+                  "label": "2021-04",
+                  "return": 0.2109053156546166
+                },
+                {
+                  "label": "2021-05",
+                  "return": -0.06591570997799297
+                },
+                {
+                  "label": "2021-06",
+                  "return": -0.07185960823701007
+                },
+                {
+                  "label": "2021-07",
+                  "return": 0.18422928960399393
+                },
+                {
+                  "label": "2021-08",
+                  "return": 0.20461176937758274
+                },
+                {
+                  "label": "2021-09",
+                  "return": -0.08819663252422873
+                },
+                {
+                  "label": "2021-10",
+                  "return": 0.0352497264573716
+                },
+                {
+                  "label": "2021-11",
+                  "return": 0.1877452077418435
+                },
+                {
+                  "label": "2021-12",
+                  "return": -0.18511071660276948
+                },
+                {
+                  "label": "2022-01",
+                  "return": 0.23320063630586002
+                },
+                {
+                  "label": "2022-02",
+                  "return": 0.22443328274660795
+                },
+                {
+                  "label": "2022-03",
+                  "return": -0.08745556448049807
+                },
+                {
+                  "label": "2022-04",
+                  "return": -0.06350171568054831
+                },
+                {
+                  "label": "2022-05",
+                  "return": -0.028865494660231163
+                },
+                {
+                  "label": "2022-06",
+                  "return": 0.022141474687246712
+                },
+                {
+                  "label": "2022-07",
+                  "return": 0.07805926592134743
+                },
+                {
+                  "label": "2022-08",
+                  "return": 0.13772850657388558
+                },
+                {
+                  "label": "2022-09",
+                  "return": -0.1508875193700987
+                },
+                {
+                  "label": "2022-10",
+                  "return": 0.2124230337256993
+                },
+                {
+                  "label": "2022-11",
+                  "return": 0.04313962057974842
+                },
+                {
+                  "label": "2022-12",
+                  "return": 0.19929754065953456
+                },
+                {
+                  "label": "2023-01",
+                  "return": 0.2051919080341144
+                },
+                {
+                  "label": "2023-02",
+                  "return": 0.18067638849835907
+                },
+                {
+                  "label": "2023-03",
+                  "return": 0.24102293826606
+                },
+                {
+                  "label": "2023-04",
+                  "return": -0.20563998179137957
+                },
+                {
+                  "label": "2023-05",
+                  "return": -0.07159307878107898
+                },
+                {
+                  "label": "2023-06",
+                  "return": 0.04250782391475655
+                },
+                {
+                  "label": "2023-07",
+                  "return": -0.06183571642514791
+                },
+                {
+                  "label": "2023-08",
+                  "return": 0.41362022847335606
+                },
+                {
+                  "label": "2023-09",
+                  "return": -0.0803338776735866
+                },
+                {
+                  "label": "2023-10",
+                  "return": 0.01379616722662061
+                },
+                {
+                  "label": "2023-11",
+                  "return": 0.23851991101527892
+                },
+                {
+                  "label": "2023-12",
+                  "return": -0.054935793397743043
+                }
+              ],
+              "positive_month_rate": 0.6111111111111112,
+              "target_25pct_month_rate": 0.05555555555555555,
+              "worst_month": -0.20563998179137957,
+              "target_15pct_month_rate": 0.3888888888888889
+            },
+            "validation": {
+              "initial_equity": 100000.0,
+              "final_equity": 145079.2577804893,
+              "net_return": 0.45079257780489307,
+              "max_drawdown": -0.3321908164111401,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.09127854464437736
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.04732072069792305
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.0033255555251096424
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.1959999468254144
+                },
+                {
+                  "label": "2024-05",
+                  "return": -0.01968795748606075
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.03166458755860438
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.03808058571821554
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.019406826588006416
+                },
+                {
+                  "label": "2024-09",
+                  "return": -0.007267964690013297
+                },
+                {
+                  "label": "2024-10",
+                  "return": -0.011278364013691892
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.19581890920354939
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.02472162122231962
+                },
+                {
+                  "label": "2025-01",
+                  "return": -0.11093018660636551
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.23468166038212537
+                },
+                {
+                  "label": "2025-03",
+                  "return": -0.03404223470712618
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.129968710310749
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.006818094467774576
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.1857709920029907
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.04352795531756524
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.02844501688295366
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.24080916141883363
+                },
+                {
+                  "label": "2025-10",
+                  "return": -0.014624781844877692
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.20224305172015772
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.04450527708882645
+                }
+              ],
+              "positive_month_rate": 0.5833333333333334,
+              "target_25pct_month_rate": 0.0,
+              "worst_month": -0.24080916141883363,
+              "target_15pct_month_rate": 0.16666666666666666
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "defensive-event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-8x4h-none-long_short-state0.5-lev1.5-loss0.15-profit0.18",
+          "candidate_id": "event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-8x4h-none-long_short",
+          "state_weight": 0.5,
+          "factor_weight": 0.5,
+          "leverage": 1.5,
+          "monthly_loss_limit": 0.15,
+          "monthly_profit_target": 0.18
+        },
+        "score": [
+          0.16666666666666666,
+          1.1527777777777777,
+          0.5833333333333334,
+          -0.24080916141883363,
+          0.4979997862558606,
+          -0.3321908164111401
+        ],
+        "development": {
+          "base": {
+            "discovery": {
+              "initial_equity": 100000.0,
+              "final_equity": 1131994.7257374949,
+              "net_return": 10.319947257374949,
+              "max_drawdown": -0.30164427515746817,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2021-01",
+                  "return": 0.7923707898746121
+                },
+                {
+                  "label": "2021-02",
+                  "return": 0.11722191446023125
+                },
+                {
+                  "label": "2021-03",
+                  "return": -0.15205049034517015
+                },
+                {
+                  "label": "2021-04",
+                  "return": 0.21894425159375494
+                },
+                {
+                  "label": "2021-05",
+                  "return": -0.1732166714553003
+                },
+                {
+                  "label": "2021-06",
+                  "return": -0.05975747199309761
+                },
+                {
+                  "label": "2021-07",
+                  "return": 0.20012095221456574
+                },
+                {
+                  "label": "2021-08",
+                  "return": 0.20562415875219817
+                },
+                {
+                  "label": "2021-09",
+                  "return": -0.06702379591082966
+                },
+                {
+                  "label": "2021-10",
+                  "return": 0.0503716029698667
+                },
+                {
+                  "label": "2021-11",
+                  "return": 0.1867437521427617
+                },
+                {
+                  "label": "2021-12",
+                  "return": -0.1528178624781134
+                },
+                {
+                  "label": "2022-01",
+                  "return": 0.22554451741002016
+                },
+                {
+                  "label": "2022-02",
+                  "return": 0.22559144229456649
+                },
+                {
+                  "label": "2022-03",
+                  "return": -0.06527057723867345
+                },
+                {
+                  "label": "2022-04",
+                  "return": -0.04687349338499871
+                },
+                {
+                  "label": "2022-05",
+                  "return": -0.015486979939532516
+                },
+                {
+                  "label": "2022-06",
+                  "return": 0.047506336562980284
+                },
+                {
+                  "label": "2022-07",
+                  "return": 0.08905054949525935
+                },
+                {
+                  "label": "2022-08",
+                  "return": 0.14107747393502892
+                },
+                {
+                  "label": "2022-09",
+                  "return": -0.13467486141115725
+                },
+                {
+                  "label": "2022-10",
+                  "return": 0.20156466199573314
+                },
+                {
+                  "label": "2022-11",
+                  "return": 0.05416737326684169
+                },
+                {
+                  "label": "2022-12",
+                  "return": 0.19436064824961413
+                },
+                {
+                  "label": "2023-01",
+                  "return": 0.19970424601207967
+                },
+                {
+                  "label": "2023-02",
+                  "return": 0.1813940038201153
+                },
+                {
+                  "label": "2023-03",
+                  "return": 0.2355139847816368
+                },
+                {
+                  "label": "2023-04",
+                  "return": -0.18631358882330049
+                },
+                {
+                  "label": "2023-05",
+                  "return": -0.05004659467541364
+                },
+                {
+                  "label": "2023-06",
+                  "return": 0.060863573886181
+                },
+                {
+                  "label": "2023-07",
+                  "return": -0.045636477484285454
+                },
+                {
+                  "label": "2023-08",
+                  "return": 0.4001500143913523
+                },
+                {
+                  "label": "2023-09",
+                  "return": -0.060899080075914054
+                },
+                {
+                  "label": "2023-10",
+                  "return": 0.03299450182944923
+                },
+                {
+                  "label": "2023-11",
+                  "return": 0.22700320186893796
+                },
+                {
+                  "label": "2023-12",
+                  "return": -0.037494040145887315
+                }
+              ],
+              "positive_month_rate": 0.6111111111111112,
+              "target_25pct_month_rate": 0.05555555555555555,
+              "worst_month": -0.18631358882330049,
+              "target_15pct_month_rate": 0.3888888888888889
+            },
+            "validation": {
+              "initial_equity": 100000.0,
+              "final_equity": 206663.13511949714,
+              "net_return": 1.0666313511949714,
+              "max_drawdown": -0.2813629178120042,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.11448028268005883
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.05899096160449326
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.020313512437585533
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.15191465434986295
+                },
+                {
+                  "label": "2024-05",
+                  "return": -0.004927084874316077
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.0388355543115012
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.022776177677427296
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.04131520065257242
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.008119781623318107
+                },
+                {
+                  "label": "2024-10",
+                  "return": -0.002269367289020251
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.18309449791438576
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.03776014697417697
+                },
+                {
+                  "label": "2025-01",
+                  "return": -0.09860056712821001
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.2159785146616934
+                },
+                {
+                  "label": "2025-03",
+                  "return": -0.0020446474342813437
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.15017721081978616
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.015550914156937084
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.18400382264541096
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.051575048817634625
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.036458433494849875
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.21358142618873063
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.007190717825564762
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.2268326578109868
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.027726346144640087
+                }
+              ],
+              "positive_month_rate": 0.6666666666666666,
+              "target_25pct_month_rate": 0.0,
+              "worst_month": -0.21358142618873063,
+              "target_15pct_month_rate": 0.20833333333333334
+            }
+          },
+          "stress": {
+            "discovery": {
+              "initial_equity": 100000.0,
+              "final_equity": 774697.0963483548,
+              "net_return": 6.746970963483547,
+              "max_drawdown": -0.3230255680897664,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2021-01",
+                  "return": 0.7821678328189876
+                },
+                {
+                  "label": "2021-02",
+                  "return": 0.10251902464913074
+                },
+                {
+                  "label": "2021-03",
+                  "return": -0.1696383785171934
+                },
+                {
+                  "label": "2021-04",
+                  "return": 0.2081807744447363
+                },
+                {
+                  "label": "2021-05",
+                  "return": -0.19060257251466656
+                },
+                {
+                  "label": "2021-06",
+                  "return": -0.0739479241184768
+                },
+                {
+                  "label": "2021-07",
+                  "return": 0.18422928960399393
+                },
+                {
+                  "label": "2021-08",
+                  "return": 0.20461176937758274
+                },
+                {
+                  "label": "2021-09",
+                  "return": -0.08819663252422873
+                },
+                {
+                  "label": "2021-10",
+                  "return": 0.0352497264573716
+                },
+                {
+                  "label": "2021-11",
+                  "return": 0.1877452077418435
+                },
+                {
+                  "label": "2021-12",
+                  "return": -0.17061933234305324
+                },
+                {
+                  "label": "2022-01",
+                  "return": 0.2304367035118124
+                },
+                {
+                  "label": "2022-02",
+                  "return": 0.22443328274660795
+                },
+                {
+                  "label": "2022-03",
+                  "return": -0.08745556448049807
+                },
+                {
+                  "label": "2022-04",
+                  "return": -0.06350171568054831
+                },
+                {
+                  "label": "2022-05",
+                  "return": -0.028865494660231163
+                },
+                {
+                  "label": "2022-06",
+                  "return": 0.022141474687246712
+                },
+                {
+                  "label": "2022-07",
+                  "return": 0.07805926592134743
+                },
+                {
+                  "label": "2022-08",
+                  "return": 0.13772850657388558
+                },
+                {
+                  "label": "2022-09",
+                  "return": -0.15206335233580892
+                },
+                {
+                  "label": "2022-10",
+                  "return": 0.20969470838935114
+                },
+                {
+                  "label": "2022-11",
+                  "return": 0.04313962057974842
+                },
+                {
+                  "label": "2022-12",
+                  "return": 0.19929754065953456
+                },
+                {
+                  "label": "2023-01",
+                  "return": 0.2051919080341144
+                },
+                {
+                  "label": "2023-02",
+                  "return": 0.18067638849835907
+                },
+                {
+                  "label": "2023-03",
+                  "return": 0.24102293826606
+                },
+                {
+                  "label": "2023-04",
+                  "return": -0.20563998179137957
+                },
+                {
+                  "label": "2023-05",
+                  "return": -0.07159307878107898
+                },
+                {
+                  "label": "2023-06",
+                  "return": 0.04250782391475655
+                },
+                {
+                  "label": "2023-07",
+                  "return": -0.06183571642514791
+                },
+                {
+                  "label": "2023-08",
+                  "return": 0.41362022847335606
+                },
+                {
+                  "label": "2023-09",
+                  "return": -0.0803338776735866
+                },
+                {
+                  "label": "2023-10",
+                  "return": 0.01379616722662061
+                },
+                {
+                  "label": "2023-11",
+                  "return": 0.23851991101527892
+                },
+                {
+                  "label": "2023-12",
+                  "return": -0.054935793397743043
+                }
+              ],
+              "positive_month_rate": 0.6111111111111112,
+              "target_25pct_month_rate": 0.05555555555555555,
+              "worst_month": -0.20563998179137957,
+              "target_15pct_month_rate": 0.3888888888888889
+            },
+            "validation": {
+              "initial_equity": 100000.0,
+              "final_equity": 149799.97862558605,
+              "net_return": 0.4979997862558606,
+              "max_drawdown": -0.3321908164111401,
+              "bankrupt": false,
+              "daily_returns": [],
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.09127854464437736
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.04732072069792305
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.0033255555251096424
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.16801175509378238
+                },
+                {
+                  "label": "2024-05",
+                  "return": -0.02184055841507952
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.03166458755860438
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.03808058571821554
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.019406826588006416
+                },
+                {
+                  "label": "2024-09",
+                  "return": -0.007267964690013297
+                },
+                {
+                  "label": "2024-10",
+                  "return": -0.011278364013691892
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.19581890920354939
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.02472162122231962
+                },
+                {
+                  "label": "2025-01",
+                  "return": -0.11093018660636551
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.23468166038212537
+                },
+                {
+                  "label": "2025-03",
+                  "return": -0.03404223470712618
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.129968710310749
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.006818094467774576
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.1857709920029907
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.04352795531756524
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.02844501688295366
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.24080916141883363
+                },
+                {
+                  "label": "2025-10",
+                  "return": -0.014624781844877692
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.20224305172015772
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.04450527708882645
+                }
+              ],
+              "positive_month_rate": 0.5833333333333334,
+              "target_25pct_month_rate": 0.0,
+              "worst_month": -0.24080916141883363,
+              "target_15pct_month_rate": 0.16666666666666666
+            }
+          }
+        }
+      }
+    ]
+  },
+  "confirmation_audit": {
+    "configuration_count": 4,
+    "strict_pass_count": 0,
+    "best_complete_month_count": 4,
+    "best_confirmation_diagnostic": {
+      "config": {
+        "id": "defensive-event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-8x4h-none-long_short-state0.5-lev1.5-loss0.20-profit0.16",
+        "candidate_id": "event-eth_perp-to-btc_perp-reversal-15d-threshold-2-hold-8x4h-none-long_short",
+        "state_weight": 0.5,
+        "factor_weight": 0.5,
+        "leverage": 1.5,
+        "monthly_loss_limit": 0.2,
+        "monthly_profit_target": 0.16
+      },
+      "score": [
+        0.20833333333333334,
+        1.2916666666666667,
+        0.6111111111111112,
+        -0.24080916141883363,
+        0.7166835101290419,
+        -0.32217270030003875
+      ],
+      "development": {
+        "base": {
+          "discovery": {
+            "initial_equity": 100000.0,
+            "final_equity": 1282603.5975139262,
+            "net_return": 11.826035975139261,
+            "max_drawdown": -0.28064707035997477,
+            "bankrupt": false,
+            "daily_returns": [],
+            "monthly_returns": [
+              {
+                "label": "2021-01",
+                "return": 0.7923707898746121
+              },
+              {
+                "label": "2021-02",
+                "return": 0.11722191446023125
+              },
+              {
+                "label": "2021-03",
+                "return": -0.16655485135410422
+              },
+              {
+                "label": "2021-04",
+                "return": 0.22022548933053146
+              },
+              {
+                "label": "2021-05",
+                "return": -0.05057621236709313
+              },
+              {
+                "label": "2021-06",
+                "return": -0.058769179631710904
+              },
+              {
+                "label": "2021-07",
+                "return": 0.20012095221456574
+              },
+              {
+                "label": "2021-08",
+                "return": 0.20562415875219817
+              },
+              {
+                "label": "2021-09",
+                "return": -0.06702379591082966
+              },
+              {
+                "label": "2021-10",
+                "return": 0.0503716029698667
+              },
+              {
+                "label": "2021-11",
+                "return": 0.1867437521427617
+              },
+              {
+                "label": "2021-12",
+                "return": -0.1627083421813736
+              },
+              {
+                "label": "2022-01",
+                "return": 0.22682724396770873
+              },
+              {
+                "label": "2022-02",
+                "return": 0.22559144229456649
+              },
+              {
+                "label": "2022-03",
+                "return": -0.06527057723867345
+              },
+              {
+                "label": "2022-04",
+                "return": -0.04687349338499871
+              },
+              {
+                "label": "2022-05",
+                "return": -0.015486979939532516
+              },
+              {
+                "label": "2022-06",
+                "return": 0.047506336562980284
+              },
+              {
+                "label": "2022-07",
+                "return": 0.08905054949525935
+              },
+              {
+                "label": "2022-08",
+                "return": 0.1619186063514536
+              },
+              {
+                "label": "2022-09",
+                "return": -0.13556675747196892
+              },
+              {
+                "label": "2022-10",
+                "return": 0.20156466199573314
+              },
+              {
+                "label": "2022-11",
+                "return": 0.05416737326684169
+              },
+              {
+                "label": "2022-12",
+                "return": 0.19436064824961413
+              },
+              {
+                "label": "2023-01",
+                "return": 0.19970424601207967
+              },
+              {
+                "label": "2023-02",
+                "return": 0.17859874882372892
+              },
+              {
+                "label": "2023-03",
+                "return": 0.2355139847816368
+              },
+              {
+                "label": "2023-04",
+                "return": -0.18898978427860944
+              },
+              {
+                "label": "2023-05",
+                "return": -0.049055991935487736
+              },
+              {
+                "label": "2023-06",
+                "return": 0.060863573886181
+              },
+              {
+                "label": "2023-07",
+                "return": -0.045636477484285454
+              },
+              {
+                "label": "2023-08",
+                "return": 0.4001500143913523
+              },
+              {
+                "label": "2023-09",
+                "return": -0.060899080075914054
+              },
+              {
+                "label": "2023-10",
+                "return": 0.03299450182944923
+              },
+              {
+                "label": "2023-11",
+                "return": 0.22700320186893796
+              },
+              {
+                "label": "2023-12",
+                "return": -0.037494040145887315
+              }
+            ],
+            "positive_month_rate": 0.6111111111111112,
+            "target_25pct_month_rate": 0.05555555555555555,
+            "worst_month": -0.18898978427860944,
+            "target_15pct_month_rate": 0.4166666666666667
+          },
+          "validation": {
+            "initial_equity": 100000.0,
+            "final_equity": 227829.49294655529,
+            "net_return": 1.278294929465553,
+            "max_drawdown": -0.26922216446487,
+            "bankrupt": false,
+            "daily_returns": [],
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.11448028268005883
+              },
+              {
+                "label": "2024-02",
+                "return": 0.05899096160449326
+              },
+              {
+                "label": "2024-03",
+                "return": 0.020313512437585533
+              },
+              {
+                "label": "2024-04",
+                "return": -0.17765900722193045
+              },
+              {
+                "label": "2024-05",
+                "return": -0.003906731544860416
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0388355543115012
+              },
+              {
+                "label": "2024-07",
+                "return": -0.022776177677427296
+              },
+              {
+                "label": "2024-08",
+                "return": 0.04131520065257242
+              },
+              {
+                "label": "2024-09",
+                "return": 0.008119781623318107
+              },
+              {
+                "label": "2024-10",
+                "return": -0.002269367289020251
+              },
+              {
+                "label": "2024-11",
+                "return": 0.18309449791438576
+              },
+              {
+                "label": "2024-12",
+                "return": 0.03776014697417697
+              },
+              {
+                "label": "2025-01",
+                "return": -0.09860056712821001
+              },
+              {
+                "label": "2025-02",
+                "return": 0.2159785146616934
+              },
+              {
+                "label": "2025-03",
+                "return": -0.0020446474342813437
+              },
+              {
+                "label": "2025-04",
+                "return": 0.1688633267960658
+              },
+              {
+                "label": "2025-05",
+                "return": 0.01449845412461949
+              },
+              {
+                "label": "2025-06",
+                "return": 0.18400382264541096
+              },
+              {
+                "label": "2025-07",
+                "return": 0.051575048817634625
+              },
+              {
+                "label": "2025-08",
+                "return": 0.036458433494849875
+              },
+              {
+                "label": "2025-09",
+                "return": -0.21358142618873063
+              },
+              {
+                "label": "2025-10",
+                "return": 0.17402556715791295
+              },
+              {
+                "label": "2025-11",
+                "return": 0.1774982624496887
+              },
+              {
+                "label": "2025-12",
+                "return": -0.027726346144640087
+              }
+            ],
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.0,
+            "worst_month": -0.21358142618873063,
+            "target_15pct_month_rate": 0.25
+          }
+        },
+        "stress": {
+          "discovery": {
+            "initial_equity": 100000.0,
+            "final_equity": 888502.9933830578,
+            "net_return": 7.885029933830578,
+            "max_drawdown": -0.32077570419280466,
+            "bankrupt": false,
+            "daily_returns": [],
+            "monthly_returns": [
+              {
+                "label": "2021-01",
+                "return": 0.7821678328189876
+              },
+              {
+                "label": "2021-02",
+                "return": 0.10251902464913074
+              },
+              {
+                "label": "2021-03",
+                "return": -0.18565697427699815
+              },
+              {
+                "label": "2021-04",
+                "return": 0.2109053156546166
+              },
+              {
+                "label": "2021-05",
+                "return": -0.06591570997799297
+              },
+              {
+                "label": "2021-06",
+                "return": -0.07185960823701007
+              },
+              {
+                "label": "2021-07",
+                "return": 0.18422928960399393
+              },
+              {
+                "label": "2021-08",
+                "return": 0.20461176937758274
+              },
+              {
+                "label": "2021-09",
+                "return": -0.08819663252422873
+              },
+              {
+                "label": "2021-10",
+                "return": 0.0352497264573716
+              },
+              {
+                "label": "2021-11",
+                "return": 0.1877452077418435
+              },
+              {
+                "label": "2021-12",
+                "return": -0.18511071660276948
+              },
+              {
+                "label": "2022-01",
+                "return": 0.23320063630586002
+              },
+              {
+                "label": "2022-02",
+                "return": 0.22443328274660795
+              },
+              {
+                "label": "2022-03",
+                "return": -0.08745556448049807
+              },
+              {
+                "label": "2022-04",
+                "return": -0.06350171568054831
+              },
+              {
+                "label": "2022-05",
+                "return": -0.028865494660231163
+              },
+              {
+                "label": "2022-06",
+                "return": 0.022141474687246712
+              },
+              {
+                "label": "2022-07",
+                "return": 0.07805926592134743
+              },
+              {
+                "label": "2022-08",
+                "return": 0.16387656583079593
+              },
+              {
+                "label": "2022-09",
+                "return": -0.15276548441609208
+              },
+              {
+                "label": "2022-10",
+                "return": 0.2124230337256993
+              },
+              {
+                "label": "2022-11",
+                "return": 0.04313962057974842
+              },
+              {
+                "label": "2022-12",
+                "return": 0.19929754065953456
+              },
+              {
+                "label": "2023-01",
+                "return": 0.2051919080341144
+              },
+              {
+                "label": "2023-02",
+                "return": 0.18067638849835907
+              },
+              {
+                "label": "2023-03",
+                "return": 0.24102293826606
+              },
+              {
+                "label": "2023-04",
+                "return": -0.20563998179137957
+              },
+              {
+                "label": "2023-05",
+                "return": -0.07159307878107898
+              },
+              {
+                "label": "2023-06",
+                "return": 0.04250782391475655
+              },
+              {
+                "label": "2023-07",
+                "return": -0.06183571642514791
+              },
+              {
+                "label": "2023-08",
+                "return": 0.41362022847335606
+              },
+              {
+                "label": "2023-09",
+                "return": -0.0803338776735866
+              },
+              {
+                "label": "2023-10",
+                "return": 0.01379616722662061
+              },
+              {
+                "label": "2023-11",
+                "return": 0.23851991101527892
+              },
+              {
+                "label": "2023-12",
+                "return": -0.054935793397743043
+              }
+            ],
+            "positive_month_rate": 0.6111111111111112,
+            "target_25pct_month_rate": 0.05555555555555555,
+            "worst_month": -0.20563998179137957,
+            "target_15pct_month_rate": 0.4166666666666667
+          },
+          "validation": {
+            "initial_equity": 100000.0,
+            "final_equity": 171668.35101290417,
+            "net_return": 0.7166835101290419,
+            "max_drawdown": -0.32217270030003875,
+            "bankrupt": false,
+            "daily_returns": [],
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.09127854464437736
+              },
+              {
+                "label": "2024-02",
+                "return": 0.04732072069792305
+              },
+              {
+                "label": "2024-03",
+                "return": 0.0033255555251096424
+              },
+              {
+                "label": "2024-04",
+                "return": -0.1959999468254144
+              },
+              {
+                "label": "2024-05",
+                "return": -0.01968795748606075
+              },
+              {
+                "label": "2024-06",
+                "return": 0.03166458755860438
+              },
+              {
+                "label": "2024-07",
+                "return": -0.03808058571821554
+              },
+              {
+                "label": "2024-08",
+                "return": 0.019406826588006416
+              },
+              {
+                "label": "2024-09",
+                "return": -0.007267964690013297
+              },
+              {
+                "label": "2024-10",
+                "return": -0.011278364013691892
+              },
+              {
+                "label": "2024-11",
+                "return": 0.19581890920354939
+              },
+              {
+                "label": "2024-12",
+                "return": 0.02472162122231962
+              },
+              {
+                "label": "2025-01",
+                "return": -0.11093018660636551
+              },
+              {
+                "label": "2025-02",
+                "return": 0.23468166038212537
+              },
+              {
+                "label": "2025-03",
+                "return": -0.03404223470712618
+              },
+              {
+                "label": "2025-04",
+                "return": 0.129968710310749
+              },
+              {
+                "label": "2025-05",
+                "return": 0.006818094467774576
+              },
+              {
+                "label": "2025-06",
+                "return": 0.1857709920029907
+              },
+              {
+                "label": "2025-07",
+                "return": 0.04352795531756524
+              },
+              {
+                "label": "2025-08",
+                "return": 0.02844501688295366
+              },
+              {
+                "label": "2025-09",
+                "return": -0.24080916141883363
+              },
+              {
+                "label": "2025-10",
+                "return": 0.16859675684529984
+              },
+              {
+                "label": "2025-11",
+                "return": 0.1995383721067371
+              },
+              {
+                "label": "2025-12",
+                "return": -0.04450527708882645
+              }
+            ],
+            "positive_month_rate": 0.625,
+            "target_25pct_month_rate": 0.0,
+            "worst_month": -0.24080916141883363,
+            "target_15pct_month_rate": 0.20833333333333334
+          }
+        }
+      },
+      "confirmation": {
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 198154.8136605135,
+          "net_return": 0.9815481366051351,
+          "max_drawdown": -0.2879356593101048,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.3095778695171757
+            },
+            {
+              "label": "2026-02",
+              "return": 0.467856093579744
+            },
+            {
+              "label": "2026-03",
+              "return": 0.1895244906939377
+            },
+            {
+              "label": "2026-04",
+              "return": 0.09794885913104795
+            },
+            {
+              "label": "2026-05",
+              "return": -0.24729242578743874
+            },
+            {
+              "label": "2026-06",
+              "return": 0.16007079443531586
+            },
+            {
+              "label": "2026-07",
+              "return": -0.10080626277737785
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.24729242578743874,
+          "target_15pct_month_rate": 0.5714285714285714
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 171629.12699756183,
+          "net_return": 0.7162912699756183,
+          "max_drawdown": -0.32786954921208983,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.25136617401422534
+            },
+            {
+              "label": "2026-02",
+              "return": 0.45621029023903575
+            },
+            {
+              "label": "2026-03",
+              "return": 0.17805484166834726
+            },
+            {
+              "label": "2026-04",
+              "return": 0.07923127611384237
+            },
+            {
+              "label": "2026-05",
+              "return": -0.2827954574776614
+            },
+            {
+              "label": "2026-06",
+              "return": 0.17813835997297553
+            },
+            {
+              "label": "2026-07",
+              "return": -0.12032506175827433
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.2827954574776614,
+          "target_15pct_month_rate": 0.5714285714285714
+        }
+      },
+      "target_month_counts": {
+        "base": 4,
+        "stress": 4
+      },
+      "strict_7_of_7": false
+    },
+    "strict_examples": []
+  },
+  "target": {
+    "monthly_return": 0.15,
+    "required_complete_months": 7,
+    "achieved_in_reused_confirmation": false
+  },
+  "decision": {
+    "status": "rejected_no_strict_monthly_solution",
+    "approved_for_trading": false,
+    "reason": "No development-selected defensive factor configuration reached +15% in all seven complete 2026 months under both base and stress costs."
+  },
+  "costs": {
+    "base_component_fee_bps": 5.0,
+    "base_component_slippage_bps": 2.0,
+    "base_overlay_turnover_bps": 7.0,
+    "stress_component_fee_bps": 10.0,
+    "stress_component_slippage_bps": 5.0,
+    "stress_overlay_turnover_bps": 15.0
+  },
+  "limitations": [
+    "2026 is reused confirmation evidence and is not a fresh holdout.",
+    "The frozen market-state baseline was selected in prior overlapping research.",
+    "Conditional factor screening uses only 2021-2025 baseline loss months.",
+    "Monthly locks react after a daily close and pay turnover on the next exposure change.",
+    "Drawdown is measured at daily closes; liquidation and borrowing costs are not modeled."
+  ],
+  "id": "defensive-factor-portfolio-20260815"
+}

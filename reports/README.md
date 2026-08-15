@@ -148,6 +148,12 @@ market data.
   configurations pass the development return and drawdown gates. Both families reach at most 4/7
   complete January-July 2026 months under base and stress costs, with no 7/7 configuration. This
   direction is rejected, remains research-only, and excludes partial August from strict counts.
+- `experiments/defensive_factor_portfolio/2026-08-15/`: all 2,988 predefined BTC/ETH factors are
+  screened only on their returns during frozen-baseline loss months in 2021-2025. Seventy-eight
+  sparse event factors pass the conditional screen, but only four factor/weight/leverage/monthly-
+  lock configurations pass base and stress development gates. The best reused-confirmation result
+  remains 4/7 complete months and loses in May and July, so conditional defensive-factor selection
+  is rejected as a solution to the strict every-month +15% target.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
