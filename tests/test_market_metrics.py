@@ -2,11 +2,14 @@ import zipfile
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
+
 from mastermind_tick.bar_research import ResearchBar
 from mastermind_tick.market_metrics import (
     causal_metric_features,
     load_metric_archives,
     metric_targets,
+    prior_utc_day_metric_signals,
 )
 
 HEADER = (
@@ -86,3 +89,27 @@ def test_metric_targets_support_fade_and_long_only() -> None:
     assert metric_targets(
         values, threshold=Decimal("1"), polarity="fade", direction="long_only"
     ) == (None, 0, 1, 0)
+
+
+def test_prior_utc_day_signal_uses_bar_only_after_it_closes() -> None:
+    day_ms = 86_400_000
+    bars = [
+        _bar(day_ms - 14_400_000),
+        _bar(day_ms),
+    ]
+
+    signals = prior_utc_day_metric_signals(
+        bars,
+        (Decimal("1.5"), Decimal("9")),
+        ("1970-01-01", "1970-01-02"),
+    )
+
+    assert signals == (
+        ("1970-01-01", None),
+        ("1970-01-02", Decimal("1.5")),
+    )
+
+
+def test_prior_utc_day_signal_rejects_misaligned_values() -> None:
+    with pytest.raises(ValueError, match="aligned"):
+        prior_utc_day_metric_signals([_bar(0)], (), ("1970-01-01",))

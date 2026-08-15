@@ -149,6 +149,25 @@ def metric_targets(
     return tuple(targets)
 
 
+def prior_utc_day_metric_signals(
+    bars: list[ResearchBar],
+    values: tuple[Decimal | None, ...],
+    labels: tuple[str, ...],
+) -> tuple[tuple[str, Decimal | None], ...]:
+    """Map each complete 4h metric value to the UTC day starting after its close."""
+    if len(bars) != len(values):
+        raise ValueError("market metric bars and values are not aligned")
+    day_ms = 86_400_000
+    available = {}
+    for bar, value in zip(bars, values, strict=True):
+        available_ms = bar.end_ms + 1
+        if available_ms % day_ms:
+            continue
+        label = datetime.fromtimestamp(available_ms / 1000, UTC).date().isoformat()
+        available[label] = value
+    return tuple((label, available.get(label)) for label in labels)
+
+
 def _metric_bar(start_ms: int, rows: list[dict[str, str]]) -> FuturesMetricBar:
     latest = rows[-1]
     taker_logs = [_log(Decimal(row["sum_taker_long_short_vol_ratio"])) for row in rows]

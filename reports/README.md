@@ -121,6 +121,17 @@ market data.
   ETH crowding-fade hybrid remained profitable under 10+5 bps stress costs but reached the revised
   15% target in only 3/8 reused 2026 months. Requiring 25% target-month coverage in each development
   segment produced no eligible hybrid. It remains rejected and research-only.
+- `experiments/market_metric_volatility/2026-08-15/`: causal volatility scaling on the ETH
+  crowding hybrid. The selected configuration and all 149 development-eligible neighbors remained
+  at 3/8 target months or fewer in reused confirmation, so the overlay is rejected.
+- `experiments/bar_factor_hybrid/2026-08-15/`: 168 BTC/ETH EMA, Donchian, momentum, and RSI sleeves
+  around the frozen factor book. None of 130 development-eligible hybrids passed confirmation, so
+  conventional bar-strategy diversification is rejected for this objective.
+- `experiments/market_state_overlay/2026-08-15/`: prior-day BTC top-account crowding controls the
+  next day's frozen factor-book exposure. The corrected causal run reached the revised +15% target
+  in only 2/8 reused 2026 months under base costs and 1/8 under stress, so it is rejected. Earlier
+  reports showing 4/8 used same-day metric snapshots and are invalid due to forward leakage; they
+  remain only as provenance. No market-state overlay is approved for trading.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment

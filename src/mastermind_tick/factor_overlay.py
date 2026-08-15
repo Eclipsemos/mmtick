@@ -68,6 +68,66 @@ class MonthlyRiskConfig:
         }
 
 
+@dataclass(frozen=True)
+class VolatilityTargetConfig:
+    lookback_days: int
+    target_daily_volatility: Decimal
+    minimum_exposure: Decimal
+    maximum_exposure: Decimal
+    rebalance_frequency: str = "monthly"
+    turnover_bps: Decimal = Decimal("7")
+
+    def __post_init__(self) -> None:
+        if self.lookback_days < 2:
+            raise ValueError("volatility target lookback must be at least two days")
+        if self.target_daily_volatility <= 0:
+            raise ValueError("volatility target must be positive")
+        if not Decimal("0") <= self.minimum_exposure < self.maximum_exposure:
+            raise ValueError("volatility target exposures are invalid")
+        if self.maximum_exposure > Decimal("10") or self.turnover_bps < 0:
+            raise ValueError("volatility target exposure or cost is invalid")
+        if self.rebalance_frequency not in {"daily", "monthly"}:
+            raise ValueError("volatility target rebalance frequency is unsupported")
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "lookback_days": self.lookback_days,
+            "target_daily_volatility": float(self.target_daily_volatility),
+            "minimum_exposure": float(self.minimum_exposure),
+            "maximum_exposure": float(self.maximum_exposure),
+            "rebalance_frequency": self.rebalance_frequency,
+            "turnover_bps": float(self.turnover_bps),
+        }
+
+
+@dataclass(frozen=True)
+class SignalOverlayConfig:
+    threshold: Decimal
+    low_exposure: Decimal
+    high_exposure: Decimal
+    mode: str
+    turnover_bps: Decimal = Decimal("7")
+
+    def __post_init__(self) -> None:
+        if self.threshold < 0:
+            raise ValueError("signal overlay threshold must be non-negative")
+        if not Decimal("0") <= self.low_exposure < self.high_exposure:
+            raise ValueError("signal overlay exposures are invalid")
+        if self.high_exposure > Decimal("10") or self.turnover_bps < 0:
+            raise ValueError("signal overlay exposure or cost is invalid")
+        if self.mode not in {"above", "below", "extreme", "calm"}:
+            raise ValueError("signal overlay mode is unsupported")
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "threshold": float(self.threshold),
+            "low_exposure": float(self.low_exposure),
+            "high_exposure": float(self.high_exposure),
+            "mode": self.mode,
+            "turnover_bps": float(self.turnover_bps),
+        }
+
+
 def causal_overlay_exposures(
     returns: DailyReturns,
     config: FactorOverlayConfig,
@@ -193,6 +253,166 @@ def evaluate_monthly_risk_overlay(
         daily_returns=used_daily,
         monthly_returns=monthly_returns(used_daily),
     )
+
+
+def causal_volatility_exposures(
+    returns: DailyReturns,
+    config: VolatilityTargetConfig,
+) -> tuple[tuple[str, Decimal, Decimal | None], ...]:
+    """Set exposure from trailing returns that closed before each exposure day."""
+    if not returns:
+        raise ValueError("volatility target requires daily returns")
+    exposures: list[tuple[str, Decimal, Decimal | None]] = []
+    current_month = ""
+    current_exposure = Decimal("1")
+    current_volatility: Decimal | None = None
+    for index, (label, _value) in enumerate(returns):
+        should_rebalance = config.rebalance_frequency == "daily" or label[:7] != current_month
+        if should_rebalance:
+            current_month = label[:7]
+            history = returns[max(0, index - config.lookback_days) : index]
+            if len(history) < config.lookback_days:
+                current_exposure = Decimal("1")
+                current_volatility = None
+            else:
+                count = Decimal(len(history))
+                current_volatility = (
+                    sum((value * value for _history_label, value in history), Decimal("0")) / count
+                ).sqrt()
+                unconstrained = (
+                    config.maximum_exposure
+                    if current_volatility == 0
+                    else config.target_daily_volatility / current_volatility
+                )
+                current_exposure = min(
+                    config.maximum_exposure,
+                    max(config.minimum_exposure, unconstrained),
+                )
+        exposures.append((label, current_exposure, current_volatility))
+    return tuple(exposures)
+
+
+def evaluate_volatility_target(
+    returns: DailyReturns,
+    config: VolatilityTargetConfig,
+    *,
+    signal_returns: DailyReturns | None = None,
+    start: str | None = None,
+    end: str | None = None,
+    initial_equity: Decimal = Decimal("100000"),
+) -> PortfolioResult:
+    """Apply causal volatility-scaled exposure with explicit turnover costs."""
+    if initial_equity <= 0:
+        raise ValueError("volatility target initial equity must be positive")
+    signals = signal_returns or returns
+    labels = tuple(label for label, _value in returns)
+    if tuple(label for label, _value in signals) != labels:
+        raise ValueError("volatility target signal labels are not aligned")
+    if start is not None and end is not None and start > end:
+        raise ValueError("volatility target period is invalid")
+    exposures = causal_volatility_exposures(signals, config)
+    selected = [
+        ((label, value), exposure)
+        for (label, value), exposure in zip(returns, exposures, strict=True)
+        if (start is None or label >= start) and (end is None or label <= end)
+    ]
+    if not selected:
+        raise ValueError("volatility target evaluation period is empty")
+
+    equity = initial_equity
+    peak = initial_equity
+    max_drawdown = Decimal("0")
+    previous_exposure = Decimal("1")
+    daily: list[tuple[str, Decimal]] = []
+    bankrupt = False
+    cost_rate = config.turnover_bps / Decimal("10000")
+    for (label, base_return), (exposure_label, exposure, _volatility) in selected:
+        if label != exposure_label:
+            raise ValueError("volatility target labels are not aligned")
+        turnover_cost = abs(exposure - previous_exposure) * cost_rate
+        strategy_return = exposure * base_return - turnover_cost
+        equity *= Decimal("1") + strategy_return
+        daily.append((label, strategy_return))
+        peak = max(peak, equity)
+        if peak > 0:
+            max_drawdown = min(max_drawdown, equity / peak - Decimal("1"))
+        previous_exposure = exposure
+        if equity <= 0:
+            bankrupt = True
+            break
+    used_daily = tuple(daily)
+    return PortfolioResult(
+        initial_equity=initial_equity,
+        final_equity=equity,
+        net_return=equity / initial_equity - Decimal("1"),
+        max_drawdown=max_drawdown,
+        bankrupt=bankrupt,
+        daily_returns=used_daily,
+        monthly_returns=monthly_returns(used_daily),
+    )
+
+
+def evaluate_signal_overlay(
+    returns: DailyReturns,
+    signals: tuple[tuple[str, Decimal | None], ...],
+    config: SignalOverlayConfig,
+    *,
+    initial_equity: Decimal = Decimal("100000"),
+) -> PortfolioResult:
+    """Apply exposure selected from already-causal, date-aligned scalar signals."""
+    if not returns or initial_equity <= 0:
+        raise ValueError("signal overlay requires returns and positive equity")
+    if tuple(label for label, _value in signals) != tuple(label for label, _value in returns):
+        raise ValueError("signal overlay labels are not aligned")
+    equity = initial_equity
+    peak = initial_equity
+    max_drawdown = Decimal("0")
+    previous_exposure = Decimal("1")
+    daily: list[tuple[str, Decimal]] = []
+    bankrupt = False
+    cost_rate = config.turnover_bps / Decimal("10000")
+    for (label, base_return), (_signal_label, signal) in zip(returns, signals, strict=True):
+        use_high = _signal_high_state(signal, config)
+        exposure = (
+            Decimal("1")
+            if use_high is None
+            else config.high_exposure
+            if use_high
+            else config.low_exposure
+        )
+        turnover_cost = abs(exposure - previous_exposure) * cost_rate
+        strategy_return = exposure * base_return - turnover_cost
+        equity *= Decimal("1") + strategy_return
+        daily.append((label, strategy_return))
+        peak = max(peak, equity)
+        if peak > 0:
+            max_drawdown = min(max_drawdown, equity / peak - Decimal("1"))
+        previous_exposure = exposure
+        if equity <= 0:
+            bankrupt = True
+            break
+    used_daily = tuple(daily)
+    return PortfolioResult(
+        initial_equity=initial_equity,
+        final_equity=equity,
+        net_return=equity / initial_equity - Decimal("1"),
+        max_drawdown=max_drawdown,
+        bankrupt=bankrupt,
+        daily_returns=used_daily,
+        monthly_returns=monthly_returns(used_daily),
+    )
+
+
+def _signal_high_state(signal: Decimal | None, config: SignalOverlayConfig) -> bool | None:
+    if signal is None:
+        return None
+    if config.mode == "above":
+        return signal >= config.threshold
+    if config.mode == "below":
+        return signal <= -config.threshold
+    if config.mode == "extreme":
+        return abs(signal) >= config.threshold
+    return abs(signal) < config.threshold
 
 
 def _compound(values: Any) -> Decimal:
