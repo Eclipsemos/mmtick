@@ -129,9 +129,12 @@ class ResearchLab:
         self.factor_report_dir = settings.project_root / "reports" / "experiments" / "factor_mining"
         self.factor_report_dir.mkdir(parents=True, exist_ok=True)
         self.deep_factor_report_dir = (
-            settings.project_root / "reports" / "experiments" / "deep_factor"
+            settings.project_root / "reports" / "experiments" / "deep_factor_v2"
         )
         self.deep_factor_report_dir.mkdir(parents=True, exist_ok=True)
+        self.legacy_deep_factor_report_dir = (
+            settings.project_root / "reports" / "experiments" / "deep_factor"
+        )
         self._jobs: dict[str, dict[str, Any]] = {}
         self._lock = threading.Lock()
         self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="research")
@@ -255,11 +258,8 @@ class ResearchLab:
         return job
 
     def submit_deep_factor_mining(self, instruments: tuple[str, ...]) -> dict[str, Any]:
-        allowed = {"btc_perp", "eth_perp", "soxl_perp"}
-        if not instruments or set(instruments) - allowed:
-            raise ValueError("deep factor instruments must be BTC, ETH, or SOXL")
-        if len(instruments) > 2 or "soxl_perp" in instruments:
-            raise ValueError("the first deep-factor run supports BTC and ETH only")
+        if set(instruments) != {"btc_perp", "eth_perp"} or len(instruments) != 2:
+            raise ValueError("deep factor v2 requires BTC and ETH together")
         python = Path("/home/spaceaic/env/.venv/bin/python")
         if not python.is_file():
             raise ValueError(f"GPU research Python environment not found: {python}")
@@ -320,7 +320,10 @@ class ResearchLab:
             value not in "abcdefghijklmnopqrstuvwxyz0123456789-_" for value in report_id
         ):
             return None
-        matches = list(self.deep_factor_report_dir.glob(f"*/{report_id}.json"))
+        matches = [
+            *self.deep_factor_report_dir.glob(f"*/{report_id}.json"),
+            *self.legacy_deep_factor_report_dir.glob(f"*/{report_id}.json"),
+        ]
         if len(matches) != 1:
             return None
         try:
@@ -330,7 +333,11 @@ class ResearchLab:
 
     def list_deep_factor_reports(self) -> list[dict[str, Any]]:
         reports = []
-        for path in sorted(self.deep_factor_report_dir.glob("*/*.json"), reverse=True):
+        paths = {
+            *self.deep_factor_report_dir.glob("*/*.json"),
+            *self.legacy_deep_factor_report_dir.glob("*/*.json"),
+        }
+        for path in sorted(paths, reverse=True):
             try:
                 payload = json.loads(path.read_text(encoding="utf-8"))
                 reports.append(
@@ -629,15 +636,13 @@ class ResearchLab:
         )
         command = [
             str(python),
-            str(self.settings.project_root / "scripts" / "train_deep_factor.py"),
+            str(self.settings.project_root / "scripts" / "train_deep_factor_v2.py"),
             "--database",
             str(self.settings.database_path),
             "--output-root",
             str(self.settings.project_root),
             "--report-root",
             str(self.deep_factor_report_dir),
-            "--instruments",
-            ",".join(instruments),
         ]
         environment = os.environ.copy()
         source_path = str(self.settings.project_root / "src")
@@ -688,7 +693,9 @@ class ResearchLab:
                 result={
                     "instruments": list(instruments),
                     "status": completed_report["decision"]["status"],
-                    "checkpoint": completed_report["model"]["checkpoint"],
+                    "portfolio_selection": completed_report["portfolio_selection"][
+                        "selection_status"
+                    ],
                 },
             )
         except Exception as exc:

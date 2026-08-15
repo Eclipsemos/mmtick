@@ -187,17 +187,22 @@ test('GPU deep factor mining renders its completed model report', async ({ page 
   } }))
   await page.route('**/api/research/deep-factor-reports/deep-test', (route) => route.fulfill({ json: {
     id: 'deep-test', generated_at: '2026-08-15T00:00:00Z',
-    model: { architecture: 'causal temporal Transformer encoder', parameters: 2679174, device: 'cuda', torch_version: '2.13.0+cu130', cuda_version: '13.0', checkpoint: 'data/deep_factor_models/test.pt' },
-    data: {}, training: { history: [{ epoch: 1, train_loss: .69, validation_loss: .68 }], best_validation_loss: .68 },
+    model: { architecture: 'cross-asset causal multi-horizon Transformer encoder', parameters: 806406, ensemble_size: 3, device: 'cuda', torch_version: '2.13.0+cu130', cuda_version: '13.0' },
+    data: {}, training: { ensemble: [{ seed: 11, epochs: [{ epoch: 1, train_loss: 1.03, validation_loss: 1.02 }] }], best_validation_loss: 1.02 },
     metrics: { btc_perp: { train: { samples: 100, direction_accuracy: .52, information_coefficient: .02, net_return: -.1, max_drawdown: -.12, completed_trades: 10, win_rate: .5, profit_factor: 1 }, validation: { samples: 100, direction_accuracy: .51, information_coefficient: .01, net_return: -.05, max_drawdown: -.08, completed_trades: 8, win_rate: .5, profit_factor: 1 }, confirmation: { samples: 100, direction_accuracy: .5, information_coefficient: 0, net_return: -.2, max_drawdown: -.22, completed_trades: 7, win_rate: .4, profit_factor: .8 } } },
-    decision: { status: 'rejected_after_confirmation', approved_for_trading: false, reason: 'Deep model did not pass the independent confirmation or drawdown gates.' },
+    signal_search: { btc_perp: { candidate_count: 288, development_eligible_count: 20, risk_configuration_count: 216, risk_eligible_count: 0, used_fallback_diagnostic: true, selection_rule: '2026 excluded', selected: { parameters: { id: 'diagnostic', direction: 'long_short', horizon_bars: 18, score_threshold: .05, smoothing_bars: 4, minimum_hold_bars: 6, cooldown_bars: 0, confirmation_bars: 1, exposure: 3 }, score: [] }, top_development_candidates: [], stress_confirmation: { net_return: -.3, max_drawdown: -.4, completed_trades: 7, positive_month_rate: .5, target_25pct_month_rate: .125 } } },
+    portfolio_selection: { selection_status: 'no_valid_components', eligible_components: [], candidate_count: 0, eligible_count: 0, selected: null, confirmation: null, stress_confirmation: null },
+    decision: { status: 'rejected_after_confirmation', approved_for_trading: false, reason: 'No asset passed the development risk gates.' },
   } }))
 
   await page.goto('/')
   await expect(page.getByRole('region', { name: '深度因子挖掘' })).toContainText('RTX 4090')
   await page.getByRole('button', { name: '启动 GPU 深挖' }).click()
-  await expect(page.getByText('causal temporal Transformer encoder')).toBeVisible()
-  await expect(page.getByText('2,679,174')).toBeVisible()
+  await expect(page.getByText('cross-asset causal multi-horizon Transformer encoder')).toBeVisible()
+  await expect(page.getByText('806,406')).toBeVisible()
+  await expect(page.getByText('3 seed · cuda')).toBeVisible()
+  await expect(page.getByText('288 个基础候选 · 风险合格 0')).toBeVisible()
+  await expect(page.getByText('仅显示失败候选诊断，不是可用策略。')).toBeVisible()
 })
 
 test('research workbench fits a mobile viewport', async ({ page }) => {

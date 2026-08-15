@@ -423,17 +423,20 @@ function FactorMiningResult({ report }: { report: ResearchFactorReport }) {
 }
 
 function DeepFactorResult({ report }: { report: DeepFactorReport }) {
+  const portfolio = report.portfolio_selection
   return (
     <div className="factor-result">
       <div className="factor-result-head"><div><span className="factor-kicker">REPORT {report.id}</span><h3>{report.model.architecture}</h3></div><strong className={report.decision.status === 'research_candidate' ? 'gain' : 'loss'}>{report.decision.status}</strong></div>
-      <div className="factor-result-stats"><div><span>参数量</span><strong>{report.model.parameters.toLocaleString()}</strong></div><div><span>验证最佳 Loss</span><strong>{report.training.best_validation_loss.toFixed(4)}</strong></div><div><span>设备</span><strong>{report.model.device}</strong></div><div><span>交易批准</span><strong>否</strong></div></div>
+      <div className="factor-result-stats"><div><span>参数量</span><strong>{report.model.parameters.toLocaleString()}</strong></div><div><span>验证最佳 Loss</span><strong>{report.training.best_validation_loss.toFixed(4)}</strong></div><div><span>模型 / 设备</span><strong>{report.model.ensemble_size ? `${report.model.ensemble_size} seed · ` : ''}{report.model.device}</strong></div><div><span>组合状态</span><strong>{portfolio?.selection_status ?? '旧版单模型'}</strong></div></div>
       <table className="factor-split-table"><thead><tr><th>品种 / 分段</th><th>收益</th><th>最大回撤</th><th>交易</th><th>方向准确率</th><th>IC</th></tr></thead><tbody>{Object.entries(report.metrics).flatMap(([instrument, metrics]) => (['train', 'validation', 'confirmation'] as const).map((split) => { const row = metrics[split]; return <tr key={`${instrument}-${split}`}><td>{instrument} / {split}</td><td className={row.net_return >= 0 ? 'gain' : 'loss'}>{percent(row.net_return)}</td><td className="loss">{percent(row.max_drawdown)}</td><td>{row.completed_trades}</td><td>{percent(row.direction_accuracy)}</td><td>{row.information_coefficient?.toFixed(4) ?? '--'}</td></tr> }))}</tbody></table>
       {Object.entries(report.signal_search ?? {}).map(([instrument, search]) => {
         const selected = search.selected
-        const confirmation = selected?.confirmation
+        const confirmation = selected?.confirmation ?? report.metrics[instrument]?.confirmation
+        const threshold = selected?.parameters.score_threshold ?? selected?.parameters.entry_threshold
         return <div className="deep-signal-result" key={instrument}>
-          <div className="deep-signal-heading"><span>{instrument.toUpperCase()} / 受限信号管理</span><strong>{search.candidate_count} 个候选，开发期合格 {search.development_eligible_count}</strong></div>
-          {selected && <><p className="factor-decision">{selected.parameters.direction} · 预测周期 {selected.parameters.horizon_bars} 根 · 概率阈值 {selected.parameters.entry_threshold.toFixed(2)} · EMA {selected.parameters.smoothing_bars} · 最小持仓 {selected.parameters.minimum_hold_bars} 根 · 冷却 {selected.parameters.cooldown_bars} 根 · 连续确认 {selected.parameters.confirmation_bars} 根</p>
+          <div className="deep-signal-heading"><span>{instrument.toUpperCase()} / 受限信号管理</span><strong>{search.candidate_count} 个基础候选 · 风险合格 {search.risk_eligible_count ?? search.development_eligible_count}</strong></div>
+          {search.used_fallback_diagnostic && <p className="factor-decision">仅显示失败候选诊断，不是可用策略。</p>}
+          {selected && <><p className="factor-decision">{selected.parameters.direction} · 预测周期 {selected.parameters.horizon_bars} 根 · 分数阈值 {threshold?.toFixed(2) ?? '--'} · EMA {selected.parameters.smoothing_bars} · 最小持仓 {selected.parameters.minimum_hold_bars} 根 · 冷却 {selected.parameters.cooldown_bars} 根 · 连续确认 {selected.parameters.confirmation_bars} 根{selected.parameters.exposure ? ` · ${selected.parameters.exposure.toFixed(1)}x` : ''}</p>
             <table className="factor-split-table"><thead><tr><th>确认期</th><th>收益</th><th>最大回撤</th><th>交易</th><th>正月率</th><th>25% 月覆盖</th><th>压力成本</th></tr></thead><tbody><tr><td>独立确认</td><td className={(confirmation?.net_return ?? 0) >= 0 ? 'gain' : 'loss'}>{percent(confirmation?.net_return ?? null)}</td><td className="loss">{percent(confirmation?.max_drawdown ?? null)}</td><td>{confirmation?.completed_trades ?? '--'}</td><td>{percent(confirmation?.positive_month_rate ?? null)}</td><td>{percent(confirmation?.target_25pct_month_rate ?? null)}</td><td className={(search.stress_confirmation?.net_return ?? 0) >= 0 ? 'gain' : 'loss'}>{percent(search.stress_confirmation?.net_return ?? null)}</td></tr></tbody></table>
           </>}
         </div>

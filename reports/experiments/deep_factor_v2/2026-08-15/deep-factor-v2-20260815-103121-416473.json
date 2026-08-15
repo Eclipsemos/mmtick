@@ -1,0 +1,3234 @@
+{
+  "id": "deep-factor-v2-20260815-103121-416473",
+  "generated_at": "2026-08-15T10:31:21.416473+00:00",
+  "schema_version": 2,
+  "model": {
+    "architecture": "cross-asset causal multi-horizon Transformer encoder",
+    "parameters": 806406,
+    "ensemble_size": 3,
+    "device": "cuda",
+    "torch_version": "2.13.0+cu130",
+    "cuda_version": "13.0",
+    "config": {
+      "instruments": [
+        "btc_perp",
+        "eth_perp"
+      ],
+      "bar_interval_minutes": 240,
+      "sequence_length": 64,
+      "horizons": [
+        1,
+        6,
+        18
+      ],
+      "model_dim": 128,
+      "layers": 4,
+      "heads": 4,
+      "batch_size": 512,
+      "epochs": 8,
+      "patience": 2,
+      "learning_rate": 0.0003,
+      "weight_decay": 0.0003,
+      "seed": 42,
+      "ensemble_seeds": [
+        11,
+        23,
+        42
+      ],
+      "fit_end_year": 2022,
+      "fee_bps": 5.0,
+      "slippage_bps": 2.0
+    },
+    "training_protocol": "fit 2020-2022; checkpoint 2023; signal selection 2024-2025; confirmation 2026"
+  },
+  "data": {
+    "btc_perp": {
+      "first_bar": "2020-01-01T00:00:00+00:00",
+      "last_bar": "2026-08-11T23:59:59.999000+00:00",
+      "bars": 14490,
+      "interval_minutes": 240
+    },
+    "eth_perp": {
+      "first_bar": "2020-01-01T00:00:00+00:00",
+      "last_bar": "2026-08-11T23:59:59.999000+00:00",
+      "bars": 14490,
+      "interval_minutes": 240
+    }
+  },
+  "training": {
+    "ensemble": [
+      {
+        "seed": 11,
+        "epochs": [
+          {
+            "epoch": 1,
+            "train_loss": 1.036566505065331,
+            "validation_loss": 1.0327469110488892
+          },
+          {
+            "epoch": 2,
+            "train_loss": 1.0206671196680803,
+            "validation_loss": 1.0324689149856567
+          },
+          {
+            "epoch": 3,
+            "train_loss": 1.0178551169542165,
+            "validation_loss": 1.0305007762379117
+          },
+          {
+            "epoch": 4,
+            "train_loss": 1.017082494038802,
+            "validation_loss": 1.0292468733257718
+          },
+          {
+            "epoch": 5,
+            "train_loss": 1.0143584586106813,
+            "validation_loss": 1.0296345485581293
+          },
+          {
+            "epoch": 6,
+            "train_loss": 1.0099286803832421,
+            "validation_loss": 1.0287805729442172
+          },
+          {
+            "epoch": 7,
+            "train_loss": 1.0044087263254018,
+            "validation_loss": 1.0348771810531616
+          },
+          {
+            "epoch": 8,
+            "train_loss": 0.9996354740399581,
+            "validation_loss": 1.0441351930300395
+          }
+        ]
+      },
+      {
+        "seed": 23,
+        "epochs": [
+          {
+            "epoch": 1,
+            "train_loss": 1.0392556626063127,
+            "validation_loss": 1.0302865836355422
+          },
+          {
+            "epoch": 2,
+            "train_loss": 1.0215698320132036,
+            "validation_loss": 1.0284124215443928
+          },
+          {
+            "epoch": 3,
+            "train_loss": 1.0180361775251536,
+            "validation_loss": 1.028121444914076
+          },
+          {
+            "epoch": 4,
+            "train_loss": 1.0165098515840678,
+            "validation_loss": 1.0313653151194255
+          },
+          {
+            "epoch": 5,
+            "train_loss": 1.012665794445918,
+            "validation_loss": 1.0280909935633342
+          },
+          {
+            "epoch": 6,
+            "train_loss": 1.01155136181758,
+            "validation_loss": 1.0309758716159396
+          },
+          {
+            "epoch": 7,
+            "train_loss": 1.003103570296214,
+            "validation_loss": 1.0322330726517572
+          }
+        ]
+      },
+      {
+        "seed": 42,
+        "epochs": [
+          {
+            "epoch": 1,
+            "train_loss": 1.0317575931549072,
+            "validation_loss": 1.0308298534817166
+          },
+          {
+            "epoch": 2,
+            "train_loss": 1.019347140422234,
+            "validation_loss": 1.030697418583764
+          },
+          {
+            "epoch": 3,
+            "train_loss": 1.0165832065618956,
+            "validation_loss": 1.0281081133418613
+          },
+          {
+            "epoch": 4,
+            "train_loss": 1.0148150622844696,
+            "validation_loss": 1.0291149748696222
+          },
+          {
+            "epoch": 5,
+            "train_loss": 1.013096353182426,
+            "validation_loss": 1.0297554201549954
+          }
+        ]
+      }
+    ],
+    "best_validation_loss": 1.0280909935633342
+  },
+  "metrics": {
+    "btc_perp": {
+      "train": {
+        "samples": 8685,
+        "direction_accuracy": 0.5607369027058147,
+        "information_coefficient": 0.08253325401620572,
+        "net_return": -1.148619748508719,
+        "max_drawdown": -1.0727943555445218,
+        "completed_trades": 14,
+        "win_rate": 0.6428571428571429,
+        "profit_factor": 0.8956463617781152,
+        "total_fees": 6248.920516188894,
+        "total_funding": -10743.571174055023,
+        "ending_position": "LONG",
+        "positive_month_rate": 0.3333333333333333,
+        "target_25pct_month_rate": 0.3333333333333333,
+        "monthly_returns": [
+          {
+            "label": "2020-01",
+            "return": 0.41259860639059276
+          },
+          {
+            "label": "2020-02",
+            "return": -0.36015549308912065
+          },
+          {
+            "label": "2020-03",
+            "return": -1.1644308503500553
+          }
+        ]
+      },
+      "validation": {
+        "samples": 4368,
+        "direction_accuracy": 0.5402930402930403,
+        "information_coefficient": 0.05489599783649176,
+        "net_return": 0.74802882038656,
+        "max_drawdown": -0.8678793325223301,
+        "completed_trades": 92,
+        "win_rate": 0.5108695652173914,
+        "profit_factor": 1.0441435707177968,
+        "total_fees": 92622.75777681114,
+        "total_funding": -126292.63254311286,
+        "ending_position": "FLAT",
+        "positive_month_rate": 0.5833333333333334,
+        "target_25pct_month_rate": 0.375,
+        "monthly_returns": [
+          {
+            "label": "2024-01",
+            "return": 0.2973779571040628
+          },
+          {
+            "label": "2024-02",
+            "return": 1.2724956844833948
+          },
+          {
+            "label": "2024-03",
+            "return": 0.5277918442210795
+          },
+          {
+            "label": "2024-04",
+            "return": -0.07493434007643089
+          },
+          {
+            "label": "2024-05",
+            "return": 0.07611331594292149
+          },
+          {
+            "label": "2024-06",
+            "return": -0.2729240638183621
+          },
+          {
+            "label": "2024-07",
+            "return": -0.23129441704446033
+          },
+          {
+            "label": "2024-08",
+            "return": -0.3235810785038607
+          },
+          {
+            "label": "2024-09",
+            "return": 0.13669865391230973
+          },
+          {
+            "label": "2024-10",
+            "return": 0.2600477073047354
+          },
+          {
+            "label": "2024-11",
+            "return": 1.040978508922379
+          },
+          {
+            "label": "2024-12",
+            "return": -0.3811693958988806
+          },
+          {
+            "label": "2025-01",
+            "return": 0.2871273652867553
+          },
+          {
+            "label": "2025-02",
+            "return": -0.44170496923995434
+          },
+          {
+            "label": "2025-03",
+            "return": -0.07482580626196837
+          },
+          {
+            "label": "2025-04",
+            "return": 0.399746260416553
+          },
+          {
+            "label": "2025-05",
+            "return": 0.38843383622660793
+          },
+          {
+            "label": "2025-06",
+            "return": 0.04564372346421717
+          },
+          {
+            "label": "2025-07",
+            "return": 0.12831366631981625
+          },
+          {
+            "label": "2025-08",
+            "return": -0.24398502961451832
+          },
+          {
+            "label": "2025-09",
+            "return": 0.1382143479729777
+          },
+          {
+            "label": "2025-10",
+            "return": -0.27519615454527435
+          },
+          {
+            "label": "2025-11",
+            "return": -0.5704060295359472
+          },
+          {
+            "label": "2025-12",
+            "return": 0.395584537961353
+          }
+        ]
+      },
+      "confirmation": {
+        "samples": 1314,
+        "direction_accuracy": 0.5205479452054794,
+        "information_coefficient": 0.18343047099232226,
+        "net_return": -0.6552586901581833,
+        "max_drawdown": -0.7975272479350795,
+        "completed_trades": 31,
+        "win_rate": 0.41935483870967744,
+        "profit_factor": 0.5359141163601117,
+        "total_fees": 5073.45963063856,
+        "total_funding": -2096.642185979769,
+        "ending_position": "FLAT",
+        "positive_month_rate": 0.5,
+        "target_25pct_month_rate": 0.125,
+        "monthly_returns": [
+          {
+            "label": "2026-01",
+            "return": -0.3397265691043663
+          },
+          {
+            "label": "2026-02",
+            "return": -0.42200464208773575
+          },
+          {
+            "label": "2026-03",
+            "return": 0.04713703467127281
+          },
+          {
+            "label": "2026-04",
+            "return": 0.49713099752633605
+          },
+          {
+            "label": "2026-05",
+            "return": -0.13264702709204873
+          },
+          {
+            "label": "2026-06",
+            "return": -0.4101590933425334
+          },
+          {
+            "label": "2026-07",
+            "return": 0.07467195006618083
+          },
+          {
+            "label": "2026-08",
+            "return": 0.04803348708002408
+          }
+        ]
+      }
+    },
+    "eth_perp": {
+      "train": {
+        "samples": 8685,
+        "direction_accuracy": 0.5486470926885435,
+        "information_coefficient": 0.0937063484099592,
+        "net_return": -1.0327905755731914,
+        "max_drawdown": -1.0073215289709592,
+        "completed_trades": 4,
+        "win_rate": 0.25,
+        "profit_factor": 1.7865789031079449,
+        "total_fees": 3632.737934675402,
+        "total_funding": -52567.555453475754,
+        "ending_position": "LONG",
+        "positive_month_rate": 0.6666666666666666,
+        "target_25pct_month_rate": 0.3333333333333333,
+        "monthly_returns": [
+          {
+            "label": "2020-01",
+            "return": 0.8396408163863366
+          },
+          {
+            "label": "2020-02",
+            "return": 0.10335677223961837
+          },
+          {
+            "label": "2020-03",
+            "return": -1.0161547424339115
+          }
+        ]
+      },
+      "validation": {
+        "samples": 4368,
+        "direction_accuracy": 0.5297619047619048,
+        "information_coefficient": 0.0016241836909254021,
+        "net_return": -1.235234564621671,
+        "max_drawdown": -1.0573846937011768,
+        "completed_trades": 12,
+        "win_rate": 0.5833333333333334,
+        "profit_factor": 0.9414396592010589,
+        "total_fees": 8126.865467542484,
+        "total_funding": -58800.44698053662,
+        "ending_position": "LONG",
+        "positive_month_rate": 0.5,
+        "target_25pct_month_rate": 0.375,
+        "monthly_returns": [
+          {
+            "label": "2024-01",
+            "return": 0.03910193695808853
+          },
+          {
+            "label": "2024-02",
+            "return": 1.7723184580118714
+          },
+          {
+            "label": "2024-03",
+            "return": 0.3224736201013001
+          },
+          {
+            "label": "2024-04",
+            "return": -0.6580197643329123
+          },
+          {
+            "label": "2024-05",
+            "return": 1.1673902911543064
+          },
+          {
+            "label": "2024-06",
+            "return": -0.3259069491232619
+          },
+          {
+            "label": "2024-07",
+            "return": -0.6972057421796941
+          },
+          {
+            "label": "2024-08",
+            "return": -1.4081381874241228
+          }
+        ]
+      },
+      "confirmation": {
+        "samples": 1314,
+        "direction_accuracy": 0.4802130898021309,
+        "information_coefficient": 0.1140186791635184,
+        "net_return": -0.878294596051462,
+        "max_drawdown": -0.9690048876679581,
+        "completed_trades": 17,
+        "win_rate": 0.29411764705882354,
+        "profit_factor": 0.35665198408078597,
+        "total_fees": 3453.592195069137,
+        "total_funding": -1545.7924199950617,
+        "ending_position": "FLAT",
+        "positive_month_rate": 0.5,
+        "target_25pct_month_rate": 0.125,
+        "monthly_returns": [
+          {
+            "label": "2026-01",
+            "return": -0.16777533478369205
+          },
+          {
+            "label": "2026-02",
+            "return": -0.632976392663698
+          },
+          {
+            "label": "2026-03",
+            "return": 0.2314577343843931
+          },
+          {
+            "label": "2026-04",
+            "return": 0.24935920133512254
+          },
+          {
+            "label": "2026-05",
+            "return": -0.39886611459172977
+          },
+          {
+            "label": "2026-06",
+            "return": -0.8122207046171952
+          },
+          {
+            "label": "2026-07",
+            "return": 1.2619481128797896
+          },
+          {
+            "label": "2026-08",
+            "return": 0.014301099499187404
+          }
+        ]
+      }
+    }
+  },
+  "signal_search": {
+    "btc_perp": {
+      "candidate_count": 288,
+      "development_eligible_count": 249,
+      "risk_configuration_count": 216,
+      "risk_eligible_count": 0,
+      "used_fallback_diagnostic": true,
+      "selection_rule": "Train (2020-2023) and validation (2024-2025) only; 2026 confirmation excluded.",
+      "selected": {
+        "parameters": {
+          "direction": "long_short",
+          "horizon_bars": 18,
+          "score_threshold": 0.05,
+          "smoothing_bars": 4,
+          "minimum_hold_bars": 6,
+          "cooldown_bars": 0,
+          "confirmation_bars": 1,
+          "exposure": 3.0,
+          "monthly_loss_limit": null,
+          "id": "long-short-h18-z0p05-ema4-hold6-cool0-confirm1-exp3-lossnone"
+        },
+        "score": [
+          0.3333333333333333,
+          0.3333333333333333,
+          -1.148619748508719,
+          -0.400590928122159,
+          -1.0727943555445218
+        ]
+      },
+      "stress_confirmation": {
+        "fee_bps": 10.0,
+        "slippage_bps": 5.0,
+        "net_return": -0.7046763376230174,
+        "max_drawdown": -0.8021527703248474,
+        "completed_trades": 31,
+        "win_rate": 0.3870967741935484,
+        "profit_factor": 0.4937272411560166,
+        "total_fees": 9552.5060977641,
+        "total_funding": -1978.5599557376377,
+        "ending_position": "FLAT",
+        "positive_month_rate": 0.5,
+        "target_25pct_month_rate": 0.125,
+        "monthly_returns": [
+          {
+            "label": "2026-01",
+            "return": -0.35470024354630475
+          },
+          {
+            "label": "2026-02",
+            "return": -0.44552483262502207
+          },
+          {
+            "label": "2026-03",
+            "return": 0.03733330094516101
+          },
+          {
+            "label": "2026-04",
+            "return": 0.47663443734788113
+          },
+          {
+            "label": "2026-05",
+            "return": -0.14118893050124803
+          },
+          {
+            "label": "2026-06",
+            "return": -0.43064760621475956
+          },
+          {
+            "label": "2026-07",
+            "return": 0.05402292098273953
+          },
+          {
+            "label": "2026-08",
+            "return": 0.04552516713841873
+          }
+        ]
+      },
+      "top_development_candidates": [
+        {
+          "parameters": {
+            "direction": "long_short",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 4,
+            "minimum_hold_bars": 6,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1,
+            "exposure": 3.0,
+            "monthly_loss_limit": null,
+            "id": "long-short-h18-z0p05-ema4-hold6-cool0-confirm1-exp3-lossnone"
+          },
+          "score": [
+            0.3333333333333333,
+            0.3333333333333333,
+            -1.148619748508719,
+            -0.400590928122159,
+            -1.0727943555445218
+          ],
+          "validation": {
+            "net_return": 0.74802882038656,
+            "max_drawdown": -0.8678793325223301,
+            "completed_trades": 92,
+            "win_rate": 0.5108695652173914,
+            "profit_factor": 1.0441435707177968,
+            "total_fees": 92622.75777681114,
+            "total_funding": -126292.63254311286,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.375,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.2973779571040628
+              },
+              {
+                "label": "2024-02",
+                "return": 1.2724956844833948
+              },
+              {
+                "label": "2024-03",
+                "return": 0.5277918442210795
+              },
+              {
+                "label": "2024-04",
+                "return": -0.07493434007643089
+              },
+              {
+                "label": "2024-05",
+                "return": 0.07611331594292149
+              },
+              {
+                "label": "2024-06",
+                "return": -0.2729240638183621
+              },
+              {
+                "label": "2024-07",
+                "return": -0.23129441704446033
+              },
+              {
+                "label": "2024-08",
+                "return": -0.3235810785038607
+              },
+              {
+                "label": "2024-09",
+                "return": 0.13669865391230973
+              },
+              {
+                "label": "2024-10",
+                "return": 0.2600477073047354
+              },
+              {
+                "label": "2024-11",
+                "return": 1.040978508922379
+              },
+              {
+                "label": "2024-12",
+                "return": -0.3811693958988806
+              },
+              {
+                "label": "2025-01",
+                "return": 0.2871273652867553
+              },
+              {
+                "label": "2025-02",
+                "return": -0.44170496923995434
+              },
+              {
+                "label": "2025-03",
+                "return": -0.07482580626196837
+              },
+              {
+                "label": "2025-04",
+                "return": 0.399746260416553
+              },
+              {
+                "label": "2025-05",
+                "return": 0.38843383622660793
+              },
+              {
+                "label": "2025-06",
+                "return": 0.04564372346421717
+              },
+              {
+                "label": "2025-07",
+                "return": 0.12831366631981625
+              },
+              {
+                "label": "2025-08",
+                "return": -0.24398502961451832
+              },
+              {
+                "label": "2025-09",
+                "return": 0.1382143479729777
+              },
+              {
+                "label": "2025-10",
+                "return": -0.27519615454527435
+              },
+              {
+                "label": "2025-11",
+                "return": -0.5704060295359472
+              },
+              {
+                "label": "2025-12",
+                "return": 0.395584537961353
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_only",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 4,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 4,
+            "confirmation_bars": 1,
+            "exposure": 4.0,
+            "monthly_loss_limit": null,
+            "id": "long-h18-z0p05-ema4-hold1-cool4-confirm1-exp4-lossnone"
+          },
+          "score": [
+            0.3333333333333333,
+            0.3333333333333333,
+            -1.2906848798367283,
+            -2.3043417258515917,
+            -1.159472697333218
+          ],
+          "validation": {
+            "net_return": -1.0136568460148634,
+            "max_drawdown": -1.0015921397056478,
+            "completed_trades": 72,
+            "win_rate": 0.5416666666666666,
+            "profit_factor": 1.1599150622465542,
+            "total_fees": 134557.03781575547,
+            "total_funding": -205757.96552565086,
+            "ending_position": "LONG",
+            "positive_month_rate": 0.5652173913043478,
+            "target_25pct_month_rate": 0.34782608695652173,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.3302315145561763
+              },
+              {
+                "label": "2024-02",
+                "return": 1.7007828912499217
+              },
+              {
+                "label": "2024-03",
+                "return": 0.6915538321440067
+              },
+              {
+                "label": "2024-04",
+                "return": -0.22486951969718372
+              },
+              {
+                "label": "2024-05",
+                "return": 0.07398315168011753
+              },
+              {
+                "label": "2024-06",
+                "return": -0.36500675412380806
+              },
+              {
+                "label": "2024-07",
+                "return": -0.15219920438503726
+              },
+              {
+                "label": "2024-08",
+                "return": -0.41200876374317513
+              },
+              {
+                "label": "2024-09",
+                "return": 0.1470036625938721
+              },
+              {
+                "label": "2024-10",
+                "return": 0.32152525994637987
+              },
+              {
+                "label": "2024-11",
+                "return": 1.4486349109492684
+              },
+              {
+                "label": "2024-12",
+                "return": -0.4591884376664569
+              },
+              {
+                "label": "2025-01",
+                "return": 0.39510510896574
+              },
+              {
+                "label": "2025-02",
+                "return": -0.3830577261569251
+              },
+              {
+                "label": "2025-03",
+                "return": -0.09063026175934331
+              },
+              {
+                "label": "2025-04",
+                "return": 0.6392156854695156
+              },
+              {
+                "label": "2025-05",
+                "return": 0.3189226426657898
+              },
+              {
+                "label": "2025-06",
+                "return": 0.1275697202426003
+              },
+              {
+                "label": "2025-07",
+                "return": 0.11803386495588114
+              },
+              {
+                "label": "2025-08",
+                "return": -0.1935414872251002
+              },
+              {
+                "label": "2025-09",
+                "return": 0.1783158317201491
+              },
+              {
+                "label": "2025-10",
+                "return": -0.3211062084589175
+              },
+              {
+                "label": "2025-11",
+                "return": -1.0030870240757876
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_short",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 6,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1,
+            "exposure": 4.0,
+            "monthly_loss_limit": null,
+            "id": "long-short-h18-z0p05-ema1-hold6-cool0-confirm1-exp4-lossnone"
+          },
+          "score": [
+            0.3333333333333333,
+            0.3333333333333333,
+            -1.3372210483057676,
+            -0.6493794300152824,
+            -1.1575842473555058
+          ],
+          "validation": {
+            "net_return": 0.6878416182904852,
+            "max_drawdown": -0.9691900538566557,
+            "completed_trades": 161,
+            "win_rate": 0.5900621118012422,
+            "profit_factor": 1.0126461689058874,
+            "total_fees": 337909.86786699836,
+            "total_funding": -276665.0066162331,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5416666666666666,
+            "target_25pct_month_rate": 0.375,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.6676248849235863
+              },
+              {
+                "label": "2024-02",
+                "return": 2.1603357582094707
+              },
+              {
+                "label": "2024-03",
+                "return": 0.8343165256013716
+              },
+              {
+                "label": "2024-04",
+                "return": -0.013118044632001172
+              },
+              {
+                "label": "2024-05",
+                "return": 0.2410481458407291
+              },
+              {
+                "label": "2024-06",
+                "return": -0.4889657439232048
+              },
+              {
+                "label": "2024-07",
+                "return": -0.474502672728777
+              },
+              {
+                "label": "2024-08",
+                "return": -0.2923204653097913
+              },
+              {
+                "label": "2024-09",
+                "return": 0.16469520435628068
+              },
+              {
+                "label": "2024-10",
+                "return": 0.42976193102794713
+              },
+              {
+                "label": "2024-11",
+                "return": 1.5754421420887568
+              },
+              {
+                "label": "2024-12",
+                "return": -0.5373091150738918
+              },
+              {
+                "label": "2025-01",
+                "return": 0.3677286511069836
+              },
+              {
+                "label": "2025-02",
+                "return": -0.4946473533062423
+              },
+              {
+                "label": "2025-03",
+                "return": -0.210619845666334
+              },
+              {
+                "label": "2025-04",
+                "return": 0.871326163098438
+              },
+              {
+                "label": "2025-05",
+                "return": 0.3098266264384927
+              },
+              {
+                "label": "2025-06",
+                "return": 0.11628132336038931
+              },
+              {
+                "label": "2025-07",
+                "return": -0.15758856407671376
+              },
+              {
+                "label": "2025-08",
+                "return": -0.2418910133463613
+              },
+              {
+                "label": "2025-09",
+                "return": 0.1094437227530267
+              },
+              {
+                "label": "2025-10",
+                "return": -0.27645033873007024
+              },
+              {
+                "label": "2025-11",
+                "return": -0.6254444266001725
+              },
+              {
+                "label": "2025-12",
+                "return": 0.31865936349210544
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_short",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 4,
+            "minimum_hold_bars": 6,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1,
+            "exposure": 4.0,
+            "monthly_loss_limit": null,
+            "id": "long-short-h18-z0p05-ema4-hold6-cool0-confirm1-exp4-lossnone"
+          },
+          "score": [
+            0.3333333333333333,
+            0.3333333333333333,
+            -1.3822720547570297,
+            -2.3889143218149416,
+            -1.1530915240965147
+          ],
+          "validation": {
+            "net_return": -1.0066422670579116,
+            "max_drawdown": -1.0008231243034755,
+            "completed_trades": 84,
+            "win_rate": 0.5,
+            "profit_factor": 1.0542594848587745,
+            "total_fees": 122547.14547338308,
+            "total_funding": -172458.54480630808,
+            "ending_position": "LONG",
+            "positive_month_rate": 0.5652173913043478,
+            "target_25pct_month_rate": 0.34782608695652173,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.3942153079536527
+              },
+              {
+                "label": "2024-02",
+                "return": 1.7008981659891782
+              },
+              {
+                "label": "2024-03",
+                "return": 0.6984403337118212
+              },
+              {
+                "label": "2024-04",
+                "return": -0.11801035613988463
+              },
+              {
+                "label": "2024-05",
+                "return": 0.03725966091951596
+              },
+              {
+                "label": "2024-06",
+                "return": -0.3563706265979853
+              },
+              {
+                "label": "2024-07",
+                "return": -0.29955324071394973
+              },
+              {
+                "label": "2024-08",
+                "return": -0.47435773528002845
+              },
+              {
+                "label": "2024-09",
+                "return": 0.13382760505304314
+              },
+              {
+                "label": "2024-10",
+                "return": 0.36290661654524314
+              },
+              {
+                "label": "2024-11",
+                "return": 1.4368558104155045
+              },
+              {
+                "label": "2024-12",
+                "return": -0.4815768807194586
+              },
+              {
+                "label": "2025-01",
+                "return": 0.4031904562137792
+              },
+              {
+                "label": "2025-02",
+                "return": -0.5502215388570962
+              },
+              {
+                "label": "2025-03",
+                "return": -0.10425259309276068
+              },
+              {
+                "label": "2025-04",
+                "return": 0.5183278403590906
+              },
+              {
+                "label": "2025-05",
+                "return": 0.5088973389614041
+              },
+              {
+                "label": "2025-06",
+                "return": 0.04993141534621119
+              },
+              {
+                "label": "2025-07",
+                "return": 0.1686794220418012
+              },
+              {
+                "label": "2025-08",
+                "return": -0.31919519068598934
+              },
+              {
+                "label": "2025-09",
+                "return": 0.17944433043921904
+              },
+              {
+                "label": "2025-10",
+                "return": -0.36422407399005696
+              },
+              {
+                "label": "2025-11",
+                "return": -1.0030245576747026
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_only",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 4,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 0,
+            "confirmation_bars": 2,
+            "exposure": 4.0,
+            "monthly_loss_limit": null,
+            "id": "long-h18-z0p05-ema4-hold1-cool0-confirm2-exp4-lossnone"
+          },
+          "score": [
+            0.3333333333333333,
+            0.3333333333333333,
+            -1.3838127564128533,
+            -1.1570387960321424,
+            -1.2235220043119732
+          ],
+          "validation": {
+            "net_return": 0.22677396038071085,
+            "max_drawdown": -0.9881457559850395,
+            "completed_trades": 73,
+            "win_rate": 0.5342465753424658,
+            "profit_factor": 1.0085532746775243,
+            "total_fees": 149395.59999130046,
+            "total_funding": -243360.24026644844,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.3333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.3630507398000138
+              },
+              {
+                "label": "2024-02",
+                "return": 1.7915540588221923
+              },
+              {
+                "label": "2024-03",
+                "return": 0.637127746631674
+              },
+              {
+                "label": "2024-04",
+                "return": -0.15815612274228888
+              },
+              {
+                "label": "2024-05",
+                "return": 0.09161000747794515
+              },
+              {
+                "label": "2024-06",
+                "return": -0.3823456802326462
+              },
+              {
+                "label": "2024-07",
+                "return": 0.0032008764175142966
+              },
+              {
+                "label": "2024-08",
+                "return": -0.37514804025085524
+              },
+              {
+                "label": "2024-09",
+                "return": 0.1669444519474852
+              },
+              {
+                "label": "2024-10",
+                "return": 0.2608601284743782
+              },
+              {
+                "label": "2024-11",
+                "return": 1.3518947637240746
+              },
+              {
+                "label": "2024-12",
+                "return": -0.3916682446197801
+              },
+              {
+                "label": "2025-01",
+                "return": 0.3993542890052545
+              },
+              {
+                "label": "2025-02",
+                "return": -0.4333730636361362
+              },
+              {
+                "label": "2025-03",
+                "return": -0.09063125571221893
+              },
+              {
+                "label": "2025-04",
+                "return": 0.5165512376656818
+              },
+              {
+                "label": "2025-05",
+                "return": 0.28509799114255274
+              },
+              {
+                "label": "2025-06",
+                "return": 0.08805878595957814
+              },
+              {
+                "label": "2025-07",
+                "return": -0.01123683855824641
+              },
+              {
+                "label": "2025-08",
+                "return": -0.211823859904805
+              },
+              {
+                "label": "2025-09",
+                "return": 0.20020002706576184
+              },
+              {
+                "label": "2025-10",
+                "return": -0.29421152440946674
+              },
+              {
+                "label": "2025-11",
+                "return": -0.7690825062384395
+              },
+              {
+                "label": "2025-12",
+                "return": 0.1280481870755096
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_only",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1,
+            "exposure": 4.0,
+            "monthly_loss_limit": null,
+            "id": "long-h18-z0p05-ema1-hold1-cool0-confirm1-exp4-lossnone"
+          },
+          "score": [
+            0.3333333333333333,
+            0.3333333333333333,
+            -1.4317667091573265,
+            -1.3812338937643363,
+            -1.214004010085605
+          ],
+          "validation": {
+            "net_return": 0.0505328153929903,
+            "max_drawdown": -0.943893966378715,
+            "completed_trades": 159,
+            "win_rate": 0.5534591194968553,
+            "profit_factor": 1.0013572508001716,
+            "total_fees": 291311.9569672785,
+            "total_funding": -240768.1677601825,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5416666666666666,
+            "target_25pct_month_rate": 0.3333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.3620926219320502
+              },
+              {
+                "label": "2024-02",
+                "return": 2.160348682768451
+              },
+              {
+                "label": "2024-03",
+                "return": 0.8022907717257574
+              },
+              {
+                "label": "2024-04",
+                "return": -0.34912793712551776
+              },
+              {
+                "label": "2024-05",
+                "return": 0.17956808264809304
+              },
+              {
+                "label": "2024-06",
+                "return": -0.4828847832112407
+              },
+              {
+                "label": "2024-07",
+                "return": -0.03726490503685095
+              },
+              {
+                "label": "2024-08",
+                "return": -0.3998037164193677
+              },
+              {
+                "label": "2024-09",
+                "return": 0.14063534173187903
+              },
+              {
+                "label": "2024-10",
+                "return": 0.4423925551330658
+              },
+              {
+                "label": "2024-11",
+                "return": 1.6281254006425887
+              },
+              {
+                "label": "2024-12",
+                "return": -0.3644332966125094
+              },
+              {
+                "label": "2025-01",
+                "return": 0.3677313855274829
+              },
+              {
+                "label": "2025-02",
+                "return": -0.560447570097629
+              },
+              {
+                "label": "2025-03",
+                "return": -0.18418904930665303
+              },
+              {
+                "label": "2025-04",
+                "return": 0.5262964644395299
+              },
+              {
+                "label": "2025-05",
+                "return": 0.3213503565497313
+              },
+              {
+                "label": "2025-06",
+                "return": 0.14703975990321555
+              },
+              {
+                "label": "2025-07",
+                "return": 0.11011800559331493
+              },
+              {
+                "label": "2025-08",
+                "return": -0.28948210698573507
+              },
+              {
+                "label": "2025-09",
+                "return": 0.1297107238405304
+              },
+              {
+                "label": "2025-10",
+                "return": -0.2916665262378127
+              },
+              {
+                "label": "2025-11",
+                "return": -0.6991932083969165
+              },
+              {
+                "label": "2025-12",
+                "return": -0.002928430044986209
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_short",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 4,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 4,
+            "confirmation_bars": 1,
+            "exposure": 4.0,
+            "monthly_loss_limit": null,
+            "id": "long-short-h18-z0p05-ema4-hold1-cool4-confirm1-exp4-lossnone"
+          },
+          "score": [
+            0.30434782608695654,
+            0.3333333333333333,
+            -1.4909292905805605,
+            -2.4981522684450286,
+            -1.2577374092281168
+          ],
+          "validation": {
+            "net_return": -1.0072229778644681,
+            "max_drawdown": -1.0011145020494046,
+            "completed_trades": 91,
+            "win_rate": 0.4945054945054945,
+            "profit_factor": 1.075434856760467,
+            "total_fees": 126669.11579931134,
+            "total_funding": -152962.91612149548,
+            "ending_position": "LONG",
+            "positive_month_rate": 0.5652173913043478,
+            "target_25pct_month_rate": 0.30434782608695654,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.24043640640949793
+              },
+              {
+                "label": "2024-02",
+                "return": 1.7008711765736626
+              },
+              {
+                "label": "2024-03",
+                "return": 0.69155282080226
+              },
+              {
+                "label": "2024-04",
+                "return": -0.2248641619345702
+              },
+              {
+                "label": "2024-05",
+                "return": 0.15717271527450674
+              },
+              {
+                "label": "2024-06",
+                "return": -0.37364832719131535
+              },
+              {
+                "label": "2024-07",
+                "return": -0.4183367391948464
+              },
+              {
+                "label": "2024-08",
+                "return": -0.37818426341979333
+              },
+              {
+                "label": "2024-09",
+                "return": 0.16915802713931286
+              },
+              {
+                "label": "2024-10",
+                "return": 0.3215098672781651
+              },
+              {
+                "label": "2024-11",
+                "return": 1.4485457917545526
+              },
+              {
+                "label": "2024-12",
+                "return": -0.5089753035898698
+              },
+              {
+                "label": "2025-01",
+                "return": 0.39509655630082846
+              },
+              {
+                "label": "2025-02",
+                "return": -0.38304546947334145
+              },
+              {
+                "label": "2025-03",
+                "return": -0.09062758325785325
+              },
+              {
+                "label": "2025-04",
+                "return": 0.6391836474709823
+              },
+              {
+                "label": "2025-05",
+                "return": 0.38735498952302105
+              },
+              {
+                "label": "2025-06",
+                "return": 0.123365056983179
+              },
+              {
+                "label": "2025-07",
+                "return": 0.11384264229746267
+              },
+              {
+                "label": "2025-08",
+                "return": -0.3463374271903813
+              },
+              {
+                "label": "2025-09",
+                "return": 0.17831319998405326
+              },
+              {
+                "label": "2025-10",
+                "return": -0.34122015589849747
+              },
+              {
+                "label": "2025-11",
+                "return": -1.0029878289927512
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_short",
+            "horizon_bars": 1,
+            "score_threshold": 0.05,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 6,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1,
+            "exposure": 4.0,
+            "monthly_loss_limit": null,
+            "id": "long-short-h1-z0p05-ema1-hold6-cool0-confirm1-exp4-lossnone"
+          },
+          "score": [
+            0.2916666666666667,
+            0.4857142857142857,
+            -1.115771929766788,
+            4.792395277620056,
+            -1.0030647458023045
+          ],
+          "validation": {
+            "net_return": 5.908167207386844,
+            "max_drawdown": -0.8832820698121048,
+            "completed_trades": 485,
+            "win_rate": 0.5711340206185567,
+            "profit_factor": 1.1544424790228611,
+            "total_fees": 434008.3858719425,
+            "total_funding": -61215.06385485311,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.2916666666666667,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": -0.563540410138057
+              },
+              {
+                "label": "2024-02",
+                "return": 0.9137146561330424
+              },
+              {
+                "label": "2024-03",
+                "return": 0.09968818623306686
+              },
+              {
+                "label": "2024-04",
+                "return": -0.1345301617704455
+              },
+              {
+                "label": "2024-05",
+                "return": 0.7231510732670777
+              },
+              {
+                "label": "2024-06",
+                "return": -0.22834398754586238
+              },
+              {
+                "label": "2024-07",
+                "return": -0.4493337055090285
+              },
+              {
+                "label": "2024-08",
+                "return": 0.26941565543899515
+              },
+              {
+                "label": "2024-09",
+                "return": 0.20048367394262434
+              },
+              {
+                "label": "2024-10",
+                "return": -0.09044999174653254
+              },
+              {
+                "label": "2024-11",
+                "return": 1.680692989571959
+              },
+              {
+                "label": "2024-12",
+                "return": 0.10419169110354441
+              },
+              {
+                "label": "2025-01",
+                "return": 0.7422244533306291
+              },
+              {
+                "label": "2025-02",
+                "return": -0.432065562728168
+              },
+              {
+                "label": "2025-03",
+                "return": -0.10711134545471523
+              },
+              {
+                "label": "2025-04",
+                "return": 0.20639675944162722
+              },
+              {
+                "label": "2025-05",
+                "return": 0.18134975501052514
+              },
+              {
+                "label": "2025-06",
+                "return": 0.22125399182656777
+              },
+              {
+                "label": "2025-07",
+                "return": 0.2986082273657258
+              },
+              {
+                "label": "2025-08",
+                "return": -0.11335999718514284
+              },
+              {
+                "label": "2025-09",
+                "return": 0.008341792177319951
+              },
+              {
+                "label": "2025-10",
+                "return": -0.3072959085880695
+              },
+              {
+                "label": "2025-11",
+                "return": -0.07265907933241693
+              },
+              {
+                "label": "2025-12",
+                "return": 1.5223863061108005
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_only",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 4,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 4,
+            "confirmation_bars": 1,
+            "exposure": 3.0,
+            "monthly_loss_limit": null,
+            "id": "long-h18-z0p05-ema4-hold1-cool4-confirm1-exp3-lossnone"
+          },
+          "score": [
+            0.2916666666666667,
+            0.3333333333333333,
+            -1.1200678651922964,
+            0.2438993800683702,
+            -1.0750974464705854
+          ],
+          "validation": {
+            "net_return": 1.3639672452606666,
+            "max_drawdown": -0.8461119237222836,
+            "completed_trades": 77,
+            "win_rate": 0.5324675324675324,
+            "profit_factor": 1.0789240168691532,
+            "total_fees": 96835.9006140797,
+            "total_funding": -148632.20079025364,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.2916666666666667,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.2583885496788189
+              },
+              {
+                "label": "2024-02",
+                "return": 1.2725431146112771
+              },
+              {
+                "label": "2024-03",
+                "return": 0.5229660453307808
+              },
+              {
+                "label": "2024-04",
+                "return": -0.16118259921391087
+              },
+              {
+                "label": "2024-05",
+                "return": 0.11065723696920438
+              },
+              {
+                "label": "2024-06",
+                "return": -0.2803162390077765
+              },
+              {
+                "label": "2024-07",
+                "return": -0.1150697727617187
+              },
+              {
+                "label": "2024-08",
+                "return": -0.26516820312459916
+              },
+              {
+                "label": "2024-09",
+                "return": 0.14504093839120705
+              },
+              {
+                "label": "2024-10",
+                "return": 0.22956739717334484
+              },
+              {
+                "label": "2024-11",
+                "return": 1.0466621285189137
+              },
+              {
+                "label": "2024-12",
+                "return": -0.3623863063039055
+              },
+              {
+                "label": "2025-01",
+                "return": 0.28341466076956034
+              },
+              {
+                "label": "2025-02",
+                "return": -0.300154329039708
+              },
+              {
+                "label": "2025-03",
+                "return": -0.06827924512340797
+              },
+              {
+                "label": "2025-04",
+                "return": 0.48704903041977543
+              },
+              {
+                "label": "2025-05",
+                "return": 0.25450301605385
+              },
+              {
+                "label": "2025-06",
+                "return": 0.09970517241976964
+              },
+              {
+                "label": "2025-07",
+                "return": 0.09182595284604216
+              },
+              {
+                "label": "2025-08",
+                "return": -0.14544041856910017
+              },
+              {
+                "label": "2025-09",
+                "return": 0.137405520261534
+              },
+              {
+                "label": "2025-10",
+                "return": -0.23694832624621395
+              },
+              {
+                "label": "2025-11",
+                "return": -0.5940366759767954
+              },
+              {
+                "label": "2025-12",
+                "return": 0.20055177084074824
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_short",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 6,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1,
+            "exposure": 3.0,
+            "monthly_loss_limit": null,
+            "id": "long-short-h18-z0p05-ema1-hold6-cool0-confirm1-exp3-lossnone"
+          },
+          "score": [
+            0.2916666666666667,
+            0.3333333333333333,
+            -1.131071056276492,
+            0.8564831393726167,
+            -1.0723398393360684
+          ],
+          "validation": {
+            "net_return": 1.9875541956491087,
+            "max_drawdown": -0.867360999154669,
+            "completed_trades": 161,
+            "win_rate": 0.5900621118012422,
+            "profit_factor": 1.05424388290795,
+            "total_fees": 233747.25001711474,
+            "total_funding": -178977.7547119544,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.2916666666666667,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.4817913552669773
+              },
+              {
+                "label": "2024-02",
+                "return": 1.49724235078549
+              },
+              {
+                "label": "2024-03",
+                "return": 0.6139996104899949
+              },
+              {
+                "label": "2024-04",
+                "return": 0.015048013828983608
+              },
+              {
+                "label": "2024-05",
+                "return": 0.24192288667346046
+              },
+              {
+                "label": "2024-06",
+                "return": -0.38368448919056763
+              },
+              {
+                "label": "2024-07",
+                "return": -0.371493893059085
+              },
+              {
+                "label": "2024-08",
+                "return": -0.15772512351177412
+              },
+              {
+                "label": "2024-09",
+                "return": 0.1599806627459004
+              },
+              {
+                "label": "2024-10",
+                "return": 0.3136172154186565
+              },
+              {
+                "label": "2024-11",
+                "return": 1.124785355926557
+              },
+              {
+                "label": "2024-12",
+                "return": -0.4305450765000185
+              },
+              {
+                "label": "2025-01",
+                "return": 0.2714946972289455
+              },
+              {
+                "label": "2025-02",
+                "return": -0.38605661223263743
+              },
+              {
+                "label": "2025-03",
+                "return": -0.133083629054772
+              },
+              {
+                "label": "2025-04",
+                "return": 0.6591029228613997
+              },
+              {
+                "label": "2025-05",
+                "return": 0.2313919256849841
+              },
+              {
+                "label": "2025-06",
+                "return": 0.09426314285715238
+              },
+              {
+                "label": "2025-07",
+                "return": -0.11191361723066051
+              },
+              {
+                "label": "2025-08",
+                "return": -0.1793173014676849
+              },
+              {
+                "label": "2025-09",
+                "return": 0.09579402209993125
+              },
+              {
+                "label": "2025-10",
+                "return": -0.1759490654328314
+              },
+              {
+                "label": "2025-11",
+                "return": -0.46699086503128756
+              },
+              {
+                "label": "2025-12",
+                "return": 0.24297773302478015
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "eth_perp": {
+      "candidate_count": 288,
+      "development_eligible_count": 169,
+      "risk_configuration_count": 216,
+      "risk_eligible_count": 0,
+      "used_fallback_diagnostic": true,
+      "selection_rule": "Train (2020-2023) and validation (2024-2025) only; 2026 confirmation excluded.",
+      "selected": {
+        "parameters": {
+          "direction": "long_only",
+          "horizon_bars": 18,
+          "score_threshold": 0.05,
+          "smoothing_bars": 4,
+          "minimum_hold_bars": 1,
+          "cooldown_bars": 4,
+          "confirmation_bars": 2,
+          "exposure": 4.0,
+          "monthly_loss_limit": null,
+          "id": "long-h18-z0p05-ema4-hold1-cool4-confirm2-exp4-lossnone"
+        },
+        "score": [
+          0.3333333333333333,
+          0.5,
+          -1.235234564621671,
+          -2.2680251401948626,
+          -1.0573846937011768
+        ]
+      },
+      "stress_confirmation": {
+        "fee_bps": 10.0,
+        "slippage_bps": 5.0,
+        "net_return": -0.8926185758546945,
+        "max_drawdown": -0.9726233278336831,
+        "completed_trades": 17,
+        "win_rate": 0.29411764705882354,
+        "profit_factor": 0.34426276042669196,
+        "total_fees": 6686.029001532585,
+        "total_funding": -1525.3483400418645,
+        "ending_position": "FLAT",
+        "positive_month_rate": 0.5,
+        "target_25pct_month_rate": 0.125,
+        "monthly_returns": [
+          {
+            "label": "2026-01",
+            "return": -0.19549704737232987
+          },
+          {
+            "label": "2026-02",
+            "return": -0.641546117712403
+          },
+          {
+            "label": "2026-03",
+            "return": 0.22446974611959047
+          },
+          {
+            "label": "2026-04",
+            "return": 0.24212125442680382
+          },
+          {
+            "label": "2026-05",
+            "return": -0.40582560123797456
+          },
+          {
+            "label": "2026-06",
+            "return": -0.8204701768659319
+          },
+          {
+            "label": "2026-07",
+            "return": 1.2692787407594182
+          },
+          {
+            "label": "2026-08",
+            "return": 0.01138799267474599
+          }
+        ]
+      },
+      "top_development_candidates": [
+        {
+          "parameters": {
+            "direction": "long_only",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 4,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 4,
+            "confirmation_bars": 2,
+            "exposure": 4.0,
+            "monthly_loss_limit": null,
+            "id": "long-h18-z0p05-ema4-hold1-cool4-confirm2-exp4-lossnone"
+          },
+          "score": [
+            0.3333333333333333,
+            0.5,
+            -1.235234564621671,
+            -2.2680251401948626,
+            -1.0573846937011768
+          ],
+          "validation": {
+            "net_return": -1.235234564621671,
+            "max_drawdown": -1.0573846937011768,
+            "completed_trades": 12,
+            "win_rate": 0.5833333333333334,
+            "profit_factor": 0.9414396592010589,
+            "total_fees": 8126.865467542484,
+            "total_funding": -58800.44698053662,
+            "ending_position": "LONG",
+            "positive_month_rate": 0.5,
+            "target_25pct_month_rate": 0.375,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.03910193695808853
+              },
+              {
+                "label": "2024-02",
+                "return": 1.7723184580118714
+              },
+              {
+                "label": "2024-03",
+                "return": 0.3224736201013001
+              },
+              {
+                "label": "2024-04",
+                "return": -0.6580197643329123
+              },
+              {
+                "label": "2024-05",
+                "return": 1.1673902911543064
+              },
+              {
+                "label": "2024-06",
+                "return": -0.3259069491232619
+              },
+              {
+                "label": "2024-07",
+                "return": -0.6972057421796941
+              },
+              {
+                "label": "2024-08",
+                "return": -1.4081381874241228
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_only",
+            "horizon_bars": 18,
+            "score_threshold": 0.15,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1,
+            "exposure": 3.0,
+            "monthly_loss_limit": null,
+            "id": "long-h18-z0p15-ema1-hold1-cool0-confirm1-exp3-lossnone"
+          },
+          "score": [
+            0.3333333333333333,
+            0.4166666666666667,
+            -1.302643755653762,
+            -2.143395006378624,
+            -1.0729896049567749
+          ],
+          "validation": {
+            "net_return": -0.8407512507248618,
+            "max_drawdown": -0.9504640371862956,
+            "completed_trades": 351,
+            "win_rate": 0.46153846153846156,
+            "profit_factor": 0.9168563684543525,
+            "total_fees": 80907.3645562047,
+            "total_funding": -36068.365123257485,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.4166666666666667,
+            "target_25pct_month_rate": 0.3333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": -0.3179378873871468
+              },
+              {
+                "label": "2024-02",
+                "return": 1.1961470396544742
+              },
+              {
+                "label": "2024-03",
+                "return": 0.1016032748587367
+              },
+              {
+                "label": "2024-04",
+                "return": -0.49967727013129154
+              },
+              {
+                "label": "2024-05",
+                "return": 0.26806376095071766
+              },
+              {
+                "label": "2024-06",
+                "return": -0.2558854275068012
+              },
+              {
+                "label": "2024-07",
+                "return": -0.18342816252141
+              },
+              {
+                "label": "2024-08",
+                "return": 0.28522711164446496
+              },
+              {
+                "label": "2024-09",
+                "return": 0.18003688790515124
+              },
+              {
+                "label": "2024-10",
+                "return": -0.4739988763223875
+              },
+              {
+                "label": "2024-11",
+                "return": 1.2566303586954368
+              },
+              {
+                "label": "2024-12",
+                "return": 0.41301261879711043
+              },
+              {
+                "label": "2025-01",
+                "return": -0.17016144664451235
+              },
+              {
+                "label": "2025-02",
+                "return": -0.8161987612174855
+              },
+              {
+                "label": "2025-03",
+                "return": -0.4660663047470247
+              },
+              {
+                "label": "2025-04",
+                "return": 1.5982033426470077
+              },
+              {
+                "label": "2025-05",
+                "return": 1.4373229005482782
+              },
+              {
+                "label": "2025-06",
+                "return": -0.3030333875428131
+              },
+              {
+                "label": "2025-07",
+                "return": 1.3366451595861564
+              },
+              {
+                "label": "2025-08",
+                "return": -0.053936709800518325
+              },
+              {
+                "label": "2025-09",
+                "return": -0.3021133649267676
+              },
+              {
+                "label": "2025-10",
+                "return": -0.42884379142700263
+              },
+              {
+                "label": "2025-11",
+                "return": -0.5138868962853615
+              },
+              {
+                "label": "2025-12",
+                "return": -0.36077504799916443
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_only",
+            "horizon_bars": 18,
+            "score_threshold": 0.15,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1,
+            "exposure": 4.0,
+            "monthly_loss_limit": null,
+            "id": "long-h18-z0p15-ema1-hold1-cool0-confirm1-exp4-lossnone"
+          },
+          "score": [
+            0.3333333333333333,
+            0.4166666666666667,
+            -2.3396967269238105,
+            -3.3251361386301816,
+            -1.2391922234100141
+          ],
+          "validation": {
+            "net_return": -0.985439411706371,
+            "max_drawdown": -0.9948294194977831,
+            "completed_trades": 351,
+            "win_rate": 0.46153846153846156,
+            "profit_factor": 0.8665591110897246,
+            "total_fees": 54565.68908101944,
+            "total_funding": -32793.53164154765,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.4166666666666667,
+            "target_25pct_month_rate": 0.3333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": -0.49885950992081035
+              },
+              {
+                "label": "2024-02",
+                "return": 1.6632632092505992
+              },
+              {
+                "label": "2024-03",
+                "return": 0.12922739789423787
+              },
+              {
+                "label": "2024-04",
+                "return": -0.6417602223646501
+              },
+              {
+                "label": "2024-05",
+                "return": 0.32896679997697276
+              },
+              {
+                "label": "2024-06",
+                "return": -0.33485544340685747
+              },
+              {
+                "label": "2024-07",
+                "return": -0.2499886640547976
+              },
+              {
+                "label": "2024-08",
+                "return": 0.33802119753695925
+              },
+              {
+                "label": "2024-09",
+                "return": 0.2170776437013586
+              },
+              {
+                "label": "2024-10",
+                "return": -0.5745963277192103
+              },
+              {
+                "label": "2024-11",
+                "return": 1.6755046017860336
+              },
+              {
+                "label": "2024-12",
+                "return": 0.509408170471614
+              },
+              {
+                "label": "2025-01",
+                "return": -0.24208667523763377
+              },
+              {
+                "label": "2025-02",
+                "return": -0.9392070991089813
+              },
+              {
+                "label": "2025-03",
+                "return": -0.6015368134468707
+              },
+              {
+                "label": "2025-04",
+                "return": 2.3648505183875717
+              },
+              {
+                "label": "2025-05",
+                "return": 1.9348143051425395
+              },
+              {
+                "label": "2025-06",
+                "return": -0.39175287465418585
+              },
+              {
+                "label": "2025-07",
+                "return": 1.8677978161085398
+              },
+              {
+                "label": "2025-08",
+                "return": -0.08691796870990462
+              },
+              {
+                "label": "2025-09",
+                "return": -0.38628610637653094
+              },
+              {
+                "label": "2025-10",
+                "return": -0.5411234269545001
+              },
+              {
+                "label": "2025-11",
+                "return": -0.6665747597497595
+              },
+              {
+                "label": "2025-12",
+                "return": -0.46376952594791043
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_short",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 4,
+            "confirmation_bars": 2,
+            "exposure": 2.0,
+            "monthly_loss_limit": null,
+            "id": "long-short-h18-z0p05-ema1-hold1-cool4-confirm2-exp2-lossnone"
+          },
+          "score": [
+            0.2916666666666667,
+            0.4166666666666667,
+            -0.04951670394917838,
+            5.045172975570287,
+            -0.974068791620488
+          ],
+          "validation": {
+            "net_return": -0.04951670394917838,
+            "max_drawdown": -0.8462093218311719,
+            "completed_trades": 134,
+            "win_rate": 0.4253731343283582,
+            "profit_factor": 0.9951513983618019,
+            "total_fees": 45363.383126899964,
+            "total_funding": -54915.22983836587,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.4166666666666667,
+            "target_25pct_month_rate": 0.2916666666666667,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": -0.09900746982176362
+              },
+              {
+                "label": "2024-02",
+                "return": 0.9023763287654787
+              },
+              {
+                "label": "2024-03",
+                "return": 0.097787346180963
+              },
+              {
+                "label": "2024-04",
+                "return": -0.37714246297469717
+              },
+              {
+                "label": "2024-05",
+                "return": 0.6908515708882954
+              },
+              {
+                "label": "2024-06",
+                "return": -0.19504059983004232
+              },
+              {
+                "label": "2024-07",
+                "return": -0.12147394500522575
+              },
+              {
+                "label": "2024-08",
+                "return": 0.0037655847626184586
+              },
+              {
+                "label": "2024-09",
+                "return": 0.07219508611221086
+              },
+              {
+                "label": "2024-10",
+                "return": -0.01687390851943973
+              },
+              {
+                "label": "2024-11",
+                "return": 1.0090019221593427
+              },
+              {
+                "label": "2024-12",
+                "return": -0.15062342030435208
+              },
+              {
+                "label": "2025-01",
+                "return": -0.19518150458499453
+              },
+              {
+                "label": "2025-02",
+                "return": -0.5052957049660513
+              },
+              {
+                "label": "2025-03",
+                "return": -0.20412281374223637
+              },
+              {
+                "label": "2025-04",
+                "return": 0.6510255718556691
+              },
+              {
+                "label": "2025-05",
+                "return": 0.7400074100350917
+              },
+              {
+                "label": "2025-06",
+                "return": -0.27104920175151953
+              },
+              {
+                "label": "2025-07",
+                "return": 1.0200495453055358
+              },
+              {
+                "label": "2025-08",
+                "return": 0.3129257316317498
+              },
+              {
+                "label": "2025-09",
+                "return": -0.07863244248329701
+              },
+              {
+                "label": "2025-10",
+                "return": -0.5551567003198747
+              },
+              {
+                "label": "2025-11",
+                "return": -0.41577241063508
+              },
+              {
+                "label": "2025-12",
+                "return": -0.10859958730609627
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_short",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 6,
+            "cooldown_bars": 4,
+            "confirmation_bars": 2,
+            "exposure": 2.5,
+            "monthly_loss_limit": null,
+            "id": "long-short-h18-z0p05-ema1-hold6-cool4-confirm2-exp2p5-lossnone"
+          },
+          "score": [
+            0.2916666666666667,
+            0.4166666666666667,
+            -1.1804444195399415,
+            -1.4331611357737484,
+            -1.0568479887755227
+          ],
+          "validation": {
+            "net_return": -0.25271671623380676,
+            "max_drawdown": -0.9220168599289289,
+            "completed_trades": 102,
+            "win_rate": 0.43137254901960786,
+            "profit_factor": 0.9782380039693721,
+            "total_fees": 39062.26731838144,
+            "total_funding": -69260.37905061124,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.4166666666666667,
+            "target_25pct_month_rate": 0.2916666666666667,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": -0.13401546066006417
+              },
+              {
+                "label": "2024-02",
+                "return": 1.0721986321787147
+              },
+              {
+                "label": "2024-03",
+                "return": 0.2618332640583007
+              },
+              {
+                "label": "2024-04",
+                "return": -0.431979095027443
+              },
+              {
+                "label": "2024-05",
+                "return": 0.9324656977575517
+              },
+              {
+                "label": "2024-06",
+                "return": -0.25520174727537825
+              },
+              {
+                "label": "2024-07",
+                "return": -0.13173041614786302
+              },
+              {
+                "label": "2024-08",
+                "return": 0.030412759158101887
+              },
+              {
+                "label": "2024-09",
+                "return": -0.019975066888525073
+              },
+              {
+                "label": "2024-10",
+                "return": -0.01517016680418219
+              },
+              {
+                "label": "2024-11",
+                "return": 1.314275322361968
+              },
+              {
+                "label": "2024-12",
+                "return": -0.17166581646367332
+              },
+              {
+                "label": "2025-01",
+                "return": -0.3400438444601002
+              },
+              {
+                "label": "2025-02",
+                "return": -0.6200058277440634
+              },
+              {
+                "label": "2025-03",
+                "return": -0.14593484965929257
+              },
+              {
+                "label": "2025-04",
+                "return": 0.13465484434889655
+              },
+              {
+                "label": "2025-05",
+                "return": 0.9132578434878592
+              },
+              {
+                "label": "2025-06",
+                "return": -0.2605428487014391
+              },
+              {
+                "label": "2025-07",
+                "return": 1.28907405636859
+              },
+              {
+                "label": "2025-08",
+                "return": 0.3992059222942209
+              },
+              {
+                "label": "2025-09",
+                "return": -0.03875557725588856
+              },
+              {
+                "label": "2025-10",
+                "return": -0.5558914446676895
+              },
+              {
+                "label": "2025-11",
+                "return": -0.4874659513559099
+              },
+              {
+                "label": "2025-12",
+                "return": 0.012096181788613011
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_short",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 6,
+            "cooldown_bars": 4,
+            "confirmation_bars": 2,
+            "exposure": 3.0,
+            "monthly_loss_limit": null,
+            "id": "long-short-h18-z0p05-ema1-hold6-cool4-confirm2-exp3-lossnone"
+          },
+          "score": [
+            0.2916666666666667,
+            0.4166666666666667,
+            -1.473645898457714,
+            -2.0710443577841255,
+            -1.1312406340582848
+          ],
+          "validation": {
+            "net_return": -0.5973984593264114,
+            "max_drawdown": -0.9590076687229714,
+            "completed_trades": 102,
+            "win_rate": 0.43137254901960786,
+            "profit_factor": 0.9510032222956355,
+            "total_fees": 40924.75226402435,
+            "total_funding": -78588.8462572608,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.4166666666666667,
+            "target_25pct_month_rate": 0.2916666666666667,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": -0.16152702610910863
+              },
+              {
+                "label": "2024-02",
+                "return": 1.2846246733383209
+              },
+              {
+                "label": "2024-03",
+                "return": 0.324760103310785
+              },
+              {
+                "label": "2024-04",
+                "return": -0.5002740369002012
+              },
+              {
+                "label": "2024-05",
+                "return": 1.1551790930823225
+              },
+              {
+                "label": "2024-06",
+                "return": -0.2979696427919413
+              },
+              {
+                "label": "2024-07",
+                "return": -0.16642758822695894
+              },
+              {
+                "label": "2024-08",
+                "return": 0.016153693641730835
+              },
+              {
+                "label": "2024-09",
+                "return": -0.037720426553452556
+              },
+              {
+                "label": "2024-10",
+                "return": -0.022159391325992244
+              },
+              {
+                "label": "2024-11",
+                "return": 1.5836783623118078
+              },
+              {
+                "label": "2024-12",
+                "return": -0.1900415471001208
+              },
+              {
+                "label": "2025-01",
+                "return": -0.39580824005543763
+              },
+              {
+                "label": "2025-02",
+                "return": -0.708132318104267
+              },
+              {
+                "label": "2025-03",
+                "return": -0.184458810562898
+              },
+              {
+                "label": "2025-04",
+                "return": 0.1077152114032592
+              },
+              {
+                "label": "2025-05",
+                "return": 1.0816433852193046
+              },
+              {
+                "label": "2025-06",
+                "return": -0.3162924800332228
+              },
+              {
+                "label": "2025-07",
+                "return": 1.5468794457592443
+              },
+              {
+                "label": "2025-08",
+                "return": 0.4865106251706484
+              },
+              {
+                "label": "2025-09",
+                "return": -0.06283920190106497
+              },
+              {
+                "label": "2025-10",
+                "return": -0.6391938495410199
+              },
+              {
+                "label": "2025-11",
+                "return": -0.5675039471492105
+              },
+              {
+                "label": "2025-12",
+                "return": 0.0021476579595015102
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_only",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 4,
+            "confirmation_bars": 1,
+            "exposure": 2.0,
+            "monthly_loss_limit": null,
+            "id": "long-h18-z0p05-ema1-hold1-cool4-confirm1-exp2-lossnone"
+          },
+          "score": [
+            0.2916666666666667,
+            0.375,
+            -0.49856056970332785,
+            0.9409520711479352,
+            -0.9822392772206985
+          ],
+          "validation": {
+            "net_return": -0.49856056970332785,
+            "max_drawdown": -0.8564423453377598,
+            "completed_trades": 151,
+            "win_rate": 0.44370860927152317,
+            "profit_factor": 0.9246786488623593,
+            "total_fees": 32009.367968044404,
+            "total_funding": -39549.74638479838,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.375,
+            "target_25pct_month_rate": 0.2916666666666667,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": -0.05205062817107041
+              },
+              {
+                "label": "2024-02",
+                "return": 0.8486886847393397
+              },
+              {
+                "label": "2024-03",
+                "return": 0.018536647152994835
+              },
+              {
+                "label": "2024-04",
+                "return": -0.3730230407109786
+              },
+              {
+                "label": "2024-05",
+                "return": 0.6565487221703145
+              },
+              {
+                "label": "2024-06",
+                "return": -0.15602091425648815
+              },
+              {
+                "label": "2024-07",
+                "return": -0.18533030117957786
+              },
+              {
+                "label": "2024-08",
+                "return": -0.36562383247836266
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0172902423192708
+              },
+              {
+                "label": "2024-10",
+                "return": -0.11917329852526791
+              },
+              {
+                "label": "2024-11",
+                "return": 0.9888373567173032
+              },
+              {
+                "label": "2024-12",
+                "return": -0.1283243021713339
+              },
+              {
+                "label": "2025-01",
+                "return": -0.15808340136065593
+              },
+              {
+                "label": "2025-02",
+                "return": -0.537559291905586
+              },
+              {
+                "label": "2025-03",
+                "return": -0.18562062678815988
+              },
+              {
+                "label": "2025-04",
+                "return": 0.5980242440895771
+              },
+              {
+                "label": "2025-05",
+                "return": 0.8167148187703169
+              },
+              {
+                "label": "2025-06",
+                "return": -0.27001093767305706
+              },
+              {
+                "label": "2025-07",
+                "return": 0.9636987221317
+              },
+              {
+                "label": "2025-08",
+                "return": 0.3097794595680899
+              },
+              {
+                "label": "2025-09",
+                "return": -0.052499094530048335
+              },
+              {
+                "label": "2025-10",
+                "return": -0.4908373160531788
+              },
+              {
+                "label": "2025-11",
+                "return": -0.45802442193702114
+              },
+              {
+                "label": "2025-12",
+                "return": -0.11659446617580739
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_short",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 4,
+            "confirmation_bars": 1,
+            "exposure": 2.0,
+            "monthly_loss_limit": null,
+            "id": "long-short-h18-z0p05-ema1-hold1-cool4-confirm1-exp2-lossnone"
+          },
+          "score": [
+            0.2916666666666667,
+            0.375,
+            -0.5027104196680763,
+            1.456837712372756,
+            -0.9836989787986872
+          ],
+          "validation": {
+            "net_return": -0.5027104196680763,
+            "max_drawdown": -0.8600814887494731,
+            "completed_trades": 162,
+            "win_rate": 0.43209876543209874,
+            "profit_factor": 0.9237715048233743,
+            "total_fees": 33306.53260887549,
+            "total_funding": -39010.09000965414,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.375,
+            "target_25pct_month_rate": 0.2916666666666667,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": -0.05205062817107041
+              },
+              {
+                "label": "2024-02",
+                "return": 0.8486886847393397
+              },
+              {
+                "label": "2024-03",
+                "return": 0.018536647152994835
+              },
+              {
+                "label": "2024-04",
+                "return": -0.3730230407109786
+              },
+              {
+                "label": "2024-05",
+                "return": 0.6565487221703145
+              },
+              {
+                "label": "2024-06",
+                "return": -0.15602091425648815
+              },
+              {
+                "label": "2024-07",
+                "return": -0.18533030117957786
+              },
+              {
+                "label": "2024-08",
+                "return": -0.3889875363909827
+              },
+              {
+                "label": "2024-09",
+                "return": 0.017289626272692524
+              },
+              {
+                "label": "2024-10",
+                "return": -0.11917370713131754
+              },
+              {
+                "label": "2024-11",
+                "return": 1.0128834749594302
+              },
+              {
+                "label": "2024-12",
+                "return": -0.12832414192834865
+              },
+              {
+                "label": "2025-01",
+                "return": -0.15808413035883725
+              },
+              {
+                "label": "2025-02",
+                "return": -0.5376371228236007
+              },
+              {
+                "label": "2025-03",
+                "return": -0.18562296096992031
+              },
+              {
+                "label": "2025-04",
+                "return": 0.5975955563942704
+              },
+              {
+                "label": "2025-05",
+                "return": 0.8167156460241077
+              },
+              {
+                "label": "2025-06",
+                "return": -0.270323691058435
+              },
+              {
+                "label": "2025-07",
+                "return": 0.9636849487815653
+              },
+              {
+                "label": "2025-08",
+                "return": 0.3097808890166216
+              },
+              {
+                "label": "2025-09",
+                "return": -0.05250039877576749
+              },
+              {
+                "label": "2025-10",
+                "return": -0.46811934022332846
+              },
+              {
+                "label": "2025-11",
+                "return": -0.46660165030715206
+              },
+              {
+                "label": "2025-12",
+                "return": -0.12505744458950663
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_only",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 4,
+            "confirmation_bars": 1,
+            "exposure": 2.5,
+            "monthly_loss_limit": null,
+            "id": "long-h18-z0p05-ema1-hold1-cool4-confirm1-exp2p5-lossnone"
+          },
+          "score": [
+            0.2916666666666667,
+            0.375,
+            -1.1760057447329932,
+            -1.903976955966392,
+            -1.0538766545078064
+          ],
+          "validation": {
+            "net_return": -0.7279712112333988,
+            "max_drawdown": -0.9234766254793634,
+            "completed_trades": 151,
+            "win_rate": 0.44370860927152317,
+            "profit_factor": 0.8976963849250392,
+            "total_fees": 34214.01179287148,
+            "total_funding": -45431.639001954405,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.375,
+            "target_25pct_month_rate": 0.2916666666666667,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": -0.0668802948765014
+              },
+              {
+                "label": "2024-02",
+                "return": 1.0573719835406854
+              },
+              {
+                "label": "2024-03",
+                "return": 0.02664137655230616
+              },
+              {
+                "label": "2024-04",
+                "return": -0.4515016995258674
+              },
+              {
+                "label": "2024-05",
+                "return": 0.8442471761751008
+              },
+              {
+                "label": "2024-06",
+                "return": -0.1907274290638091
+              },
+              {
+                "label": "2024-07",
+                "return": -0.23131356729329308
+              },
+              {
+                "label": "2024-08",
+                "return": -0.4484906087565445
+              },
+              {
+                "label": "2024-09",
+                "return": 0.00860383729515945
+              },
+              {
+                "label": "2024-10",
+                "return": -0.1501012755997524
+              },
+              {
+                "label": "2024-11",
+                "return": 1.234835145523364
+              },
+              {
+                "label": "2024-12",
+                "return": -0.1444584287845106
+              },
+              {
+                "label": "2025-01",
+                "return": -0.19499889694786293
+              },
+              {
+                "label": "2025-02",
+                "return": -0.6355552133590202
+              },
+              {
+                "label": "2025-03",
+                "return": -0.233628941205274
+              },
+              {
+                "label": "2025-04",
+                "return": 0.769145989903114
+              },
+              {
+                "label": "2025-05",
+                "return": 1.0176361891686134
+              },
+              {
+                "label": "2025-06",
+                "return": -0.33259503343963753
+              },
+              {
+                "label": "2025-07",
+                "return": 1.1982976191249117
+              },
+              {
+                "label": "2025-08",
+                "return": 0.39484217939245003
+              },
+              {
+                "label": "2025-09",
+                "return": -0.07826124972317912
+              },
+              {
+                "label": "2025-10",
+                "return": -0.5847611497012024
+              },
+              {
+                "label": "2025-11",
+                "return": -0.5470051313657437
+              },
+              {
+                "label": "2025-12",
+                "return": -0.1478693072152317
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "direction": "long_short",
+            "horizon_bars": 18,
+            "score_threshold": 0.05,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 4,
+            "confirmation_bars": 1,
+            "exposure": 2.5,
+            "monthly_loss_limit": null,
+            "id": "long-short-h18-z0p05-ema1-hold1-cool4-confirm1-exp2p5-lossnone"
+          },
+          "score": [
+            0.2916666666666667,
+            0.375,
+            -1.1760057447329932,
+            -1.9066169555976933,
+            -1.0538766545078064
+          ],
+          "validation": {
+            "net_return": -0.7306112108647,
+            "max_drawdown": -0.9259304259424797,
+            "completed_trades": 162,
+            "win_rate": 0.43209876543209874,
+            "profit_factor": 0.8965480824270714,
+            "total_fees": 35230.225900292884,
+            "total_funding": -44795.175143805114,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.375,
+            "target_25pct_month_rate": 0.2916666666666667,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": -0.0668802948765014
+              },
+              {
+                "label": "2024-02",
+                "return": 1.0573719835406854
+              },
+              {
+                "label": "2024-03",
+                "return": 0.02664137655230616
+              },
+              {
+                "label": "2024-04",
+                "return": -0.4515016995258674
+              },
+              {
+                "label": "2024-05",
+                "return": 0.8442471761751008
+              },
+              {
+                "label": "2024-06",
+                "return": -0.1907274290638091
+              },
+              {
+                "label": "2024-07",
+                "return": -0.23131356729329308
+              },
+              {
+                "label": "2024-08",
+                "return": -0.47389579465806964
+              },
+              {
+                "label": "2024-09",
+                "return": 0.008603142670965173
+              },
+              {
+                "label": "2024-10",
+                "return": -0.1501009049664533
+              },
+              {
+                "label": "2024-11",
+                "return": 1.2686286979363712
+              },
+              {
+                "label": "2024-12",
+                "return": -0.1444590296309176
+              },
+              {
+                "label": "2025-01",
+                "return": -0.194999756368329
+              },
+              {
+                "label": "2025-02",
+                "return": -0.6357182729993912
+              },
+              {
+                "label": "2025-03",
+                "return": -0.23362396658367204
+              },
+              {
+                "label": "2025-04",
+                "return": 0.7685574625076816
+              },
+              {
+                "label": "2025-05",
+                "return": 1.0176341869211565
+              },
+              {
+                "label": "2025-06",
+                "return": -0.3329572184055082
+              },
+              {
+                "label": "2025-07",
+                "return": 1.1983014084948613
+              },
+              {
+                "label": "2025-08",
+                "return": 0.3948403202638382
+              },
+              {
+                "label": "2025-09",
+                "return": -0.07826126082231474
+              },
+              {
+                "label": "2025-10",
+                "return": -0.5609126747184338
+              },
+              {
+                "label": "2025-11",
+                "return": -0.5560163518841347
+              },
+              {
+                "label": "2025-12",
+                "return": -0.1580614825199321
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "portfolio_selection": {
+    "selection_status": "no_valid_components",
+    "used_fallback_diagnostic": false,
+    "eligible_components": [],
+    "candidate_count": 0,
+    "eligible_count": 0,
+    "selected": null,
+    "confirmation": null,
+    "stress_confirmation": null
+  },
+  "target": {
+    "monthly_return": 0.25,
+    "minimum_confirmation_target_month_rate": 0.5
+  },
+  "execution": {
+    "signal_timing": "closed 4h bar",
+    "fill_timing": "next 4h open",
+    "fee_bps": 5.0,
+    "slippage_bps": 2.0,
+    "stress_fee_bps": 10.0,
+    "stress_slippage_bps": 5.0,
+    "funding": "historical funding"
+  },
+  "decision": {
+    "status": "rejected_after_confirmation",
+    "approved_for_trading": false,
+    "reason": "No asset passed the development risk gates, so no portfolio or confirmation candidate was selected."
+  }
+}

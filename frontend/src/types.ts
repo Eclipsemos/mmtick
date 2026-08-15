@@ -259,7 +259,7 @@ export type ResearchDataStatus = {
 
 export type ResearchJob = {
   id: string
-  kind: 'data_update' | 'backtest' | 'factor_mining'
+  kind: 'data_update' | 'backtest' | 'factor_mining' | 'deep_factor'
   status: 'queued' | 'running' | 'completed' | 'failed'
   stage: string
   progress: number
@@ -325,8 +325,8 @@ export type DeepFactorSplit = {
   total_funding: number
   positive_month_rate: number
   target_25pct_month_rate: number
-  median_monthly_return: number
-  worst_monthly_return: number
+  median_monthly_return?: number
+  worst_monthly_return?: number
   monthly_returns: Array<{ label: string, return: number }>
 }
 
@@ -335,16 +335,19 @@ export type DeepSignalCandidate = {
     id: string
     direction: string
     horizon_bars: number
-    entry_threshold: number
+    entry_threshold?: number
+    score_threshold?: number
     smoothing_bars: number
     minimum_hold_bars: number
     cooldown_bars: number
     confirmation_bars: number
+    exposure?: number
+    monthly_loss_limit?: number | null
   }
   score: number[]
-  train: DeepFactorSplit
-  validation: DeepFactorSplit
-  confirmation: DeepFactorSplit
+  train?: DeepFactorSplit
+  validation?: DeepFactorSplit
+  confirmation?: DeepFactorSplit
 }
 
 export type DeepFactorReport = {
@@ -353,23 +356,51 @@ export type DeepFactorReport = {
   model: {
     architecture: string
     parameters: number
+    ensemble_size?: number
     device: string
     torch_version: string
     cuda_version: string | null
-    checkpoint: string
+    checkpoint?: string
   }
-  data: Record<string, { first_bar: string, last_bar: string, source_bars_15m: number }>
-  training: { history: Array<{ epoch: number, train_loss: number, validation_loss: number }>, best_validation_loss: number }
+  data: Record<string, {
+    first_bar: string
+    last_bar: string
+    source_bars_15m?: number
+    bars?: number
+    interval_minutes?: number
+  }>
+  training: {
+    history?: Array<{ epoch: number, train_loss: number, validation_loss: number }>
+    ensemble?: Array<{ seed: number, epochs: Array<{ epoch: number, train_loss: number, validation_loss: number }> }>
+    best_validation_loss: number
+  }
   metrics: Record<string, Record<'train' | 'validation' | 'confirmation', DeepFactorSplit>>
   signal_search?: Record<string, {
     candidate_count: number
     development_eligible_count: number
+    risk_configuration_count?: number
+    risk_eligible_count?: number
+    used_fallback_diagnostic?: boolean
     selection_rule: string
     selected: DeepSignalCandidate | null
     top_development_candidates: DeepSignalCandidate[]
-    neighbor_confirmation_pass_rate: number
+    neighbor_confirmation_pass_rate?: number
     stress_confirmation: DeepFactorSplit & { fee_bps: number, slippage_bps: number } | null
   }>
+  portfolio_selection?: {
+    selection_status: 'selected_from_valid_components' | 'no_valid_components'
+    eligible_components: string[]
+    candidate_count: number
+    eligible_count: number
+    selected: {
+      btc_weight: number
+      eth_weight: number
+      leverage: number
+      selection: DeepFactorSplit
+    } | null
+    confirmation: DeepFactorSplit | null
+    stress_confirmation: DeepFactorSplit | null
+  }
   decision: { status: string, approved_for_trading: boolean, reason: string }
 }
 
