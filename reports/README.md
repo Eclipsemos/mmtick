@@ -83,6 +83,15 @@ market data.
   and a joint development-only search with the frozen static event anchor. Jointly searching all
   43 risk-eligible BTC models produced +128.07% with -16.12% drawdown under base costs and stayed
   positive under stress, but still reached only 3/8 target months. It remains research-only.
+- `experiments/marginal_factor_portfolio/2026-08-15/`: all 2,988 static factors are tested as
+  marginal sleeves without requiring standalone profitability. The development winner collapsed
+  by 67.59% alone in 2026 and left the combined portfolio at 3/8 target months.
+- `experiments/factor_overlay/2026-08-15/`: causal daily/monthly exposure rules driven by prior
+  anchor, BTC, ETH, or relative returns. The selected ETH state rule reached only 1/8 target
+  months under base costs and none under stress.
+- `experiments/factor_risk_overlay/2026-08-15/`: leverage with next-day monthly loss and profit
+  locks. All 20 development-risk-eligible configurations remained at 3/8 target months or less in
+  the explicitly non-selective 2026 neighborhood diagnostic.
 - `experiments/event_meta_factor/2026-08-15/`: GPU XGBoost meta-label filter for sparse BTC-shock
   events. Its ROC AUC fell below 0.50 in both selection and reused confirmation, and no risk/return
   configuration passed development gates, so the ML filter is rejected.
