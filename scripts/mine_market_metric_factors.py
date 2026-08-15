@@ -46,6 +46,8 @@ HYBRID_LEVERAGES = tuple(
     Decimal(value) for value in ("0.5", "0.75", "1", "1.25", "1.5", "1.75", "2", "2.25", "2.5")
 )
 SHORTLIST_SIZE = 100
+TARGET_MONTHLY_RETURN = Decimal("0.15")
+MIN_TARGET_MONTH_RATE = Decimal("0.5")
 
 
 @dataclass(frozen=True)
@@ -305,7 +307,7 @@ def _research_summary(result: Any) -> dict[str, Decimal]:
     monthly = tuple(Decimal(str(value)) for _label, value in result.monthly_returns)
     return {
         "positive_month_rate": Decimal(sum(value > 0 for value in monthly)) / Decimal(len(monthly)),
-        "target_month_rate": Decimal(sum(value >= Decimal("0.25") for value in monthly))
+        "target_month_rate": Decimal(sum(value >= TARGET_MONTHLY_RETURN for value in monthly))
         / Decimal(len(monthly)),
     }
 
@@ -324,7 +326,7 @@ def _report(
     achieved = bool(
         confirmation
         and stress
-        and confirmation.target_month_rate >= Decimal("0.5")
+        and confirmation.target_month_rate >= MIN_TARGET_MONTH_RATE
         and confirmation.max_drawdown >= Decimal("-0.35")
         and stress.net_return > 0
         and stress.max_drawdown >= Decimal("-0.35")
@@ -367,7 +369,11 @@ def _report(
         },
         "confirmation": confirmation.as_dict(include_daily=True) if confirmation else None,
         "stress_confirmation": stress.as_dict() if stress else None,
-        "target": {"monthly_return": 0.25, "minimum_target_month_rate": 0.5, "achieved": achieved},
+        "target": {
+            "monthly_return": float(TARGET_MONTHLY_RETURN),
+            "minimum_target_month_rate": float(MIN_TARGET_MONTH_RATE),
+            "achieved": achieved,
+        },
         "decision": {
             "status": "research_candidate" if achieved else "rejected_after_confirmation",
             "approved_for_trading": False,
@@ -375,8 +381,9 @@ def _report(
                 "The metric hybrid met reused confirmation gates; fresh forward evidence is "
                 "required."
                 if achieved
-                else "The development-selected market-metric hybrid reached fewer than four of "
-                "eight 2026 months at 25%, despite positive base and stressed total returns."
+                else "The development-selected market-metric hybrid reached fewer than half of "
+                "the 2026 months at the 15% target, despite positive base and stressed "
+                "total returns."
             ),
         },
         "limitations": [
@@ -425,7 +432,7 @@ def _markdown(payload: dict[str, Any]) -> str:
                 f"`{selected['metric_weight']:.0%}` metric sleeve, and "
                 f"`{selected['outer_leverage']:.2f}x` outer leverage.",
                 "",
-                "| Split | Return | Max DD | 25% months |",
+                "| Split | Return | Max DD | 15% months |",
                 "|---|---:|---:|---:|",
                 _metric_row("2021-2023 discovery", selected["discovery"]),
                 _metric_row("2024-2025 validation", selected["validation"]),
@@ -455,7 +462,9 @@ def _markdown(payload: dict[str, Any]) -> str:
 
 
 def _metric_row(label: str, result: dict[str, Any]) -> str:
-    reached = sum(row["return"] >= 0.25 for row in result["monthly_returns"])
+    reached = sum(
+        row["return"] >= float(TARGET_MONTHLY_RETURN) for row in result["monthly_returns"]
+    )
     return (
         f"| {label} | {result['net_return']:.2%} | {result['max_drawdown']:.2%} | "
         f"{reached}/{len(result['monthly_returns'])} |"

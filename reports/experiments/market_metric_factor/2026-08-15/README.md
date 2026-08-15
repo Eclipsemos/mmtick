@@ -26,6 +26,11 @@ with 1.5x outer leverage.
 The new data source is informative but does not fill a fourth +25% confirmation month. Decision:
 `rejected_after_confirmation`. Approved for trading: `false`.
 
+The same development protocol was rerun after the objective was lowered to `+15%` per month. The
+selected parameters did not change: only January, February, and June reached +15% in the reused
+2026 confirmation (3/8 months). Its base-cost compounded monthly rate was about 14.02%, and the
+10+5 bps stress rate was about 12.53%, so this is not a verified every-month +15% solution.
+
 ## Reproduce
 
 ```bash
