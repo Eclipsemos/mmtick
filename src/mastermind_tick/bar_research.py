@@ -47,6 +47,7 @@ class ResearchResult:
     total_fees: float
     total_funding: float
     bankrupt: bool
+    ending_position: str
     daily_returns: tuple[tuple[str, float], ...]
     monthly_returns: tuple[tuple[str, float], ...]
     trades: tuple[ResearchTrade, ...]
@@ -112,6 +113,185 @@ def buy_and_hold_targets(bars: list[ResearchBar]) -> tuple[int, ...]:
     return tuple(1 for _ in bars)
 
 
+def wilder_atr_values(bars: list[ResearchBar], period: int) -> tuple[Decimal | None, ...]:
+    """Return closed-bar Wilder ATR values without using future prices."""
+    if period < 1:
+        raise ValueError("ATR period must be positive")
+    ranges: list[Decimal] = []
+    values: list[Decimal | None] = []
+    atr: Decimal | None = None
+    previous_close: Decimal | None = None
+    for bar in bars:
+        value = bar.high - bar.low
+        if previous_close is not None:
+            value = max(value, abs(bar.high - previous_close), abs(bar.low - previous_close))
+        ranges.append(value)
+        if len(ranges) < period:
+            values.append(None)
+        elif atr is None:
+            atr = sum(ranges[-period:], Decimal("0")) / Decimal(period)
+            values.append(atr)
+        else:
+            atr = (atr * Decimal(period - 1) + value) / Decimal(period)
+            values.append(atr)
+        previous_close = bar.close
+    return tuple(values)
+
+
+def atr_trailing_stop_targets(
+    bars: list[ResearchBar],
+    period: int,
+    multiplier: float,
+    direction: str,
+) -> tuple[int | None, ...]:
+    """Follow a close-based Wilder ATR trailing stop after the initial warmup."""
+    _validate_direction(direction)
+    if multiplier <= 0:
+        raise ValueError("ATR multiplier must be positive")
+    distance_multiplier = Decimal(str(multiplier))
+    values = wilder_atr_values(bars, period)
+    stop: Decimal | None = None
+    previous_close: Decimal | None = None
+    targets: list[int | None] = []
+    for bar, atr in zip(bars, values, strict=True):
+        if atr is None:
+            targets.append(None)
+            previous_close = bar.close
+            continue
+        if stop is None:
+            stop = bar.close - distance_multiplier * atr
+            targets.append(None)
+            previous_close = bar.close
+            continue
+        if previous_close is not None and previous_close > stop:
+            stop = max(stop, bar.close - distance_multiplier * atr)
+        else:
+            stop = min(stop, bar.close + distance_multiplier * atr)
+        if bar.close > stop:
+            targets.append(1)
+        elif direction == "long_short" and bar.close < stop:
+            targets.append(-1)
+        else:
+            targets.append(0)
+        previous_close = bar.close
+    return tuple(targets)
+
+
+def keltner_breakout_targets(
+    bars: list[ResearchBar],
+    ema_period: int,
+    atr_period: int,
+    multiplier: float,
+    direction: str,
+) -> tuple[int | None, ...]:
+    """Enter a Keltner-channel break and exit back through the EMA center line."""
+    _validate_direction(direction)
+    if ema_period < 1 or multiplier <= 0:
+        raise ValueError("Keltner EMA period and multiplier must be positive")
+    alpha = Decimal("2") / Decimal(ema_period + 1)
+    distance_multiplier = Decimal(str(multiplier))
+    values = wilder_atr_values(bars, atr_period)
+    ema: Decimal | None = None
+    target = 0
+    targets: list[int | None] = []
+    warmup = max(ema_period, atr_period)
+    for index, (bar, atr) in enumerate(zip(bars, values, strict=True)):
+        ema = bar.close if ema is None else ema + alpha * (bar.close - ema)
+        if atr is None or index + 1 < warmup:
+            targets.append(None)
+            continue
+        upper = ema + distance_multiplier * atr
+        lower = ema - distance_multiplier * atr
+        if target > 0 and bar.close < ema:
+            target = 0
+        elif target < 0 and bar.close > ema:
+            target = 0
+        if target == 0 and bar.close > upper:
+            target = 1
+        elif target == 0 and direction == "long_short" and bar.close < lower:
+            target = -1
+        targets.append(target)
+    return tuple(targets)
+
+
+def atr_mean_reversion_targets(
+    bars: list[ResearchBar],
+    center_period: int,
+    atr_period: int,
+    entry_distance_atr: float,
+    direction: str,
+) -> tuple[int | None, ...]:
+    """Fade a close that is a configurable ATR distance away from its rolling mean."""
+    _validate_direction(direction)
+    if center_period < 2 or entry_distance_atr <= 0:
+        raise ValueError("ATR mean-reversion parameters must be positive")
+    distance_multiplier = Decimal(str(entry_distance_atr))
+    values = wilder_atr_values(bars, atr_period)
+    target = 0
+    targets: list[int | None] = []
+    warmup = max(center_period, atr_period)
+    for index, (bar, atr) in enumerate(zip(bars, values, strict=True)):
+        if atr is None or index + 1 < warmup:
+            targets.append(None)
+            continue
+        center = sum(
+            (item.close for item in bars[index - center_period + 1 : index + 1]), Decimal("0")
+        ) / Decimal(center_period)
+        if target > 0 and bar.close >= center:
+            target = 0
+        elif target < 0 and bar.close <= center:
+            target = 0
+        distance = distance_multiplier * atr
+        if target == 0 and bar.close <= center - distance:
+            target = 1
+        elif target == 0 and direction == "long_short" and bar.close >= center + distance:
+            target = -1
+        targets.append(target)
+    return tuple(targets)
+
+
+def chandelier_breakout_targets(
+    bars: list[ResearchBar],
+    entry_window: int,
+    atr_period: int,
+    exit_multiplier: float,
+    direction: str,
+) -> tuple[int | None, ...]:
+    """Enter a prior-channel break and exit using a Chandelier ATR trailing stop."""
+    _validate_direction(direction)
+    if entry_window < 2 or exit_multiplier <= 0:
+        raise ValueError("Chandelier entry window and exit multiplier must be positive")
+    distance_multiplier = Decimal(str(exit_multiplier))
+    values = wilder_atr_values(bars, atr_period)
+    target = 0
+    targets: list[int | None] = []
+    warmup = max(entry_window + 1, atr_period)
+    for index, (bar, atr) in enumerate(zip(bars, values, strict=True)):
+        if atr is None or index + 1 < warmup:
+            targets.append(None)
+            continue
+        prior_window = bars[index - entry_window : index]
+        active_window = bars[index - entry_window + 1 : index + 1]
+        if target > 0:
+            long_stop = max(item.high for item in active_window) - distance_multiplier * atr
+            if bar.close < long_stop:
+                target = 0
+        elif target < 0:
+            short_stop = min(item.low for item in active_window) + distance_multiplier * atr
+            if bar.close > short_stop:
+                target = 0
+        if target == 0 and bar.close > max(item.high for item in prior_window):
+            target = 1
+        elif (
+            target == 0
+            and direction == "long_short"
+            and bar.close < min(item.low for item in prior_window)
+        ):
+            target = -1
+        targets.append(target)
+    return tuple(targets)
+
+
 def ema_targets(
     bars: list[ResearchBar],
     fast_period: int,
@@ -140,6 +320,74 @@ def ema_targets(
             targets.append(-1)
         else:
             targets.append(0)
+    return tuple(targets)
+
+
+def macd_targets(
+    bars: list[ResearchBar],
+    fast_period: int,
+    slow_period: int,
+    signal_period: int,
+    direction: str,
+) -> tuple[int | None, ...]:
+    """Follow the sign of MACD relative to its signal line on closed bars."""
+    _validate_direction(direction)
+    if fast_period < 1 or fast_period >= slow_period or signal_period < 1:
+        raise ValueError("MACD periods must satisfy 1 <= fast < slow and signal >= 1")
+    fast_alpha = Decimal("2") / Decimal(fast_period + 1)
+    slow_alpha = Decimal("2") / Decimal(slow_period + 1)
+    signal_alpha = Decimal("2") / Decimal(signal_period + 1)
+    fast = slow = signal = None
+    targets: list[int | None] = []
+    warmup = slow_period + signal_period - 1
+    for index, bar in enumerate(bars):
+        fast = bar.close if fast is None else fast + fast_alpha * (bar.close - fast)
+        slow = bar.close if slow is None else slow + slow_alpha * (bar.close - slow)
+        macd = fast - slow
+        signal = macd if signal is None else signal + signal_alpha * (macd - signal)
+        if index + 1 < warmup:
+            targets.append(None)
+        elif macd > signal:
+            targets.append(1)
+        elif direction == "long_short" and macd < signal:
+            targets.append(-1)
+        else:
+            targets.append(0)
+    return tuple(targets)
+
+
+def bollinger_reversion_targets(
+    bars: list[ResearchBar],
+    period: int,
+    standard_deviations: float,
+    direction: str,
+) -> tuple[int | None, ...]:
+    """Fade closed-bar Bollinger band extremes and exit at the rolling mean."""
+    _validate_direction(direction)
+    if period < 2 or standard_deviations <= 0:
+        raise ValueError("Bollinger period must be at least two and deviation must be positive")
+    multiplier = Decimal(str(standard_deviations))
+    target = 0
+    targets: list[int | None] = []
+    for index, bar in enumerate(bars):
+        if index + 1 < period:
+            targets.append(None)
+            continue
+        window = bars[index - period + 1 : index + 1]
+        mean = sum((item.close for item in window), Decimal("0")) / Decimal(period)
+        variance = sum((item.close - mean) ** 2 for item in window) / Decimal(period)
+        deviation = variance.sqrt()
+        lower = mean - multiplier * deviation
+        upper = mean + multiplier * deviation
+        if target > 0 and bar.close >= mean:
+            target = 0
+        elif target < 0 and bar.close <= mean:
+            target = 0
+        if target == 0 and bar.close <= lower:
+            target = 1
+        elif target == 0 and direction == "long_short" and bar.close >= upper:
+            target = -1
+        targets.append(target)
     return tuple(targets)
 
 
@@ -248,6 +496,7 @@ def evaluate_targets(
     fee_bps: Decimal = Decimal("5"),
     slippage_bps: Decimal = Decimal("2"),
     quantity_step: Decimal = Decimal("0.001"),
+    close_final_position: bool = True,
 ) -> ResearchResult:
     if len(targets) != len(bars):
         raise ValueError("target and bar lengths differ")
@@ -356,13 +605,13 @@ def evaluate_targets(
             pending_target = signal
 
     final_bar = bars[last_index]
-    if position and not bankrupt:
+    if position and not bankrupt and close_final_position:
         close(final_bar.close, final_bar.end_ms)
         daily_equity[_utc_date(final_bar.end_ms)] = cash
         peak_equity = max(peak_equity, cash)
         if peak_equity > 0:
             max_drawdown = min(max_drawdown, cash / peak_equity - Decimal("1"))
-    final_equity = cash if not bankrupt else daily_equity[_utc_date(final_bar.end_ms)]
+    final_equity = daily_equity[_utc_date(final_bar.end_ms)] if bankrupt or position else cash
     daily_returns = _period_returns(daily_equity, initial_equity, 10)
     monthly_returns = _period_returns(daily_equity, initial_equity, 7)
     wins = sum(item.net_pnl > 0 for item in trades)
@@ -380,6 +629,7 @@ def evaluate_targets(
         total_fees=float(total_fees),
         total_funding=float(total_funding),
         bankrupt=bankrupt,
+        ending_position="LONG" if position > 0 else "SHORT" if position < 0 else "FLAT",
         daily_returns=daily_returns,
         monthly_returns=monthly_returns,
         trades=tuple(trades),

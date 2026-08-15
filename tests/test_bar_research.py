@@ -5,9 +5,16 @@ import pytest
 from mastermind_tick.bar_research import (
     ResearchBar,
     aggregate_bars,
+    atr_mean_reversion_targets,
+    atr_trailing_stop_targets,
+    bollinger_reversion_targets,
+    chandelier_breakout_targets,
     ema_targets,
     evaluate_targets,
+    keltner_breakout_targets,
+    macd_targets,
     momentum_targets,
+    wilder_atr_values,
 )
 from mastermind_tick.models import FundingRate
 
@@ -108,3 +115,113 @@ def test_ema_deadband_moves_to_cash_when_trend_is_too_weak() -> None:
     )
 
     assert targets[-1] == 0
+
+
+def test_macd_targets_waits_for_signal_warmup_then_follows_trend() -> None:
+    bars = [_bar(index, str(100 + index), str(100 + index)) for index in range(6)]
+
+    targets = macd_targets(
+        bars,
+        fast_period=2,
+        slow_period=3,
+        signal_period=2,
+        direction="long_short",
+    )
+
+    assert targets[:3] == (None, None, None)
+    assert targets[-1] == 1
+
+
+def test_bollinger_reversion_enters_an_extreme_and_exits_at_mean() -> None:
+    bars = [
+        _bar(0, "100", "100"),
+        _bar(1, "100", "100"),
+        _bar(2, "100", "90"),
+        _bar(3, "90", "100"),
+    ]
+
+    targets = bollinger_reversion_targets(
+        bars,
+        period=3,
+        standard_deviations=1.0,
+        direction="long_only",
+    )
+
+    assert targets == (None, None, 1, 0)
+
+
+def test_wilder_atr_values_uses_previous_close_for_true_range() -> None:
+    bars = [
+        _bar(0, "10", "10"),
+        _bar(1, "12", "12"),
+        _bar(2, "11", "11"),
+    ]
+
+    values = wilder_atr_values(bars, period=2)
+
+    assert values == (None, Decimal("1"), Decimal("1"))
+
+
+def test_atr_trailing_stop_can_reverse_to_short() -> None:
+    bars = [
+        _bar(0, "100", "100"),
+        _bar(1, "100", "110"),
+        _bar(2, "110", "120"),
+        _bar(3, "120", "90"),
+    ]
+
+    targets = atr_trailing_stop_targets(bars, period=2, multiplier=1.0, direction="long_short")
+
+    assert targets[-1] == -1
+
+
+def test_atr_channel_families_emit_entry_signals_after_warmup() -> None:
+    bars = [_bar(index, str(100 + index), str(100 + index)) for index in range(10)]
+    bars[-1] = _bar(9, "109", "160")
+
+    keltner = keltner_breakout_targets(
+        bars, ema_period=3, atr_period=2, multiplier=0.1, direction="long_only"
+    )
+    chandelier = chandelier_breakout_targets(
+        bars, entry_window=3, atr_period=2, exit_multiplier=3.0, direction="long_only"
+    )
+
+    assert keltner[-1] == 1
+    assert chandelier[-1] == 1
+
+
+def test_atr_mean_reversion_enters_and_exits_at_center() -> None:
+    bars = [
+        _bar(0, "100", "100"),
+        _bar(1, "100", "100"),
+        _bar(2, "100", "90"),
+        _bar(3, "90", "100"),
+    ]
+
+    targets = atr_mean_reversion_targets(
+        bars,
+        center_period=3,
+        atr_period=2,
+        entry_distance_atr=1.0,
+        direction="long_only",
+    )
+
+    assert targets == (None, None, 1, 0)
+
+
+def test_forward_replay_can_mark_an_open_position_without_forced_exit() -> None:
+    bars = [_bar(0, "100", "100"), _bar(1, "100", "110")]
+
+    result = evaluate_targets(
+        bars,
+        (1, 1),
+        start_ms=bars[0].start_ms,
+        end_ms=bars[-1].start_ms,
+        fee_bps=Decimal("0"),
+        slippage_bps=Decimal("0"),
+        close_final_position=False,
+    )
+
+    assert result.completed_trades == 0
+    assert result.ending_position == "LONG"
+    assert result.final_equity > result.initial_equity

@@ -39,9 +39,14 @@ market data.
 - `experiments/btc_atr/2026-08-14-baseline/`: BTCUSDT 15m ATR baseline study after expanding the
   warehouse to 2024-01-01. The training winner failed both July validation and August confirmation,
   so no BTC strategy or leverage setting is approved.
+- `experiments/btc_atr/2026-08-14-stability/`: 216 BTCUSDT candidates across ATR trailing stops,
+  Keltner breakouts, ATR-normalized mean reversion, and Chandelier exits on 1h, 4h, and daily bars.
+  No development-selected family winner or ex-post candidate passed the multi-split stability
+  gates, so no ATR strategy is approved.
 - `experiments/btc_strategy_families/2026-08-14/`: 1h, 4h, and daily BTCUSDT comparison of EMA
   trend, Donchian breakout, time-series momentum, and RSI mean reversion. No strategy meets the
-  25% monthly objective; the sole three-split-positive EMA lead remains unapproved.
+  original 25% monthly objective. Under the revised single-month 15% gate, the frozen EMA lead is a
+  provisional forward candidate, still unapproved for trading.
 - `experiments/btc_eth_pair/2026-08-14/`: OHLCV-level equal-notional BTC/ETH ratio EMA, momentum,
   and mean-reversion research. The selected pair was positive but underperformed the benchmark and
   missed the monthly target; it is rejected and not a Tick-level approval.

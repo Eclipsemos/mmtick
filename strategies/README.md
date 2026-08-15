@@ -9,6 +9,7 @@
 |---|---|---|---|
 | SOXL ATR32x3 仅做多 | 当前完整历史研究基线 | 冻结研究基线 | [current_research_baseline.md](current_research_baseline.md) |
 | SOXL True Range 波差 v1 | 冻结前向研究候选 | 证据不足，未批准 | [candidates/soxl_volatility_spread_true_range_v1.md](candidates/soxl_volatility_spread_true_range_v1.md) |
+| BTC 日线 EMA(10,50) 多空 v1 | 冻结前向研究候选 | 暂不拒绝，未批准交易 | [candidates/btc_daily_ema_10_50_long_short_v1.md](candidates/btc_daily_ema_10_50_long_short_v1.md) |
 | `soxl_perp_long` | `origin/main` long-only paper | 主分支部署快照 | [origin_main/soxl_perp_long.md](origin_main/soxl_perp_long.md) |
 | `soxl_perp` | `origin/main` long/short paper 对照 | 主分支部署快照 | [origin_main/soxl_perp.md](origin_main/soxl_perp.md) |
 | `soxl_perp_live` | `origin/main` Binance Futures 实盘 | 主分支部署快照 | [origin_main/soxl_perp_live.md](origin_main/soxl_perp_live.md) |

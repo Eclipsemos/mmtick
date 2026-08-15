@@ -1,0 +1,33 @@
+{
+  "id": "btc-daily-ema-10-50-long-short-v1-forward",
+  "generated_at": "2026-08-14T10:10:15.429763+00:00",
+  "candidate_id": "btc-daily-ema-10-50-long-short-v1",
+  "candidate_status": "provisional_forward_candidate",
+  "approved_for_trading": false,
+  "parameter_hash": "4c3b378115a76adfb33e372273aa0a2e2052f7d8eb39c6d23d953b14fb86efef",
+  "evidence_lock_date": "2026-08-10",
+  "forward_evidence_start_date": "2026-08-11",
+  "status": "monitoring_insufficient_forward_evidence",
+  "complete_days": 1,
+  "first_day": "2026-08-11",
+  "last_day": "2026-08-11",
+  "parameter_search": false,
+  "result": {
+    "initial_equity": 100000.0,
+    "final_equity": 100516.96864807793,
+    "net_return": 0.005169686480779331,
+    "max_drawdown": 0.0,
+    "completed_trades": 0,
+    "win_rate": null,
+    "profit_factor": null,
+    "total_fees": 49.99053249348,
+    "total_funding": 12.502193611413066,
+    "ending_position": "SHORT",
+    "daily_returns": [
+      {
+        "date": "2026-08-11",
+        "return": 0.005169686480779331
+      }
+    ]
+  }
+}

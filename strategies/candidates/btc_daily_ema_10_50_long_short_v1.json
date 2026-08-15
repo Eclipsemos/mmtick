@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "id": "btc-daily-ema-10-50-long-short-v1",
+  "instrument_id": "btc_perp",
+  "symbol": "BTCUSDT",
+  "strategy_family": "ema_trend",
+  "status": "provisional_forward_candidate",
+  "approved_for_trading": false,
+  "evidence_lock_date": "2026-08-10",
+  "forward_evidence_start_date": "2026-08-11",
+  "source_report": "reports/experiments/btc_strategy_families/2026-08-14/results.json",
+  "acceptance_report": "reports/experiments/btc_strategy_families/2026-08-14/revised-15pct-acceptance.md",
+  "parameter_hash": "4c3b378115a76adfb33e372273aa0a2e2052f7d8eb39c6d23d953b14fb86efef",
+  "parameters": {
+    "bar_interval_minutes": 1440,
+    "direction": "long_short",
+    "exposure": 1.0,
+    "fast_period": 10,
+    "fee_bps": 5.0,
+    "slippage_bps": 2.0,
+    "slow_period": 50,
+    "strategy_family": "ema_trend",
+    "symbol": "BTCUSDT"
+  },
+  "execution": {
+    "signal_timing": "closed_daily_bar",
+    "fill_timing": "next_daily_open",
+    "quantity_step": "0.001",
+    "initial_equity": "100000",
+    "funding_included": true,
+    "liquidation_modeled": false
+  },
+  "acceptance_policy": {
+    "minimum_single_confirmation_month_return": 0.15,
+    "require_positive_train_validation_confirmation": true,
+    "minimum_confirmation_profit_factor": 1.5,
+    "minimum_confirmation_completed_trades": 5,
+    "maximum_confirmation_drawdown": -0.2
+  },
+  "evidence": {
+    "train_return": 0.033725848648013965,
+    "validation_return": 0.11846907743703175,
+    "confirmation_return": 0.15608157935843844,
+    "best_confirmation_month": "2026-06",
+    "best_confirmation_month_return": 0.20645466267685897,
+    "confirmation_max_drawdown": -0.1561407420902488,
+    "confirmation_profit_factor": 2.060790360826883,
+    "confirmation_completed_trades": 5,
+    "train_max_drawdown": -0.5023258241702956
+  },
+  "forward_gates": {
+    "minimum_complete_days_for_interim_review": 30,
+    "minimum_completed_trades_for_interim_review": 1,
+    "minimum_complete_days_for_approval_review": 365,
+    "minimum_completed_trades_for_approval_review": 8,
+    "reject_at_forward_drawdown": -0.25
+  }
+}
