@@ -169,6 +169,11 @@ market data.
   18 development-valid pairs. The 10,080-route grid and 2,017 development-eligible risk controls
   reach at most 5/7 complete 2026 months under both cost models; May and July remain losses. The
   causal low-volatility routing hypothesis is rejected and partial August is excluded.
+- `experiments/monthly_robust_ensemble/2026-08-15/`: 540 predefined MACD sleeves and 40
+  development-valid order-flow sleeves are screened and combined by the minimum monthly stability
+  across 2024/2025 and both cost models. The beam search produces 280 portfolios and 725 risk-
+  eligible controls, but the best reused-confirmation result remains 5/7 and loses in May and
+  July. Static monthly-stability optimization is rejected and partial August is excluded.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
