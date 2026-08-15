@@ -108,6 +108,10 @@ market data.
 - `experiments/event_consensus/2026-08-15/`: simultaneous voting across discovery-selected BTC/ETH
   shock-event groups, including follow and crowd-fade modes. The selected portfolio discarded ETH
   and produced 0/8 target months in reused confirmation, so event consensus is rejected.
+- `experiments/beta_hedged_factor_book/2026-08-15/`: shared-equity replay of the frozen four-factor
+  BTC/ETH book with fixed common-beta hedges selected only on 2021-2025. The selected half-risk,
+  25% BTC hedge reduced 2026 drawdown to -12.62% but reached the 25% target in only 1/8 months,
+  so beta hedging is rejected as a route to the monthly-return objective.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
