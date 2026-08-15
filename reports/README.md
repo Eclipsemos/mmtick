@@ -159,6 +159,11 @@ market data.
   confirmation. Sixty candidates are shortlisted on 2021-2025 only and 59 risk configurations
   pass base and stress development gates, but the best reused-confirmation result remains 4/7 and
   still loses in May and July. Fast directional trend is rejected for the strict monthly target.
+- `experiments/order_flow_complement/2026-08-15/`: 1,280 predefined BTC 4h aggregate-trade
+  order-flow factors are selected only on 2024/2025, then tested alone and in development-ranked
+  two-factor portfolios around the frozen market-state strategy. Of 2,982 development-eligible
+  risk configurations, none reaches +15% in all seven complete 2026 months under base and stress
+  costs; the best strict coverage is 5/7. The study is rejected and excludes partial August.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
