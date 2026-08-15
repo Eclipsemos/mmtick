@@ -112,6 +112,10 @@ market data.
   BTC/ETH book with fixed common-beta hedges selected only on 2021-2025. The selected half-risk,
   25% BTC hedge reduced 2026 drawdown to -12.62% but reached the 25% target in only 1/8 months,
   so beta hedging is rejected as a route to the monthly-return objective.
+- `experiments/market_metric_factor/2026-08-15/`: causal Binance futures open-interest, taker-flow,
+  and trader-crowding factors added to the frozen four-factor anchor. The development-selected
+  hybrid remained profitable under 10+5 bps stress costs but reached the 25% target in only 3/8
+  reused 2026 months, so it is rejected and remains research-only.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment

@@ -12,6 +12,7 @@ data/history_soxl/
 data/history_btc/
 data/history_eth/
 data/order_flow_cache/
+data/futures_metrics/
 data/deep_factor_models/
 data/event_meta_models/
 data/continuous_factor_models/
