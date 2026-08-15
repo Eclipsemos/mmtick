@@ -76,6 +76,9 @@ market data.
   discovery-frozen 41-sleeve BTC/ETH universe. The development-selected online configuration fell
   from +487.84% in selection to -1.44% and 0/8 target months in reused confirmation, rejecting
   trailing-performance factor rotation.
+- `experiments/event_consensus/2026-08-15/`: simultaneous voting across discovery-selected BTC/ETH
+  shock-event groups, including follow and crowd-fade modes. The selected portfolio discarded ETH
+  and produced 0/8 target months in reused confirmation, so event consensus is rejected.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
