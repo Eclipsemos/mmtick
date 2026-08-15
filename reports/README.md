@@ -73,6 +73,16 @@ market data.
   BTC/ETH portfolios from the discovery-frozen 40-factor universe. The selected four-sleeve 4x
   portfolio returned +184.88% with -18.29% daily-close drawdown in reused 2026 confirmation, but
   reached the 25% target in only 3/8 months and remains rejected.
+- `experiments/expanded_factor_portfolio/2026-08-15/`: deterministic beam search over all 152
+  discovery-eligible static sleeves. It selected the existing four-sleeve baseline, showing that
+  the prior 40-factor cap and maximum sleeve count were not the missing-return bottleneck.
+- `experiments/continuous_factor/2026-08-15/`: three-seed GPU XGBoost regression factors trained
+  on 2021-2022 with 2023 checkpoint calibration and 2024/2025 selection. The selected ETH model
+  lost 50.88% in reused 2026 confirmation and is rejected.
+- `experiments/walk_forward_factor/2026-08-15/`: annually refreshed GPU XGBoost BTC/ETH factors
+  and a joint development-only search with the frozen static event anchor. Jointly searching all
+  43 risk-eligible BTC models produced +128.07% with -16.12% drawdown under base costs and stayed
+  positive under stress, but still reached only 3/8 target months. It remains research-only.
 - `experiments/event_meta_factor/2026-08-15/`: GPU XGBoost meta-label filter for sparse BTC-shock
   events. Its ROC AUC fell below 0.50 in both selection and reused confirmation, and no risk/return
   configuration passed development gates, so the ML filter is rejected.

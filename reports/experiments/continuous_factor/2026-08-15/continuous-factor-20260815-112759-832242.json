@@ -1,0 +1,5040 @@
+{
+  "generated_at": "2026-08-15T11:27:59.832092+00:00",
+  "strategy": "GPU XGBoost continuous cross-asset BTC/ETH factor",
+  "data": {
+    "first_bar": "2020-01-01T00:00:00+00:00",
+    "last_bar": "2026-08-11T23:59:59.999000+00:00",
+    "btc_perp_bars_15m": 231840,
+    "eth_perp_bars_15m": 231840,
+    "btc_perp_bars_4h": 14490,
+    "eth_perp_bars_4h": 14490
+  },
+  "periods": {
+    "model_fit": {
+      "start": "2021-01-01T00:00:00+00:00",
+      "end": "2022-12-31T23:59:59.999000+00:00"
+    },
+    "early_stop_and_threshold_calibration": {
+      "start": "2023-01-01T00:00:00+00:00",
+      "end": "2023-12-31T23:59:59.999000+00:00"
+    },
+    "selection_2024": {
+      "start": "2024-01-01T00:00:00+00:00",
+      "end": "2024-12-31T23:59:59.999000+00:00"
+    },
+    "selection_2025": {
+      "start": "2025-01-01T00:00:00+00:00",
+      "end": "2025-12-31T23:59:59.999000+00:00"
+    },
+    "confirmation": {
+      "start": "2026-01-01T00:00:00+00:00",
+      "end": "2026-08-10T23:59:59.999000+00:00"
+    }
+  },
+  "features": [
+    "own_ret_1",
+    "own_ret_3",
+    "own_ret_6",
+    "own_ret_18",
+    "own_ret_42",
+    "other_ret_1",
+    "other_ret_3",
+    "other_ret_6",
+    "other_ret_18",
+    "other_ret_42",
+    "relative_ret_1",
+    "relative_ret_6",
+    "relative_ret_18",
+    "own_vol_6",
+    "own_vol_18",
+    "own_vol_42",
+    "other_vol_6",
+    "other_vol_18",
+    "other_vol_42",
+    "return_corr_18",
+    "return_corr_42",
+    "own_range_6",
+    "other_range_6",
+    "own_volume_ratio_18",
+    "other_volume_ratio_18",
+    "own_trend_6",
+    "own_trend_18",
+    "own_trend_42",
+    "other_trend_6",
+    "other_trend_18",
+    "other_trend_42",
+    "own_funding",
+    "other_funding",
+    "own_funding_6",
+    "other_funding_6",
+    "hour_sin",
+    "hour_cos",
+    "weekday_sin",
+    "weekday_cos"
+  ],
+  "model": {
+    "architecture": "asset/horizon-specific three-seed GPU XGBoost regression ensemble",
+    "device": "cuda",
+    "seeds": [
+      17,
+      42,
+      73
+    ],
+    "horizons_4h_bars": [
+      1,
+      3,
+      6,
+      12
+    ],
+    "checkpoint_paths": [
+      "data/continuous_factor_models/continuous-20260815-112729-btc_perp-h1-seed-17.json",
+      "data/continuous_factor_models/continuous-20260815-112729-btc_perp-h1-seed-42.json",
+      "data/continuous_factor_models/continuous-20260815-112729-btc_perp-h1-seed-73.json",
+      "data/continuous_factor_models/continuous-20260815-112729-btc_perp-h3-seed-17.json",
+      "data/continuous_factor_models/continuous-20260815-112729-btc_perp-h3-seed-42.json",
+      "data/continuous_factor_models/continuous-20260815-112729-btc_perp-h3-seed-73.json",
+      "data/continuous_factor_models/continuous-20260815-112729-btc_perp-h6-seed-17.json",
+      "data/continuous_factor_models/continuous-20260815-112729-btc_perp-h6-seed-42.json",
+      "data/continuous_factor_models/continuous-20260815-112729-btc_perp-h6-seed-73.json",
+      "data/continuous_factor_models/continuous-20260815-112729-btc_perp-h12-seed-17.json",
+      "data/continuous_factor_models/continuous-20260815-112729-btc_perp-h12-seed-42.json",
+      "data/continuous_factor_models/continuous-20260815-112729-btc_perp-h12-seed-73.json",
+      "data/continuous_factor_models/continuous-20260815-112729-eth_perp-h1-seed-17.json",
+      "data/continuous_factor_models/continuous-20260815-112729-eth_perp-h1-seed-42.json",
+      "data/continuous_factor_models/continuous-20260815-112729-eth_perp-h1-seed-73.json",
+      "data/continuous_factor_models/continuous-20260815-112729-eth_perp-h3-seed-17.json",
+      "data/continuous_factor_models/continuous-20260815-112729-eth_perp-h3-seed-42.json",
+      "data/continuous_factor_models/continuous-20260815-112729-eth_perp-h3-seed-73.json",
+      "data/continuous_factor_models/continuous-20260815-112729-eth_perp-h6-seed-17.json",
+      "data/continuous_factor_models/continuous-20260815-112729-eth_perp-h6-seed-42.json",
+      "data/continuous_factor_models/continuous-20260815-112729-eth_perp-h6-seed-73.json",
+      "data/continuous_factor_models/continuous-20260815-112729-eth_perp-h12-seed-17.json",
+      "data/continuous_factor_models/continuous-20260815-112729-eth_perp-h12-seed-42.json",
+      "data/continuous_factor_models/continuous-20260815-112729-eth_perp-h12-seed-73.json"
+    ],
+    "metrics": {
+      "btc_perp": {
+        "1": {
+          "training": [
+            {
+              "seed": 17,
+              "best_iteration": 1,
+              "best_score": 1.1339477389666826
+            },
+            {
+              "seed": 42,
+              "best_iteration": 0,
+              "best_score": 1.1340282781665447
+            },
+            {
+              "seed": 73,
+              "best_iteration": 3,
+              "best_score": 1.1339861532855933
+            }
+          ],
+          "fit": {
+            "samples": 4380,
+            "information_coefficient": 0.23158522997002326,
+            "direction_accuracy": 0.6025114155251141,
+            "prediction_mean": -0.000165989957167767,
+            "prediction_std": 0.004787742160260677
+          },
+          "checkpoint": {
+            "samples": 2190,
+            "information_coefficient": 0.019730943034795834,
+            "direction_accuracy": 0.5255707762557078,
+            "prediction_mean": -0.0012819226831197739,
+            "prediction_std": 0.0036215241998434067
+          },
+          "selection_2024": {
+            "samples": 2196,
+            "information_coefficient": 0.03624447695699913,
+            "direction_accuracy": 0.5459927140255009,
+            "prediction_mean": -0.000731796317268163,
+            "prediction_std": 0.004195111338049173
+          },
+          "selection_2025": {
+            "samples": 2190,
+            "information_coefficient": 0.03909231065057536,
+            "direction_accuracy": 0.5146118721461187,
+            "prediction_mean": -0.0010576267959550023,
+            "prediction_std": 0.003931310493499041
+          },
+          "confirmation": {
+            "samples": 1332,
+            "information_coefficient": -0.05841284306526528,
+            "direction_accuracy": 0.5075075075075075,
+            "prediction_mean": -0.0009634227026253939,
+            "prediction_std": 0.004239621572196484
+          }
+        },
+        "3": {
+          "training": [
+            {
+              "seed": 17,
+              "best_iteration": 2,
+              "best_score": 1.213117791664117
+            },
+            {
+              "seed": 42,
+              "best_iteration": 0,
+              "best_score": 1.2132474612602822
+            },
+            {
+              "seed": 73,
+              "best_iteration": 1,
+              "best_score": 1.213225968583452
+            }
+          ],
+          "fit": {
+            "samples": 4380,
+            "information_coefficient": 0.24412783396903573,
+            "direction_accuracy": 0.5611872146118722,
+            "prediction_mean": -0.004834802355617285,
+            "prediction_std": 0.004922053311020136
+          },
+          "checkpoint": {
+            "samples": 2190,
+            "information_coefficient": 0.04311600593414605,
+            "direction_accuracy": 0.4853881278538813,
+            "prediction_mean": -0.006548392120748758,
+            "prediction_std": 0.0034240365494042635
+          },
+          "selection_2024": {
+            "samples": 2196,
+            "information_coefficient": 0.023604168097250893,
+            "direction_accuracy": 0.4772313296903461,
+            "prediction_mean": -0.0049256389029324055,
+            "prediction_std": 0.004180463962256908
+          },
+          "selection_2025": {
+            "samples": 2190,
+            "information_coefficient": -0.04059936526086607,
+            "direction_accuracy": 0.4904109589041096,
+            "prediction_mean": -0.004460589028894901,
+            "prediction_std": 0.004354334436357021
+          },
+          "confirmation": {
+            "samples": 1332,
+            "information_coefficient": -0.00922701555461976,
+            "direction_accuracy": 0.4947447447447447,
+            "prediction_mean": -0.00580055546015501,
+            "prediction_std": 0.004034843295812607
+          }
+        },
+        "6": {
+          "training": [
+            {
+              "seed": 17,
+              "best_iteration": 0,
+              "best_score": 1.305873179769733
+            },
+            {
+              "seed": 42,
+              "best_iteration": 0,
+              "best_score": 1.3056117003759333
+            },
+            {
+              "seed": 73,
+              "best_iteration": 1,
+              "best_score": 1.3056961017694253
+            }
+          ],
+          "fit": {
+            "samples": 4380,
+            "information_coefficient": 0.3370350728788932,
+            "direction_accuracy": 0.5301369863013699,
+            "prediction_mean": -0.009451322257518768,
+            "prediction_std": 0.0043631428852677345
+          },
+          "checkpoint": {
+            "samples": 2190,
+            "information_coefficient": 0.02803576049271513,
+            "direction_accuracy": 0.471689497716895,
+            "prediction_mean": -0.012216277420520782,
+            "prediction_std": 0.00307809398509562
+          },
+          "selection_2024": {
+            "samples": 2196,
+            "information_coefficient": 0.04117292963339079,
+            "direction_accuracy": 0.45856102003642984,
+            "prediction_mean": -0.010631808079779148,
+            "prediction_std": 0.0038379975594580173
+          },
+          "selection_2025": {
+            "samples": 2190,
+            "information_coefficient": -0.0033857064759167453,
+            "direction_accuracy": 0.4899543378995434,
+            "prediction_mean": -0.0112601974979043,
+            "prediction_std": 0.00399866933003068
+          },
+          "confirmation": {
+            "samples": 1331,
+            "information_coefficient": 0.02179327384109266,
+            "direction_accuracy": 0.49361382419233657,
+            "prediction_mean": -0.011113205924630165,
+            "prediction_std": 0.0043658423237502575
+          }
+        },
+        "12": {
+          "training": [
+            {
+              "seed": 17,
+              "best_iteration": 0,
+              "best_score": 1.4013177152458551
+            },
+            {
+              "seed": 42,
+              "best_iteration": 0,
+              "best_score": 1.4009484761276916
+            },
+            {
+              "seed": 73,
+              "best_iteration": 0,
+              "best_score": 1.4012075925835932
+            }
+          ],
+          "fit": {
+            "samples": 4380,
+            "information_coefficient": 0.4330806327595284,
+            "direction_accuracy": 0.5114155251141552,
+            "prediction_mean": -0.020432552322745323,
+            "prediction_std": 0.005806595552712679
+          },
+          "checkpoint": {
+            "samples": 2190,
+            "information_coefficient": 0.06635087023182024,
+            "direction_accuracy": 0.4484018264840183,
+            "prediction_mean": -0.02361983247101307,
+            "prediction_std": 0.007331437896937132
+          },
+          "selection_2024": {
+            "samples": 2196,
+            "information_coefficient": 0.046186519331815744,
+            "direction_accuracy": 0.45673952641165755,
+            "prediction_mean": -0.022979868575930595,
+            "prediction_std": 0.007050193380564451
+          },
+          "selection_2025": {
+            "samples": 2190,
+            "information_coefficient": -0.0022095572391437235,
+            "direction_accuracy": 0.4872146118721461,
+            "prediction_mean": -0.01965184323489666,
+            "prediction_std": 0.007691577076911926
+          },
+          "confirmation": {
+            "samples": 1325,
+            "information_coefficient": 0.08048588497229894,
+            "direction_accuracy": 0.49735849056603776,
+            "prediction_mean": -0.02267434261739254,
+            "prediction_std": 0.007143851835280657
+          }
+        }
+      },
+      "eth_perp": {
+        "1": {
+          "training": [
+            {
+              "seed": 17,
+              "best_iteration": 0,
+              "best_score": 1.1176833167591016
+            },
+            {
+              "seed": 42,
+              "best_iteration": 0,
+              "best_score": 1.1176491215867668
+            },
+            {
+              "seed": 73,
+              "best_iteration": 0,
+              "best_score": 1.1177551468740112
+            }
+          ],
+          "fit": {
+            "samples": 4380,
+            "information_coefficient": 0.17681404530694744,
+            "direction_accuracy": 0.5150684931506849,
+            "prediction_mean": 0.018410708755254745,
+            "prediction_std": 0.0025571798905730247
+          },
+          "checkpoint": {
+            "samples": 2190,
+            "information_coefficient": -0.029231564759220178,
+            "direction_accuracy": 0.5068493150684932,
+            "prediction_mean": 0.01725422404706478,
+            "prediction_std": 0.0020590273197740316
+          },
+          "selection_2024": {
+            "samples": 2196,
+            "information_coefficient": -0.022935020120677465,
+            "direction_accuracy": 0.5072859744990893,
+            "prediction_mean": 0.017734210938215256,
+            "prediction_std": 0.0021676442120224237
+          },
+          "selection_2025": {
+            "samples": 2190,
+            "information_coefficient": 0.0061782217032216894,
+            "direction_accuracy": 0.5082191780821917,
+            "prediction_mean": 0.017361221835017204,
+            "prediction_std": 0.002216982189565897
+          },
+          "confirmation": {
+            "samples": 1332,
+            "information_coefficient": -0.06358068247251239,
+            "direction_accuracy": 0.496996996996997,
+            "prediction_mean": 0.017287781462073326,
+            "prediction_std": 0.0022689863108098507
+          }
+        },
+        "3": {
+          "training": [
+            {
+              "seed": 17,
+              "best_iteration": 1,
+              "best_score": 1.1762903741769837
+            },
+            {
+              "seed": 42,
+              "best_iteration": 0,
+              "best_score": 1.1763909326655164
+            },
+            {
+              "seed": 73,
+              "best_iteration": 0,
+              "best_score": 1.1762192154624873
+            }
+          ],
+          "fit": {
+            "samples": 4380,
+            "information_coefficient": 0.2521278161364447,
+            "direction_accuracy": 0.5070776255707763,
+            "prediction_mean": 0.02693932317197323,
+            "prediction_std": 0.0041047646664083
+          },
+          "checkpoint": {
+            "samples": 2190,
+            "information_coefficient": 0.02215785970648743,
+            "direction_accuracy": 0.49269406392694065,
+            "prediction_mean": 0.02457861416041851,
+            "prediction_std": 0.0028230499010533094
+          },
+          "selection_2024": {
+            "samples": 2196,
+            "information_coefficient": 0.02499936766634885,
+            "direction_accuracy": 0.5182149362477231,
+            "prediction_mean": 0.024723956361413002,
+            "prediction_std": 0.003392197657376528
+          },
+          "selection_2025": {
+            "samples": 2190,
+            "information_coefficient": 0.033833840365445025,
+            "direction_accuracy": 0.5200913242009132,
+            "prediction_mean": 0.024796325713396072,
+            "prediction_std": 0.003203757107257843
+          },
+          "confirmation": {
+            "samples": 1332,
+            "information_coefficient": -0.05396306167493244,
+            "direction_accuracy": 0.496996996996997,
+            "prediction_mean": 0.024610435590147972,
+            "prediction_std": 0.0031478768214583397
+          }
+        },
+        "6": {
+          "training": [
+            {
+              "seed": 17,
+              "best_iteration": 1,
+              "best_score": 1.221564042144411
+            },
+            {
+              "seed": 42,
+              "best_iteration": 4,
+              "best_score": 1.221566193585837
+            },
+            {
+              "seed": 73,
+              "best_iteration": 4,
+              "best_score": 1.221702751881457
+            }
+          ],
+          "fit": {
+            "samples": 4380,
+            "information_coefficient": 0.38279049880606614,
+            "direction_accuracy": 0.5184931506849315,
+            "prediction_mean": 0.03525611385703087,
+            "prediction_std": 0.012989833019673824
+          },
+          "checkpoint": {
+            "samples": 2190,
+            "information_coefficient": 0.06948296636774834,
+            "direction_accuracy": 0.5050228310502283,
+            "prediction_mean": 0.02679901011288166,
+            "prediction_std": 0.009457893669605255
+          },
+          "selection_2024": {
+            "samples": 2196,
+            "information_coefficient": 0.06941811835128482,
+            "direction_accuracy": 0.5314207650273224,
+            "prediction_mean": 0.03183065727353096,
+            "prediction_std": 0.00983872078359127
+          },
+          "selection_2025": {
+            "samples": 2190,
+            "information_coefficient": -0.04263725470936562,
+            "direction_accuracy": 0.5077625570776255,
+            "prediction_mean": 0.03232734277844429,
+            "prediction_std": 0.010634620673954487
+          },
+          "confirmation": {
+            "samples": 1331,
+            "information_coefficient": -0.004203559415338584,
+            "direction_accuracy": 0.4996243425995492,
+            "prediction_mean": 0.03186255320906639,
+            "prediction_std": 0.0094041982665658
+          }
+        },
+        "12": {
+          "training": [
+            {
+              "seed": 17,
+              "best_iteration": 0,
+              "best_score": 1.2453820894833043
+            },
+            {
+              "seed": 42,
+              "best_iteration": 0,
+              "best_score": 1.2450308433394863
+            },
+            {
+              "seed": 73,
+              "best_iteration": 1,
+              "best_score": 1.2444475605371246
+            }
+          ],
+          "fit": {
+            "samples": 4380,
+            "information_coefficient": 0.4251621978785105,
+            "direction_accuracy": 0.519406392694064,
+            "prediction_mean": 0.03752482682466507,
+            "prediction_std": 0.006209901999682188
+          },
+          "checkpoint": {
+            "samples": 2190,
+            "information_coefficient": 0.06510913060352924,
+            "direction_accuracy": 0.5118721461187214,
+            "prediction_mean": 0.03410617634654045,
+            "prediction_std": 0.005469026509672403
+          },
+          "selection_2024": {
+            "samples": 2196,
+            "information_coefficient": -0.02127032349118762,
+            "direction_accuracy": 0.5318761384335154,
+            "prediction_mean": 0.035455115139484406,
+            "prediction_std": 0.005569535307586193
+          },
+          "selection_2025": {
+            "samples": 2190,
+            "information_coefficient": -0.04504349989836647,
+            "direction_accuracy": 0.5127853881278539,
+            "prediction_mean": 0.03696072846651077,
+            "prediction_std": 0.0051832543686032295
+          },
+          "confirmation": {
+            "samples": 1325,
+            "information_coefficient": 0.01769004655573578,
+            "direction_accuracy": 0.4769811320754717,
+            "prediction_mean": 0.03634793311357498,
+            "prediction_std": 0.005183584522455931
+          }
+        }
+      }
+    }
+  },
+  "execution": {
+    "signal_timing": "features and predictions on closed 4h bars",
+    "fill_timing": "next 4h open",
+    "base_fee_bps_per_fill": 5.0,
+    "base_slippage_bps_per_fill": 2.0,
+    "stress_fee_bps_per_fill": 10.0,
+    "stress_slippage_bps_per_fill": 5.0,
+    "funding": "historical funding while positioned",
+    "liquidation_modeled": false
+  },
+  "asset_search": {
+    "btc_perp": {
+      "base_candidate_count": 336,
+      "base_eligible_count": 23,
+      "risk_candidate_count": 640,
+      "risk_eligible_count": 54,
+      "used_fallback_diagnostic": false,
+      "confirmation_used_for_selection": false,
+      "selected": {
+        "candidate": {
+          "horizon_bars": 1,
+          "direction": "long_only",
+          "threshold": 0.0030012072529643774,
+          "threshold_quantile": 0.65,
+          "smoothing_bars": 1,
+          "minimum_hold_bars": 1,
+          "confirmation_bars": 2,
+          "exposure": 3.0,
+          "monthly_loss_limit": 0.15,
+          "id": "continuous-long-h1-q0p65-smooth1-hold1-confirm2-exp3-loss0p15"
+        },
+        "score": [
+          0.0,
+          0.25,
+          0.5833333333333334,
+          -0.18813203091930025,
+          0.1639132969261659,
+          -0.33822970140409325
+        ],
+        "selection_2024": {
+          "net_return": 0.6829672918196154,
+          "max_drawdown": -0.33822970140409325,
+          "completed_trades": 132,
+          "win_rate": 0.6060606060606061,
+          "profit_factor": 1.2968222601427186,
+          "total_fees": 54654.59763265033,
+          "total_funding": -4637.824854288138,
+          "bankrupt": false,
+          "positive_month_rate": 0.5833333333333334,
+          "target_25pct_month_rate": 0.25,
+          "monthly_returns": [
+            {
+              "label": "2024-01",
+              "return": 0.2663426757588852
+            },
+            {
+              "label": "2024-02",
+              "return": -0.0335713857540815
+            },
+            {
+              "label": "2024-03",
+              "return": 0.3729488249069689
+            },
+            {
+              "label": "2024-04",
+              "return": -0.17785886750678243
+            },
+            {
+              "label": "2024-05",
+              "return": 0.16119155440342608
+            },
+            {
+              "label": "2024-06",
+              "return": 0.033393070095210524
+            },
+            {
+              "label": "2024-07",
+              "return": -0.16538470594983568
+            },
+            {
+              "label": "2024-08",
+              "return": -0.1773243455635836
+            },
+            {
+              "label": "2024-09",
+              "return": 0.09950984126463311
+            },
+            {
+              "label": "2024-10",
+              "return": 0.06317603670683894
+            },
+            {
+              "label": "2024-11",
+              "return": -0.04962871498063821
+            },
+            {
+              "label": "2024-12",
+              "return": 0.3309812041207406
+            }
+          ]
+        },
+        "selection_2025": {
+          "net_return": 0.1639132969261659,
+          "max_drawdown": -0.20699554386334346,
+          "completed_trades": 119,
+          "win_rate": 0.5462184873949579,
+          "profit_factor": 1.1215380709903218,
+          "total_fees": 37620.59454010017,
+          "total_funding": -1079.3334456632388,
+          "bankrupt": false,
+          "positive_month_rate": 0.5833333333333334,
+          "target_25pct_month_rate": 0.0,
+          "monthly_returns": [
+            {
+              "label": "2025-01",
+              "return": -0.05502972230990254
+            },
+            {
+              "label": "2025-02",
+              "return": 0.03658319755112393
+            },
+            {
+              "label": "2025-03",
+              "return": 0.20221182461469572
+            },
+            {
+              "label": "2025-04",
+              "return": -0.18813203091930025
+            },
+            {
+              "label": "2025-05",
+              "return": 0.04123748251334803
+            },
+            {
+              "label": "2025-06",
+              "return": 0.0012215403117668373
+            },
+            {
+              "label": "2025-07",
+              "return": 0.05552082720726295
+            },
+            {
+              "label": "2025-08",
+              "return": -0.015837271850984092
+            },
+            {
+              "label": "2025-09",
+              "return": 0.030372101983465138
+            },
+            {
+              "label": "2025-10",
+              "return": 0.17874757351091455
+            },
+            {
+              "label": "2025-11",
+              "return": -0.014957130714390967
+            },
+            {
+              "label": "2025-12",
+              "return": -0.06038880993001292
+            }
+          ]
+        }
+      },
+      "top_development_candidates": [
+        {
+          "candidate": {
+            "horizon_bars": 1,
+            "direction": "long_only",
+            "threshold": 0.0030012072529643774,
+            "threshold_quantile": 0.65,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 1,
+            "confirmation_bars": 2,
+            "exposure": 3.0,
+            "monthly_loss_limit": 0.15,
+            "id": "continuous-long-h1-q0p65-smooth1-hold1-confirm2-exp3-loss0p15"
+          },
+          "score": [
+            0.0,
+            0.25,
+            0.5833333333333334,
+            -0.18813203091930025,
+            0.1639132969261659,
+            -0.33822970140409325
+          ],
+          "selection_2024": {
+            "net_return": 0.6829672918196154,
+            "max_drawdown": -0.33822970140409325,
+            "completed_trades": 132,
+            "win_rate": 0.6060606060606061,
+            "profit_factor": 1.2968222601427186,
+            "total_fees": 54654.59763265033,
+            "total_funding": -4637.824854288138,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.25,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.2663426757588852
+              },
+              {
+                "label": "2024-02",
+                "return": -0.0335713857540815
+              },
+              {
+                "label": "2024-03",
+                "return": 0.3729488249069689
+              },
+              {
+                "label": "2024-04",
+                "return": -0.17785886750678243
+              },
+              {
+                "label": "2024-05",
+                "return": 0.16119155440342608
+              },
+              {
+                "label": "2024-06",
+                "return": 0.033393070095210524
+              },
+              {
+                "label": "2024-07",
+                "return": -0.16538470594983568
+              },
+              {
+                "label": "2024-08",
+                "return": -0.1773243455635836
+              },
+              {
+                "label": "2024-09",
+                "return": 0.09950984126463311
+              },
+              {
+                "label": "2024-10",
+                "return": 0.06317603670683894
+              },
+              {
+                "label": "2024-11",
+                "return": -0.04962871498063821
+              },
+              {
+                "label": "2024-12",
+                "return": 0.3309812041207406
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.1639132969261659,
+            "max_drawdown": -0.20699554386334346,
+            "completed_trades": 119,
+            "win_rate": 0.5462184873949579,
+            "profit_factor": 1.1215380709903218,
+            "total_fees": 37620.59454010017,
+            "total_funding": -1079.3334456632388,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": -0.05502972230990254
+              },
+              {
+                "label": "2025-02",
+                "return": 0.03658319755112393
+              },
+              {
+                "label": "2025-03",
+                "return": 0.20221182461469572
+              },
+              {
+                "label": "2025-04",
+                "return": -0.18813203091930025
+              },
+              {
+                "label": "2025-05",
+                "return": 0.04123748251334803
+              },
+              {
+                "label": "2025-06",
+                "return": 0.0012215403117668373
+              },
+              {
+                "label": "2025-07",
+                "return": 0.05552082720726295
+              },
+              {
+                "label": "2025-08",
+                "return": -0.015837271850984092
+              },
+              {
+                "label": "2025-09",
+                "return": 0.030372101983465138
+              },
+              {
+                "label": "2025-10",
+                "return": 0.17874757351091455
+              },
+              {
+                "label": "2025-11",
+                "return": -0.014957130714390967
+              },
+              {
+                "label": "2025-12",
+                "return": -0.06038880993001292
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 1,
+            "direction": "long_only",
+            "threshold": 0.0022568588610738516,
+            "threshold_quantile": 0.5,
+            "smoothing_bars": 3,
+            "minimum_hold_bars": 1,
+            "confirmation_bars": 1,
+            "exposure": 1.5,
+            "monthly_loss_limit": null,
+            "id": "continuous-long-h1-q0p50-smooth3-hold1-confirm1-exp1p5-lossnone"
+          },
+          "score": [
+            0.0,
+            0.08333333333333333,
+            0.5833333333333334,
+            -0.03445627556091769,
+            0.21546114276892137,
+            -0.18270791594348976
+          ],
+          "selection_2024": {
+            "net_return": 0.7767908255804336,
+            "max_drawdown": -0.18270791594348976,
+            "completed_trades": 147,
+            "win_rate": 0.6598639455782312,
+            "profit_factor": 1.661466985201048,
+            "total_fees": 30488.42665801707,
+            "total_funding": -3082.4444829195795,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.028943163710908017
+              },
+              {
+                "label": "2024-02",
+                "return": -0.03445627556091769
+              },
+              {
+                "label": "2024-03",
+                "return": 0.25682981746539824
+              },
+              {
+                "label": "2024-04",
+                "return": 0.04482199177614636
+              },
+              {
+                "label": "2024-05",
+                "return": 0.08573082151438935
+              },
+              {
+                "label": "2024-06",
+                "return": -0.016193834544732954
+              },
+              {
+                "label": "2024-07",
+                "return": 0.022981922836123356
+              },
+              {
+                "label": "2024-08",
+                "return": -0.012311022042441595
+              },
+              {
+                "label": "2024-09",
+                "return": 0.10095118013703329
+              },
+              {
+                "label": "2024-10",
+                "return": 0.039144330844692515
+              },
+              {
+                "label": "2024-11",
+                "return": -0.020770886767246404
+              },
+              {
+                "label": "2024-12",
+                "return": 0.12643481979073817
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.21546114276892137,
+            "max_drawdown": -0.09185529944443749,
+            "completed_trades": 110,
+            "win_rate": 0.5272727272727272,
+            "profit_factor": 1.3238263784942674,
+            "total_fees": 18765.9633217655,
+            "total_funding": -923.8801229423631,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": -0.00805104274679438
+              },
+              {
+                "label": "2025-02",
+                "return": 0.03102060735368265
+              },
+              {
+                "label": "2025-03",
+                "return": 0.025921817204612237
+              },
+              {
+                "label": "2025-04",
+                "return": 0.12777072270776096
+              },
+              {
+                "label": "2025-05",
+                "return": 0.031578641297147866
+              },
+              {
+                "label": "2025-06",
+                "return": -0.0016010539714541886
+              },
+              {
+                "label": "2025-07",
+                "return": -0.011612242834706295
+              },
+              {
+                "label": "2025-08",
+                "return": 0.005165617163662
+              },
+              {
+                "label": "2025-09",
+                "return": 0.00445766985717425
+              },
+              {
+                "label": "2025-10",
+                "return": -0.003287466180906544
+              },
+              {
+                "label": "2025-11",
+                "return": 0.019901738659813668
+              },
+              {
+                "label": "2025-12",
+                "return": -0.016854041178656392
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 1,
+            "direction": "long_only",
+            "threshold": 0.0022568588610738516,
+            "threshold_quantile": 0.5,
+            "smoothing_bars": 3,
+            "minimum_hold_bars": 1,
+            "confirmation_bars": 1,
+            "exposure": 2.0,
+            "monthly_loss_limit": null,
+            "id": "continuous-long-h1-q0p50-smooth3-hold1-confirm1-exp2-lossnone"
+          },
+          "score": [
+            0.0,
+            0.08333333333333333,
+            0.5833333333333334,
+            -0.045914197860716655,
+            0.2845199923516266,
+            -0.24317264697428273
+          ],
+          "selection_2024": {
+            "net_return": 1.1129048275375284,
+            "max_drawdown": -0.24317264697428273,
+            "completed_trades": 147,
+            "win_rate": 0.6598639455782312,
+            "profit_factor": 1.6356713276861685,
+            "total_fees": 45099.53130904293,
+            "total_funding": -4540.236954784226,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.037255865953229904
+              },
+              {
+                "label": "2024-02",
+                "return": -0.045914197860716655
+              },
+              {
+                "label": "2024-03",
+                "return": 0.35371162747638135
+              },
+              {
+                "label": "2024-04",
+                "return": 0.0586654353840064
+              },
+              {
+                "label": "2024-05",
+                "return": 0.11451586044421842
+              },
+              {
+                "label": "2024-06",
+                "return": -0.021952930626100254
+              },
+              {
+                "label": "2024-07",
+                "return": 0.030309798760901036
+              },
+              {
+                "label": "2024-08",
+                "return": -0.021023576296315637
+              },
+              {
+                "label": "2024-09",
+                "return": 0.1361669016142815
+              },
+              {
+                "label": "2024-10",
+                "return": 0.052109777925435884
+              },
+              {
+                "label": "2024-11",
+                "return": -0.029164964808946404
+              },
+              {
+                "label": "2024-12",
+                "return": 0.1675809653149225
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.2845199923516266,
+            "max_drawdown": -0.1215699325714216,
+            "completed_trades": 110,
+            "win_rate": 0.5272727272727272,
+            "profit_factor": 1.3095828715988709,
+            "total_fees": 26002.90357793045,
+            "total_funding": -1273.1286105668867,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": -0.01171744641582975
+              },
+              {
+                "label": "2025-02",
+                "return": 0.039288806366640526
+              },
+              {
+                "label": "2025-03",
+                "return": 0.033451471791056724
+              },
+              {
+                "label": "2025-04",
+                "return": 0.1711298734185637
+              },
+              {
+                "label": "2025-05",
+                "return": 0.04180614526535928
+              },
+              {
+                "label": "2025-06",
+                "return": -0.0021588241729305875
+              },
+              {
+                "label": "2025-07",
+                "return": -0.015909944401872943
+              },
+              {
+                "label": "2025-08",
+                "return": 0.006066637027501407
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0058171704575157406
+              },
+              {
+                "label": "2025-10",
+                "return": -0.004809712992230711
+              },
+              {
+                "label": "2025-11",
+                "return": 0.0262420040611642
+              },
+              {
+                "label": "2025-12",
+                "return": -0.022664991623458513
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 1,
+            "direction": "long_only",
+            "threshold": 0.0022568588610738516,
+            "threshold_quantile": 0.5,
+            "smoothing_bars": 3,
+            "minimum_hold_bars": 1,
+            "confirmation_bars": 1,
+            "exposure": 1.5,
+            "monthly_loss_limit": 0.1,
+            "id": "continuous-long-h1-q0p50-smooth3-hold1-confirm1-exp1p5-loss0p10"
+          },
+          "score": [
+            0.0,
+            0.08333333333333333,
+            0.5833333333333334,
+            -0.1079702138543894,
+            0.21546114276892137,
+            -0.11835986375961915
+          ],
+          "selection_2024": {
+            "net_return": 0.6046196298990761,
+            "max_drawdown": -0.11835986375961915,
+            "completed_trades": 134,
+            "win_rate": 0.664179104477612,
+            "profit_factor": 1.5757873519310375,
+            "total_fees": 26429.29892923185,
+            "total_funding": -2950.195992640539,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.028943163710908017
+              },
+              {
+                "label": "2024-02",
+                "return": -0.03445627556091769
+              },
+              {
+                "label": "2024-03",
+                "return": 0.25682981746539824
+              },
+              {
+                "label": "2024-04",
+                "return": 0.04482199177614636
+              },
+              {
+                "label": "2024-05",
+                "return": 0.08573082151438935
+              },
+              {
+                "label": "2024-06",
+                "return": -0.016193834544732954
+              },
+              {
+                "label": "2024-07",
+                "return": 0.022981922836123356
+              },
+              {
+                "label": "2024-08",
+                "return": -0.1079702138543894
+              },
+              {
+                "label": "2024-09",
+                "return": 0.10095286833710325
+              },
+              {
+                "label": "2024-10",
+                "return": 0.039150231332470045
+              },
+              {
+                "label": "2024-11",
+                "return": -0.02077959202727797
+              },
+              {
+                "label": "2024-12",
+                "return": 0.12637614530766297
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.21546114276892137,
+            "max_drawdown": -0.09185529944443749,
+            "completed_trades": 110,
+            "win_rate": 0.5272727272727272,
+            "profit_factor": 1.3238263784942674,
+            "total_fees": 18765.9633217655,
+            "total_funding": -923.8801229423631,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": -0.00805104274679438
+              },
+              {
+                "label": "2025-02",
+                "return": 0.03102060735368265
+              },
+              {
+                "label": "2025-03",
+                "return": 0.025921817204612237
+              },
+              {
+                "label": "2025-04",
+                "return": 0.12777072270776096
+              },
+              {
+                "label": "2025-05",
+                "return": 0.031578641297147866
+              },
+              {
+                "label": "2025-06",
+                "return": -0.0016010539714541886
+              },
+              {
+                "label": "2025-07",
+                "return": -0.011612242834706295
+              },
+              {
+                "label": "2025-08",
+                "return": 0.005165617163662
+              },
+              {
+                "label": "2025-09",
+                "return": 0.00445766985717425
+              },
+              {
+                "label": "2025-10",
+                "return": -0.003287466180906544
+              },
+              {
+                "label": "2025-11",
+                "return": 0.019901738659813668
+              },
+              {
+                "label": "2025-12",
+                "return": -0.016854041178656392
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 1,
+            "direction": "long_only",
+            "threshold": 0.0022568588610738516,
+            "threshold_quantile": 0.5,
+            "smoothing_bars": 3,
+            "minimum_hold_bars": 1,
+            "confirmation_bars": 1,
+            "exposure": 1.5,
+            "monthly_loss_limit": 0.075,
+            "id": "continuous-long-h1-q0p50-smooth3-hold1-confirm1-exp1p5-loss0p075"
+          },
+          "score": [
+            0.0,
+            0.08333333333333333,
+            0.5833333333333334,
+            -0.10797023536144233,
+            0.21546114276892137,
+            -0.18637083011040645
+          ],
+          "selection_2024": {
+            "net_return": 0.2630928438824992,
+            "max_drawdown": -0.18637083011040645,
+            "completed_trades": 108,
+            "win_rate": 0.6388888888888888,
+            "profit_factor": 1.2828023076931776,
+            "total_fees": 18719.2144265472,
+            "total_funding": -2134.341228562877,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.028943163710908017
+              },
+              {
+                "label": "2024-02",
+                "return": -0.03445627556091769
+              },
+              {
+                "label": "2024-03",
+                "return": 0.25682981746539824
+              },
+              {
+                "label": "2024-04",
+                "return": 0.04482199177614636
+              },
+              {
+                "label": "2024-05",
+                "return": -0.08556480895519697
+              },
+              {
+                "label": "2024-06",
+                "return": -0.016205088601361373
+              },
+              {
+                "label": "2024-07",
+                "return": 0.022984958797380075
+              },
+              {
+                "label": "2024-08",
+                "return": -0.10797023536144233
+              },
+              {
+                "label": "2024-09",
+                "return": 0.10094433378958502
+              },
+              {
+                "label": "2024-10",
+                "return": 0.03914417581078388
+              },
+              {
+                "label": "2024-11",
+                "return": -0.08482983894462948
+              },
+              {
+                "label": "2024-12",
+                "return": 0.12642957687559409
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.21546114276892137,
+            "max_drawdown": -0.09185529944443749,
+            "completed_trades": 110,
+            "win_rate": 0.5272727272727272,
+            "profit_factor": 1.3238263784942674,
+            "total_fees": 18765.9633217655,
+            "total_funding": -923.8801229423631,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": -0.00805104274679438
+              },
+              {
+                "label": "2025-02",
+                "return": 0.03102060735368265
+              },
+              {
+                "label": "2025-03",
+                "return": 0.025921817204612237
+              },
+              {
+                "label": "2025-04",
+                "return": 0.12777072270776096
+              },
+              {
+                "label": "2025-05",
+                "return": 0.031578641297147866
+              },
+              {
+                "label": "2025-06",
+                "return": -0.0016010539714541886
+              },
+              {
+                "label": "2025-07",
+                "return": -0.011612242834706295
+              },
+              {
+                "label": "2025-08",
+                "return": 0.005165617163662
+              },
+              {
+                "label": "2025-09",
+                "return": 0.00445766985717425
+              },
+              {
+                "label": "2025-10",
+                "return": -0.003287466180906544
+              },
+              {
+                "label": "2025-11",
+                "return": 0.019901738659813668
+              },
+              {
+                "label": "2025-12",
+                "return": -0.016854041178656392
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 1,
+            "direction": "long_only",
+            "threshold": 0.0022568588610738516,
+            "threshold_quantile": 0.5,
+            "smoothing_bars": 3,
+            "minimum_hold_bars": 1,
+            "confirmation_bars": 1,
+            "exposure": 2.0,
+            "monthly_loss_limit": 0.1,
+            "id": "continuous-long-h1-q0p50-smooth3-hold1-confirm1-exp2-loss0p10"
+          },
+          "score": [
+            0.0,
+            0.08333333333333333,
+            0.5833333333333334,
+            -0.14427994126536278,
+            0.2845199923516266,
+            -0.2460306444328997
+          ],
+          "selection_2024": {
+            "net_return": 0.34163250071094997,
+            "max_drawdown": -0.2460306444328997,
+            "completed_trades": 108,
+            "win_rate": 0.6388888888888888,
+            "profit_factor": 1.2613361084529044,
+            "total_fees": 26011.35968941261,
+            "total_funding": -2951.217322512392,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.037255865953229904
+              },
+              {
+                "label": "2024-02",
+                "return": -0.045914197860716655
+              },
+              {
+                "label": "2024-03",
+                "return": 0.35371162747638135
+              },
+              {
+                "label": "2024-04",
+                "return": 0.0586654353840064
+              },
+              {
+                "label": "2024-05",
+                "return": -0.1140769892286659
+              },
+              {
+                "label": "2024-06",
+                "return": -0.021950480097947634
+              },
+              {
+                "label": "2024-07",
+                "return": 0.030296441239872587
+              },
+              {
+                "label": "2024-08",
+                "return": -0.14427994126536278
+              },
+              {
+                "label": "2024-09",
+                "return": 0.13616450383930728
+              },
+              {
+                "label": "2024-10",
+                "return": 0.052113538452729036
+              },
+              {
+                "label": "2024-11",
+                "return": -0.11278879772505175
+              },
+              {
+                "label": "2024-12",
+                "return": 0.16759913211891292
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.2845199923516266,
+            "max_drawdown": -0.1215699325714216,
+            "completed_trades": 110,
+            "win_rate": 0.5272727272727272,
+            "profit_factor": 1.3095828715988709,
+            "total_fees": 26002.90357793045,
+            "total_funding": -1273.1286105668867,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": -0.01171744641582975
+              },
+              {
+                "label": "2025-02",
+                "return": 0.039288806366640526
+              },
+              {
+                "label": "2025-03",
+                "return": 0.033451471791056724
+              },
+              {
+                "label": "2025-04",
+                "return": 0.1711298734185637
+              },
+              {
+                "label": "2025-05",
+                "return": 0.04180614526535928
+              },
+              {
+                "label": "2025-06",
+                "return": -0.0021588241729305875
+              },
+              {
+                "label": "2025-07",
+                "return": -0.015909944401872943
+              },
+              {
+                "label": "2025-08",
+                "return": 0.006066637027501407
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0058171704575157406
+              },
+              {
+                "label": "2025-10",
+                "return": -0.004809712992230711
+              },
+              {
+                "label": "2025-11",
+                "return": 0.0262420040611642
+              },
+              {
+                "label": "2025-12",
+                "return": -0.022664991623458513
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 1,
+            "direction": "long_only",
+            "threshold": 0.0022568588610738516,
+            "threshold_quantile": 0.5,
+            "smoothing_bars": 3,
+            "minimum_hold_bars": 1,
+            "confirmation_bars": 1,
+            "exposure": 1.5,
+            "monthly_loss_limit": 0.15,
+            "id": "continuous-long-h1-q0p50-smooth3-hold1-confirm1-exp1p5-loss0p15"
+          },
+          "score": [
+            0.0,
+            0.08333333333333333,
+            0.5833333333333334,
+            -0.17401011704291564,
+            0.21546114276892137,
+            -0.18363058694478612
+          ],
+          "selection_2024": {
+            "net_return": 0.4858920605063148,
+            "max_drawdown": -0.18363058694478612,
+            "completed_trades": 134,
+            "win_rate": 0.664179104477612,
+            "profit_factor": 1.4369387761539814,
+            "total_fees": 25503.52514715588,
+            "total_funding": -2858.296457252641,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.028943163710908017
+              },
+              {
+                "label": "2024-02",
+                "return": -0.03445627556091769
+              },
+              {
+                "label": "2024-03",
+                "return": 0.25682981746539824
+              },
+              {
+                "label": "2024-04",
+                "return": 0.04482199177614636
+              },
+              {
+                "label": "2024-05",
+                "return": 0.08573082151438935
+              },
+              {
+                "label": "2024-06",
+                "return": -0.016193834544732954
+              },
+              {
+                "label": "2024-07",
+                "return": 0.022981922836123356
+              },
+              {
+                "label": "2024-08",
+                "return": -0.17401011704291564
+              },
+              {
+                "label": "2024-09",
+                "return": 0.1009491444516152
+              },
+              {
+                "label": "2024-10",
+                "return": 0.039148950909301886
+              },
+              {
+                "label": "2024-11",
+                "return": -0.020774368341728452
+              },
+              {
+                "label": "2024-12",
+                "return": 0.12642666182792284
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.21546114276892137,
+            "max_drawdown": -0.09185529944443749,
+            "completed_trades": 110,
+            "win_rate": 0.5272727272727272,
+            "profit_factor": 1.3238263784942674,
+            "total_fees": 18765.9633217655,
+            "total_funding": -923.8801229423631,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": -0.00805104274679438
+              },
+              {
+                "label": "2025-02",
+                "return": 0.03102060735368265
+              },
+              {
+                "label": "2025-03",
+                "return": 0.025921817204612237
+              },
+              {
+                "label": "2025-04",
+                "return": 0.12777072270776096
+              },
+              {
+                "label": "2025-05",
+                "return": 0.031578641297147866
+              },
+              {
+                "label": "2025-06",
+                "return": -0.0016010539714541886
+              },
+              {
+                "label": "2025-07",
+                "return": -0.011612242834706295
+              },
+              {
+                "label": "2025-08",
+                "return": 0.005165617163662
+              },
+              {
+                "label": "2025-09",
+                "return": 0.00445766985717425
+              },
+              {
+                "label": "2025-10",
+                "return": -0.003287466180906544
+              },
+              {
+                "label": "2025-11",
+                "return": 0.019901738659813668
+              },
+              {
+                "label": "2025-12",
+                "return": -0.016854041178656392
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 1,
+            "direction": "long_only",
+            "threshold": 0.0022568588610738516,
+            "threshold_quantile": 0.5,
+            "smoothing_bars": 3,
+            "minimum_hold_bars": 1,
+            "confirmation_bars": 1,
+            "exposure": 2.0,
+            "monthly_loss_limit": 0.15,
+            "id": "continuous-long-h1-q0p50-smooth3-hold1-confirm1-exp2-loss0p15"
+          },
+          "score": [
+            0.0,
+            0.08333333333333333,
+            0.5833333333333334,
+            -0.18642729959175217,
+            0.2845199923516266,
+            -0.1990552606354812
+          ],
+          "selection_2024": {
+            "net_return": 0.7559559401955949,
+            "max_drawdown": -0.1990552606354812,
+            "completed_trades": 134,
+            "win_rate": 0.664179104477612,
+            "profit_factor": 1.4794548022275407,
+            "total_fees": 37497.62692998215,
+            "total_funding": -4167.401488078359,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.037255865953229904
+              },
+              {
+                "label": "2024-02",
+                "return": -0.045914197860716655
+              },
+              {
+                "label": "2024-03",
+                "return": 0.35371162747638135
+              },
+              {
+                "label": "2024-04",
+                "return": 0.0586654353840064
+              },
+              {
+                "label": "2024-05",
+                "return": 0.11451586044421842
+              },
+              {
+                "label": "2024-06",
+                "return": -0.021952930626100254
+              },
+              {
+                "label": "2024-07",
+                "return": 0.030309798760901036
+              },
+              {
+                "label": "2024-08",
+                "return": -0.18642729959175217
+              },
+              {
+                "label": "2024-09",
+                "return": 0.1361610270565079
+              },
+              {
+                "label": "2024-10",
+                "return": 0.05210937708135592
+              },
+              {
+                "label": "2024-11",
+                "return": -0.02915659442040678
+              },
+              {
+                "label": "2024-12",
+                "return": 0.16760304154941702
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.2845199923516266,
+            "max_drawdown": -0.1215699325714216,
+            "completed_trades": 110,
+            "win_rate": 0.5272727272727272,
+            "profit_factor": 1.3095828715988709,
+            "total_fees": 26002.90357793045,
+            "total_funding": -1273.1286105668867,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": -0.01171744641582975
+              },
+              {
+                "label": "2025-02",
+                "return": 0.039288806366640526
+              },
+              {
+                "label": "2025-03",
+                "return": 0.033451471791056724
+              },
+              {
+                "label": "2025-04",
+                "return": 0.1711298734185637
+              },
+              {
+                "label": "2025-05",
+                "return": 0.04180614526535928
+              },
+              {
+                "label": "2025-06",
+                "return": -0.0021588241729305875
+              },
+              {
+                "label": "2025-07",
+                "return": -0.015909944401872943
+              },
+              {
+                "label": "2025-08",
+                "return": 0.006066637027501407
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0058171704575157406
+              },
+              {
+                "label": "2025-10",
+                "return": -0.004809712992230711
+              },
+              {
+                "label": "2025-11",
+                "return": 0.0262420040611642
+              },
+              {
+                "label": "2025-12",
+                "return": -0.022664991623458513
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 1,
+            "direction": "long_only",
+            "threshold": 0.004542309325188398,
+            "threshold_quantile": 0.8,
+            "smoothing_bars": 3,
+            "minimum_hold_bars": 1,
+            "confirmation_bars": 2,
+            "exposure": 4.0,
+            "monthly_loss_limit": null,
+            "id": "continuous-long-h1-q0p80-smooth3-hold1-confirm2-exp4-lossnone"
+          },
+          "score": [
+            0.0,
+            0.08333333333333333,
+            0.5,
+            -0.11622942878283667,
+            0.178506358147379,
+            -0.30210457917559425
+          ],
+          "selection_2024": {
+            "net_return": 0.178506358147379,
+            "max_drawdown": -0.30210457917559425,
+            "completed_trades": 27,
+            "win_rate": 0.7407407407407407,
+            "profit_factor": 1.2059353443032297,
+            "total_fees": 12490.50406626438,
+            "total_funding": -1010.013238597719,
+            "bankrupt": false,
+            "positive_month_rate": 0.5,
+            "target_25pct_month_rate": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.115354506907274
+              },
+              {
+                "label": "2024-02",
+                "return": 0.0
+              },
+              {
+                "label": "2024-03",
+                "return": 0.12059407527472546
+              },
+              {
+                "label": "2024-04",
+                "return": 0.03863713033437119
+              },
+              {
+                "label": "2024-05",
+                "return": -0.021753202416500764
+              },
+              {
+                "label": "2024-06",
+                "return": -0.014168015733295885
+              },
+              {
+                "label": "2024-07",
+                "return": 0.0
+              },
+              {
+                "label": "2024-08",
+                "return": -0.11622942878283667
+              },
+              {
+                "label": "2024-09",
+                "return": 0.04211437400858878
+              },
+              {
+                "label": "2024-10",
+                "return": 0.009641713959743507
+              },
+              {
+                "label": "2024-11",
+                "return": -0.042538988028746075
+              },
+              {
+                "label": "2024-12",
+                "return": 0.05733398661025761
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 1.3510133151957116,
+            "max_drawdown": -0.10111543154659612,
+            "completed_trades": 17,
+            "win_rate": 0.7058823529411765,
+            "profit_factor": 9.692382858528482,
+            "total_fees": 10383.45482331117,
+            "total_funding": -597.2140183776672,
+            "bankrupt": false,
+            "positive_month_rate": 0.5,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.1554228069253325
+              },
+              {
+                "label": "2025-02",
+                "return": 0.24224178341714028
+              },
+              {
+                "label": "2025-03",
+                "return": -0.03208835263388575
+              },
+              {
+                "label": "2025-04",
+                "return": 0.30772332113731726
+              },
+              {
+                "label": "2025-05",
+                "return": 0.025831791284025397
+              },
+              {
+                "label": "2025-06",
+                "return": 0.0
+              },
+              {
+                "label": "2025-07",
+                "return": 0.027237636835048904
+              },
+              {
+                "label": "2025-08",
+                "return": -0.014675178469753608
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": 0.0
+              },
+              {
+                "label": "2025-11",
+                "return": 0.2463210635593591
+              },
+              {
+                "label": "2025-12",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 1,
+            "direction": "long_only",
+            "threshold": 0.0022568588610738516,
+            "threshold_quantile": 0.5,
+            "smoothing_bars": 3,
+            "minimum_hold_bars": 1,
+            "confirmation_bars": 1,
+            "exposure": 1.0,
+            "monthly_loss_limit": null,
+            "id": "continuous-long-h1-q0p50-smooth3-hold1-confirm1-exp1-lossnone"
+          },
+          "score": [
+            0.0,
+            0.0,
+            0.5833333333333334,
+            -0.02298249659671296,
+            0.14457063773854376,
+            -0.12204043743608436
+          ],
+          "selection_2024": {
+            "net_return": 0.4802567428590345,
+            "max_drawdown": -0.12204043743608436,
+            "completed_trades": 147,
+            "win_rate": 0.6598639455782312,
+            "profit_factor": 1.6873288000403759,
+            "total_fees": 18279.71866779592,
+            "total_funding": -1857.75736018063,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.01994973480460159
+              },
+              {
+                "label": "2024-02",
+                "return": -0.02298249659671296
+              },
+              {
+                "label": "2024-03",
+                "return": 0.16575556556345647
+              },
+              {
+                "label": "2024-04",
+                "return": 0.030426192140537964
+              },
+              {
+                "label": "2024-05",
+                "return": 0.057036002188909266
+              },
+              {
+                "label": "2024-06",
+                "return": -0.010630992365552617
+              },
+              {
+                "label": "2024-07",
+                "return": 0.015492547265904119
+              },
+              {
+                "label": "2024-08",
+                "return": -0.0059607044017444665
+              },
+              {
+                "label": "2024-09",
+                "return": 0.06652270312788196
+              },
+              {
+                "label": "2024-10",
+                "return": 0.026133884315396892
+              },
+              {
+                "label": "2024-11",
+                "return": -0.013121618128112184
+              },
+              {
+                "label": "2024-12",
+                "return": 0.08458952008526383
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.14457063773854376,
+            "max_drawdown": -0.06174171057377211,
+            "completed_trades": 110,
+            "win_rate": 0.5272727272727272,
+            "profit_factor": 1.3381859825528208,
+            "total_fees": 12011.2820797228,
+            "total_funding": -594.9120398228233,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": -0.004916606199356431
+              },
+              {
+                "label": "2025-02",
+                "return": 0.02174441331317068
+              },
+              {
+                "label": "2025-03",
+                "return": 0.017832333964673437
+              },
+              {
+                "label": "2025-04",
+                "return": 0.0847977519034321
+              },
+              {
+                "label": "2025-05",
+                "return": 0.021199606086242828
+              },
+              {
+                "label": "2025-06",
+                "return": -0.0010613660129409933
+              },
+              {
+                "label": "2025-07",
+                "return": -0.007535808833881555
+              },
+              {
+                "label": "2025-08",
+                "return": 0.0038773103522467436
+              },
+              {
+                "label": "2025-09",
+                "return": 0.003029156701769943
+              },
+              {
+                "label": "2025-10",
+                "return": -0.002000476931677884
+              },
+              {
+                "label": "2025-11",
+                "return": 0.013428150887672836
+              },
+              {
+                "label": "2025-12",
+                "return": -0.011141747472259222
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "eth_perp": {
+      "base_candidate_count": 336,
+      "base_eligible_count": 44,
+      "risk_candidate_count": 640,
+      "risk_eligible_count": 38,
+      "used_fallback_diagnostic": false,
+      "confirmation_used_for_selection": false,
+      "selected": {
+        "candidate": {
+          "horizon_bars": 3,
+          "direction": "long_only",
+          "threshold": 0.025541961193084717,
+          "threshold_quantile": 0.65,
+          "smoothing_bars": 1,
+          "minimum_hold_bars": 3,
+          "confirmation_bars": 2,
+          "exposure": 1.0,
+          "monthly_loss_limit": 0.075,
+          "id": "continuous-long-h3-q0p65-smooth1-hold3-confirm2-exp1-loss0p075"
+        },
+        "score": [
+          0.08333333333333333,
+          0.25,
+          0.5833333333333334,
+          -0.11204625992007888,
+          0.4433287685501991,
+          -0.27288321762296835
+        ],
+        "selection_2024": {
+          "net_return": 0.4433287685501991,
+          "max_drawdown": -0.18469086093203627,
+          "completed_trades": 99,
+          "win_rate": 0.5050505050505051,
+          "profit_factor": 1.3356299991383507,
+          "total_fees": 12508.286561822397,
+          "total_funding": -6425.9452576116955,
+          "bankrupt": false,
+          "positive_month_rate": 0.5833333333333334,
+          "target_25pct_month_rate": 0.08333333333333333,
+          "monthly_returns": [
+            {
+              "label": "2024-01",
+              "return": 0.009021927872826657
+            },
+            {
+              "label": "2024-02",
+              "return": 0.1322778266805761
+            },
+            {
+              "label": "2024-03",
+              "return": 0.09799670537076823
+            },
+            {
+              "label": "2024-04",
+              "return": 0.01580367641173821
+            },
+            {
+              "label": "2024-05",
+              "return": -0.05862553703177303
+            },
+            {
+              "label": "2024-06",
+              "return": 0.04941744892833538
+            },
+            {
+              "label": "2024-07",
+              "return": -0.07714749492991552
+            },
+            {
+              "label": "2024-08",
+              "return": 0.17917219084587857
+            },
+            {
+              "label": "2024-09",
+              "return": -0.01134495595889141
+            },
+            {
+              "label": "2024-10",
+              "return": -0.08500740093619016
+            },
+            {
+              "label": "2024-11",
+              "return": 0.29680103649519984
+            },
+            {
+              "label": "2024-12",
+              "return": -0.1018581994593039
+            }
+          ]
+        },
+        "selection_2025": {
+          "net_return": 0.8283819830843066,
+          "max_drawdown": -0.27288321762296835,
+          "completed_trades": 122,
+          "win_rate": 0.5573770491803278,
+          "profit_factor": 1.430736565742091,
+          "total_fees": 19631.8835753506,
+          "total_funding": -1986.3541937107473,
+          "bankrupt": false,
+          "positive_month_rate": 0.5833333333333334,
+          "target_25pct_month_rate": 0.16666666666666666,
+          "monthly_returns": [
+            {
+              "label": "2025-01",
+              "return": 0.02270151498926215
+            },
+            {
+              "label": "2025-02",
+              "return": -0.012528867618647035
+            },
+            {
+              "label": "2025-03",
+              "return": -0.0860177357769767
+            },
+            {
+              "label": "2025-04",
+              "return": 0.16213571848898725
+            },
+            {
+              "label": "2025-05",
+              "return": 0.27629797515102705
+            },
+            {
+              "label": "2025-06",
+              "return": 0.04641222631587821
+            },
+            {
+              "label": "2025-07",
+              "return": 0.19398234596414898
+            },
+            {
+              "label": "2025-08",
+              "return": 0.2694508832923585
+            },
+            {
+              "label": "2025-09",
+              "return": -0.08369783719284248
+            },
+            {
+              "label": "2025-10",
+              "return": 0.04123337084241259
+            },
+            {
+              "label": "2025-11",
+              "return": -0.11204625992007888
+            },
+            {
+              "label": "2025-12",
+              "return": -0.006075986421896767
+            }
+          ]
+        }
+      },
+      "top_development_candidates": [
+        {
+          "candidate": {
+            "horizon_bars": 3,
+            "direction": "long_only",
+            "threshold": 0.025541961193084717,
+            "threshold_quantile": 0.65,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 3,
+            "confirmation_bars": 2,
+            "exposure": 1.0,
+            "monthly_loss_limit": 0.075,
+            "id": "continuous-long-h3-q0p65-smooth1-hold3-confirm2-exp1-loss0p075"
+          },
+          "score": [
+            0.08333333333333333,
+            0.25,
+            0.5833333333333334,
+            -0.11204625992007888,
+            0.4433287685501991,
+            -0.27288321762296835
+          ],
+          "selection_2024": {
+            "net_return": 0.4433287685501991,
+            "max_drawdown": -0.18469086093203627,
+            "completed_trades": 99,
+            "win_rate": 0.5050505050505051,
+            "profit_factor": 1.3356299991383507,
+            "total_fees": 12508.286561822397,
+            "total_funding": -6425.9452576116955,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.009021927872826657
+              },
+              {
+                "label": "2024-02",
+                "return": 0.1322778266805761
+              },
+              {
+                "label": "2024-03",
+                "return": 0.09799670537076823
+              },
+              {
+                "label": "2024-04",
+                "return": 0.01580367641173821
+              },
+              {
+                "label": "2024-05",
+                "return": -0.05862553703177303
+              },
+              {
+                "label": "2024-06",
+                "return": 0.04941744892833538
+              },
+              {
+                "label": "2024-07",
+                "return": -0.07714749492991552
+              },
+              {
+                "label": "2024-08",
+                "return": 0.17917219084587857
+              },
+              {
+                "label": "2024-09",
+                "return": -0.01134495595889141
+              },
+              {
+                "label": "2024-10",
+                "return": -0.08500740093619016
+              },
+              {
+                "label": "2024-11",
+                "return": 0.29680103649519984
+              },
+              {
+                "label": "2024-12",
+                "return": -0.1018581994593039
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.8283819830843066,
+            "max_drawdown": -0.27288321762296835,
+            "completed_trades": 122,
+            "win_rate": 0.5573770491803278,
+            "profit_factor": 1.430736565742091,
+            "total_fees": 19631.8835753506,
+            "total_funding": -1986.3541937107473,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.16666666666666666,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.02270151498926215
+              },
+              {
+                "label": "2025-02",
+                "return": -0.012528867618647035
+              },
+              {
+                "label": "2025-03",
+                "return": -0.0860177357769767
+              },
+              {
+                "label": "2025-04",
+                "return": 0.16213571848898725
+              },
+              {
+                "label": "2025-05",
+                "return": 0.27629797515102705
+              },
+              {
+                "label": "2025-06",
+                "return": 0.04641222631587821
+              },
+              {
+                "label": "2025-07",
+                "return": 0.19398234596414898
+              },
+              {
+                "label": "2025-08",
+                "return": 0.2694508832923585
+              },
+              {
+                "label": "2025-09",
+                "return": -0.08369783719284248
+              },
+              {
+                "label": "2025-10",
+                "return": 0.04123337084241259
+              },
+              {
+                "label": "2025-11",
+                "return": -0.11204625992007888
+              },
+              {
+                "label": "2025-12",
+                "return": -0.006075986421896767
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 3,
+            "direction": "long_short",
+            "threshold": 0.025541961193084717,
+            "threshold_quantile": 0.65,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 3,
+            "confirmation_bars": 2,
+            "exposure": 1.0,
+            "monthly_loss_limit": 0.075,
+            "id": "continuous-long-short-h3-q0p65-smooth1-hold3-confirm2-exp1-loss0p075"
+          },
+          "score": [
+            0.08333333333333333,
+            0.25,
+            0.5833333333333334,
+            -0.11204625992007888,
+            0.4433287685501991,
+            -0.27288321762296835
+          ],
+          "selection_2024": {
+            "net_return": 0.4433287685501991,
+            "max_drawdown": -0.18469086093203627,
+            "completed_trades": 99,
+            "win_rate": 0.5050505050505051,
+            "profit_factor": 1.3356299991383507,
+            "total_fees": 12508.286561822397,
+            "total_funding": -6425.9452576116955,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.009021927872826657
+              },
+              {
+                "label": "2024-02",
+                "return": 0.1322778266805761
+              },
+              {
+                "label": "2024-03",
+                "return": 0.09799670537076823
+              },
+              {
+                "label": "2024-04",
+                "return": 0.01580367641173821
+              },
+              {
+                "label": "2024-05",
+                "return": -0.05862553703177303
+              },
+              {
+                "label": "2024-06",
+                "return": 0.04941744892833538
+              },
+              {
+                "label": "2024-07",
+                "return": -0.07714749492991552
+              },
+              {
+                "label": "2024-08",
+                "return": 0.17917219084587857
+              },
+              {
+                "label": "2024-09",
+                "return": -0.01134495595889141
+              },
+              {
+                "label": "2024-10",
+                "return": -0.08500740093619016
+              },
+              {
+                "label": "2024-11",
+                "return": 0.29680103649519984
+              },
+              {
+                "label": "2024-12",
+                "return": -0.1018581994593039
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.8283819830843066,
+            "max_drawdown": -0.27288321762296835,
+            "completed_trades": 122,
+            "win_rate": 0.5573770491803278,
+            "profit_factor": 1.430736565742091,
+            "total_fees": 19631.8835753506,
+            "total_funding": -1986.3541937107473,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.16666666666666666,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.02270151498926215
+              },
+              {
+                "label": "2025-02",
+                "return": -0.012528867618647035
+              },
+              {
+                "label": "2025-03",
+                "return": -0.0860177357769767
+              },
+              {
+                "label": "2025-04",
+                "return": 0.16213571848898725
+              },
+              {
+                "label": "2025-05",
+                "return": 0.27629797515102705
+              },
+              {
+                "label": "2025-06",
+                "return": 0.04641222631587821
+              },
+              {
+                "label": "2025-07",
+                "return": 0.19398234596414898
+              },
+              {
+                "label": "2025-08",
+                "return": 0.2694508832923585
+              },
+              {
+                "label": "2025-09",
+                "return": -0.08369783719284248
+              },
+              {
+                "label": "2025-10",
+                "return": 0.04123337084241259
+              },
+              {
+                "label": "2025-11",
+                "return": -0.11204625992007888
+              },
+              {
+                "label": "2025-12",
+                "return": -0.006075986421896767
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 3,
+            "direction": "long_only",
+            "threshold": 0.025541961193084717,
+            "threshold_quantile": 0.65,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 3,
+            "confirmation_bars": 2,
+            "exposure": 1.0,
+            "monthly_loss_limit": 0.1,
+            "id": "continuous-long-h3-q0p65-smooth1-hold3-confirm2-exp1-loss0p10"
+          },
+          "score": [
+            0.08333333333333333,
+            0.25,
+            0.5833333333333334,
+            -0.11611567447739198,
+            0.3800997954740105,
+            -0.27288383017740564
+          ],
+          "selection_2024": {
+            "net_return": 0.3800997954740105,
+            "max_drawdown": -0.18469086093203627,
+            "completed_trades": 106,
+            "win_rate": 0.5094339622641509,
+            "profit_factor": 1.2741627973938192,
+            "total_fees": 13110.41808827849,
+            "total_funding": -6510.197724018458,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.009021927872826657
+              },
+              {
+                "label": "2024-02",
+                "return": 0.1322778266805761
+              },
+              {
+                "label": "2024-03",
+                "return": 0.09799670537076823
+              },
+              {
+                "label": "2024-04",
+                "return": 0.01580367641173821
+              },
+              {
+                "label": "2024-05",
+                "return": -0.05862553703177303
+              },
+              {
+                "label": "2024-06",
+                "return": 0.04941744892833538
+              },
+              {
+                "label": "2024-07",
+                "return": -0.11611567447739198
+              },
+              {
+                "label": "2024-08",
+                "return": 0.17917257677087875
+              },
+              {
+                "label": "2024-09",
+                "return": -0.01134503049547704
+              },
+              {
+                "label": "2024-10",
+                "return": -0.08587925267106321
+              },
+              {
+                "label": "2024-11",
+                "return": 0.29589309951299997
+              },
+              {
+                "label": "2024-12",
+                "return": -0.10185786022422978
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.7320378174591842,
+            "max_drawdown": -0.27288383017740564,
+            "completed_trades": 122,
+            "win_rate": 0.5573770491803278,
+            "profit_factor": 1.3792291070905012,
+            "total_fees": 18980.291215905672,
+            "total_funding": -1930.5997535419106,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.16666666666666666,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.02270151498926215
+              },
+              {
+                "label": "2025-02",
+                "return": -0.012528867618647035
+              },
+              {
+                "label": "2025-03",
+                "return": -0.11276995262240187
+              },
+              {
+                "label": "2025-04",
+                "return": 0.1621365003126612
+              },
+              {
+                "label": "2025-05",
+                "return": 0.2763010832558739
+              },
+              {
+                "label": "2025-06",
+                "return": 0.046412075774239614
+              },
+              {
+                "label": "2025-07",
+                "return": 0.19398307786787924
+              },
+              {
+                "label": "2025-08",
+                "return": 0.26945045862261185
+              },
+              {
+                "label": "2025-09",
+                "return": -0.10580892705022195
+              },
+              {
+                "label": "2025-10",
+                "return": 0.04123224366155134
+              },
+              {
+                "label": "2025-11",
+                "return": -0.11204694640000461
+              },
+              {
+                "label": "2025-12",
+                "return": -0.006076573363521341
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 3,
+            "direction": "long_short",
+            "threshold": 0.025541961193084717,
+            "threshold_quantile": 0.65,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 3,
+            "confirmation_bars": 2,
+            "exposure": 1.0,
+            "monthly_loss_limit": 0.1,
+            "id": "continuous-long-short-h3-q0p65-smooth1-hold3-confirm2-exp1-loss0p10"
+          },
+          "score": [
+            0.08333333333333333,
+            0.25,
+            0.5833333333333334,
+            -0.11611567447739198,
+            0.3800997954740105,
+            -0.27288383017740564
+          ],
+          "selection_2024": {
+            "net_return": 0.3800997954740105,
+            "max_drawdown": -0.18469086093203627,
+            "completed_trades": 106,
+            "win_rate": 0.5094339622641509,
+            "profit_factor": 1.2741627973938192,
+            "total_fees": 13110.41808827849,
+            "total_funding": -6510.197724018458,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.009021927872826657
+              },
+              {
+                "label": "2024-02",
+                "return": 0.1322778266805761
+              },
+              {
+                "label": "2024-03",
+                "return": 0.09799670537076823
+              },
+              {
+                "label": "2024-04",
+                "return": 0.01580367641173821
+              },
+              {
+                "label": "2024-05",
+                "return": -0.05862553703177303
+              },
+              {
+                "label": "2024-06",
+                "return": 0.04941744892833538
+              },
+              {
+                "label": "2024-07",
+                "return": -0.11611567447739198
+              },
+              {
+                "label": "2024-08",
+                "return": 0.17917257677087875
+              },
+              {
+                "label": "2024-09",
+                "return": -0.01134503049547704
+              },
+              {
+                "label": "2024-10",
+                "return": -0.08587925267106321
+              },
+              {
+                "label": "2024-11",
+                "return": 0.29589309951299997
+              },
+              {
+                "label": "2024-12",
+                "return": -0.10185786022422978
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.7320378174591842,
+            "max_drawdown": -0.27288383017740564,
+            "completed_trades": 122,
+            "win_rate": 0.5573770491803278,
+            "profit_factor": 1.3792291070905012,
+            "total_fees": 18980.291215905672,
+            "total_funding": -1930.5997535419106,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.16666666666666666,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.02270151498926215
+              },
+              {
+                "label": "2025-02",
+                "return": -0.012528867618647035
+              },
+              {
+                "label": "2025-03",
+                "return": -0.11276995262240187
+              },
+              {
+                "label": "2025-04",
+                "return": 0.1621365003126612
+              },
+              {
+                "label": "2025-05",
+                "return": 0.2763010832558739
+              },
+              {
+                "label": "2025-06",
+                "return": 0.046412075774239614
+              },
+              {
+                "label": "2025-07",
+                "return": 0.19398307786787924
+              },
+              {
+                "label": "2025-08",
+                "return": 0.26945045862261185
+              },
+              {
+                "label": "2025-09",
+                "return": -0.10580892705022195
+              },
+              {
+                "label": "2025-10",
+                "return": 0.04123224366155134
+              },
+              {
+                "label": "2025-11",
+                "return": -0.11204694640000461
+              },
+              {
+                "label": "2025-12",
+                "return": -0.006076573363521341
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 3,
+            "direction": "long_only",
+            "threshold": 0.025541961193084717,
+            "threshold_quantile": 0.65,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 3,
+            "confirmation_bars": 2,
+            "exposure": 1.0,
+            "monthly_loss_limit": 0.15,
+            "id": "continuous-long-h3-q0p65-smooth1-hold3-confirm2-exp1-loss0p15"
+          },
+          "score": [
+            0.08333333333333333,
+            0.25,
+            0.5833333333333334,
+            -0.18190416496934436,
+            0.4944425562463283,
+            -0.30900643566640573
+          ],
+          "selection_2024": {
+            "net_return": 0.4944425562463283,
+            "max_drawdown": -0.20676840345898814,
+            "completed_trades": 115,
+            "win_rate": 0.5130434782608696,
+            "profit_factor": 1.3400089355426084,
+            "total_fees": 14167.059180239898,
+            "total_funding": -6698.459503967268,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.009021927872826657
+              },
+              {
+                "label": "2024-02",
+                "return": 0.1322778266805761
+              },
+              {
+                "label": "2024-03",
+                "return": 0.09799670537076823
+              },
+              {
+                "label": "2024-04",
+                "return": 0.01580367641173821
+              },
+              {
+                "label": "2024-05",
+                "return": -0.05862553703177303
+              },
+              {
+                "label": "2024-06",
+                "return": 0.04941744892833538
+              },
+              {
+                "label": "2024-07",
+                "return": -0.1405042212113079
+              },
+              {
+                "label": "2024-08",
+                "return": 0.17917187062763493
+              },
+              {
+                "label": "2024-09",
+                "return": -0.01134499538608068
+              },
+              {
+                "label": "2024-10",
+                "return": -0.08587968454744915
+              },
+              {
+                "label": "2024-11",
+                "return": 0.29589209778789005
+              },
+              {
+                "label": "2024-12",
+                "return": 0.00015262219404684794
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.6430715236247007,
+            "max_drawdown": -0.30900643566640573,
+            "completed_trades": 133,
+            "win_rate": 0.556390977443609,
+            "profit_factor": 1.292083185084252,
+            "total_fees": 19986.780844452947,
+            "total_funding": -2183.0711864269897,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.16666666666666666,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.02270151498926215
+              },
+              {
+                "label": "2025-02",
+                "return": -0.012528867618647035
+              },
+              {
+                "label": "2025-03",
+                "return": -0.18190416496934436
+              },
+              {
+                "label": "2025-04",
+                "return": 0.16213629792811945
+              },
+              {
+                "label": "2025-05",
+                "return": 0.2763004734224867
+              },
+              {
+                "label": "2025-06",
+                "return": 0.04641234368311883
+              },
+              {
+                "label": "2025-07",
+                "return": 0.19398209602403652
+              },
+              {
+                "label": "2025-08",
+                "return": 0.2694501038913723
+              },
+              {
+                "label": "2025-09",
+                "return": -0.0326395003888098
+              },
+              {
+                "label": "2025-10",
+                "return": 0.04195873974036493
+              },
+              {
+                "label": "2025-11",
+                "return": -0.15615909170065342
+              },
+              {
+                "label": "2025-12",
+                "return": -0.006075875358796655
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 3,
+            "direction": "long_short",
+            "threshold": 0.025541961193084717,
+            "threshold_quantile": 0.65,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 3,
+            "confirmation_bars": 2,
+            "exposure": 1.0,
+            "monthly_loss_limit": 0.15,
+            "id": "continuous-long-short-h3-q0p65-smooth1-hold3-confirm2-exp1-loss0p15"
+          },
+          "score": [
+            0.08333333333333333,
+            0.25,
+            0.5833333333333334,
+            -0.18190416496934436,
+            0.4944425562463283,
+            -0.30900643566640573
+          ],
+          "selection_2024": {
+            "net_return": 0.4944425562463283,
+            "max_drawdown": -0.20676840345898814,
+            "completed_trades": 115,
+            "win_rate": 0.5130434782608696,
+            "profit_factor": 1.3400089355426084,
+            "total_fees": 14167.059180239898,
+            "total_funding": -6698.459503967268,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.009021927872826657
+              },
+              {
+                "label": "2024-02",
+                "return": 0.1322778266805761
+              },
+              {
+                "label": "2024-03",
+                "return": 0.09799670537076823
+              },
+              {
+                "label": "2024-04",
+                "return": 0.01580367641173821
+              },
+              {
+                "label": "2024-05",
+                "return": -0.05862553703177303
+              },
+              {
+                "label": "2024-06",
+                "return": 0.04941744892833538
+              },
+              {
+                "label": "2024-07",
+                "return": -0.1405042212113079
+              },
+              {
+                "label": "2024-08",
+                "return": 0.17917187062763493
+              },
+              {
+                "label": "2024-09",
+                "return": -0.01134499538608068
+              },
+              {
+                "label": "2024-10",
+                "return": -0.08587968454744915
+              },
+              {
+                "label": "2024-11",
+                "return": 0.29589209778789005
+              },
+              {
+                "label": "2024-12",
+                "return": 0.00015262219404684794
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.6430715236247007,
+            "max_drawdown": -0.30900643566640573,
+            "completed_trades": 133,
+            "win_rate": 0.556390977443609,
+            "profit_factor": 1.292083185084252,
+            "total_fees": 19986.780844452947,
+            "total_funding": -2183.0711864269897,
+            "bankrupt": false,
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.16666666666666666,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.02270151498926215
+              },
+              {
+                "label": "2025-02",
+                "return": -0.012528867618647035
+              },
+              {
+                "label": "2025-03",
+                "return": -0.18190416496934436
+              },
+              {
+                "label": "2025-04",
+                "return": 0.16213629792811945
+              },
+              {
+                "label": "2025-05",
+                "return": 0.2763004734224867
+              },
+              {
+                "label": "2025-06",
+                "return": 0.04641234368311883
+              },
+              {
+                "label": "2025-07",
+                "return": 0.19398209602403652
+              },
+              {
+                "label": "2025-08",
+                "return": 0.2694501038913723
+              },
+              {
+                "label": "2025-09",
+                "return": -0.0326395003888098
+              },
+              {
+                "label": "2025-10",
+                "return": 0.04195873974036493
+              },
+              {
+                "label": "2025-11",
+                "return": -0.15615909170065342
+              },
+              {
+                "label": "2025-12",
+                "return": -0.006075875358796655
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 3,
+            "direction": "long_only",
+            "threshold": 0.02806045673787594,
+            "threshold_quantile": 0.8,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 1,
+            "confirmation_bars": 1,
+            "exposure": 1.0,
+            "monthly_loss_limit": 0.075,
+            "id": "continuous-long-h3-q0p80-smooth1-hold1-confirm1-exp1-loss0p075"
+          },
+          "score": [
+            0.08333333333333333,
+            0.16666666666666666,
+            0.6666666666666666,
+            -0.1487364484747205,
+            0.18671150121779628,
+            -0.2505274065047104
+          ],
+          "selection_2024": {
+            "net_return": 0.18671150121779628,
+            "max_drawdown": -0.22766375341245068,
+            "completed_trades": 100,
+            "win_rate": 0.47,
+            "profit_factor": 1.1787291025848623,
+            "total_fees": 11424.429875076503,
+            "total_funding": -3539.13149493387,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.04699373567876494
+              },
+              {
+                "label": "2024-02",
+                "return": 0.07780951590602561
+              },
+              {
+                "label": "2024-03",
+                "return": -0.011024819547505166
+              },
+              {
+                "label": "2024-04",
+                "return": 0.03879885036918746
+              },
+              {
+                "label": "2024-05",
+                "return": 0.053511726336247525
+              },
+              {
+                "label": "2024-06",
+                "return": 0.025559541936510145
+              },
+              {
+                "label": "2024-07",
+                "return": 0.0017662794162313477
+              },
+              {
+                "label": "2024-08",
+                "return": -0.1487364484747205
+              },
+              {
+                "label": "2024-09",
+                "return": -0.04920689709215607
+              },
+              {
+                "label": "2024-10",
+                "return": 0.004529743835501797
+              },
+              {
+                "label": "2024-11",
+                "return": 0.26622780348944824
+              },
+              {
+                "label": "2024-12",
+                "return": -0.08134840827112266
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.6586839943079091,
+            "max_drawdown": -0.2505274065047104,
+            "completed_trades": 105,
+            "win_rate": 0.638095238095238,
+            "profit_factor": 1.5974481150665534,
+            "total_fees": 15788.79576360734,
+            "total_funding": -761.3095507977501,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.14714621417882334
+              },
+              {
+                "label": "2025-02",
+                "return": 0.14507894490634726
+              },
+              {
+                "label": "2025-03",
+                "return": -0.13071331582862178
+              },
+              {
+                "label": "2025-04",
+                "return": 0.14248677387433992
+              },
+              {
+                "label": "2025-05",
+                "return": 0.04936146401647987
+              },
+              {
+                "label": "2025-06",
+                "return": -0.007593676035191542
+              },
+              {
+                "label": "2025-07",
+                "return": 0.07482705837233954
+              },
+              {
+                "label": "2025-08",
+                "return": 0.2619492370969862
+              },
+              {
+                "label": "2025-09",
+                "return": 0.005922802953502095
+              },
+              {
+                "label": "2025-10",
+                "return": -0.07724553441916092
+              },
+              {
+                "label": "2025-11",
+                "return": -0.08582876812096893
+              },
+              {
+                "label": "2025-12",
+                "return": 0.060771322345565586
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 3,
+            "direction": "long_short",
+            "threshold": 0.02806045673787594,
+            "threshold_quantile": 0.8,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 1,
+            "confirmation_bars": 1,
+            "exposure": 1.0,
+            "monthly_loss_limit": 0.075,
+            "id": "continuous-long-short-h3-q0p80-smooth1-hold1-confirm1-exp1-loss0p075"
+          },
+          "score": [
+            0.08333333333333333,
+            0.16666666666666666,
+            0.6666666666666666,
+            -0.1487364484747205,
+            0.18671150121779628,
+            -0.2505274065047104
+          ],
+          "selection_2024": {
+            "net_return": 0.18671150121779628,
+            "max_drawdown": -0.22766375341245068,
+            "completed_trades": 100,
+            "win_rate": 0.47,
+            "profit_factor": 1.1787291025848623,
+            "total_fees": 11424.429875076503,
+            "total_funding": -3539.13149493387,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.04699373567876494
+              },
+              {
+                "label": "2024-02",
+                "return": 0.07780951590602561
+              },
+              {
+                "label": "2024-03",
+                "return": -0.011024819547505166
+              },
+              {
+                "label": "2024-04",
+                "return": 0.03879885036918746
+              },
+              {
+                "label": "2024-05",
+                "return": 0.053511726336247525
+              },
+              {
+                "label": "2024-06",
+                "return": 0.025559541936510145
+              },
+              {
+                "label": "2024-07",
+                "return": 0.0017662794162313477
+              },
+              {
+                "label": "2024-08",
+                "return": -0.1487364484747205
+              },
+              {
+                "label": "2024-09",
+                "return": -0.04920689709215607
+              },
+              {
+                "label": "2024-10",
+                "return": 0.004529743835501797
+              },
+              {
+                "label": "2024-11",
+                "return": 0.26622780348944824
+              },
+              {
+                "label": "2024-12",
+                "return": -0.08134840827112266
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.6586839943079091,
+            "max_drawdown": -0.2505274065047104,
+            "completed_trades": 105,
+            "win_rate": 0.638095238095238,
+            "profit_factor": 1.5974481150665534,
+            "total_fees": 15788.79576360734,
+            "total_funding": -761.3095507977501,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.14714621417882334
+              },
+              {
+                "label": "2025-02",
+                "return": 0.14507894490634726
+              },
+              {
+                "label": "2025-03",
+                "return": -0.13071331582862178
+              },
+              {
+                "label": "2025-04",
+                "return": 0.14248677387433992
+              },
+              {
+                "label": "2025-05",
+                "return": 0.04936146401647987
+              },
+              {
+                "label": "2025-06",
+                "return": -0.007593676035191542
+              },
+              {
+                "label": "2025-07",
+                "return": 0.07482705837233954
+              },
+              {
+                "label": "2025-08",
+                "return": 0.2619492370969862
+              },
+              {
+                "label": "2025-09",
+                "return": 0.005922802953502095
+              },
+              {
+                "label": "2025-10",
+                "return": -0.07724553441916092
+              },
+              {
+                "label": "2025-11",
+                "return": -0.08582876812096893
+              },
+              {
+                "label": "2025-12",
+                "return": 0.060771322345565586
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 3,
+            "direction": "long_only",
+            "threshold": 0.02806045673787594,
+            "threshold_quantile": 0.8,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 3,
+            "confirmation_bars": 1,
+            "exposure": 1.0,
+            "monthly_loss_limit": 0.1,
+            "id": "continuous-long-h3-q0p80-smooth1-hold3-confirm1-exp1-loss0p10"
+          },
+          "score": [
+            0.08333333333333333,
+            0.16666666666666666,
+            0.6666666666666666,
+            -0.1504278284155828,
+            0.3208218226020291,
+            -0.2240467380553771
+          ],
+          "selection_2024": {
+            "net_return": 0.3208218226020291,
+            "max_drawdown": -0.2240467380553771,
+            "completed_trades": 84,
+            "win_rate": 0.5238095238095238,
+            "profit_factor": 1.2808437640406225,
+            "total_fees": 10298.446289436984,
+            "total_funding": -4633.871039230103,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.039595895446951586
+              },
+              {
+                "label": "2024-02",
+                "return": 0.08383798759511778
+              },
+              {
+                "label": "2024-03",
+                "return": 0.03334126115307724
+              },
+              {
+                "label": "2024-04",
+                "return": 0.0856217128528345
+              },
+              {
+                "label": "2024-05",
+                "return": 0.09607335079054262
+              },
+              {
+                "label": "2024-06",
+                "return": 0.016363739311111507
+              },
+              {
+                "label": "2024-07",
+                "return": 0.012805741463991155
+              },
+              {
+                "label": "2024-08",
+                "return": -0.1504278284155828
+              },
+              {
+                "label": "2024-09",
+                "return": -0.05364335115830263
+              },
+              {
+                "label": "2024-10",
+                "return": -0.004519535596144474
+              },
+              {
+                "label": "2024-11",
+                "return": 0.3370479225674964
+              },
+              {
+                "label": "2024-12",
+                "return": -0.1345474694928506
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.5826999730017667,
+            "max_drawdown": -0.22302051791291877,
+            "completed_trades": 94,
+            "win_rate": 0.5531914893617021,
+            "profit_factor": 1.4159561363264992,
+            "total_fees": 12561.929681693382,
+            "total_funding": -1099.2642472139507,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.0827071187766502
+              },
+              {
+                "label": "2025-02",
+                "return": 0.11872173531963862
+              },
+              {
+                "label": "2025-03",
+                "return": -0.13071207946903043
+              },
+              {
+                "label": "2025-04",
+                "return": 0.06113741313135819
+              },
+              {
+                "label": "2025-05",
+                "return": 0.10268437530420156
+              },
+              {
+                "label": "2025-06",
+                "return": -0.08171172376458535
+              },
+              {
+                "label": "2025-07",
+                "return": 0.06294792467512436
+              },
+              {
+                "label": "2025-08",
+                "return": 0.2779471864130357
+              },
+              {
+                "label": "2025-09",
+                "return": 0.016429005470238758
+              },
+              {
+                "label": "2025-10",
+                "return": -0.011459300798461034
+              },
+              {
+                "label": "2025-11",
+                "return": -0.059877263145407304
+              },
+              {
+                "label": "2025-12",
+                "return": 0.09023203623578102
+              }
+            ]
+          }
+        },
+        {
+          "candidate": {
+            "horizon_bars": 3,
+            "direction": "long_short",
+            "threshold": 0.02806045673787594,
+            "threshold_quantile": 0.8,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 3,
+            "confirmation_bars": 1,
+            "exposure": 1.0,
+            "monthly_loss_limit": 0.1,
+            "id": "continuous-long-short-h3-q0p80-smooth1-hold3-confirm1-exp1-loss0p10"
+          },
+          "score": [
+            0.08333333333333333,
+            0.16666666666666666,
+            0.6666666666666666,
+            -0.1504278284155828,
+            0.3208218226020291,
+            -0.2240467380553771
+          ],
+          "selection_2024": {
+            "net_return": 0.3208218226020291,
+            "max_drawdown": -0.2240467380553771,
+            "completed_trades": 84,
+            "win_rate": 0.5238095238095238,
+            "profit_factor": 1.2808437640406225,
+            "total_fees": 10298.446289436984,
+            "total_funding": -4633.871039230103,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2024-01",
+                "return": 0.039595895446951586
+              },
+              {
+                "label": "2024-02",
+                "return": 0.08383798759511778
+              },
+              {
+                "label": "2024-03",
+                "return": 0.03334126115307724
+              },
+              {
+                "label": "2024-04",
+                "return": 0.0856217128528345
+              },
+              {
+                "label": "2024-05",
+                "return": 0.09607335079054262
+              },
+              {
+                "label": "2024-06",
+                "return": 0.016363739311111507
+              },
+              {
+                "label": "2024-07",
+                "return": 0.012805741463991155
+              },
+              {
+                "label": "2024-08",
+                "return": -0.1504278284155828
+              },
+              {
+                "label": "2024-09",
+                "return": -0.05364335115830263
+              },
+              {
+                "label": "2024-10",
+                "return": -0.004519535596144474
+              },
+              {
+                "label": "2024-11",
+                "return": 0.3370479225674964
+              },
+              {
+                "label": "2024-12",
+                "return": -0.1345474694928506
+              }
+            ]
+          },
+          "selection_2025": {
+            "net_return": 0.5826999730017667,
+            "max_drawdown": -0.22302051791291877,
+            "completed_trades": 94,
+            "win_rate": 0.5531914893617021,
+            "profit_factor": 1.4159561363264992,
+            "total_fees": 12561.929681693382,
+            "total_funding": -1099.2642472139507,
+            "bankrupt": false,
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.08333333333333333,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.0827071187766502
+              },
+              {
+                "label": "2025-02",
+                "return": 0.11872173531963862
+              },
+              {
+                "label": "2025-03",
+                "return": -0.13071207946903043
+              },
+              {
+                "label": "2025-04",
+                "return": 0.06113741313135819
+              },
+              {
+                "label": "2025-05",
+                "return": 0.10268437530420156
+              },
+              {
+                "label": "2025-06",
+                "return": -0.08171172376458535
+              },
+              {
+                "label": "2025-07",
+                "return": 0.06294792467512436
+              },
+              {
+                "label": "2025-08",
+                "return": 0.2779471864130357
+              },
+              {
+                "label": "2025-09",
+                "return": 0.016429005470238758
+              },
+              {
+                "label": "2025-10",
+                "return": -0.011459300798461034
+              },
+              {
+                "label": "2025-11",
+                "return": -0.059877263145407304
+              },
+              {
+                "label": "2025-12",
+                "return": 0.09023203623578102
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "portfolio_selection": {
+    "status": "selected",
+    "eligible_components": [
+      "btc_perp",
+      "eth_perp"
+    ],
+    "candidate_count": 25,
+    "eligible_count": 23,
+    "selected": {
+      "allocations": {
+        "eth_perp": 1.0
+      },
+      "leverage": 1.5,
+      "score": [
+        0.16666666666666666,
+        0.5,
+        0.5833333333333334,
+        -0.13353143238300275,
+        0.6649931528252985,
+        -0.30248448253439625
+      ],
+      "selection_2024": {
+        "initial_equity": 100000.0,
+        "final_equity": 166499.31528252986,
+        "net_return": 0.6649931528252985,
+        "max_drawdown": -0.2360434695066505,
+        "bankrupt": false,
+        "daily_returns": [],
+        "monthly_returns": [
+          {
+            "label": "2024-01",
+            "return": 0.01353289180923997
+          },
+          {
+            "label": "2024-02",
+            "return": 0.19753364015716157
+          },
+          {
+            "label": "2024-03",
+            "return": 0.13836644143457258
+          },
+          {
+            "label": "2024-04",
+            "return": 0.021522681451023044
+          },
+          {
+            "label": "2024-05",
+            "return": -0.07939384764848927
+          },
+          {
+            "label": "2024-06",
+            "return": 0.06843351973108425
+          },
+          {
+            "label": "2024-07",
+            "return": -0.1049327755674648
+          },
+          {
+            "label": "2024-08",
+            "return": 0.25126764944413027
+          },
+          {
+            "label": "2024-09",
+            "return": -0.014993250577100653
+          },
+          {
+            "label": "2024-10",
+            "return": -0.11276006124124478
+          },
+          {
+            "label": "2024-11",
+            "return": 0.40601350210749193
+          },
+          {
+            "label": "2024-12",
+            "return": -0.12851532408310237
+          }
+        ],
+        "positive_month_rate": 0.5833333333333334,
+        "target_25pct_month_rate": 0.16666666666666666,
+        "worst_month": -0.12851532408310237
+      },
+      "selection_2025": {
+        "initial_equity": 100000.0,
+        "final_equity": 224257.297462646,
+        "net_return": 1.24257297462646,
+        "max_drawdown": -0.30248448253439625,
+        "bankrupt": false,
+        "daily_returns": [],
+        "monthly_returns": [
+          {
+            "label": "2025-01",
+            "return": 0.034052272483893246
+          },
+          {
+            "label": "2025-02",
+            "return": -0.018587007981586082
+          },
+          {
+            "label": "2025-03",
+            "return": -0.128398005325312
+          },
+          {
+            "label": "2025-04",
+            "return": 0.25378650431731603
+          },
+          {
+            "label": "2025-05",
+            "return": 0.40086744150861436
+          },
+          {
+            "label": "2025-06",
+            "return": 0.06134942856587546
+          },
+          {
+            "label": "2025-07",
+            "return": 0.25280446652428884
+          },
+          {
+            "label": "2025-08",
+            "return": 0.3346699813116163
+          },
+          {
+            "label": "2025-09",
+            "return": -0.09887657012352984
+          },
+          {
+            "label": "2025-10",
+            "return": 0.049531607992856184
+          },
+          {
+            "label": "2025-11",
+            "return": -0.13353143238300275
+          },
+          {
+            "label": "2025-12",
+            "return": -0.0074206246734442914
+          }
+        ],
+        "positive_month_rate": 0.5833333333333334,
+        "target_25pct_month_rate": 0.3333333333333333,
+        "worst_month": -0.13353143238300275
+      }
+    },
+    "confirmation_used_for_selection": false
+  },
+  "confirmation": {
+    "components": {
+      "eth_perp": {
+        "net_return": -0.33919675145636363,
+        "max_drawdown": -0.37804119891842103,
+        "completed_trades": 53,
+        "win_rate": 0.41509433962264153,
+        "profit_factor": 0.42881417574996217,
+        "total_fees": 4432.76057219879,
+        "total_funding": -220.62354428557265,
+        "bankrupt": false,
+        "positive_month_rate": 0.125,
+        "target_25pct_month_rate": 0.0,
+        "monthly_returns": [
+          {
+            "label": "2026-01",
+            "return": -0.013486497895934627
+          },
+          {
+            "label": "2026-02",
+            "return": -0.08787644040963317
+          },
+          {
+            "label": "2026-03",
+            "return": -0.07776278481906519
+          },
+          {
+            "label": "2026-04",
+            "return": 0.0019374143950428655
+          },
+          {
+            "label": "2026-05",
+            "return": -0.07847711568437925
+          },
+          {
+            "label": "2026-06",
+            "return": -0.09930425671919055
+          },
+          {
+            "label": "2026-07",
+            "return": -0.030720883951105175
+          },
+          {
+            "label": "2026-08",
+            "return": -0.012131507591976252
+          }
+        ]
+      }
+    },
+    "portfolio": {
+      "initial_equity": 100000.0,
+      "final_equity": 49120.48728154546,
+      "net_return": -0.5087951271845454,
+      "max_drawdown": -0.5375642192064205,
+      "bankrupt": false,
+      "daily_returns": [
+        {
+          "label": "2026-01-01",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-02",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-03",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-04",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-05",
+          "return": 0.012595972023257174
+        },
+        {
+          "label": "2026-01-06",
+          "return": 0.02051985002210345
+        },
+        {
+          "label": "2026-01-07",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-08",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-09",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-10",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-11",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-12",
+          "return": -0.01271805742470047
+        },
+        {
+          "label": "2026-01-13",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-14",
+          "return": 0.0297039298216963
+        },
+        {
+          "label": "2026-01-15",
+          "return": -0.001029205601661134
+        },
+        {
+          "label": "2026-01-16",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-17",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-18",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-19",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-20",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-21",
+          "return": -0.011167031082929293
+        },
+        {
+          "label": "2026-01-22",
+          "return": -0.015107790311972324
+        },
+        {
+          "label": "2026-01-23",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-24",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-25",
+          "return": 0.0
+        },
+        {
+          "label": "2026-01-26",
+          "return": 0.012124062131848214
+        },
+        {
+          "label": "2026-01-27",
+          "return": 0.020530210106791038
+        },
+        {
+          "label": "2026-01-28",
+          "return": -0.011315048012635422
+        },
+        {
+          "label": "2026-01-29",
+          "return": -0.042105277521775133
+        },
+        {
+          "label": "2026-01-30",
+          "return": -0.01899174663974991
+        },
+        {
+          "label": "2026-01-31",
+          "return": -0.001057200355879359
+        },
+        {
+          "label": "2026-02-01",
+          "return": -0.112473286748204
+        },
+        {
+          "label": "2026-02-02",
+          "return": -0.02281462101271329
+        },
+        {
+          "label": "2026-02-03",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-04",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-05",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-06",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-07",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-08",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-09",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-10",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-11",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-12",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-13",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-14",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-15",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-16",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-17",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-18",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-19",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-20",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-21",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-22",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-23",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-24",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-25",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-26",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-27",
+          "return": 0.0
+        },
+        {
+          "label": "2026-02-28",
+          "return": 0.0
+        },
+        {
+          "label": "2026-03-01",
+          "return": 0.021043374040203237
+        },
+        {
+          "label": "2026-03-02",
+          "return": -0.016168361981230277
+        },
+        {
+          "label": "2026-03-03",
+          "return": -0.04698275657104864
+        },
+        {
+          "label": "2026-03-04",
+          "return": 0.0551829684907081
+        },
+        {
+          "label": "2026-03-05",
+          "return": -0.040011346478511525
+        },
+        {
+          "label": "2026-03-06",
+          "return": -0.0011329163727156403
+        },
+        {
+          "label": "2026-03-07",
+          "return": -0.025022678027957306
+        },
+        {
+          "label": "2026-03-08",
+          "return": -0.023651606955457878
+        },
+        {
+          "label": "2026-03-09",
+          "return": 0.04790398846679313
+        },
+        {
+          "label": "2026-03-10",
+          "return": 0.03384279136012091
+        },
+        {
+          "label": "2026-03-11",
+          "return": 0.02995779027791943
+        },
+        {
+          "label": "2026-03-12",
+          "return": 0.01905223132720955
+        },
+        {
+          "label": "2026-03-13",
+          "return": -0.027543511649482162
+        },
+        {
+          "label": "2026-03-14",
+          "return": 0.005632598656887419
+        },
+        {
+          "label": "2026-03-15",
+          "return": 0.0
+        },
+        {
+          "label": "2026-03-16",
+          "return": 0.013539843807476427
+        },
+        {
+          "label": "2026-03-17",
+          "return": -0.017770645909798904
+        },
+        {
+          "label": "2026-03-18",
+          "return": 0.0
+        },
+        {
+          "label": "2026-03-19",
+          "return": -0.06250694927603356
+        },
+        {
+          "label": "2026-03-20",
+          "return": 0.0
+        },
+        {
+          "label": "2026-03-21",
+          "return": 0.0
+        },
+        {
+          "label": "2026-03-22",
+          "return": 0.0
+        },
+        {
+          "label": "2026-03-23",
+          "return": 0.011716910956749944
+        },
+        {
+          "label": "2026-03-24",
+          "return": 0.00905420364695797
+        },
+        {
+          "label": "2026-03-25",
+          "return": -0.0038729770906715862
+        },
+        {
+          "label": "2026-03-26",
+          "return": -0.034968718641079415
+        },
+        {
+          "label": "2026-03-27",
+          "return": -0.05854463094358934
+        },
+        {
+          "label": "2026-03-28",
+          "return": -0.008659482213069435
+        },
+        {
+          "label": "2026-03-29",
+          "return": 0.0
+        },
+        {
+          "label": "2026-03-30",
+          "return": 0.0
+        },
+        {
+          "label": "2026-03-31",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-01",
+          "return": 0.021149696117731872
+        },
+        {
+          "label": "2026-04-02",
+          "return": -0.003043928304024867
+        },
+        {
+          "label": "2026-04-03",
+          "return": 0.006166042730744253
+        },
+        {
+          "label": "2026-04-04",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-05",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-06",
+          "return": 0.024816478527869067
+        },
+        {
+          "label": "2026-04-07",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-08",
+          "return": 0.0028511364737876838
+        },
+        {
+          "label": "2026-04-09",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-10",
+          "return": 0.020441715486441654
+        },
+        {
+          "label": "2026-04-11",
+          "return": -0.024284970371669722
+        },
+        {
+          "label": "2026-04-12",
+          "return": -0.04928583352459821
+        },
+        {
+          "label": "2026-04-13",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-14",
+          "return": -0.006595804543044087
+        },
+        {
+          "label": "2026-04-15",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-16",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-17",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-18",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-19",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-20",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-21",
+          "return": 0.011114826135161567
+        },
+        {
+          "label": "2026-04-22",
+          "return": 0.007151546320847983
+        },
+        {
+          "label": "2026-04-23",
+          "return": -0.022551018346556977
+        },
+        {
+          "label": "2026-04-24",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-25",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-26",
+          "return": 0.0
+        },
+        {
+          "label": "2026-04-27",
+          "return": 0.009484560980097718
+        },
+        {
+          "label": "2026-04-28",
+          "return": -0.006366404724688863
+        },
+        {
+          "label": "2026-04-29",
+          "return": 0.01504161001623948
+        },
+        {
+          "label": "2026-04-30",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-01",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-02",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-03",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-04",
+          "return": -0.027269479383755384
+        },
+        {
+          "label": "2026-05-05",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-06",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-07",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-08",
+          "return": -0.007770901832297228
+        },
+        {
+          "label": "2026-05-09",
+          "return": 0.004090268521889888
+        },
+        {
+          "label": "2026-05-10",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-11",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-12",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-13",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-14",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-15",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-16",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-17",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-18",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-19",
+          "return": -0.01917429327808998
+        },
+        {
+          "label": "2026-05-20",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-21",
+          "return": -0.00013905248896470756
+        },
+        {
+          "label": "2026-05-22",
+          "return": -0.05443777765368597
+        },
+        {
+          "label": "2026-05-23",
+          "return": -0.033003640157166565
+        },
+        {
+          "label": "2026-05-24",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-25",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-26",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-27",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-28",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-29",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-30",
+          "return": 0.0
+        },
+        {
+          "label": "2026-05-31",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-01",
+          "return": -0.001876788258224553
+        },
+        {
+          "label": "2026-06-02",
+          "return": -0.08274103485565854
+        },
+        {
+          "label": "2026-06-03",
+          "return": -0.016480416019803407
+        },
+        {
+          "label": "2026-06-04",
+          "return": 0.013407770244342332
+        },
+        {
+          "label": "2026-06-05",
+          "return": -0.09675965356645194
+        },
+        {
+          "label": "2026-06-06",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-07",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-08",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-09",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-10",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-11",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-12",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-13",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-14",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-15",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-16",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-17",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-18",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-19",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-20",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-21",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-22",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-23",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-24",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-25",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-26",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-27",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-28",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-29",
+          "return": 0.0
+        },
+        {
+          "label": "2026-06-30",
+          "return": 0.0
+        },
+        {
+          "label": "2026-07-01",
+          "return": -0.013814502922458666
+        },
+        {
+          "label": "2026-07-02",
+          "return": 0.03486651656988062
+        },
+        {
+          "label": "2026-07-03",
+          "return": 0.0
+        },
+        {
+          "label": "2026-07-04",
+          "return": 0.0
+        },
+        {
+          "label": "2026-07-05",
+          "return": 0.0
+        },
+        {
+          "label": "2026-07-06",
+          "return": 0.0
+        },
+        {
+          "label": "2026-07-07",
+          "return": 0.0
+        },
+        {
+          "label": "2026-07-08",
+          "return": 0.0
+        },
+        {
+          "label": "2026-07-09",
+          "return": 0.0
+        },
+        {
+          "label": "2026-07-10",
+          "return": -0.006321182327953813
+        },
+        {
+          "label": "2026-07-11",
+          "return": -0.0013454125223114198
+        },
+        {
+          "label": "2026-07-12",
+          "return": 0.0
+        },
+        {
+          "label": "2026-07-13",
+          "return": 0.0
+        },
+        {
+          "label": "2026-07-14",
+          "return": 0.0143006100851225
+        },
+        {
+          "label": "2026-07-15",
+          "return": -0.038822449073256535
+        },
+        {
+          "label": "2026-07-16",
+          "return": -0.00040204066331296927
+        },
+        {
+          "label": "2026-07-17",
+          "return": 0.0
+        },
+        {
+          "label": "2026-07-18",
+          "return": 0.0
+        },
+        {
+          "label": "2026-07-19",
+          "return": 0.0
+        },
+        {
+          "label": "2026-07-20",
+          "return": 0.0
+        },
+        {
+          "label": "2026-07-21",
+          "return": 0.005622844084510755
+        },
+        {
+          "label": "2026-07-22",
+          "return": 0.011449365862530841
+        },
+        {
+          "label": "2026-07-23",
+          "return": -0.05703585177882966
+        },
+        {
+          "label": "2026-07-24",
+          "return": -0.018481393684446307
+        },
+        {
+          "label": "2026-07-25",
+          "return": 0.003995738050466018
+        },
+        {
+          "label": "2026-07-26",
+          "return": 0.0396921534503108
+        },
+        {
+          "label": "2026-07-27",
+          "return": -0.05945824606385846
+        },
+        {
+          "label": "2026-07-28",
+          "return": 0.03177924895742957
+        },
+        {
+          "label": "2026-07-29",
+          "return": -0.012176945772427495
+        },
+        {
+          "label": "2026-07-30",
+          "return": 0.011675033876660088
+        },
+        {
+          "label": "2026-07-31",
+          "return": 0.0
+        },
+        {
+          "label": "2026-08-01",
+          "return": 0.0
+        },
+        {
+          "label": "2026-08-02",
+          "return": -0.022894528767405487
+        },
+        {
+          "label": "2026-08-03",
+          "return": 0.0
+        },
+        {
+          "label": "2026-08-04",
+          "return": 0.0
+        },
+        {
+          "label": "2026-08-05",
+          "return": 0.0417222357757017
+        },
+        {
+          "label": "2026-08-06",
+          "return": -0.005051288802876467
+        },
+        {
+          "label": "2026-08-07",
+          "return": 0.010199451111025774
+        },
+        {
+          "label": "2026-08-08",
+          "return": 0.0006244836824899943
+        },
+        {
+          "label": "2026-08-09",
+          "return": -0.006898593851071849
+        },
+        {
+          "label": "2026-08-10",
+          "return": -0.04015066031826553
+        }
+      ],
+      "monthly_returns": [
+        {
+          "label": "2026-01",
+          "return": -0.020229746843901938
+        },
+        {
+          "label": "2026-02",
+          "return": -0.13272187234970279
+        },
+        {
+          "label": "2026-03",
+          "return": -0.12351995582864188
+        },
+        {
+          "label": "2026-04",
+          "return": 0.0032380865730983564
+        },
+        {
+          "label": "2026-05",
+          "return": -0.13099223420160627
+        },
+        {
+          "label": "2026-06",
+          "return": -0.1757732767756641
+        },
+        {
+          "label": "2026-07",
+          "return": -0.059422389356081816
+        },
+        {
+          "label": "2026-08",
+          "return": -0.024181620220975752
+        }
+      ],
+      "positive_month_rate": 0.125,
+      "target_25pct_month_rate": 0.0,
+      "worst_month": -0.1757732767756641
+    }
+  },
+  "stress_confirmation": {
+    "components": {
+      "eth_perp": {
+        "net_return": -0.36263761503387687,
+        "max_drawdown": -0.39335824786452683,
+        "completed_trades": 52,
+        "win_rate": 0.4230769230769231,
+        "profit_factor": 0.3790165635271713,
+        "total_fees": 8534.2012009356,
+        "total_funding": -242.8743068820845,
+        "bankrupt": false,
+        "positive_month_rate": 0.0,
+        "target_25pct_month_rate": 0.0,
+        "monthly_returns": [
+          {
+            "label": "2026-01",
+            "return": -0.026054001901456104
+          },
+          {
+            "label": "2026-02",
+            "return": -0.076638597000732
+          },
+          {
+            "label": "2026-03",
+            "return": -0.09349356420187888
+          },
+          {
+            "label": "2026-04",
+            "return": -0.01556032072299621
+          },
+          {
+            "label": "2026-05",
+            "return": -0.08439979087806643
+          },
+          {
+            "label": "2026-06",
+            "return": -0.0765295527726404
+          },
+          {
+            "label": "2026-07",
+            "return": -0.04460819872461952
+          },
+          {
+            "label": "2026-08",
+            "return": -0.01687341993204285
+          }
+        ]
+      }
+    },
+    "portfolio": {
+      "initial_equity": 100000.0,
+      "final_equity": 45604.357744918474,
+      "net_return": -0.5439564225508152,
+      "max_drawdown": -0.5633299467256111,
+      "bankrupt": false,
+      "daily_returns": [],
+      "monthly_returns": [
+        {
+          "label": "2026-01",
+          "return": -0.03908100285218416
+        },
+        {
+          "label": "2026-02",
+          "return": -0.1165163584084102
+        },
+        {
+          "label": "2026-03",
+          "return": -0.1485573958599573
+        },
+        {
+          "label": "2026-04",
+          "return": -0.02632368104242251
+        },
+        {
+          "label": "2026-05",
+          "return": -0.14435902791312583
+        },
+        {
+          "label": "2026-06",
+          "return": -0.1400703018398803
+        },
+        {
+          "label": "2026-07",
+          "return": -0.08767820092405541
+        },
+        {
+          "label": "2026-08",
+          "return": -0.034730698358383126
+        }
+      ],
+      "positive_month_rate": 0.0,
+      "target_25pct_month_rate": 0.0,
+      "worst_month": -0.1485573958599573
+    }
+  },
+  "target": {
+    "monthly_return": 0.25,
+    "minimum_confirmation_target_month_rate": 0.5,
+    "achieved": false
+  },
+  "decision": {
+    "status": "rejected_after_confirmation",
+    "approved_for_trading": false,
+    "reason": "No development-selected continuous factor portfolio passed reused confirmation monthly coverage, drawdown, and stress-cost gates."
+  },
+  "limitations": [
+    "2026 has been viewed repeatedly and is confirmation evidence, not a fresh holdout.",
+    "The 2023 interval controls boosting duration and calibrates score quantiles.",
+    "XGBoost checkpoints are stored under data/ and are not committed.",
+    "Liquidation, borrowing costs, market impact, and exchange failure are not modeled."
+  ],
+  "id": "continuous-factor-20260815-112759-832242"
+}
