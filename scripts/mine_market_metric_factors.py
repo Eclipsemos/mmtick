@@ -48,6 +48,7 @@ HYBRID_LEVERAGES = tuple(
 SHORTLIST_SIZE = 100
 TARGET_MONTHLY_RETURN = Decimal("0.15")
 MIN_TARGET_MONTH_RATE = Decimal("0.5")
+MIN_DEVELOPMENT_TARGET_RATE = Decimal("0.25")
 
 
 @dataclass(frozen=True)
@@ -248,7 +249,10 @@ def _hybrid_search(
 
 def _hybrid_eligible(results: dict[str, PortfolioResult]) -> bool:
     return all(
-        result.net_return > 0 and result.max_drawdown >= Decimal("-0.35") and not result.bankrupt
+        result.net_return > 0
+        and result.max_drawdown >= Decimal("-0.35")
+        and result.target_month_rate >= MIN_DEVELOPMENT_TARGET_RATE
+        and not result.bankrupt
         for result in results.values()
     )
 
@@ -359,6 +363,7 @@ def _report(
             "development_eligible_count": len(eligible),
             "shortlist_size": len(shortlist),
             "hybrid_eligible_count": len(hybrid_rows),
+            "minimum_development_target_rate": float(MIN_DEVELOPMENT_TARGET_RATE),
             "periods": {
                 "discovery": [_timestamp(DISCOVERY[0]), _timestamp(DISCOVERY[1])],
                 "validation": [_timestamp(VALIDATION[0]), _timestamp(VALIDATION[1])],
@@ -381,6 +386,8 @@ def _report(
                 "The metric hybrid met reused confirmation gates; fresh forward evidence is "
                 "required."
                 if achieved
+                else "No hybrid met the two-segment development target-month consistency gate."
+                if selected is None
                 else "The development-selected market-metric hybrid reached fewer than half of "
                 "the 2026 months at the 15% target, despite positive base and stressed "
                 "total returns."

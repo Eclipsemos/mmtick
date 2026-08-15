@@ -1,0 +1,73 @@
+{
+  "generated_at": "2026-08-15T13:44:40.613694+00:00",
+  "strategy": "Binance market-metric sleeve plus frozen four-factor anchor",
+  "data": {
+    "btc_perp": {
+      "price_first": "2020-01-01T00:00:00+00:00",
+      "price_last": "2026-08-11T23:59:59.999000+00:00",
+      "metric_first": "2021-01-01T00:00:00+00:00",
+      "metric_last": "2026-08-14T23:59:59.999000+00:00",
+      "metric_4h_bars": 10395
+    },
+    "eth_perp": {
+      "price_first": "2020-01-01T00:00:00+00:00",
+      "price_last": "2026-08-11T23:59:59.999000+00:00",
+      "metric_first": "2021-12-01T00:00:00+00:00",
+      "metric_last": "2026-08-14T23:59:59.999000+00:00",
+      "metric_4h_bars": 8391
+    }
+  },
+  "execution": {
+    "signal": "closed 4h metric snapshot and trailing normalization",
+    "fill": "next 4h open",
+    "base_fee_bps": 5.0,
+    "base_slippage_bps": 2.0,
+    "stress_fee_bps": 10.0,
+    "stress_slippage_bps": 5.0,
+    "historical_funding": true,
+    "trading_integration": false
+  },
+  "selection": {
+    "candidate_count": 960,
+    "development_eligible_count": 140,
+    "shortlist_size": 100,
+    "hybrid_eligible_count": 0,
+    "minimum_development_target_rate": 0.25,
+    "periods": {
+      "discovery": [
+        "2021-01-01T00:00:00+00:00",
+        "2023-12-31T23:59:59.999000+00:00"
+      ],
+      "validation": [
+        "2024-01-01T00:00:00+00:00",
+        "2025-12-31T23:59:59.999000+00:00"
+      ],
+      "confirmation": [
+        "2026-01-01T00:00:00+00:00",
+        "2026-08-10T23:59:59.999000+00:00"
+      ]
+    },
+    "confirmation_used_for_selection": false,
+    "selected": null
+  },
+  "confirmation": null,
+  "stress_confirmation": null,
+  "target": {
+    "monthly_return": 0.15,
+    "minimum_target_month_rate": 0.5,
+    "achieved": false
+  },
+  "decision": {
+    "status": "rejected_after_confirmation",
+    "approved_for_trading": false,
+    "reason": "No hybrid met the two-segment development target-month consistency gate."
+  },
+  "limitations": [
+    "2026 is reused confirmation evidence and is not a fresh holdout.",
+    "Binance metric archives start in 2021 for BTC and December 2021 for ETH.",
+    "Incomplete 5m metric rows are skipped rather than imputed.",
+    "The hybrid uses fixed-capital sleeves and does not model shared-margin liquidation.",
+    "Open interest and account ratios are exchange-reported aggregates, not auditable positions."
+  ],
+  "id": "market-metric-factor-20260815-134440-614079"
+}

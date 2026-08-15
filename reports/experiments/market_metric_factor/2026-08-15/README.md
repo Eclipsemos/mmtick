@@ -31,6 +31,10 @@ selected parameters did not change: only January, February, and June reached +15
 2026 confirmation (3/8 months). Its base-cost compounded monthly rate was about 14.02%, and the
 10+5 bps stress rate was about 12.53%, so this is not a verified every-month +15% solution.
 
+A stricter rerun required both 2021-2023 and 2024-2025 development segments to have at least 25%
+of months above +15%. It produced `0` eligible hybrids, so no configuration was promoted from that
+protocol either. See `market-metric-factor-20260815-134440-614079`.
+
 ## Reproduce
 
 ```bash

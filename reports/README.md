@@ -120,7 +120,8 @@ market data.
   and trader-crowding factors added to the frozen four-factor anchor. The development-selected
   hybrid remained profitable under 10+5 bps stress costs but reached the 25% target in only 3/8
   reused 2026 months. A rerun against the lowered 15% monthly objective still reached only 3/8
-  months and remains rejected and research-only.
+  months; requiring 25% target-month coverage in each development segment produced no eligible
+  hybrid. It remains rejected and research-only.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
