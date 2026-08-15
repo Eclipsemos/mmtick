@@ -184,6 +184,12 @@ market data.
   baseline. Of 762 development-risk-eligible controls, the best reused-confirmation diagnostic
   reaches 6/7 under both cost models: May and July clear +15%, while June remains negative. This
   is the closest valid-protocol result so far, but it is not a strict solution or trading approval.
+- `experiments/volatility_guarded_trend/2026-08-15/`: a causal prior-day BTC realized-volatility
+  guard reduces the BTC daily MACD trend sleeve from 55% in calm states to 5% in volatile states.
+  The predeclared coarse grid has 720 development-risk-eligible controls and 0 strict 7/7 results;
+  a confirmation-informed local neighborhood has 134 eligible controls and 5 reused-confirmation
+  7/7 results. The representative 7/7 is explicitly marked post-confirmation refinement, not
+  approved for trading, and partial August is excluded.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment

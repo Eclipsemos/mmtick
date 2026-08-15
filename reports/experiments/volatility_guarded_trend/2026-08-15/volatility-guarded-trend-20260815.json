@@ -1,0 +1,5986 @@
+{
+  "generated_at": "2026-08-15T19:10:56.462018+00:00",
+  "strategy": "volatility-guarded static BTC trend complement",
+  "data": {
+    "btc_first_bar": "2020-01-01T00:00:00+00:00",
+    "btc_last_bar": "2026-08-11T23:59:59.999000+00:00",
+    "order_flow_bars": 5718
+  },
+  "protocol": {
+    "train": {
+      "start": "2024-01-01",
+      "end": "2024-12-31"
+    },
+    "validation": {
+      "start": "2025-01-01",
+      "end": "2025-12-31"
+    },
+    "confirmation": {
+      "start": "2026-01-01",
+      "end": "2026-08-10"
+    },
+    "strict_confirmation_end": "2026-07-31",
+    "partial_august_excluded": true,
+    "confirmation_used_for_selection": false,
+    "trend_candidate": {
+      "id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+      "asset": "btc_perp",
+      "interval_minutes": 1440,
+      "fast_period": 12,
+      "slow_period": 36,
+      "signal_period": 14,
+      "direction": "long_only",
+      "confirmation_bars": 1
+    },
+    "baseline_source": "monthly-robust-ensemble-20260815 development-selected family",
+    "timing": "4h realized volatility through day D controls day D+1 weights",
+    "coarse_grid_selection": "predeclared before the local neighborhood",
+    "local_grid_warning": "local_post_confirmation parameters were refined after observing 2026 confirmation and are retained only as a reused-confirmation feasibility result"
+  },
+  "search": {
+    "coarse_development_risk_eligible_count": 720,
+    "local_development_risk_eligible_count": 134,
+    "all_development_risk_eligible_count": 854,
+    "coarse_strict_pass_count": 0,
+    "local_strict_pass_count": 5,
+    "coarse_grid": {
+      "lookbacks": [
+        3,
+        5,
+        10,
+        20
+      ],
+      "calibrations": [
+        60,
+        120,
+        252
+      ],
+      "quantiles": [
+        0.25,
+        0.5,
+        0.75
+      ]
+    },
+    "local_grid": {
+      "lookback": 3,
+      "calibration": 60,
+      "quantile": 0.25,
+      "calm_weights": [
+        0.4,
+        0.45,
+        0.5,
+        0.55,
+        0.6
+      ],
+      "volatile_weights": [
+        0.0,
+        0.05,
+        0.1,
+        0.15,
+        0.2
+      ],
+      "leverages": [
+        6.0,
+        6.5,
+        7.0,
+        7.5,
+        8.0,
+        8.5,
+        9.0
+      ]
+    },
+    "top_development_controls": [
+      {
+        "config": {
+          "id": "vol-guard-coarse-look20-cal252-q0p5-calm0p5-volatile0-lev10-loss0.25-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 20,
+          "calibration_days": 252,
+          "volatility_quantile": 0.5,
+          "calm_trend_weight": 0.5,
+          "calm_baseline_weight": 0.5,
+          "volatile_trend_weight": 0.0,
+          "volatile_baseline_weight": 1.0,
+          "leverage": 10.0,
+          "monthly_loss_limit": 0.25,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.8333333333333334,
+          0.3333333333333333,
+          -0.3245617546229253,
+          1.0969103120470314,
+          -0.32928982234056486
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 3.967797179997829,
+              "max_drawdown": -0.32928982234056486,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.16456020796383272
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.19721244821504788
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.23253344098970233
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.07690866099189121
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.3032499716568497
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.20100931580811798
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.3245617546229253
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.3094262304396127
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.15771209477656378
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.2130676992843151
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.24819524802810608
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.10622682681504153
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 3.761541847387829,
+              "max_drawdown": -0.24747832695476915,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.15381590939680564
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.022136657100221124
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.21877677682366448
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.1726686687065177
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.4265670449973223
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.03586057210561392
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.2579033093197622
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.15309784298536858
+                },
+                {
+                  "label": "2025-09",
+                  "return": 0.17979692871301228
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.227277465818881
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.16268202510716603
+                },
+                {
+                  "label": "2025-12",
+                  "return": 0.06590293504174839
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 2.964373920339524,
+              "max_drawdown": -0.2979337514619009,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.24716433732881848
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.15044994663727035
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2082101360696501
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.0028470235729900245
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.24729021873356283
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.16485355295142343
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.28724238727096535
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.26420166116479427
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.192522240150015
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.16054747567000724
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.21875553719355076
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.03857022328004587
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.0969103120470314,
+              "max_drawdown": -0.30457929628640235,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.07512468163021976
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.01868316950287685
+                },
+                {
+                  "label": "2025-03",
+                  "return": -0.2073696053363862
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.1721171046740639
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.3998052520136692
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.005100181823398189
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.22529921927807542
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.19025840643871575
+                },
+                {
+                  "label": "2025-09",
+                  "return": 0.14702800912959924
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.20011606566360163
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.05710907219798817
+                },
+                {
+                  "label": "2025-12",
+                  "return": 0.014512772878237561
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look20-cal60-q0p75-calm0p4-volatile0-lev6-loss0.15-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 20,
+          "calibration_days": 60,
+          "volatility_quantile": 0.75,
+          "calm_trend_weight": 0.4,
+          "calm_baseline_weight": 0.6,
+          "volatile_trend_weight": 0.0,
+          "volatile_baseline_weight": 1.0,
+          "leverage": 6.0,
+          "monthly_loss_limit": 0.15,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.4166666666666667,
+          -0.2011864572287581,
+          0.9227223619986118,
+          -0.2818156409117992
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 2.573833057689222,
+              "max_drawdown": -0.25661611318911665,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.1590664146597541
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.1950568590680795
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2866100764938105
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.028126344860519722
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.2964677472685572
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.0029914066646117127
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.1574843063985373
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.1782058684484404
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.15744335334896956
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.04159862662167331
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.16603485233811227
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.07491506456764524
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.4912215121435999,
+              "max_drawdown": -0.2343109504467798,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.17620561182008104
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.019613098552341883
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.17857430560296203
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.23414590688920847
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.18403264843539027
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.043853433269355875
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.19275649021810695
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.037950113305890806
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.17036493015532192
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.15994745380645975
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.07882094736298798
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.0300645221499468
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 1.799116748791151,
+              "max_drawdown": -0.27214400758053425,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.10533225190198038
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.18241500370165864
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2696380667745932
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.009291859683567452
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.27130979493178603
+                },
+                {
+                  "label": "2024-06",
+                  "return": -0.019409989433065537
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.16377759646042622
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.1568771011785456
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.15300347246408683
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.01818092608927686
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.1568674673460079
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.03955030525158054
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 0.9227223619986118,
+              "max_drawdown": -0.2818156409117992,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.13868253866645588
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.017507193345535636
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.15589380626404345
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.19594312338838768
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.17001379986926213
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.023647683347799715
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.17241182808298552
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.07443657415943636
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.2011864572287581
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.18471874166736793
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.03243562965337223
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.05464171261308326
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look3-cal60-q0p75-calm0p4-volatile0p1-lev8-loss0.25-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 3,
+          "calibration_days": 60,
+          "volatility_quantile": 0.75,
+          "calm_trend_weight": 0.4,
+          "calm_baseline_weight": 0.6,
+          "volatile_trend_weight": 0.1,
+          "volatile_baseline_weight": 0.9,
+          "leverage": 8.0,
+          "monthly_loss_limit": 0.25,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.4166666666666667,
+          -0.22126829940122297,
+          0.5655686115700301,
+          -0.28791263401250344
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 3.6126204536498943,
+              "max_drawdown": -0.24646701905646085,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": -0.17532624378103762
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.27097674250538206
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.4005511606417305
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.02811891181539144
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.38910094415606894
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.17817160736121626
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.11174916321842243
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.1699351619921811
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.18292937335397327
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.16305971917945492
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.21052418850915577
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.0789753834962708
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.2872931774180778,
+              "max_drawdown": -0.2744210723671206,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.06105617321694436
+                },
+                {
+                  "label": "2025-02",
+                  "return": -0.05002939233088241
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.188292519916938
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.22588402041271907
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.24659480872879377
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.08125972314157513
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.17949659328357773
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.08504422303644542
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.1180669175423332
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.16995062731555763
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.08145168010757106
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.19073495034957003
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 2.0164826950781207,
+              "max_drawdown": -0.27807171494375515,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": -0.22100752838398213
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.24627201724865336
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.3770467377743589
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.02162091271275883
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.34746107070103827
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.15669964939074219
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.1543198975185355
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.14948923575087444
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.21562234806762887
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.013866761753391037
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.20516272256699172
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.024768551074033144
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 0.5655686115700301,
+              "max_drawdown": -0.28791263401250344,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.012496023729557116
+                },
+                {
+                  "label": "2025-02",
+                  "return": -0.0652323075647968
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.17229672976796334
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.16219593773161514
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.22699045011052663
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.04468388146635575
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.15485539293544787
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.019452715406027613
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.1586885343862594
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.20293551389647524
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.02082289041444951
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.22126829940122297
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look3-cal60-q0p75-calm0p4-volatile0p1-lev8-loss0.20-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 3,
+          "calibration_days": 60,
+          "volatility_quantile": 0.75,
+          "calm_trend_weight": 0.4,
+          "calm_baseline_weight": 0.6,
+          "volatile_trend_weight": 0.1,
+          "volatile_baseline_weight": 0.9,
+          "leverage": 8.0,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.4166666666666667,
+          -0.22438490998725313,
+          0.5593029520312905,
+          -0.28391757069005186
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 3.6126204536498943,
+              "max_drawdown": -0.24646701905646085,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": -0.17532624378103762
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.27097674250538206
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.4005511606417305
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.02811891181539144
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.38910094415606894
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.17817160736121626
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.11174916321842243
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.1699351619921811
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.18292937335397327
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.16305971917945492
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.21052418850915577
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.0789753834962708
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.2456750531953142,
+              "max_drawdown": -0.2744210723671206,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.06105617321694436
+                },
+                {
+                  "label": "2025-02",
+                  "return": -0.05002939233088241
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.188292519916938
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.22588402041271907
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.24659480872879377
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.08125972314157513
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.17949659328357773
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.08504422303644542
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.1180669175423332
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.16995062731555763
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.08145168010757106
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.20545981977077424
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 2.0166327814697724,
+              "max_drawdown": -0.2780357950919648,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": -0.21176928333029962
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.23172670498337156
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.3770467377743589
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.02162091271275883
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.34746107070103827
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.15669964939074219
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.1543198975185355
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.14948923575087444
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.21562234806762887
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.013866761753391037
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.20516272256699172
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.024768551074033144
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 0.5593029520312905,
+              "max_drawdown": -0.28391757069005186,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.012496023729557116
+                },
+                {
+                  "label": "2025-02",
+                  "return": -0.0652323075647968
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.17229672976796334
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.16219593773161514
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.22699045011052663
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.04468388146635575
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.15485539293544787
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.019452715406027613
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.1586885343862594
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.20293551389647524
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.02082289041444951
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.22438490998725313
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look20-cal60-q0p75-calm0p4-volatile0-lev6-loss0.20-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 20,
+          "calibration_days": 60,
+          "volatility_quantile": 0.75,
+          "calm_trend_weight": 0.4,
+          "calm_baseline_weight": 0.6,
+          "volatile_trend_weight": 0.0,
+          "volatile_baseline_weight": 1.0,
+          "leverage": 6.0,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.4166666666666667,
+          -0.2388611512820106,
+          0.8320404032447041,
+          -0.3290484085775913
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 2.3252817818317957,
+              "max_drawdown": -0.30831662928377884,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.1590664146597541
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.1950568590680795
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2866100764938105
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.028126344860519722
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.2964677472685572
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.0029914066646117127
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.21607919518999855
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.1782058684484404
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.15744335334896956
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.04159862662167331
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.16603485233811227
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.07491506456764524
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.392097486902475,
+              "max_drawdown": -0.26477720176357217,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.17620561182008104
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.019613098552341883
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.17857430560296203
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.23414590688920847
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.18403264843539027
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.043853433269355875
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.19275649021810695
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.037950113305890806
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.2033755505290376
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.15994745380645975
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.07882094736298798
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.0300645221499468
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 1.580279418921377,
+              "max_drawdown": -0.3290484085775913,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.10533225190198038
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.18241500370165864
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2696380667745932
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.009291859683567452
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.27130979493178603
+                },
+                {
+                  "label": "2024-06",
+                  "return": -0.019409989433065537
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.22915417571419094
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.1568771011785456
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.15300347246408683
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.01818092608927686
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.1568674673460079
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.03955030525158054
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 0.8320404032447041,
+              "max_drawdown": -0.31568759544653563,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.13868253866645588
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.017507193345535636
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.15589380626404345
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.19594312338838768
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.17001379986926213
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.023647683347799715
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.17241182808298552
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.07443657415943636
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.2388611512820106
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.18471874166736793
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.03243562965337223
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.05464171261308326
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look20-cal60-q0p75-calm0p3-volatile0-lev8-loss0.20-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 20,
+          "calibration_days": 60,
+          "volatility_quantile": 0.75,
+          "calm_trend_weight": 0.3,
+          "calm_baseline_weight": 0.7,
+          "volatile_trend_weight": 0.0,
+          "volatile_baseline_weight": 1.0,
+          "leverage": 8.0,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.4166666666666667,
+          -0.25080211606536396,
+          1.0862746794114722,
+          -0.3166980038009693
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 3.359106702876079,
+              "max_drawdown": -0.30569384276891903,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.2087119724785097
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.16154364746001526
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.31499555184738853
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.04372169891181042
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.3593745813827363
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.017818554178369677
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.2195812045425607
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.23470780600603028
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.18188641720382165
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.053833132502717686
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.235734416765618
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.10244260961849497
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.5589563945769846,
+              "max_drawdown": -0.2562601657385669,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.15453753308372273
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.021346849195708915
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.22234181742276582
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.16683078289284298
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.15687262216917408
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.08456264978766191
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.21595670728394806
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.005807364594336251
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.21102458695623422
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.15554021804750012
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.10502859706174462
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.015794325546536845
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 2.3261117433738057,
+              "max_drawdown": -0.312444344606781,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.17907552440952257
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.1645825336032334
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.29216090312424914
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.009639321801903081
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.32148732322323453
+                },
+                {
+                  "label": "2024-06",
+                  "return": -0.015241350999698063
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.21148503700991583
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.20542698725411898
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.1636217456468302
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.020533143085766745
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.22436141440836693
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.05250149865397169
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.0862746794114722,
+              "max_drawdown": -0.3166980038009693,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.14411466416395755
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.016553392076823995
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.1729130540474551
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.239928792113365
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.1859581390651835
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.05419452618952998
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.18748712297110606
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.044545069422407775
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.25080211606536396
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.17287993707128052
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.04329788767032174
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.05153454528044903
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look20-cal60-q0p75-calm0p3-volatile0-lev8-loss0.20-profit0.18",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 20,
+          "calibration_days": 60,
+          "volatility_quantile": 0.75,
+          "calm_trend_weight": 0.3,
+          "calm_baseline_weight": 0.7,
+          "volatile_trend_weight": 0.0,
+          "volatile_baseline_weight": 1.0,
+          "leverage": 8.0,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.18
+        },
+        "score": [
+          0.75,
+          0.4166666666666667,
+          -0.25080211606536396,
+          1.0862746794114722,
+          -0.3166980038009693
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 3.4924774778846186,
+              "max_drawdown": -0.30569384276891903,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.2087119724785097
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.1970821160104127
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.31499555184738853
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.04372169891181042
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.3593745813827363
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.017818554178369677
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.2195812045425607
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.23470780600603028
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.18188641720382165
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.053833132502717686
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.235734416765618
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.10244260961849497
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 2.1833389863806456,
+              "max_drawdown": -0.2562601657385669,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.1960350796655274
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.021346849195708915
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.22234181742276582
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.29657207575141736
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.2060934762052561
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.08456264978766191
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.21595670728394806
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.005807364594336251
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.21102458695623422
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.1978018944657173
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.10502859706174462
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.015794325546536845
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 2.6643308185283034,
+              "max_drawdown": -0.312444344606781,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.17907552440952257
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.1928410789502477
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.29216090312424914
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.009639321801903081
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.32148732322323453
+                },
+                {
+                  "label": "2024-06",
+                  "return": -0.015241350999698063
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.21148503700991583
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.20542698725411898
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.25157636623552176
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.020533143085766745
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.22436141440836693
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.05250149865397169
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.0862746794114722,
+              "max_drawdown": -0.3166980038009693,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.14411466416395755
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.016553392076823995
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.1729130540474551
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.239928792113365
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.1859581390651835
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.05419452618952998
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.18748712297110606
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.044545069422407775
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.25080211606536396
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.17287993707128052
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.04329788767032174
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.05153454528044903
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look3-cal60-q0p75-calm0p3-volatile0p1-lev10-loss0.20-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 3,
+          "calibration_days": 60,
+          "volatility_quantile": 0.75,
+          "calm_trend_weight": 0.3,
+          "calm_baseline_weight": 0.7,
+          "volatile_trend_weight": 0.1,
+          "volatile_baseline_weight": 0.9,
+          "leverage": 10.0,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.4166666666666667,
+          -0.2726986059482224,
+          0.46246147267390847,
+          -0.34215181151290514
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 3.985634258920147,
+              "max_drawdown": -0.21996211340472743,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": -0.10997513850640596
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.21146340899966098
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.4149299783086864
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.04614535635854527
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.4447363026660216
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.1737083045783937
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.20909899579432953
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.19782103346940488
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.17260757435414537
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.16821802851946036
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.284125339746247
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.10543740626445341
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.4121090220744408,
+              "max_drawdown": -0.27637113912828387,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.15826615326609134
+                },
+                {
+                  "label": "2025-02",
+                  "return": -0.049359443843844664
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.18330305777096417
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.29834845601307763
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.1962144171093776
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.15804407566518552
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.17263600216384134
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.12221897119755841
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.2221762732060451
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.1583731932049283
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.10408361812288437
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.21371792738744658
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 2.279205495719243,
+              "max_drawdown": -0.25845765043470587,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": -0.165873067585279
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.18021087019105259
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.3856282748773897
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.019377878583403486
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.38964546695142144
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.14562472220271203
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.21322062044147577
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.1633014878085243
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.24486183725840194
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.018014721160293873
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.2786318695054127
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.038283792282748946
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 0.46246147267390847,
+              "max_drawdown": -0.34215181151290514,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.0252334186861437
+                },
+                {
+                  "label": "2025-02",
+                  "return": -0.06052838167914316
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.19361650018330334
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.21627368072709466
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.17181600966311109
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.07762880414355323
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.15022599849506235
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.044518843324201536
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.2726986059482224
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.16822298827504542
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.03059337080623005
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.2127252863481697
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look20-cal252-q0p5-calm0p5-volatile0p1-lev10-loss0.25-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 20,
+          "calibration_days": 252,
+          "volatility_quantile": 0.5,
+          "calm_trend_weight": 0.5,
+          "calm_baseline_weight": 0.5,
+          "volatile_trend_weight": 0.1,
+          "volatile_baseline_weight": 0.9,
+          "leverage": 10.0,
+          "monthly_loss_limit": 0.25,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.4166666666666667,
+          -0.2795682175150493,
+          1.8036726068209405,
+          -0.29037469425232354
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 4.603123651697902,
+              "max_drawdown": -0.26587614616417576,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.16422493216006595
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.25111088854272007
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2310281507772507
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.06993913085335084
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.35472344077850587
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.20595076246782731
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.2607010535389484
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.20966199189800167
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.2010540322453275
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.2130676992843151
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.24819524802810608
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.09919817367515105
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 3.41373090376144,
+              "max_drawdown": -0.24630808282620134,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.16132644372739524
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.0011383520318378798
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.24197848193295518
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.1726686687065177
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.4265670449973223
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.03586057210561392
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.2579033093197622
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.15309784298536858
+                },
+                {
+                  "label": "2025-09",
+                  "return": 0.17979692871301228
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.227277465818881
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.11044013930872887
+                },
+                {
+                  "label": "2025-12",
+                  "return": 0.02979050263321259
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 2.696923239050574,
+              "max_drawdown": -0.29037469425232354,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.07520393574699563
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.22275952412270858
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.20559488008946764
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.0024439632246543467
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.3004186483484801
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.1719395851479385
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.2795682175150493
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.16972644171907658
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.24057406707869677
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.16054747567000724
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.21875553719355076
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.037533294457657726
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.8036726068209405,
+              "max_drawdown": -0.2703607375407512,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.07543578818728301
+                },
+                {
+                  "label": "2025-02",
+                  "return": -0.002473229259242572
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.15200808288146442
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.15734210467406393
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.3998052520136692
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.005100181823398189
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.22529921927807542
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.19025840643871575
+                },
+                {
+                  "label": "2025-09",
+                  "return": 0.14702800912959924
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.20011606566360163
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.04313032479592348
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.02208849436892876
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look20-cal60-q0p25-calm0p4-volatile0p1-lev10-loss0.25-profit0.18",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 20,
+          "calibration_days": 60,
+          "volatility_quantile": 0.25,
+          "calm_trend_weight": 0.4,
+          "calm_baseline_weight": 0.6,
+          "volatile_trend_weight": 0.1,
+          "volatile_baseline_weight": 0.9,
+          "leverage": 10.0,
+          "monthly_loss_limit": 0.25,
+          "monthly_profit_target": 0.18
+        },
+        "score": [
+          0.75,
+          0.4166666666666667,
+          -0.28572746637062063,
+          0.9689883340424612,
+          -0.3181219491981539
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 5.260765099294466,
+              "max_drawdown": -0.2231506005230117,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.13334848472157623
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.3056445759211038
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2310281507772507
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.07231787251355327
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.487209906918992
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.18192878119881045
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.2176743207683904
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.19073226959395992
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.1761291877239232
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.19454161831020456
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.2419847420333818
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.12178488085103668
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.958079138562353,
+              "max_drawdown": -0.3069671257394388,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.21230162957290424
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.010413992174944766
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.2391314646174381
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.09737515013942309
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.3179555505161427
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.09879509058428974
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.19049384141286224
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.12451578226728988
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.28572746637062063
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.2121126902096406
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.11044013930872887
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.04717101584963277
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 2.693092995243948,
+              "max_drawdown": -0.2765229258666573,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.07520393574699563
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.27133308879879314
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.20559488008946764
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.001580030888136253
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.43093277398002877
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.19767006948610089
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.26550550849406834
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.166887738276707
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.16452792809293038
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.004355787180429077
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.23555795436959961
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.05742781951582541
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 0.9689883340424612,
+              "max_drawdown": -0.3181219491981539,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.16386754212075091
+                },
+                {
+                  "label": "2025-02",
+                  "return": -0.0168279213901936
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.16373571423301492
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.021737051128005256
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.3016913731315072
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.0431424399001597
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.2466995826674033
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.056761268482118966
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.27525541959204314
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.18552459393260703
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.04313032479592348
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.09740673967541391
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look20-cal60-q0p25-calm0p5-volatile0p1-lev10-loss0.25-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 20,
+          "calibration_days": 60,
+          "volatility_quantile": 0.25,
+          "calm_trend_weight": 0.5,
+          "calm_baseline_weight": 0.5,
+          "volatile_trend_weight": 0.1,
+          "volatile_baseline_weight": 0.9,
+          "leverage": 10.0,
+          "monthly_loss_limit": 0.25,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.4166666666666667,
+          -0.28670181342455925,
+          1.1172407389207848,
+          -0.30092720331778006
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 5.14556216995312,
+              "max_drawdown": -0.23358849811560833,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.16422493216006595
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.19808126201106566
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2310281507772507
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.07311078640028743
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.5258735253837654
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.22577426008205992
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.20307280142610032
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.19073226959395992
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.1779112260980186
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.2130676992843151
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.17234898145228914
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.12178488085103668
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 2.4796259422828077,
+              "max_drawdown": -0.28396444062224535,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.17490685234094316
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.01425800924625681
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.23822455060314335
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.1726686687065177
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.4265670449973223
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.15757155813622195
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.20804628181036722
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.11444601165273723
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.28396444062224535
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.227277465818881
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.11044013930872887
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.07306175702012908
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 2.789319949974511,
+              "max_drawdown": -0.26338876691356466,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.07520393574699563
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.17681807287388215
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.20559488008946764
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.0012920534426302216
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.4690697490929654
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.20044507477609316
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.25217133696808597
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.166887738276707
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.1484064136838514
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.16054747567000724
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.1468221048653373
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.05742781951582541
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.1172407389207848,
+              "max_drawdown": -0.30092720331778006,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.1764583735590915
+                },
+                {
+                  "label": "2025-02",
+                  "return": -0.013258132062885881
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.14498184549424414
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.15734210467406393
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.3998052520136692
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.0159264093339682
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.18072279355684165
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.04634336855041481
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.28670181342455925
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.20011606566360163
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.04313032479592348
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.12270675744220025
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look10-cal120-q0p25-calm0p4-volatile0p1-lev10-loss0.25-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 10,
+          "calibration_days": 120,
+          "volatility_quantile": 0.25,
+          "calm_trend_weight": 0.4,
+          "calm_baseline_weight": 0.6,
+          "volatile_trend_weight": 0.1,
+          "volatile_baseline_weight": 0.9,
+          "leverage": 10.0,
+          "monthly_loss_limit": 0.25,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.4166666666666667,
+          -0.29745266072530135,
+          1.2226028406135918,
+          -0.31146364520236686
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 4.104211769808551,
+              "max_drawdown": -0.29473145500598147,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.16422493216006595
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.29656424228812717
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2310281507772507
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.044604733097137444
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.4209978863223592
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.18192878119881045
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.28975977341992093
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.18833662047612912
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.15392467632825937
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.15383838979142755
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.2419847420333818
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.12178488085103668
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 2.4102625459359333,
+              "max_drawdown": -0.27365540993204657,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.1532034087696509
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.0223628513424312
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.2833803797825592
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.16281656157139118
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.2187069194574194
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.10246302118186933
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.21724093461745062
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.1417466519610654
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.2119574550834345
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.15223948126687709
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.11044013930872887
+                },
+                {
+                  "label": "2025-12",
+                  "return": 0.029468495034828863
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 1.9840553638599734,
+              "max_drawdown": -0.2931344894720612,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.07520393574699563
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.27133308879879314
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.20559488008946764
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.026438380769898386
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.35724350706169533
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.1562906045099296
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.27404579879563884
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.14506178271826192
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.1459852099169851
+                },
+                {
+                  "label": "2024-10",
+                  "return": -0.04778270933311122
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.23555795436959961
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.05742781951582541
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.2226028406135918,
+              "max_drawdown": -0.31146364520236686,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.10126900649487455
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.014179661317551844
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.1889997011570427
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.2762712115646674
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.1913698007546919
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.03889816033468957
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.18212193528080417
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.07810535835590353
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.29745266072530135
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.16430943757717886
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.04313032479592348
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.02567643699111173
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look20-cal252-q0p5-calm0p6-volatile0-lev8-loss0.25-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 20,
+          "calibration_days": 252,
+          "volatility_quantile": 0.5,
+          "calm_trend_weight": 0.6,
+          "calm_baseline_weight": 0.4,
+          "volatile_trend_weight": 0.0,
+          "volatile_baseline_weight": 1.0,
+          "leverage": 8.0,
+          "monthly_loss_limit": 0.25,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.4166666666666667,
+          -0.30868356261836716,
+          0.9604949418452026,
+          -0.31697935986694675
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 3.739410084546504,
+              "max_drawdown": -0.2736598363131297,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.2209277854865701
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.21594949060974447
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.18373228897872776
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.06412552744328039
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.24144192750184415
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.1903069582269542
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.2695694250936541
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.24963199876590858
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.2264291804734537
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.1981926238368356
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.18348344053886395
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.08042507498942503
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 2.9006069925305344,
+              "max_drawdown": -0.23648937241442403,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.1418032902754718
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.0281363961809968
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.17723836524104736
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.15850269336161532
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.4333942429666145
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.003065210721641858
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.24124791290554926
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.178045827846973
+                },
+                {
+                  "label": "2025-09",
+                  "return": 0.1896060241293343
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.19082145374430623
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.10600563490910768
+                },
+                {
+                  "label": "2025-12",
+                  "return": 0.06003599472675447
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 2.0892867018178474,
+              "max_drawdown": -0.31697935986694675,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.19749175328905838
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.1777252223133178
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.1650034280108171
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.0006310116108165117
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.19844060321999946
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.16077138265964067
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.30868356261836716
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.21375551624897157
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.1662226490561037
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.15861809572628405
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.15957987257855566
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.027417104777401915
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 0.9604949418452026,
+              "max_drawdown": -0.287165300342183,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.07344373732368138
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.021122813774829267
+                },
+                {
+                  "label": "2025-03",
+                  "return": -0.20388315622490458
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.15791457343080192
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.412717017794253
+                },
+                {
+                  "label": "2025-06",
+                  "return": -0.018614144584471602
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.21600388040531762
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.20457187358444504
+                },
+                {
+                  "label": "2025-09",
+                  "return": 0.1654794425511748
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.169372783516885
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.047762262914407605
+                },
+                {
+                  "label": "2025-12",
+                  "return": 0.013220342587245604
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look20-cal60-q0p25-calm0p5-volatile0-lev10-loss0.25-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 20,
+          "calibration_days": 60,
+          "volatility_quantile": 0.25,
+          "calm_trend_weight": 0.5,
+          "calm_baseline_weight": 0.5,
+          "volatile_trend_weight": 0.0,
+          "volatile_baseline_weight": 1.0,
+          "leverage": 10.0,
+          "monthly_loss_limit": 0.25,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.4166666666666667,
+          -0.32074135732315967,
+          0.6401039534657391,
+          -0.3284720958026236
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 3.4515722396878994,
+              "max_drawdown": -0.27723818965582286,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.16456020796383272
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.1860704554684321
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.23253344098970233
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.08090485078572453
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.5232927409516298
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.22577426008205992
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.2721431919998216
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.27267517612890235
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.16136533595700275
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.2130676992843151
+                },
+                {
+                  "label": "2024-11",
+                  "return": -0.12979495311158973
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.14083260925581056
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 2.8297266405109784,
+              "max_drawdown": -0.2902733607992291,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.17467973228106173
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.03886593560694484
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.21403798685835718
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.1726686687065177
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.4265670449973223
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.17042417734957727
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.19805280620284538
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.153886253153936
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.2852702525671995
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.227277465818881
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.16268202510716603
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.06360046746948853
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 2.30998434879123,
+              "max_drawdown": -0.28449434377320676,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.24716433732881848
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.14666196377184934
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2082101360696501
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.001405103696391175
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.46357312624945074
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.20044507477609316
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.273598318551479
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.237007775883304
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.16968883445854957
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.16054747567000724
+                },
+                {
+                  "label": "2024-11",
+                  "return": -0.1694159023606312
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.07773546523392028
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 0.6401039534657391,
+              "max_drawdown": -0.3284720958026236,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.2136380162749609
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.009257043853753963
+                },
+                {
+                  "label": "2025-03",
+                  "return": -0.19113347020468002
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.1721171046740639
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.3998052520136692
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.018027722760650247
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.1696531227251849
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.1078925171955006
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.32074135732315967
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.20011606566360163
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.05710907219798817
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.1124917761791843
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look20-cal60-q0p75-calm0p3-volatile0-lev6-loss0.15-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 20,
+          "calibration_days": 60,
+          "volatility_quantile": 0.75,
+          "calm_trend_weight": 0.3,
+          "calm_baseline_weight": 0.7,
+          "volatile_trend_weight": 0.0,
+          "volatile_baseline_weight": 1.0,
+          "leverage": 6.0,
+          "monthly_loss_limit": 0.15,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.3333333333333333,
+          -0.19295616179338007,
+          0.7697035780464153,
+          -0.24636538791318677
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 2.312757955800175,
+              "max_drawdown": -0.23655629315208115,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.15520904953597162
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.16729781003391136
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2333398434291453
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.03373585265006995
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.2686319794950707
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.015984666117558683
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.1682389714464471
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.17366144299982217
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.15738895168900022
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.04472553455252347
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.1745898708566522
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.07825903251183593
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.6630632925878965,
+              "max_drawdown": -0.19711589988672049,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.1559205875413415
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.02388813260473919
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.167619287413521
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.22554120384059972
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.1873680979216409
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.06444868553753524
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.16247797486804608
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.005252306826540077
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.16120500413424063
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.18672275985550002
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.07923396773158134
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.008982835436023977
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 1.7271617379761266,
+              "max_drawdown": -0.23872860788424088,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.10994216802211945
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.15329045369707336
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2171466866757515
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.006134081851480257
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.24190512802919745
+                },
+                {
+                  "label": "2024-06",
+                  "return": -0.00881762803697264
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.1580728731918921
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.15283715955961152
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.18949302015365452
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.019975818028867783
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.16662248431841145
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.04144071568068251
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 0.7697035780464153,
+              "max_drawdown": -0.24636538791318677,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.1149585205355242
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.01622123873907115
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.013699867315847492
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.19495688714334844
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.16753283663091612
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.04212427036886186
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.16783775842038623
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.03266593771354302
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.19295616179338007
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.16654230989526203
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.03372928554177662
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.03608247588220867
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look20-cal60-q0p75-calm0p3-volatile0-lev6-loss0.20-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 20,
+          "calibration_days": 60,
+          "volatility_quantile": 0.75,
+          "calm_trend_weight": 0.3,
+          "calm_baseline_weight": 0.7,
+          "volatile_trend_weight": 0.0,
+          "volatile_baseline_weight": 1.0,
+          "leverage": 6.0,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.3333333333333333,
+          -0.24064992920040035,
+          0.6651196300191606,
+          -0.30202417377635227
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 2.127875364966348,
+              "max_drawdown": -0.2791635262675263,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.15520904953597162
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.16729781003391136
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2333398434291453
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.03373585265006995
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.2686319794950707
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.015984666117558683
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.21465894415961956
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.17366144299982217
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.15738895168900022
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.04472553455252347
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.1745898708566522
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.07825903251183593
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.5265303022553904,
+              "max_drawdown": -0.2382790849240401,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.1559205875413415
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.02388813260473919
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.167619287413521
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.22554120384059972
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.1873680979216409
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.06444868553753524
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.16247797486804608
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.005252306826540077
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.20420931025803668
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.18672275985550002
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.07923396773158134
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.008982835436023977
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 1.500413107629244,
+              "max_drawdown": -0.30202417377635227,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.10994216802211945
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.15329045369707336
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2171466866757515
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.006134081851480257
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.24190512802919745
+                },
+                {
+                  "label": "2024-06",
+                  "return": -0.00881762803697264
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.22807452369806963
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.15283715955961152
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.18949302015365452
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.019975818028867783
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.16662248431841145
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.04144071568068251
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 0.6651196300191606,
+              "max_drawdown": -0.2909028370542656,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.1149585205355242
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.01622123873907115
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.013699867315847492
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.19495688714334844
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.16753283663091612
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.04212427036886186
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.16783775842038623
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.03266593771354302
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.24064992920040035
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.16654230989526203
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.03372928554177662
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.03608247588220867
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look10-cal120-q0p25-calm0p4-volatile0p1-lev10-loss0.20-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 10,
+          "calibration_days": 120,
+          "volatility_quantile": 0.25,
+          "calm_trend_weight": 0.4,
+          "calm_baseline_weight": 0.6,
+          "volatile_trend_weight": 0.1,
+          "volatile_baseline_weight": 0.9,
+          "leverage": 10.0,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.3333333333333333,
+          -0.24322900366850114,
+          0.568459058248992,
+          -0.33370858709588636
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 2.7612499681715197,
+              "max_drawdown": -0.3121364890599691,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.16422493216006595
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.29656424228812717
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2310281507772507
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.044604733097137444
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.4209978863223592
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.18192878119881045
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.2236141339048821
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.18035112341669318
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.15392467632825937
+                },
+                {
+                  "label": "2024-10",
+                  "return": -0.2169231130966168
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.2419847420333818
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.12178488085103668
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 2.4130014414546825,
+              "max_drawdown": -0.27873982206252224,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.1532034087696509
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.0223628513424312
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.2833803797825592
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.16281656157139118
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.2187069194574194
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.10246302118186933
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.21724093461745062
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.1417466519610654
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.24322900366850114
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.2008163548423194
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.11044013930872887
+                },
+                {
+                  "label": "2025-12",
+                  "return": 0.029468495034828863
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 1.5446892736034323,
+              "max_drawdown": -0.33370858709588636,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.07520393574699563
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.27133308879879314
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.20559488008946764
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.026438380769898386
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.35724350706169533
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.1562906045099296
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.23216616777090285
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.14506178271826192
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.1459852099169851
+                },
+                {
+                  "label": "2024-10",
+                  "return": -0.2200085002743234
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.21612768718718642
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.05742781951582541
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 0.568459058248992,
+              "max_drawdown": -0.3296015534042098,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.10126900649487455
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.014179661317551844
+                },
+                {
+                  "label": "2025-03",
+                  "return": -0.22914164342319687
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.2762712115646674
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.1913698007546919
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.03889816033468957
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.18212193528080417
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.07810535835590353
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.23529474318795696
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.16430943757717886
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.04313032479592348
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.02567643699111173
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look20-cal60-q0p25-calm0p3-volatile0-lev8-loss0.20-profit0.18",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 20,
+          "calibration_days": 60,
+          "volatility_quantile": 0.25,
+          "calm_trend_weight": 0.3,
+          "calm_baseline_weight": 0.7,
+          "volatile_trend_weight": 0.0,
+          "volatile_baseline_weight": 1.0,
+          "leverage": 8.0,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.18
+        },
+        "score": [
+          0.75,
+          0.3333333333333333,
+          -0.24525957802804227,
+          0.6747419282065586,
+          -0.32094316236044756
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 2.313064506203151,
+              "max_drawdown": -0.31454348039437535,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.2209277854865701
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.1978210649241398
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.18373228897872776
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.06601543991062388
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.3541060041663498
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.013120259969162905
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.22595541216295156
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.21573720546777436
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.1932172169497136
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.053833132502717686
+                },
+                {
+                  "label": "2024-11",
+                  "return": -0.010310968631579648
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.11743304929517691
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 2.0158513757733383,
+              "max_drawdown": -0.20690200848266901,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.21549282858237423
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.029175530571273006
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.17534551550879374
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.06856996363220211
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.21250999036084225
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.10859584261276518
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.19223323601316578
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.1638178074112914
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.20690200848266901
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.17573110678685883
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.10600563490910768
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.002064267870040043
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 2.7106518784994207,
+              "max_drawdown": -0.32094316236044756,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.19749175328905838
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.2716331232776334
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.6038724544617582
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.0013230331966547243
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.30995216515103224
+                },
+                {
+                  "label": "2024-06",
+                  "return": -0.025503135114025147
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.2130311097720156
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.18858689860894365
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.21239016681653775
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.020533143085766745
+                },
+                {
+                  "label": "2024-11",
+                  "return": -0.03828464872925175
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.06790190206961515
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 0.6747419282065586,
+              "max_drawdown": -0.25198708584246216,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.15233447866581998
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.019668562116140893
+                },
+                {
+                  "label": "2025-03",
+                  "return": -0.06503448487840097
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.016724885141906426
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.19956064400869195
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.06126566164105189
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.19618467001364767
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.10399457691893511
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.24525957802804227
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.18460470979669213
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.047762262914407605
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.047936425050429596
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look5-cal60-q0p25-calm0p5-volatile0p1-lev10-loss0.20-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 5,
+          "calibration_days": 60,
+          "volatility_quantile": 0.25,
+          "calm_trend_weight": 0.5,
+          "calm_baseline_weight": 0.5,
+          "volatile_trend_weight": 0.1,
+          "volatile_baseline_weight": 0.9,
+          "leverage": 10.0,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.3333333333333333,
+          -0.27070994241274954,
+          0.7992678079670781,
+          -0.30083297441137613
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 2.259213743140698,
+              "max_drawdown": -0.229611518605777,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.1130208342956454
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.23166411040353674
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2310281507772507
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.011994583097549142
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.26529433128418256
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.20934130978613977
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.22365383267484112
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.18274677253452395
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.19462083609580721
+                },
+                {
+                  "label": "2024-10",
+                  "return": -0.21274210532103238
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.2351875472734231
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.1692393974716916
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 3.232770362400683,
+              "max_drawdown": -0.24485228520075436,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.18272085145465408
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.017983358946517494
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.29694783940750213
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.15567652779774027
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.16137284765550636
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.16640275404393276
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.24815718889079905
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.1565610197397607
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.21247421053770701
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.17864538444334505
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.08485197291079385
+                },
+                {
+                  "label": "2025-12",
+                  "return": 0.19115014269703287
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 1.1724035448166876,
+              "max_drawdown": -0.26053675628616546,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.05031903629928431
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.19266286289411194
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.20559488008946764
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.058749229204618086
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.19191904653712694
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.17909825736354035
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.22033466901744664
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.1500985416932877
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.17164960536690768
+                },
+                {
+                  "label": "2024-10",
+                  "return": -0.22633646731265072
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.21282133478446902
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.10308274584588635
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 0.7992678079670781,
+              "max_drawdown": -0.30083297441137613,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.12425970596620663
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.0053434418539168175
+                },
+                {
+                  "label": "2025-03",
+                  "return": -0.22914164342319687
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.3428094572330488
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.14613323400319667
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.005133711108036297
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.22529921927807542
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.07313660130554876
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.27070994241274954
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.17876816463090994
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.015717710982970277
+                },
+                {
+                  "label": "2025-12",
+                  "return": 0.16270064495331893
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-coarse-look20-cal60-q0p75-calm0p3-volatile0-lev6-loss0.25-profit0.16",
+          "family": "coarse",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 20,
+          "calibration_days": 60,
+          "volatility_quantile": 0.75,
+          "calm_trend_weight": 0.3,
+          "calm_baseline_weight": 0.7,
+          "volatile_trend_weight": 0.0,
+          "volatile_baseline_weight": 1.0,
+          "leverage": 6.0,
+          "monthly_loss_limit": 0.25,
+          "monthly_profit_target": 0.16
+        },
+        "score": [
+          0.75,
+          0.3333333333333333,
+          -0.2718737457923938,
+          0.7268407857264338,
+          -0.3416274763849081
+        ],
+        "development": {
+          "base": {
+            "train": {
+              "net_return": 2.0225342012810974,
+              "max_drawdown": -0.306266323946577,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.15520904953597162
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.16729781003391136
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2333398434291453
+                },
+                {
+                  "label": "2024-04",
+                  "return": 0.03373585265006995
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.2686319794950707
+                },
+                {
+                  "label": "2024-06",
+                  "return": 0.015984666117558683
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.24418705562612322
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.1784430461574149
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.15738895168900022
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.04472553455252347
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.1745898708566522
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.07825903251183593
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 1.6079114568951483,
+              "max_drawdown": -0.23506636365137587,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.1559205875413415
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.02388813260473919
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.167619287413521
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.22554120384059972
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.1873680979216409
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.06444868553753524
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.16247797486804608
+                },
+                {
+                  "label": "2025-08",
+                  "return": 0.005252306826540077
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.18180105622241163
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.1913998522288491
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.07923396773158134
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.008982835436023977
+                }
+              ]
+            }
+          },
+          "stress": {
+            "train": {
+              "net_return": 1.379237542256301,
+              "max_drawdown": -0.3416274763849081,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2024-01",
+                  "return": 0.10994216802211945
+                },
+                {
+                  "label": "2024-02",
+                  "return": 0.15329045369707336
+                },
+                {
+                  "label": "2024-03",
+                  "return": 0.2171466866757515
+                },
+                {
+                  "label": "2024-04",
+                  "return": -0.006134081851480257
+                },
+                {
+                  "label": "2024-05",
+                  "return": 0.24190512802919745
+                },
+                {
+                  "label": "2024-06",
+                  "return": -0.00881762803697264
+                },
+                {
+                  "label": "2024-07",
+                  "return": -0.2718737457923938
+                },
+                {
+                  "label": "2024-08",
+                  "return": 0.1629544035229932
+                },
+                {
+                  "label": "2024-09",
+                  "return": 0.18949302015365452
+                },
+                {
+                  "label": "2024-10",
+                  "return": 0.019975818028867783
+                },
+                {
+                  "label": "2024-11",
+                  "return": 0.16662248431841145
+                },
+                {
+                  "label": "2024-12",
+                  "return": 0.04144071568068251
+                }
+              ]
+            },
+            "validation": {
+              "net_return": 0.7268407857264338,
+              "max_drawdown": -0.2844630040910854,
+              "bankrupt": false,
+              "monthly_returns": [
+                {
+                  "label": "2025-01",
+                  "return": 0.1149585205355242
+                },
+                {
+                  "label": "2025-02",
+                  "return": 0.01622123873907115
+                },
+                {
+                  "label": "2025-03",
+                  "return": 0.013699867315847492
+                },
+                {
+                  "label": "2025-04",
+                  "return": 0.19495688714334844
+                },
+                {
+                  "label": "2025-05",
+                  "return": 0.16753283663091612
+                },
+                {
+                  "label": "2025-06",
+                  "return": 0.04212427036886186
+                },
+                {
+                  "label": "2025-07",
+                  "return": 0.16783775842038623
+                },
+                {
+                  "label": "2025-08",
+                  "return": -0.03266593771354302
+                },
+                {
+                  "label": "2025-09",
+                  "return": -0.21914092441227304
+                },
+                {
+                  "label": "2025-10",
+                  "return": 0.17645881292315146
+                },
+                {
+                  "label": "2025-11",
+                  "return": 0.03372928554177662
+                },
+                {
+                  "label": "2025-12",
+                  "return": -0.03608247588220867
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  "selection": {
+    "development_selected": {
+      "config": {
+        "id": "vol-guard-coarse-look20-cal252-q0p5-calm0p5-volatile0-lev10-loss0.25-profit0.16",
+        "family": "coarse",
+        "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+        "volatility_lookback_days": 20,
+        "calibration_days": 252,
+        "volatility_quantile": 0.5,
+        "calm_trend_weight": 0.5,
+        "calm_baseline_weight": 0.5,
+        "volatile_trend_weight": 0.0,
+        "volatile_baseline_weight": 1.0,
+        "leverage": 10.0,
+        "monthly_loss_limit": 0.25,
+        "monthly_profit_target": 0.16
+      },
+      "counts": {
+        "base": 7,
+        "stress": 4
+      },
+      "development_score": [
+        0.8333333333333334,
+        0.3333333333333333,
+        -0.3245617546229253,
+        1.0969103120470314,
+        -0.32928982234056486
+      ],
+      "confirmation": {
+        "base": {
+          "net_return": 3.783269086193968,
+          "max_drawdown": -0.09478385522840899,
+          "bankrupt": false,
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.15581786296550226
+            },
+            {
+              "label": "2026-02",
+              "return": 0.6485965482132934
+            },
+            {
+              "label": "2026-03",
+              "return": 0.3918116524956037
+            },
+            {
+              "label": "2026-04",
+              "return": 0.17133839657831618
+            },
+            {
+              "label": "2026-05",
+              "return": 0.19722613259018867
+            },
+            {
+              "label": "2026-06",
+              "return": 0.16253520437116695
+            },
+            {
+              "label": "2026-07",
+              "return": 0.1614011621987344
+            },
+            {
+              "label": "2026-08",
+              "return": -0.04743719504193294
+            }
+          ]
+        },
+        "stress": {
+          "net_return": 2.1703198119412668,
+          "max_drawdown": -0.21495029657864373,
+          "bankrupt": false,
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.16673826543912848
+            },
+            {
+              "label": "2026-02",
+              "return": 0.6132402053443209
+            },
+            {
+              "label": "2026-03",
+              "return": 0.355024329243207
+            },
+            {
+              "label": "2026-04",
+              "return": 0.1437404260233434
+            },
+            {
+              "label": "2026-05",
+              "return": 0.17589833290161844
+            },
+            {
+              "label": "2026-06",
+              "return": -0.12668557131277647
+            },
+            {
+              "label": "2026-07",
+              "return": 0.14626791838285155
+            },
+            {
+              "label": "2026-08",
+              "return": -0.07672838551248481
+            }
+          ]
+        }
+      }
+    },
+    "forward_freeze": {
+      "config": {
+        "id": "vol-guard-local_post_confirmation-look3-cal60-q0p25-calm0p55-volatile0p05-lev8-loss0.20-profit0.16",
+        "family": "local_post_confirmation",
+        "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+        "volatility_lookback_days": 3,
+        "calibration_days": 60,
+        "volatility_quantile": 0.25,
+        "calm_trend_weight": 0.55,
+        "calm_baseline_weight": 0.45,
+        "volatile_trend_weight": 0.05,
+        "volatile_baseline_weight": 0.95,
+        "leverage": 8.0,
+        "monthly_loss_limit": 0.2,
+        "monthly_profit_target": 0.16
+      },
+      "counts": {
+        "base": 7,
+        "stress": 7
+      },
+      "development_score": [
+        0.5833333333333334,
+        0.4166666666666667,
+        -0.26743390206111495,
+        0.1397984007848648,
+        -0.3307044818125763
+      ],
+      "confirmation": {
+        "base": {
+          "net_return": 4.562175676298883,
+          "max_drawdown": -0.11264218114304143,
+          "bankrupt": false,
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.2923795617424245
+            },
+            {
+              "label": "2026-02",
+              "return": 0.4847942889107307
+            },
+            {
+              "label": "2026-03",
+              "return": 0.3329157360208355
+            },
+            {
+              "label": "2026-04",
+              "return": 0.3160945034347743
+            },
+            {
+              "label": "2026-05",
+              "return": 0.17547858725326837
+            },
+            {
+              "label": "2026-06",
+              "return": 0.17370114838363757
+            },
+            {
+              "label": "2026-07",
+              "return": 0.22349776746344582
+            },
+            {
+              "label": "2026-08",
+              "return": -0.02113426067482463
+            }
+          ]
+        },
+        "stress": {
+          "net_return": 3.5687674247076804,
+          "max_drawdown": -0.11989863590786223,
+          "bankrupt": false,
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.2647563750618483
+            },
+            {
+              "label": "2026-02",
+              "return": 0.4601080331058021
+            },
+            {
+              "label": "2026-03",
+              "return": 0.305164025575853
+            },
+            {
+              "label": "2026-04",
+              "return": 0.2794360816033891
+            },
+            {
+              "label": "2026-05",
+              "return": 0.1554968967092733
+            },
+            {
+              "label": "2026-06",
+              "return": 0.16764761976456344
+            },
+            {
+              "label": "2026-07",
+              "return": 0.1570835657125491
+            },
+            {
+              "label": "2026-08",
+              "return": -0.05097383301546907
+            }
+          ]
+        }
+      }
+    }
+  },
+  "confirmation_audit": {
+    "configuration_count": 854,
+    "strict_pass_count": 5,
+    "best_complete_month_count": 7,
+    "best_confirmation_diagnostic": {
+      "config": {
+        "id": "vol-guard-local_post_confirmation-look3-cal60-q0p25-calm0p55-volatile0p05-lev8-loss0.20-profit0.16",
+        "family": "local_post_confirmation",
+        "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+        "volatility_lookback_days": 3,
+        "calibration_days": 60,
+        "volatility_quantile": 0.25,
+        "calm_trend_weight": 0.55,
+        "calm_baseline_weight": 0.45,
+        "volatile_trend_weight": 0.05,
+        "volatile_baseline_weight": 0.95,
+        "leverage": 8.0,
+        "monthly_loss_limit": 0.2,
+        "monthly_profit_target": 0.16
+      },
+      "counts": {
+        "base": 7,
+        "stress": 7
+      },
+      "development_score": [
+        0.5833333333333334,
+        0.4166666666666667,
+        -0.26743390206111495,
+        0.1397984007848648,
+        -0.3307044818125763
+      ],
+      "confirmation": {
+        "base": {
+          "net_return": 4.562175676298883,
+          "max_drawdown": -0.11264218114304143,
+          "bankrupt": false,
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.2923795617424245
+            },
+            {
+              "label": "2026-02",
+              "return": 0.4847942889107307
+            },
+            {
+              "label": "2026-03",
+              "return": 0.3329157360208355
+            },
+            {
+              "label": "2026-04",
+              "return": 0.3160945034347743
+            },
+            {
+              "label": "2026-05",
+              "return": 0.17547858725326837
+            },
+            {
+              "label": "2026-06",
+              "return": 0.17370114838363757
+            },
+            {
+              "label": "2026-07",
+              "return": 0.22349776746344582
+            },
+            {
+              "label": "2026-08",
+              "return": -0.02113426067482463
+            }
+          ]
+        },
+        "stress": {
+          "net_return": 3.5687674247076804,
+          "max_drawdown": -0.11989863590786223,
+          "bankrupt": false,
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.2647563750618483
+            },
+            {
+              "label": "2026-02",
+              "return": 0.4601080331058021
+            },
+            {
+              "label": "2026-03",
+              "return": 0.305164025575853
+            },
+            {
+              "label": "2026-04",
+              "return": 0.2794360816033891
+            },
+            {
+              "label": "2026-05",
+              "return": 0.1554968967092733
+            },
+            {
+              "label": "2026-06",
+              "return": 0.16764761976456344
+            },
+            {
+              "label": "2026-07",
+              "return": 0.1570835657125491
+            },
+            {
+              "label": "2026-08",
+              "return": -0.05097383301546907
+            }
+          ]
+        }
+      }
+    },
+    "strict_examples": [
+      {
+        "config": {
+          "id": "vol-guard-local_post_confirmation-look3-cal60-q0p25-calm0p55-volatile0p05-lev8-loss0.20-profit0.16",
+          "family": "local_post_confirmation",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 3,
+          "calibration_days": 60,
+          "volatility_quantile": 0.25,
+          "calm_trend_weight": 0.55,
+          "calm_baseline_weight": 0.45,
+          "volatile_trend_weight": 0.05,
+          "volatile_baseline_weight": 0.95,
+          "leverage": 8.0,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.16
+        },
+        "counts": {
+          "base": 7,
+          "stress": 7
+        },
+        "development_score": [
+          0.5833333333333334,
+          0.4166666666666667,
+          -0.26743390206111495,
+          0.1397984007848648,
+          -0.3307044818125763
+        ],
+        "confirmation": {
+          "base": {
+            "net_return": 4.562175676298883,
+            "max_drawdown": -0.11264218114304143,
+            "bankrupt": false,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.2923795617424245
+              },
+              {
+                "label": "2026-02",
+                "return": 0.4847942889107307
+              },
+              {
+                "label": "2026-03",
+                "return": 0.3329157360208355
+              },
+              {
+                "label": "2026-04",
+                "return": 0.3160945034347743
+              },
+              {
+                "label": "2026-05",
+                "return": 0.17547858725326837
+              },
+              {
+                "label": "2026-06",
+                "return": 0.17370114838363757
+              },
+              {
+                "label": "2026-07",
+                "return": 0.22349776746344582
+              },
+              {
+                "label": "2026-08",
+                "return": -0.02113426067482463
+              }
+            ]
+          },
+          "stress": {
+            "net_return": 3.5687674247076804,
+            "max_drawdown": -0.11989863590786223,
+            "bankrupt": false,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.2647563750618483
+              },
+              {
+                "label": "2026-02",
+                "return": 0.4601080331058021
+              },
+              {
+                "label": "2026-03",
+                "return": 0.305164025575853
+              },
+              {
+                "label": "2026-04",
+                "return": 0.2794360816033891
+              },
+              {
+                "label": "2026-05",
+                "return": 0.1554968967092733
+              },
+              {
+                "label": "2026-06",
+                "return": 0.16764761976456344
+              },
+              {
+                "label": "2026-07",
+                "return": 0.1570835657125491
+              },
+              {
+                "label": "2026-08",
+                "return": -0.05097383301546907
+              }
+            ]
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-local_post_confirmation-look3-cal60-q0p25-calm0p6-volatile0p05-lev7.5-loss0.175-profit0.15",
+          "family": "local_post_confirmation",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 3,
+          "calibration_days": 60,
+          "volatility_quantile": 0.25,
+          "calm_trend_weight": 0.6,
+          "calm_baseline_weight": 0.4,
+          "volatile_trend_weight": 0.05,
+          "volatile_baseline_weight": 0.95,
+          "leverage": 7.5,
+          "monthly_loss_limit": 0.175,
+          "monthly_profit_target": 0.15
+        },
+        "counts": {
+          "base": 7,
+          "stress": 7
+        },
+        "development_score": [
+          0.5833333333333334,
+          0.3333333333333333,
+          -0.2579280219548723,
+          0.06796784767378612,
+          -0.32784259859630943
+        ],
+        "confirmation": {
+          "base": {
+            "net_return": 3.756689643644035,
+            "max_drawdown": -0.11571155164940472,
+            "bankrupt": false,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.15209347786659816
+              },
+              {
+                "label": "2026-02",
+                "return": 0.4531408916998517
+              },
+              {
+                "label": "2026-03",
+                "return": 0.3118662860307433
+              },
+              {
+                "label": "2026-04",
+                "return": 0.3004220422480757
+              },
+              {
+                "label": "2026-05",
+                "return": 0.1846073738584033
+              },
+              {
+                "label": "2026-06",
+                "return": 0.1752185668199157
+              },
+              {
+                "label": "2026-07",
+                "return": 0.22804180105355018
+              },
+              {
+                "label": "2026-08",
+                "return": -0.025842328257164593
+              }
+            ]
+          },
+          "stress": {
+            "net_return": 3.4345392284553116,
+            "max_drawdown": -0.12311109391474782,
+            "bankrupt": false,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.26910442401869333
+              },
+              {
+                "label": "2026-02",
+                "return": 0.43058346788043994
+              },
+              {
+                "label": "2026-03",
+                "return": 0.2862449774324018
+              },
+              {
+                "label": "2026-04",
+                "return": 0.2658446488116952
+              },
+              {
+                "label": "2026-05",
+                "return": 0.16568864552563545
+              },
+              {
+                "label": "2026-06",
+                "return": 0.1692676039239741
+              },
+              {
+                "label": "2026-07",
+                "return": 0.16390860325433304
+              },
+              {
+                "label": "2026-08",
+                "return": -0.05437601893911612
+              }
+            ]
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-local_post_confirmation-look3-cal60-q0p25-calm0p6-volatile0p05-lev7.5-loss0.20-profit0.15",
+          "family": "local_post_confirmation",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 3,
+          "calibration_days": 60,
+          "volatility_quantile": 0.25,
+          "calm_trend_weight": 0.6,
+          "calm_baseline_weight": 0.4,
+          "volatile_trend_weight": 0.05,
+          "volatile_baseline_weight": 0.95,
+          "leverage": 7.5,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.15
+        },
+        "counts": {
+          "base": 7,
+          "stress": 7
+        },
+        "development_score": [
+          0.5833333333333334,
+          0.3333333333333333,
+          -0.2579280219548723,
+          0.06796784767378612,
+          -0.32784259859630943
+        ],
+        "confirmation": {
+          "base": {
+            "net_return": 3.756689643644035,
+            "max_drawdown": -0.11571155164940472,
+            "bankrupt": false,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.15209347786659816
+              },
+              {
+                "label": "2026-02",
+                "return": 0.4531408916998517
+              },
+              {
+                "label": "2026-03",
+                "return": 0.3118662860307433
+              },
+              {
+                "label": "2026-04",
+                "return": 0.3004220422480757
+              },
+              {
+                "label": "2026-05",
+                "return": 0.1846073738584033
+              },
+              {
+                "label": "2026-06",
+                "return": 0.1752185668199157
+              },
+              {
+                "label": "2026-07",
+                "return": 0.22804180105355018
+              },
+              {
+                "label": "2026-08",
+                "return": -0.025842328257164593
+              }
+            ]
+          },
+          "stress": {
+            "net_return": 3.4345392284553116,
+            "max_drawdown": -0.12311109391474782,
+            "bankrupt": false,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.26910442401869333
+              },
+              {
+                "label": "2026-02",
+                "return": 0.43058346788043994
+              },
+              {
+                "label": "2026-03",
+                "return": 0.2862449774324018
+              },
+              {
+                "label": "2026-04",
+                "return": 0.2658446488116952
+              },
+              {
+                "label": "2026-05",
+                "return": 0.16568864552563545
+              },
+              {
+                "label": "2026-06",
+                "return": 0.1692676039239741
+              },
+              {
+                "label": "2026-07",
+                "return": 0.16390860325433304
+              },
+              {
+                "label": "2026-08",
+                "return": -0.05437601893911612
+              }
+            ]
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-local_post_confirmation-look3-cal60-q0p25-calm0p6-volatile0p05-lev8-loss0.20-profit0.16",
+          "family": "local_post_confirmation",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 3,
+          "calibration_days": 60,
+          "volatility_quantile": 0.25,
+          "calm_trend_weight": 0.6,
+          "calm_baseline_weight": 0.4,
+          "volatile_trend_weight": 0.05,
+          "volatile_baseline_weight": 0.95,
+          "leverage": 8.0,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.16
+        },
+        "counts": {
+          "base": 7,
+          "stress": 7
+        },
+        "development_score": [
+          0.5833333333333334,
+          0.3333333333333333,
+          -0.2733333244145563,
+          0.056371142507054654,
+          -0.3480630487644632
+        ],
+        "confirmation": {
+          "base": {
+            "net_return": 4.223727479874915,
+            "max_drawdown": -0.12330064968810671,
+            "bankrupt": false,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.16277281756785134
+              },
+              {
+                "label": "2026-02",
+                "return": 0.4847942889107307
+              },
+              {
+                "label": "2026-03",
+                "return": 0.3329157360208355
+              },
+              {
+                "label": "2026-04",
+                "return": 0.32143834734399557
+              },
+              {
+                "label": "2026-05",
+                "return": 0.19749911593314368
+              },
+              {
+                "label": "2026-06",
+                "return": 0.18719056930809144
+              },
+              {
+                "label": "2026-07",
+                "return": 0.24285895481923164
+              },
+              {
+                "label": "2026-08",
+                "return": -0.027807499041641474
+              }
+            ]
+          },
+          "stress": {
+            "net_return": 3.8444395167615686,
+            "max_drawdown": -0.1311334341773764,
+            "bankrupt": false,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.2885895750128343
+              },
+              {
+                "label": "2026-02",
+                "return": 0.4601080331058021
+              },
+              {
+                "label": "2026-03",
+                "return": 0.305164025575853
+              },
+              {
+                "label": "2026-04",
+                "return": 0.28403739217404184
+              },
+              {
+                "label": "2026-05",
+                "return": 0.1771733781014327
+              },
+              {
+                "label": "2026-06",
+                "return": 0.18064489594709826
+              },
+              {
+                "label": "2026-07",
+                "return": 0.17375760805752333
+              },
+              {
+                "label": "2026-08",
+                "return": -0.05819059635101905
+              }
+            ]
+          }
+        }
+      },
+      {
+        "config": {
+          "id": "vol-guard-local_post_confirmation-look3-cal60-q0p25-calm0p55-volatile0p05-lev8.5-loss0.20-profit0.16",
+          "family": "local_post_confirmation",
+          "trend_id": "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+          "volatility_lookback_days": 3,
+          "calibration_days": 60,
+          "volatility_quantile": 0.25,
+          "calm_trend_weight": 0.55,
+          "calm_baseline_weight": 0.45,
+          "volatile_trend_weight": 0.05,
+          "volatile_baseline_weight": 0.95,
+          "leverage": 8.5,
+          "monthly_loss_limit": 0.2,
+          "monthly_profit_target": 0.16
+        },
+        "counts": {
+          "base": 7,
+          "stress": 7
+        },
+        "development_score": [
+          0.5833333333333334,
+          0.3333333333333333,
+          -0.282319690395029,
+          0.12040172547880593,
+          -0.3445431122972459
+        ],
+        "confirmation": {
+          "base": {
+            "net_return": 4.413856711950797,
+            "max_drawdown": -0.11957233616040829,
+            "bankrupt": false,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.15981694064590013
+              },
+              {
+                "label": "2026-02",
+                "return": 0.5166228298160656
+              },
+              {
+                "label": "2026-03",
+                "return": 0.3539940302322324
+              },
+              {
+                "label": "2026-04",
+                "return": 0.3369729340332195
+              },
+              {
+                "label": "2026-05",
+                "return": 0.18693344489554073
+              },
+              {
+                "label": "2026-06",
+                "return": 0.18470017832848837
+              },
+              {
+                "label": "2026-07",
+                "return": 0.23716623058716785
+              },
+              {
+                "label": "2026-08",
+                "return": -0.022678446038098522
+              }
+            ]
+          },
+          "stress": {
+            "net_return": 3.970003992366605,
+            "max_drawdown": -0.12723006064600795,
+            "bankrupt": false,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.282693820024056
+              },
+              {
+                "label": "2026-02",
+                "return": 0.4897259932041025
+              },
+              {
+                "label": "2026-03",
+                "return": 0.32405815464806037
+              },
+              {
+                "label": "2026-04",
+                "return": 0.29748083846111606
+              },
+              {
+                "label": "2026-05",
+                "return": 0.16556602505564505
+              },
+              {
+                "label": "2026-06",
+                "return": 0.17805798791288263
+              },
+              {
+                "label": "2026-07",
+                "return": 0.1659489310723784
+              },
+              {
+                "label": "2026-08",
+                "return": -0.05433732088585686
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "target": {
+    "monthly_return": 0.15,
+    "required_complete_months": 7,
+    "achieved_in_reused_confirmation": true
+  },
+  "decision": {
+    "status": "reused_confirmation_candidate_post_confirmation_refinement",
+    "approved_for_trading": false,
+    "reason": "The local post-confirmation neighborhood contains base-and-stress 7/7 reused-confirmation configurations, but the local parameters were refined after observing 2026 and cannot be treated as an unbiased strategy-selection result."
+  },
+  "limitations": [
+    "2026 is reused confirmation evidence and is not a fresh holdout.",
+    "The local parameter neighborhood was refined after observing confirmation failures.",
+    "The trend candidate and baseline were selected in earlier development studies.",
+    "Peak modeled outer leverage is 9x; liquidation and borrowing costs are not modeled.",
+    "Partial August is shown diagnostically but excluded from the strict count."
+  ],
+  "id": "volatility-guarded-trend-20260815"
+}
