@@ -174,6 +174,11 @@ market data.
   across 2024/2025 and both cost models. The beam search produces 280 portfolios and 725 risk-
   eligible controls, but the best reused-confirmation result remains 5/7 and loses in May and
   July. Static monthly-stability optimization is rejected and partial August is excluded.
+- `experiments/drawdown_recovery_trend/2026-08-15/`: single and paired MACD recovery sleeves are
+  selected only when positive in every 2024/2025 loss month of the frozen monthly-robust baseline,
+  then activated one day after a causal monthly drawdown trigger. The search audits 25,772
+  development-risk-eligible controls; none exceeds 5/7 complete 2026 months under both cost
+  models, and May/July remain negative. The recovery mechanism is rejected.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
