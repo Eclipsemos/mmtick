@@ -154,6 +154,11 @@ market data.
   lock configurations pass base and stress development gates. The best reused-confirmation result
   remains 4/7 complete months and loses in May and July, so conditional defensive-factor selection
   is rejected as a solution to the strict every-month +15% target.
+- `experiments/fast_trend_complement/2026-08-15/`: 224 predeclared BTC/ETH 4h and daily fast
+  time-series momentum sleeves test 1-20 day lookbacks, fixed deadbands, and one/two-bar causal
+  confirmation. Sixty candidates are shortlisted on 2021-2025 only and 59 risk configurations
+  pass base and stress development gates, but the best reused-confirmation result remains 4/7 and
+  still loses in May and July. Fast directional trend is rejected for the strict monthly target.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
