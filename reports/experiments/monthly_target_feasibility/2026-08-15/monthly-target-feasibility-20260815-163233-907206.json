@@ -1,0 +1,370 @@
+{
+  "generated_at": "2026-08-15T16:34:12.038760+00:00",
+  "study": "strict +15% complete-month target feasibility boundary",
+  "data": {
+    "btc_perp": {
+      "first_bar": "2020-01-01T00:00:00+00:00",
+      "last_bar": "2026-08-11T23:59:59.999000+00:00",
+      "source_bar_count": 231840
+    },
+    "eth_perp": {
+      "first_bar": "2020-01-01T00:00:00+00:00",
+      "last_bar": "2026-08-11T23:59:59.999000+00:00",
+      "source_bar_count": 231840
+    }
+  },
+  "periods": {
+    "development_discovery": {
+      "start": "2021-01-01T00:00:00+00:00",
+      "end": "2023-12-31T23:59:59.999000+00:00"
+    },
+    "development_validation": {
+      "start": "2024-01-01T00:00:00+00:00",
+      "end": "2025-12-31T23:59:59.999000+00:00"
+    },
+    "reused_confirmation": {
+      "start": "2026-01-01T00:00:00+00:00",
+      "end": "2026-08-10T23:59:59.999000+00:00"
+    },
+    "strict_complete_confirmation_months": "2026-01 through 2026-07",
+    "partial_month_excluded_from_goal": "2026-08"
+  },
+  "target": {
+    "monthly_return": 0.15,
+    "rule": "every complete confirmation month must return at least +15%",
+    "partial_months_count_toward_goal": false
+  },
+  "execution": {
+    "signal_timing": "causal signals on closed component bars",
+    "fill_timing": "next component bar open",
+    "base_costs": {
+      "fee_bps_per_fill": 5.0,
+      "slippage_bps_per_fill": 2.0,
+      "overlay_turnover_bps": 7.0
+    },
+    "stress_costs": {
+      "fee_bps_per_fill": 10.0,
+      "slippage_bps_per_fill": 5.0,
+      "overlay_turnover_bps": 15.0
+    },
+    "funding": "historical instrument funding while positioned",
+    "portfolio_model": "fixed initial sleeve capital; no implicit daily rebalancing",
+    "liquidation_modeled": false
+  },
+  "ex_post_boundary": {
+    "selection_warning": "components, weights, leverage, and locks were chosen after inspecting 2026; this is a feasibility upper bound, not a tradable candidate",
+    "weights": {
+      "frozen_four_factor_anchor": 0.1,
+      "eth_daily_macd": 0.8,
+      "eth_hourly_rsi": 0.05,
+      "btc_shock_reversal": 0.05
+    },
+    "anchor_internal": {
+      "weights": {
+        "lead_lag": 0.4,
+        "event-eth_perp-to-eth_perp-continuation-60d-threshold-2p5-hold-12x4h-none-long_only": 0.15,
+        "event-btc_perp-to-btc_perp-continuation-15d-threshold-2-hold-4x4h-none-long_short": 0.3,
+        "event-eth_perp-to-btc_perp-continuation-60d-threshold-1p5-hold-12x4h-underreaction-long_short": 0.15
+      },
+      "leverage": 4.0
+    },
+    "components": {
+      "eth_daily_macd": "MACD(10,30,9), long/short, daily bars",
+      "eth_hourly_rsi": "RSI(14,30,70), long-only, 60-minute bars",
+      "btc_shock_reversal": "15-day causal normalization, 1.5 threshold, 12x4h hold, long-only"
+    },
+    "outer_leverage": 6.0,
+    "monthly_loss_limit": 0.25,
+    "monthly_profit_lock": 0.15,
+    "base": {
+      "net_return_including_partial_month": 5.331972472455576,
+      "complete_month_net_return": 5.5433431630898955,
+      "max_drawdown_daily_close": -0.20929067503197843,
+      "bankrupt": false,
+      "complete_months": [
+        {
+          "label": "2026-01",
+          "return": 0.24028608094088252,
+          "target_met": true
+        },
+        {
+          "label": "2026-02",
+          "return": 0.2391174188940901,
+          "target_met": true
+        },
+        {
+          "label": "2026-03",
+          "return": 0.4049293303699305,
+          "target_met": true
+        },
+        {
+          "label": "2026-04",
+          "return": 0.3267426092136239,
+          "target_met": true
+        },
+        {
+          "label": "2026-05",
+          "return": 0.24027614812839457,
+          "target_met": true
+        },
+        {
+          "label": "2026-06",
+          "return": 0.32163916946219373,
+          "target_met": true
+        },
+        {
+          "label": "2026-07",
+          "return": 0.39345489606338674,
+          "target_met": true
+        }
+      ],
+      "partial_months": [
+        {
+          "label": "2026-08",
+          "return": -0.03230316450872281,
+          "target_met": null
+        }
+      ],
+      "complete_month_count": 7,
+      "complete_target_month_count": 7,
+      "strict_goal_met": true
+    },
+    "stress": {
+      "net_return_including_partial_month": 4.681571209230802,
+      "complete_month_net_return": 4.968315505547264,
+      "max_drawdown_daily_close": -0.2219284161827023,
+      "bankrupt": false,
+      "complete_months": [
+        {
+          "label": "2026-01",
+          "return": 0.22413781700359792,
+          "target_met": true
+        },
+        {
+          "label": "2026-02",
+          "return": 0.22898171386442912,
+          "target_met": true
+        },
+        {
+          "label": "2026-03",
+          "return": 0.38815658204821185,
+          "target_met": true
+        },
+        {
+          "label": "2026-04",
+          "return": 0.2998931087265811,
+          "target_met": true
+        },
+        {
+          "label": "2026-05",
+          "return": 0.21337429233317998,
+          "target_met": true
+        },
+        {
+          "label": "2026-06",
+          "return": 0.3080014483119167,
+          "target_met": true
+        },
+        {
+          "label": "2026-07",
+          "return": 0.3852460656825472,
+          "target_met": true
+        }
+      ],
+      "partial_months": [
+        {
+          "label": "2026-08",
+          "return": -0.0480444266141672,
+          "target_met": null
+        }
+      ],
+      "complete_month_count": 7,
+      "complete_target_month_count": 7,
+      "strict_goal_met": true
+    }
+  },
+  "development_risk_controlled": {
+    "configuration": {
+      "weights": {
+        "frozen_four_factor_anchor": 0.1,
+        "eth_daily_macd": 0.8,
+        "eth_hourly_rsi": 0.05,
+        "btc_shock_reversal": 0.05
+      },
+      "volatility_lookback_days": 40,
+      "target_daily_volatility": 0.02,
+      "minimum_exposure": 1.0,
+      "maximum_exposure": 3.0,
+      "rebalance_frequency": "daily",
+      "monthly_loss_limit": 0.1,
+      "monthly_profit_lock": 0.15
+    },
+    "base": {
+      "net_return_including_partial_month": 1.7409143480191915,
+      "complete_month_net_return": 1.7494930390039383,
+      "max_drawdown_daily_close": -0.13476488770869757,
+      "bankrupt": false,
+      "complete_months": [
+        {
+          "label": "2026-01",
+          "return": 0.14459402372310015,
+          "target_met": false
+        },
+        {
+          "label": "2026-02",
+          "return": 0.19413028066215768,
+          "target_met": true
+        },
+        {
+          "label": "2026-03",
+          "return": 0.15910581742746135,
+          "target_met": true
+        },
+        {
+          "label": "2026-04",
+          "return": 0.1061684646287185,
+          "target_met": false
+        },
+        {
+          "label": "2026-05",
+          "return": 0.08070348724963355,
+          "target_met": false
+        },
+        {
+          "label": "2026-06",
+          "return": 0.2624265807554037,
+          "target_met": true
+        },
+        {
+          "label": "2026-07",
+          "return": 0.14998558762401024,
+          "target_met": false
+        }
+      ],
+      "partial_months": [
+        {
+          "label": "2026-08",
+          "return": -0.0031200991830314206,
+          "target_met": null
+        }
+      ],
+      "complete_month_count": 7,
+      "complete_target_month_count": 3,
+      "strict_goal_met": false
+    },
+    "stress": {
+      "net_return_including_partial_month": 1.6749349078660054,
+      "complete_month_net_return": 1.6915922697033317,
+      "max_drawdown_daily_close": -0.13793199795142924,
+      "bankrupt": false,
+      "complete_months": [
+        {
+          "label": "2026-01",
+          "return": 0.13702454239476206,
+          "target_met": false
+        },
+        {
+          "label": "2026-02",
+          "return": 0.19233704559828443,
+          "target_met": true
+        },
+        {
+          "label": "2026-03",
+          "return": 0.15723223728665908,
+          "target_met": true
+        },
+        {
+          "label": "2026-04",
+          "return": 0.10049938540512297,
+          "target_met": false
+        },
+        {
+          "label": "2026-05",
+          "return": 0.07721167258141062,
+          "target_met": false
+        },
+        {
+          "label": "2026-06",
+          "return": 0.25871909060741854,
+          "target_met": true
+        },
+        {
+          "label": "2026-07",
+          "return": 0.1497414755115522,
+          "target_met": false
+        }
+      ],
+      "partial_months": [
+        {
+          "label": "2026-08",
+          "return": -0.006188664614927822,
+          "target_met": null
+        }
+      ],
+      "complete_month_count": 7,
+      "complete_target_month_count": 3,
+      "strict_goal_met": false
+    }
+  },
+  "development_reverse_audit": {
+    "protocol": {
+      "weights": "all four sleeves positive; 5 percentage-point grid; sum to 100%",
+      "outer_leverage": [
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0
+      ],
+      "monthly_loss_limit": 0.25,
+      "monthly_profit_lock": 0.15,
+      "maximum_allowed_daily_close_drawdown_each_split": -0.35,
+      "costs": "base component costs plus 7 bps overlay turnover"
+    },
+    "weight_configuration_count": 969,
+    "evaluated_configuration_count": 6783,
+    "profitable_in_both_splits": 2313,
+    "risk_eligible_in_both_splits": 0,
+    "ex_post_configuration": {
+      "discovery_2021_2023": {
+        "net_return": 0.4961697953323564,
+        "max_drawdown": -0.8317817810683684,
+        "bankrupt": false,
+        "passes_return_and_drawdown_gate": false
+      },
+      "validation_2024_2025": {
+        "net_return": -0.33950154283536377,
+        "max_drawdown": -0.7610003983163128,
+        "bankrupt": false,
+        "passes_return_and_drawdown_gate": false
+      }
+    },
+    "volatility_controlled_configuration": {
+      "discovery_2021_2023": {
+        "net_return": 3.048063180390048,
+        "max_drawdown": -0.28478604688105685,
+        "bankrupt": false,
+        "passes_return_and_drawdown_gate": true
+      },
+      "validation_2024_2025": {
+        "net_return": 0.047023724324681014,
+        "max_drawdown": -0.3445434418876173,
+        "bankrupt": false,
+        "passes_return_and_drawdown_gate": true
+      }
+    }
+  },
+  "decision": {
+    "status": "rejected_protocol_selection_bias_and_development_failure",
+    "approved_for_trading": false,
+    "goal_achieved": false,
+    "reason": "The 7/7 boundary is selected on reused 2026 data. No positive 5%-weight-grid configuration at 2x-8x passed return and -35% drawdown gates in both development splits, while the causal risk-controlled version reached only 3/7 complete months.",
+    "boundary_goal_met_base": true,
+    "boundary_goal_met_stress": true,
+    "risk_controlled_goal_met_base": false,
+    "risk_controlled_goal_met_stress": false
+  },
+  "id": "monthly-target-feasibility-20260815-163233-907206"
+}
