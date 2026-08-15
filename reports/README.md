@@ -142,6 +142,12 @@ market data.
   months under base and stress costs, but fails development risk gates; the causal volatility-
   controlled version reaches only 3/7. The result is rejected for selection bias and development
   failure, is not approved for trading, and excludes partial August from the goal audit.
+- `experiments/monthly_target_regime_router/2026-08-15/`: persistent closed-bar MACD sleeves are
+  tested as fixed mixtures and prior-day causal routes around the frozen market-state strategy.
+  Of 540 MACD variants, 92 profit in both development splits; 736 fixed mixtures and 828 routed
+  configurations pass the development return and drawdown gates. Both families reach at most 4/7
+  complete January-July 2026 months under base and stress costs, with no 7/7 configuration. This
+  direction is rejected, remains research-only, and excludes partial August from strict counts.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
