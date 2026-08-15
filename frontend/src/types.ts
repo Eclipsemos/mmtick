@@ -334,6 +334,7 @@ export type DeepSignalCandidate = {
   parameters: {
     id: string
     direction: string
+    horizon_bars: number
     entry_threshold: number
     smoothing_bars: number
     minimum_hold_bars: number

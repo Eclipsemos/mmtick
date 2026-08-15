@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import csv
 import io
+import itertools
 import json
 import sqlite3
 import time
@@ -33,6 +34,20 @@ REST_SOURCE = "binance_futures_aggtrade_rest"
 KLINE_SOURCE = "binance_futures_kline_archive"
 KLINE_REST_SOURCE = "binance_futures_kline_rest"
 FUNDING_SOURCE = "binance_futures_funding_rest"
+KLINE_FIELDS = (
+    "open_time",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "close_time",
+    "quote_volume",
+    "count",
+    "taker_buy_volume",
+    "taker_buy_quote_volume",
+    "ignore",
+)
 
 
 def _get(url: str, *, timeout: int = 120) -> bytes:
@@ -59,6 +74,16 @@ def _archive_rows(url: str) -> list[dict[str, str]]:
         raise RuntimeError(f"expected one CSV in {url}, found {names}")
     with archive.open(names[0]) as handle:
         return list(csv.DictReader(io.TextIOWrapper(handle, encoding="utf-8")))
+
+
+def _kline_rows(handle) -> list[dict[str, str]]:
+    """Parse Binance kline archives from both headerless and newer headered CSV files."""
+    reader = csv.reader(io.TextIOWrapper(handle, encoding="utf-8"))
+    first = next(reader, None)
+    if first is None:
+        return []
+    rows = reader if first[0] == "open_time" else itertools.chain((first,), reader)
+    return [dict(zip(KLINE_FIELDS, row, strict=True)) for row in rows]
 
 
 def _months(start: date, end: date) -> list[tuple[int, int]]:
@@ -459,7 +484,7 @@ def main() -> None:
                     with archive.open(csv_name) as handle:
                         total_bars += _import_bars(
                             connection,
-                            list(csv.DictReader(io.TextIOWrapper(handle, encoding="utf-8"))),
+                            _kline_rows(handle),
                             instrument_id,
                             symbol,
                         )
@@ -511,7 +536,7 @@ def main() -> None:
                         with archive.open(csv_name) as handle:
                             total_bars += _import_bars(
                                 connection,
-                                list(csv.DictReader(io.TextIOWrapper(handle, encoding="utf-8"))),
+                                _kline_rows(handle),
                                 instrument_id,
                                 symbol,
                             )
@@ -520,9 +545,7 @@ def main() -> None:
         current_ticks = (
             0
             if args.bars_only
-            else _fetch_current_agg_trades(
-                connection, instrument_id, symbol, args.start_ms, end_ms
-            )
+            else _fetch_current_agg_trades(connection, instrument_id, symbol, args.start_ms, end_ms)
         )
         total_bars += _fetch_current_klines(
             connection, instrument_id, symbol, args.start_ms, end_ms

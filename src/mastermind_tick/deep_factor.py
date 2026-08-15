@@ -55,6 +55,7 @@ class _SignalCandidate:
     """A deliberately small, auditable signal-management search space."""
 
     direction: str
+    horizon_bars: int
     entry_threshold: float
     smoothing_bars: int
     minimum_hold_bars: int
@@ -65,7 +66,8 @@ class _SignalCandidate:
     def id(self) -> str:
         direction = "long" if self.direction == "long_only" else "long-short"
         return (
-            f"{direction}-entry-{self.entry_threshold:.2f}-ema-{self.smoothing_bars}"
+            f"{direction}-horizon-{self.horizon_bars}-entry-{self.entry_threshold:.2f}"
+            f"-ema-{self.smoothing_bars}"
             f"-hold-{self.minimum_hold_bars}-cooldown-{self.cooldown_bars}"
             f"-confirm-{self.confirmation_bars}"
         )
@@ -74,6 +76,7 @@ class _SignalCandidate:
         return {
             "id": self.id,
             "direction": self.direction,
+            "horizon_bars": self.horizon_bars,
             "entry_threshold": self.entry_threshold,
             "smoothing_bars": self.smoothing_bars,
             "minimum_hold_bars": self.minimum_hold_bars,
@@ -500,17 +503,17 @@ def _evaluate_asset(
             0.68 + 0.28 * (offset + (split_index + 1) / 3) / total_assets,
         )
 
-    scores: list[float | None] = [None] * len(item["bars"])
+    scores_by_horizon = {horizon: [None] * len(item["bars"]) for horizon in config.horizons}
     for samples, prediction, _actual in predictions.values():
         for sample, probability in zip(samples, prediction, strict=True):
-            horizon_index = 1 if len(config.horizons) > 1 else 0
-            scores[sample.end_index] = float(probability[horizon_index])
+            for horizon_index, horizon in enumerate(config.horizons):
+                scores_by_horizon[horizon][sample.end_index] = float(probability[horizon_index])
     periods = split_periods(item["instrument"], item["bars"][-1].end_ms)
     funding = funding_by_bar(item["bars"], item["funding"])
-    candidates = _signal_candidates()
+    candidates = _signal_candidates(config.horizons)
     rows: list[dict[str, Any]] = []
     for candidate in candidates:
-        targets = _managed_targets(scores, candidate)
+        targets = _managed_targets(scores_by_horizon[candidate.horizon_bars], candidate)
         results = {
             split: evaluate_targets(
                 item["bars"],
@@ -544,10 +547,17 @@ def _evaluate_asset(
     output: dict[str, Any] = {}
     for split, (samples, prediction, actual) in predictions.items():
         result = selected["results"][split] if selected is not None else None
+        horizon_index = (
+            config.horizons.index(selected["candidate"].horizon_bars) if selected is not None else 0
+        )
         output[split] = {
             "samples": len(samples),
-            "direction_accuracy": _accuracy(np, prediction[:, 0], actual[:, 0]),
-            "information_coefficient": _correlation(np, prediction[:, 0], actual[:, 0]),
+            "direction_accuracy": _accuracy(
+                np, prediction[:, horizon_index], actual[:, horizon_index]
+            ),
+            "information_coefficient": _correlation(
+                np, prediction[:, horizon_index], actual[:, horizon_index]
+            ),
             **_result_summary(result),
         }
     output["signal_search"] = {
@@ -563,7 +573,11 @@ def _evaluate_asset(
         "neighbor_confirmation_pass_rate": confirmation_pass_rate,
         "stress_confirmation": (
             _stress_result(
-                item["bars"], scores, selected["candidate"], periods["confirmation"], funding
+                item["bars"],
+                scores_by_horizon[selected["candidate"].horizon_bars],
+                selected["candidate"],
+                periods["confirmation"],
+                funding,
             )
             if selected is not None
             else None
@@ -572,10 +586,11 @@ def _evaluate_asset(
     return output
 
 
-def _signal_candidates() -> tuple[_SignalCandidate, ...]:
+def _signal_candidates(horizons: tuple[int, ...]) -> tuple[_SignalCandidate, ...]:
     return tuple(
-        _SignalCandidate(direction, threshold, smoothing, hold, cooldown, confirmation)
+        _SignalCandidate(direction, horizon, threshold, smoothing, hold, cooldown, confirmation)
         for direction in ("long_only", "long_short")
+        for horizon in horizons
         for threshold in (0.55, 0.60, 0.65)
         for smoothing in (1, 4, 8)
         for hold in (1, 8)
@@ -803,7 +818,8 @@ def _markdown(report: dict[str, Any]) -> str:
         confirmation = selected["confirmation"]
         stress = search.get("stress_confirmation") or {}
         management = (
-            f"{parameters['direction']} p>={parameters['entry_threshold']:.2f}, "
+            f"{parameters['direction']} horizon {parameters['horizon_bars']}, "
+            f"p>={parameters['entry_threshold']:.2f}, "
             f"EMA {parameters['smoothing_bars']}, hold {parameters['minimum_hold_bars']}, "
             f"cooldown {parameters['cooldown_bars']}, confirm {parameters['confirmation_bars']}"
         )

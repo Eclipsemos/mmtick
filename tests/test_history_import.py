@@ -1,4 +1,5 @@
 import importlib.util
+import io
 import json
 import sqlite3
 from datetime import date
@@ -72,6 +73,19 @@ def test_month_range_starts_at_requested_incremental_month() -> None:
     history = _history_import_module()
 
     assert history._months(date(2026, 8, 10), date(2026, 8, 11)) == [(2026, 8)]
+
+
+def test_kline_rows_parse_headerless_and_headered_archives() -> None:
+    history = _history_import_module()
+    row = "0,100,102,99,101,10,899999,1000,20,5,500,0\n"
+    header = ",".join(history.KLINE_FIELDS) + "\n"
+
+    headerless = history._kline_rows(io.BytesIO(row.encode()))
+    headered = history._kline_rows(io.BytesIO((header + row).encode()))
+
+    assert headerless == headered
+    assert headerless[0]["open_time"] == "0"
+    assert headerless[0]["close"] == "101"
 
 
 def test_rest_import_skips_a_range_older_than_existing_ticks(tmp_path) -> None:

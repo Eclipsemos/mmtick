@@ -19,6 +19,7 @@ def test_deep_factor_module_keeps_torch_as_worker_only_dependency() -> None:
 def test_managed_targets_apply_hold_cooldown_and_confirmation_causally() -> None:
     candidate = _SignalCandidate(
         direction="long_only",
+        horizon_bars=16,
         entry_threshold=0.60,
         smoothing_bars=1,
         minimum_hold_bars=2,
@@ -34,8 +35,9 @@ def test_managed_targets_apply_hold_cooldown_and_confirmation_causally() -> None
 
 
 def test_signal_candidate_library_is_small_and_deterministic() -> None:
-    candidates = _signal_candidates()
+    candidates = _signal_candidates((4, 16, 96))
 
-    assert len(candidates) == 144
+    assert len(candidates) == 432
     assert len({candidate.id for candidate in candidates}) == len(candidates)
     assert {candidate.direction for candidate in candidates} == {"long_only", "long_short"}
+    assert {candidate.horizon_bars for candidate in candidates} == {4, 16, 96}

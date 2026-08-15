@@ -132,13 +132,31 @@ def load_market(
             )
             for row in connection.execute(
                 """
-                SELECT timestamp_ms, rate, mark_price
-                FROM funding_rates
-                WHERE instrument_id = ?
-                ORDER BY timestamp_ms
+                SELECT
+                    funding.timestamp_ms,
+                    funding.rate,
+                    COALESCE(
+                        NULLIF(funding.mark_price, ''),
+                        (
+                            SELECT bars.close
+                            FROM ohlcv_bars AS bars
+                            WHERE bars.instrument_id = funding.instrument_id
+                              AND bars.interval_minutes = 15
+                              AND bars.is_closed = 1
+                              AND bars.start_ms <= funding.timestamp_ms
+                              AND bars.end_ms >= funding.timestamp_ms
+                            ORDER BY bars.start_ms DESC
+                            LIMIT 1
+                        )
+                    ) AS mark_price
+                FROM funding_rates AS funding
+                WHERE funding.instrument_id = ?
+                  AND NULLIF(funding.rate, '') IS NOT NULL
+                ORDER BY funding.timestamp_ms
                 """,
                 (instrument_id,),
             )
+            if row["mark_price"] is not None
         ]
     if not bars:
         raise ValueError(f"no complete bars for {instrument_id}")
@@ -253,8 +271,8 @@ def split_periods(instrument_id: str, data_end_ms: int) -> dict[str, tuple[int, 
     confirmation_end = min(data_end_ms, _day_end(date(2026, 8, 10)))
     if instrument_id in {"btc_perp", "eth_perp"}:
         return {
-            "train": (_day_start(date(2024, 2, 1)), _day_end(date(2024, 12, 31))),
-            "validation": (_day_start(date(2025, 1, 1)), _day_end(date(2025, 12, 31))),
+            "train": (_day_start(date(2020, 1, 1)), _day_end(date(2023, 12, 31))),
+            "validation": (_day_start(date(2024, 1, 1)), _day_end(date(2025, 12, 31))),
             "confirmation": (_day_start(date(2026, 1, 1)), confirmation_end),
         }
     if instrument_id == "soxl_perp":
