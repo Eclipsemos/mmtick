@@ -50,6 +50,38 @@ class _Sample:
     label: tuple[float, ...]
 
 
+@dataclass(frozen=True)
+class _SignalCandidate:
+    """A deliberately small, auditable signal-management search space."""
+
+    direction: str
+    entry_threshold: float
+    smoothing_bars: int
+    minimum_hold_bars: int
+    cooldown_bars: int
+    confirmation_bars: int
+
+    @property
+    def id(self) -> str:
+        direction = "long" if self.direction == "long_only" else "long-short"
+        return (
+            f"{direction}-entry-{self.entry_threshold:.2f}-ema-{self.smoothing_bars}"
+            f"-hold-{self.minimum_hold_bars}-cooldown-{self.cooldown_bars}"
+            f"-confirm-{self.confirmation_bars}"
+        )
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "direction": self.direction,
+            "entry_threshold": self.entry_threshold,
+            "smoothing_bars": self.smoothing_bars,
+            "minimum_hold_bars": self.minimum_hold_bars,
+            "cooldown_bars": self.cooldown_bars,
+            "confirmation_bars": self.confirmation_bars,
+        }
+
+
 def run_deep_factor_mining(
     database: Path,
     output_root: Path,
@@ -160,10 +192,13 @@ def run_deep_factor_mining(
     )
     _progress(progress_callback, "评估冻结模型与成本后交易信号", 0.68)
     metrics = {}
+    signal_search = {}
     for index, item in enumerate(series):
-        metrics[item["instrument"]] = _evaluate_asset(
+        evaluation = _evaluate_asset(
             model, item, device, torch, np, config, progress_callback, index, len(series)
         )
+        signal_search[item["instrument"]] = evaluation.pop("signal_search")
+        metrics[item["instrument"]] = evaluation
     _progress(progress_callback, "生成深度因子研究报告", 0.96)
     generated_at = datetime.now(UTC)
     report_id = f"deep-factor-{generated_at.strftime('%Y%m%d-%H%M%S-%f')}"
@@ -189,16 +224,24 @@ def run_deep_factor_mining(
         },
         "training": {"history": history, "best_validation_loss": best_loss},
         "metrics": metrics,
+        "signal_search": signal_search,
         "decision": {
             "status": "research_candidate"
-            if _candidate_gate(metrics)
+            if _candidate_gate(metrics, signal_search)
             else "rejected_after_confirmation",
             "approved_for_trading": False,
+            "monthly_target": {
+                "return": 0.25,
+                "minimum_confirmation_target_month_rate": 0.5,
+                "minimum_confirmation_positive_month_rate": 0.5,
+            },
             "reason": (
-                "Deep model passed the preliminary multi-asset research gates; forward observation "
-                "is required and trading remains disabled."
-                if _candidate_gate(metrics)
-                else "Deep model did not pass the independent confirmation or drawdown gates."
+                "Deep model passed the preliminary multi-asset confirmation, drawdown, and 25% "
+                "monthly-target gates; forward observation is required and trading remains "
+                "disabled."
+                if _candidate_gate(metrics, signal_search)
+                else "Deep model did not pass the independent confirmation, drawdown, or 25% "
+                "monthly-target gates."
             ),
         },
     }
@@ -420,7 +463,7 @@ def _evaluate_asset(
     total_assets: int,
 ) -> dict[str, Any]:
     model.eval()
-    output: dict[str, Any] = {}
+    predictions: dict[str, tuple[list[_Sample], Any, Any]] = {}
     for split_index, split in enumerate(("train", "validation", "confirmation")):
         samples = item["samples"][split]
         loader = _loader(
@@ -450,36 +493,222 @@ def _evaluate_asset(
             np.concatenate(probabilities) if probabilities else np.empty((0, len(config.horizons)))
         )
         actual = np.concatenate(labels) if labels else np.empty_like(prediction)
-        split_start, split_end = split_periods(item["instrument"], item["bars"][-1].end_ms)[split]
-        targets: list[int | None] = [None] * len(item["bars"])
-        for sample, probability in zip(samples, prediction, strict=True):
-            score = float(probability[1]) if len(config.horizons) > 1 else float(probability[0])
-            targets[sample.end_index] = 1 if score > 0.55 else -1 if score < 0.45 else 0
-        result = evaluate_targets(
-            item["bars"],
-            tuple(targets),
-            start_ms=split_start,
-            end_ms=split_end,
-            funding=funding_by_bar(item["bars"], item["funding"]),
-            fee_bps=Decimal(str(config.fee_bps)),
-            slippage_bps=Decimal(str(config.slippage_bps)),
-        )
-        output[split] = {
-            "samples": len(samples),
-            "direction_accuracy": _accuracy(np, prediction[:, 0], actual[:, 0]),
-            "information_coefficient": _correlation(np, prediction[:, 0], actual[:, 0]),
-            "net_return": result.net_return,
-            "max_drawdown": result.max_drawdown,
-            "completed_trades": result.completed_trades,
-            "win_rate": result.win_rate,
-            "profit_factor": result.profit_factor,
-        }
+        predictions[split] = (samples, prediction, actual)
         _progress(
             callback,
             f"评估 {item['instrument']} {split}",
             0.68 + 0.28 * (offset + (split_index + 1) / 3) / total_assets,
         )
+
+    scores: list[float | None] = [None] * len(item["bars"])
+    for samples, prediction, _actual in predictions.values():
+        for sample, probability in zip(samples, prediction, strict=True):
+            horizon_index = 1 if len(config.horizons) > 1 else 0
+            scores[sample.end_index] = float(probability[horizon_index])
+    periods = split_periods(item["instrument"], item["bars"][-1].end_ms)
+    funding = funding_by_bar(item["bars"], item["funding"])
+    candidates = _signal_candidates()
+    rows: list[dict[str, Any]] = []
+    for candidate in candidates:
+        targets = _managed_targets(scores, candidate)
+        results = {
+            split: evaluate_targets(
+                item["bars"],
+                targets,
+                start_ms=start_ms,
+                end_ms=end_ms,
+                funding=funding,
+                fee_bps=Decimal(str(config.fee_bps)),
+                slippage_bps=Decimal(str(config.slippage_bps)),
+            )
+            for split, (start_ms, end_ms) in periods.items()
+        }
+        rows.append({"candidate": candidate, "results": results, "score": _signal_score(results)})
+    eligible = [
+        row
+        for row in rows
+        if row["results"]["train"].net_return > 0
+        and row["results"]["validation"].net_return > 0
+        and row["results"]["train"].completed_trades >= 6
+        and row["results"]["validation"].completed_trades >= 6
+    ]
+    ranked = sorted(eligible or rows, key=lambda row: row["score"], reverse=True)
+    selected = ranked[0] if ranked else None
+    top_rows = ranked[:10]
+    confirmation_pass_rate = (
+        sum(_confirmation_gate(row["results"]["confirmation"]) for row in top_rows) / len(top_rows)
+        if top_rows
+        else 0.0
+    )
+
+    output: dict[str, Any] = {}
+    for split, (samples, prediction, actual) in predictions.items():
+        result = selected["results"][split] if selected is not None else None
+        output[split] = {
+            "samples": len(samples),
+            "direction_accuracy": _accuracy(np, prediction[:, 0], actual[:, 0]),
+            "information_coefficient": _correlation(np, prediction[:, 0], actual[:, 0]),
+            **_result_summary(result),
+        }
+    output["signal_search"] = {
+        "candidate_count": len(candidates),
+        "development_eligible_count": len(eligible),
+        "selection_rule": (
+            "Use train and validation only. Rank target-month coverage first, then positive-month "
+            "coverage, weaker split return, combined return, and drawdown. Confirmation is "
+            "excluded."
+        ),
+        "selected": _signal_row(selected),
+        "top_development_candidates": [_signal_row(row) for row in top_rows],
+        "neighbor_confirmation_pass_rate": confirmation_pass_rate,
+        "stress_confirmation": (
+            _stress_result(
+                item["bars"], scores, selected["candidate"], periods["confirmation"], funding
+            )
+            if selected is not None
+            else None
+        ),
+    }
     return output
+
+
+def _signal_candidates() -> tuple[_SignalCandidate, ...]:
+    return tuple(
+        _SignalCandidate(direction, threshold, smoothing, hold, cooldown, confirmation)
+        for direction in ("long_only", "long_short")
+        for threshold in (0.55, 0.60, 0.65)
+        for smoothing in (1, 4, 8)
+        for hold in (1, 8)
+        for cooldown in (0, 8)
+        for confirmation in (1, 2)
+    )
+
+
+def _managed_targets(
+    scores: list[float | None], candidate: _SignalCandidate
+) -> tuple[int | None, ...]:
+    """Convert probabilities into causal, low-turnover targets with explicit state controls."""
+    targets: list[int | None] = []
+    state = 0
+    hold_count = 0
+    cooldown = 0
+    pending = 0
+    pending_count = 0
+    ema: float | None = None
+    alpha = 1.0 if candidate.smoothing_bars <= 1 else 2.0 / (candidate.smoothing_bars + 1)
+    for score in scores:
+        if score is None:
+            targets.append(None)
+            continue
+        ema = score if ema is None else ema + alpha * (score - ema)
+        desired = 0
+        if ema >= candidate.entry_threshold:
+            desired = 1
+        elif candidate.direction == "long_short" and ema <= 1.0 - candidate.entry_threshold:
+            desired = -1
+
+        if state:
+            hold_count += 1
+            if desired == state:
+                pending = 0
+                pending_count = 0
+            elif hold_count >= candidate.minimum_hold_bars:
+                state = 0
+                hold_count = 0
+                cooldown = candidate.cooldown_bars
+                pending = 0
+                pending_count = 0
+        if not state:
+            if cooldown:
+                cooldown -= 1
+            elif desired:
+                if desired == pending:
+                    pending_count += 1
+                else:
+                    pending = desired
+                    pending_count = 1
+                if pending_count >= candidate.confirmation_bars:
+                    state = desired
+                    hold_count = 0
+                    pending = 0
+                    pending_count = 0
+        targets.append(state)
+    return tuple(targets)
+
+
+def _result_summary(result: Any) -> dict[str, Any]:
+    monthly = [{"label": label, "return": value} for label, value in result.monthly_returns]
+    positive_months = sum(row["return"] > 0 for row in monthly)
+    target_months = sum(row["return"] >= 0.25 for row in monthly)
+    returns = [row["return"] for row in monthly]
+    return {
+        "net_return": result.net_return,
+        "max_drawdown": result.max_drawdown,
+        "completed_trades": result.completed_trades,
+        "win_rate": result.win_rate,
+        "profit_factor": result.profit_factor,
+        "total_fees": result.total_fees,
+        "total_funding": result.total_funding,
+        "ending_position": result.ending_position,
+        "positive_month_rate": positive_months / len(monthly) if monthly else 0.0,
+        "target_25pct_month_rate": target_months / len(monthly) if monthly else 0.0,
+        "median_monthly_return": sorted(returns)[len(returns) // 2] if returns else 0.0,
+        "worst_monthly_return": min(returns) if returns else 0.0,
+        "monthly_returns": monthly,
+    }
+
+
+def _signal_score(results: dict[str, Any]) -> tuple[float, ...]:
+    train = _result_summary(results["train"])
+    validation = _result_summary(results["validation"])
+    return (
+        min(train["target_25pct_month_rate"], validation["target_25pct_month_rate"]),
+        min(train["positive_month_rate"], validation["positive_month_rate"]),
+        min(results["train"].net_return, results["validation"].net_return),
+        results["train"].net_return + results["validation"].net_return,
+        min(results["train"].max_drawdown, results["validation"].max_drawdown),
+    )
+
+
+def _confirmation_gate(result: Any) -> bool:
+    summary = _result_summary(result)
+    return bool(
+        result.net_return > 0
+        and result.max_drawdown >= -0.25
+        and result.completed_trades >= 6
+        and summary["positive_month_rate"] >= 0.5
+    )
+
+
+def _signal_row(row: dict[str, Any] | None) -> dict[str, Any] | None:
+    if row is None:
+        return None
+    return {
+        "parameters": row["candidate"].as_dict(),
+        "score": list(row["score"]),
+        "train": _result_summary(row["results"]["train"]),
+        "validation": _result_summary(row["results"]["validation"]),
+        "confirmation": _result_summary(row["results"]["confirmation"]),
+    }
+
+
+def _stress_result(
+    bars: list[ResearchBar],
+    scores: list[float | None],
+    candidate: _SignalCandidate,
+    period: tuple[int, int],
+    funding: list[list[Any]],
+) -> dict[str, Any]:
+    result = evaluate_targets(
+        bars,
+        _managed_targets(scores, candidate),
+        start_ms=period[0],
+        end_ms=period[1],
+        funding=funding,
+        fee_bps=Decimal("10"),
+        slippage_bps=Decimal("5"),
+    )
+    return {"fee_bps": 10.0, "slippage_bps": 5.0, **_result_summary(result)}
 
 
 def _accuracy(np: Any, scores: Any, actual: Any) -> float | None:
@@ -492,11 +721,17 @@ def _correlation(np: Any, left: Any, right: Any) -> float | None:
     return float(np.corrcoef(left, right)[0, 1])
 
 
-def _candidate_gate(metrics: dict[str, Any]) -> bool:
+def _candidate_gate(metrics: dict[str, Any], searches: dict[str, Any]) -> bool:
     confirmations = [value["confirmation"] for value in metrics.values()]
+    selected_searches = [searches.get(instrument, {}) for instrument in metrics]
     return bool(confirmations) and all(
-        item["net_return"] > 0 and item["max_drawdown"] >= -0.25 and item["completed_trades"] >= 6
-        for item in confirmations
+        item["net_return"] > 0
+        and item["max_drawdown"] >= -0.25
+        and item["completed_trades"] >= 6
+        and item.get("positive_month_rate", 0.0) >= 0.5
+        and item.get("target_25pct_month_rate", 0.0) >= 0.5
+        and search.get("selected") is not None
+        for item, search in zip(confirmations, selected_searches, strict=True)
     )
 
 
@@ -548,5 +783,38 @@ def _markdown(report: dict[str, Any]) -> str:
                 f"{row['completed_trades']} | {row['direction_accuracy'] or 0:.2%} | "
                 f"{row['information_coefficient'] or 0:.4f} |"
             )
+    lines.extend(["", "## Signal management search", ""])
+    lines.extend(
+        [
+            "Candidates are selected on train and validation only. Confirmation is independent. "
+            "The target is at least 25% monthly return in at least half of confirmation months, "
+            "with at least half of months positive and max drawdown no worse than 25%.",
+            "",
+            "| Instrument | Selected management | Confirmation | 25% month rate | Stress |",
+            "|---|---|---:|---:|---:|",
+        ]
+    )
+    for instrument, search in report.get("signal_search", {}).items():
+        selected = search.get("selected")
+        if not selected:
+            lines.append(f"| {instrument} | none | -- | -- | -- |")
+            continue
+        parameters = selected["parameters"]
+        confirmation = selected["confirmation"]
+        stress = search.get("stress_confirmation") or {}
+        management = (
+            f"{parameters['direction']} p>={parameters['entry_threshold']:.2f}, "
+            f"EMA {parameters['smoothing_bars']}, hold {parameters['minimum_hold_bars']}, "
+            f"cooldown {parameters['cooldown_bars']}, confirm {parameters['confirmation_bars']}"
+        )
+        lines.append(
+            f"| {instrument} | {management} | {confirmation['net_return']:.2%} | "
+            f"{confirmation['target_25pct_month_rate']:.2%} | {stress.get('net_return', 0):.2%} |"
+        )
+        lines.extend(["", f"### {instrument} confirmation monthly returns", ""])
+        lines.append("| Month | Return |")
+        lines.append("|---|---:|")
+        for month in confirmation.get("monthly_returns", []):
+            lines.append(f"| {month['label']} | {month['return']:.2%} |")
     lines.extend(["", report["decision"]["reason"], ""])
     return "\n".join(lines)

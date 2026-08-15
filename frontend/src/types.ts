@@ -321,6 +321,29 @@ export type DeepFactorSplit = {
   completed_trades: number
   win_rate: number | null
   profit_factor: number | null
+  total_fees: number
+  total_funding: number
+  positive_month_rate: number
+  target_25pct_month_rate: number
+  median_monthly_return: number
+  worst_monthly_return: number
+  monthly_returns: Array<{ label: string, return: number }>
+}
+
+export type DeepSignalCandidate = {
+  parameters: {
+    id: string
+    direction: string
+    entry_threshold: number
+    smoothing_bars: number
+    minimum_hold_bars: number
+    cooldown_bars: number
+    confirmation_bars: number
+  }
+  score: number[]
+  train: DeepFactorSplit
+  validation: DeepFactorSplit
+  confirmation: DeepFactorSplit
 }
 
 export type DeepFactorReport = {
@@ -337,6 +360,15 @@ export type DeepFactorReport = {
   data: Record<string, { first_bar: string, last_bar: string, source_bars_15m: number }>
   training: { history: Array<{ epoch: number, train_loss: number, validation_loss: number }>, best_validation_loss: number }
   metrics: Record<string, Record<'train' | 'validation' | 'confirmation', DeepFactorSplit>>
+  signal_search?: Record<string, {
+    candidate_count: number
+    development_eligible_count: number
+    selection_rule: string
+    selected: DeepSignalCandidate | null
+    top_development_candidates: DeepSignalCandidate[]
+    neighbor_confirmation_pass_rate: number
+    stress_confirmation: DeepFactorSplit & { fee_bps: number, slippage_bps: number } | null
+  }>
   decision: { status: string, approved_for_trading: boolean, reason: string }
 }
 

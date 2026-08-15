@@ -631,6 +631,9 @@ footer { height: 44px; padding: 0 30px; display: flex; align-items: center; just
 .factor-split-table th:first-child, .factor-split-table td:first-child { text-align: left; }
 .factor-split-table th { color: var(--muted); background: #f8fafb; font-weight: 500; }
 .factor-decision { margin: 0; padding: 10px 13px; color: var(--muted); font-size: 10px; }
+.deep-signal-result { border-top: 1px solid var(--line); }
+.deep-signal-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 13px 0; color: var(--ink); font: 10px 'DM Mono', monospace; }
+.deep-signal-heading strong { color: var(--muted); font: inherit; }
 .lab-section-head { min-height: 58px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
 .lab-section-head > div { flex: 1; }
 .lab-section-head > strong { font: 10px 'DM Mono', monospace; white-space: nowrap; }
