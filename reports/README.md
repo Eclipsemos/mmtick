@@ -66,6 +66,12 @@ market data.
   ETH response. This is the strongest factor found so far, but its development-selected dynamic
   sizing reached the 25% monthly target in only 2/8 reused confirmation months, below the required
   4/8. It remains rejected and research-only; 2026 is not a fresh holdout.
+- `experiments/factor_portfolio/2026-08-15/`: 2,988-candidate BTC/ETH second-sleeve search around
+  the lead-lag factor. The development-selected fixed-capital portfolio retained only 2/8 target
+  months in reused confirmation, so static factor diversification is rejected.
+- `experiments/event_meta_factor/2026-08-15/`: GPU XGBoost meta-label filter for sparse BTC-shock
+  events. Its ROC AUC fell below 0.50 in both selection and reused confirmation, and no risk/return
+  configuration passed development gates, so the ML filter is rejected.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
