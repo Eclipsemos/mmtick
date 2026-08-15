@@ -132,6 +132,11 @@ market data.
   in only 2/8 reused 2026 months under base costs and 1/8 under stress, so it is rejected. Earlier
   reports showing 4/8 used same-day metric snapshots and are invalid due to forward leakage; they
   remain only as provenance. No market-state overlay is approved for trading.
+- `experiments/market_state_volatility/2026-08-15/`: a prior-day ETH crowding-spread state and a
+  causal 20-day volatility target on the frozen factor book. The development-selected result met
+  the revised +15% target in 4/8 reused 2026 months under both base and stress costs, with -28.19%
+  and -32.50% daily-close drawdowns. It is frozen as a forward research candidate, not approved
+  for trading; 2026 is reused and peak modeled notional is approximately 8.8x.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment

@@ -403,6 +403,95 @@ def evaluate_signal_overlay(
     )
 
 
+def evaluate_signal_volatility_overlay(
+    returns: DailyReturns,
+    signals: tuple[tuple[str, Decimal | None], ...],
+    signal_config: SignalOverlayConfig,
+    volatility_config: VolatilityTargetConfig,
+    *,
+    volatility_signal_returns: DailyReturns | None = None,
+    start: str | None = None,
+    end: str | None = None,
+    initial_equity: Decimal = Decimal("100000"),
+) -> PortfolioResult:
+    """Apply state and volatility exposure with turnover on their combined notional."""
+    if not returns or initial_equity <= 0:
+        raise ValueError("combined overlay requires returns and positive equity")
+    labels = tuple(label for label, _value in returns)
+    if tuple(label for label, _value in signals) != labels:
+        raise ValueError("combined overlay signal labels are not aligned")
+    if start is not None and end is not None and start > end:
+        raise ValueError("combined overlay period is invalid")
+    if signal_config.turnover_bps != volatility_config.turnover_bps:
+        raise ValueError("combined overlay turnover costs must match")
+
+    volatility_signals = volatility_signal_returns
+    if volatility_signals is None:
+        volatility_signals = evaluate_signal_overlay(
+            returns,
+            signals,
+            signal_config,
+            initial_equity=initial_equity,
+        ).daily_returns
+    if tuple(label for label, _value in volatility_signals) != labels:
+        raise ValueError("combined volatility signal labels are not aligned")
+    volatility_exposures = causal_volatility_exposures(volatility_signals, volatility_config)
+    selected = [
+        (row, signal, volatility)
+        for row, signal, volatility in zip(
+            returns,
+            signals,
+            volatility_exposures,
+            strict=True,
+        )
+        if (start is None or row[0] >= start) and (end is None or row[0] <= end)
+    ]
+    if not selected:
+        raise ValueError("combined overlay evaluation period is empty")
+
+    equity = initial_equity
+    peak = initial_equity
+    max_drawdown = Decimal("0")
+    previous_exposure = Decimal("1")
+    daily: list[tuple[str, Decimal]] = []
+    bankrupt = False
+    cost_rate = volatility_config.turnover_bps / Decimal("10000")
+    for (label, base_return), (signal_label, signal), volatility in selected:
+        volatility_label, volatility_exposure, _realized_volatility = volatility
+        if label != signal_label or label != volatility_label:
+            raise ValueError("combined overlay labels are not aligned")
+        use_high = _signal_high_state(signal, signal_config)
+        signal_exposure = (
+            Decimal("1")
+            if use_high is None
+            else signal_config.high_exposure
+            if use_high
+            else signal_config.low_exposure
+        )
+        exposure = signal_exposure * volatility_exposure
+        turnover_cost = abs(exposure - previous_exposure) * cost_rate
+        strategy_return = exposure * base_return - turnover_cost
+        equity *= Decimal("1") + strategy_return
+        daily.append((label, strategy_return))
+        peak = max(peak, equity)
+        if peak > 0:
+            max_drawdown = min(max_drawdown, equity / peak - Decimal("1"))
+        previous_exposure = exposure
+        if equity <= 0:
+            bankrupt = True
+            break
+    used_daily = tuple(daily)
+    return PortfolioResult(
+        initial_equity=initial_equity,
+        final_equity=equity,
+        net_return=equity / initial_equity - Decimal("1"),
+        max_drawdown=max_drawdown,
+        bankrupt=bankrupt,
+        daily_returns=used_daily,
+        monthly_returns=monthly_returns(used_daily),
+    )
+
+
 def _signal_high_state(signal: Decimal | None, config: SignalOverlayConfig) -> bool | None:
     if signal is None:
         return None

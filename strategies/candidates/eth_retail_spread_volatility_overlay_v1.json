@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "id": "eth-retail-spread-volatility-overlay-v1",
+  "instrument_ids": ["btc_perp", "eth_perp"],
+  "strategy_family": "market_state_volatility_factor_overlay",
+  "status": "provisional_forward_candidate",
+  "approved_for_trading": false,
+  "evidence_lock_date": "2026-08-14",
+  "forward_evidence_start_date": "2026-08-15",
+  "source_report": "reports/experiments/market_state_volatility/2026-08-15/market-state-volatility-20260815-153825-882277.json",
+  "parameters": {
+    "baseline": "frozen_four_factor_anchor",
+    "baseline_internal_leverage": 4.0,
+    "state_symbol": "ETHUSDT",
+    "state_feature": "top_retail_spread",
+    "state_interval_minutes": 240,
+    "state_normalization_window_bars": 540,
+    "state_timing": "last_complete_prior_utc_day_snapshot",
+    "state_mode": "below",
+    "state_threshold_zscore": 1.25,
+    "low_state_exposure": 0.8,
+    "high_state_exposure": 2.0,
+    "unavailable_state_exposure": 1.0,
+    "volatility_lookback_days": 20,
+    "target_daily_return_rms": 0.03,
+    "minimum_volatility_exposure": 0.6,
+    "maximum_volatility_exposure": 1.1,
+    "volatility_rebalance_frequency": "daily",
+    "maximum_modeled_notional_multiple": 8.8
+  },
+  "costs": {
+    "base_component_fee_bps": 5.0,
+    "base_component_slippage_bps": 2.0,
+    "base_combined_overlay_turnover_bps": 7.0,
+    "stress_component_fee_bps": 10.0,
+    "stress_component_slippage_bps": 5.0,
+    "stress_combined_overlay_turnover_bps": 15.0,
+    "historical_funding_included": true
+  },
+  "acceptance_policy": {
+    "monthly_return_target": 0.15,
+    "minimum_confirmation_target_month_rate": 0.5,
+    "maximum_daily_close_drawdown": -0.35,
+    "require_positive_base_and_stress_return": true
+  },
+  "evidence": {
+    "discovery_return": 20.0156,
+    "discovery_max_drawdown": -0.3387,
+    "discovery_target_months": 13,
+    "discovery_months": 36,
+    "validation_return": 1.4028,
+    "validation_max_drawdown": -0.2787,
+    "validation_target_months": 6,
+    "validation_months": 24,
+    "confirmation_return": 1.8294,
+    "confirmation_max_drawdown": -0.2819,
+    "confirmation_target_months": 4,
+    "confirmation_months": 8,
+    "stress_confirmation_return": 1.4152,
+    "stress_confirmation_max_drawdown": -0.3250,
+    "stress_confirmation_target_months": 4,
+    "top_20_neighborhood_pass_count": 3
+  },
+  "forward_gates": {
+    "minimum_complete_days_for_interim_review": 30,
+    "minimum_complete_months_for_approval_review": 4,
+    "minimum_complete_days_for_approval_review": 180,
+    "require_intraday_shared_margin_replay": true,
+    "reject_at_daily_close_drawdown": -0.25
+  }
+}

@@ -12,6 +12,7 @@ from mastermind_tick.factor_overlay import (
     evaluate_factor_overlay,
     evaluate_monthly_risk_overlay,
     evaluate_signal_overlay,
+    evaluate_signal_volatility_overlay,
     evaluate_volatility_target,
 )
 
@@ -248,3 +249,41 @@ def test_signal_overlay_rejects_misaligned_labels() -> None:
             (("2026-01-02", Decimal("0")),),
             SignalOverlayConfig(Decimal("1"), Decimal("0.5"), Decimal("2"), "above"),
         )
+
+
+def test_combined_overlay_charges_turnover_on_total_exposure() -> None:
+    returns = (
+        ("2026-01-01", Decimal("0.01")),
+        ("2026-01-02", Decimal("0.01")),
+        ("2026-01-03", Decimal("0.01")),
+    )
+    signals = (
+        ("2026-01-01", None),
+        ("2026-01-02", Decimal("2")),
+        ("2026-01-03", Decimal("0")),
+    )
+    volatility_signals = tuple((label, Decimal("0.01")) for label, _value in returns)
+    signal_config = SignalOverlayConfig(
+        Decimal("1"), Decimal("0.5"), Decimal("2"), "above", turnover_bps=Decimal("10")
+    )
+    volatility_config = VolatilityTargetConfig(
+        2,
+        Decimal("0.01"),
+        Decimal("0.5"),
+        Decimal("1"),
+        turnover_bps=Decimal("10"),
+    )
+
+    result = evaluate_signal_volatility_overlay(
+        returns,
+        signals,
+        signal_config,
+        volatility_config,
+        volatility_signal_returns=volatility_signals,
+    )
+
+    assert result.daily_returns == (
+        ("2026-01-01", Decimal("0.01")),
+        ("2026-01-02", Decimal("0.019")),
+        ("2026-01-03", Decimal("0.0035")),
+    )
