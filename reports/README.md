@@ -164,6 +164,11 @@ market data.
   two-factor portfolios around the frozen market-state strategy. Of 2,982 development-eligible
   risk configurations, none reaches +15% in all seven complete 2026 months under base and stress
   costs; the best strict coverage is 5/7. The study is rejected and excludes partial August.
+- `experiments/volatility_order_flow_router/2026-08-15/`: prior-day BTC realized volatility
+  routes between the frozen state strategy and 22 development-selected order-flow factors plus
+  18 development-valid pairs. The 10,080-route grid and 2,017 development-eligible risk controls
+  reach at most 5/7 complete 2026 months under both cost models; May and July remain losses. The
+  causal low-volatility routing hypothesis is rejected and partial August is excluded.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
