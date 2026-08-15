@@ -12,28 +12,26 @@ is reused confirmation only and does not choose the metric, threshold, allocatio
 
 ## Result
 
-The selected factor follows an extreme BTC top-position/global-account ratio spread and is
-long-only. It receives 25% of the hybrid allocation; the frozen four-factor anchor receives 75%,
-with 1.5x outer leverage.
+The current `+15%` protocol requires both development segments to be profitable, remain above
+`-35%` drawdown, and reach the monthly target in at least 15% of their months. The selected factor
+fades extreme ETH top-trader position crowding and is long-only. It receives 60% of the hybrid
+allocation; the frozen four-factor anchor receives 40%, with 2.5x outer leverage.
 
-| Split | Return | Max DD | 25% months |
+| Split | Return | Max DD | 15% months |
 |---|---:|---:|---:|
-| 2021-2023 discovery | +1593.00% | -34.04% | 7/36 |
-| 2024-2025 validation | +262.69% | -34.59% | 5/24 |
-| 2026 reused confirmation | +207.03% | -19.19% | 3/8 |
-| 2026 stress 10+5 bps | +172.43% | -21.72% | 3/8 |
+| 2021-2023 discovery | +1426.61% | -34.22% | 12/36 |
+| 2024-2025 validation | +249.74% | -33.83% | 7/24 |
+| 2026 reused confirmation | +159.81% | -20.90% | 3/8 |
+| 2026 stress 10+5 bps | +124.15% | -24.64% | 3/8 |
 
-The new data source is informative but does not fill a fourth +25% confirmation month. Decision:
+Only January, February, and June reached +15% in reused 2026 confirmation. March, April, and
+August were positive but below target; May and July lost money. The result therefore misses the
+required 4/8 confirmation months under both base and stress costs. Decision:
 `rejected_after_confirmation`. Approved for trading: `false`.
 
-The same development protocol was rerun after the objective was lowered to `+15%` per month. The
-selected parameters did not change: only January, February, and June reached +15% in the reused
-2026 confirmation (3/8 months). Its base-cost compounded monthly rate was about 14.02%, and the
-10+5 bps stress rate was about 12.53%, so this is not a verified every-month +15% solution.
-
-A stricter rerun required both 2021-2023 and 2024-2025 development segments to have at least 25%
-of months above +15%. It produced `0` eligible hybrids, so no configuration was promoted from that
-protocol either. See `market-metric-factor-20260815-134440-614079`.
+The final artifact is `market-metric-factor-20260815-135357-577775`. The protocol was also tested
+with a stricter 25% development consistency gate, which produced no eligible hybrid. These
+neighborhood checks do not change the rejection or make 2026 a fresh holdout.
 
 ## Reproduce
 

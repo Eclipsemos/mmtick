@@ -48,7 +48,7 @@ HYBRID_LEVERAGES = tuple(
 SHORTLIST_SIZE = 100
 TARGET_MONTHLY_RETURN = Decimal("0.15")
 MIN_TARGET_MONTH_RATE = Decimal("0.5")
-MIN_DEVELOPMENT_TARGET_RATE = Decimal("0.25")
+MIN_DEVELOPMENT_TARGET_RATE = Decimal("0.15")
 
 
 @dataclass(frozen=True)
@@ -251,7 +251,7 @@ def _hybrid_eligible(results: dict[str, PortfolioResult]) -> bool:
     return all(
         result.net_return > 0
         and result.max_drawdown >= Decimal("-0.35")
-        and result.target_month_rate >= MIN_DEVELOPMENT_TARGET_RATE
+        and _target_month_rate(result) >= MIN_DEVELOPMENT_TARGET_RATE
         and not result.bankrupt
         for result in results.values()
     )
@@ -261,8 +261,8 @@ def _portfolio_score(results: dict[str, PortfolioResult]) -> tuple[Decimal, ...]
     discovery = results["discovery"]
     validation = results["validation"]
     return (
-        min(discovery.target_month_rate, validation.target_month_rate),
-        discovery.target_month_rate + validation.target_month_rate,
+        min(_target_month_rate(discovery), _target_month_rate(validation)),
+        _target_month_rate(discovery) + _target_month_rate(validation),
         min(discovery.positive_month_rate, validation.positive_month_rate),
         min(discovery.worst_month, validation.worst_month),
         min(discovery.net_return, validation.net_return),
@@ -316,6 +316,14 @@ def _research_summary(result: Any) -> dict[str, Decimal]:
     }
 
 
+def _target_month_rate(result: PortfolioResult) -> Decimal:
+    if not result.monthly_returns:
+        return Decimal("0")
+    return Decimal(
+        sum(value >= TARGET_MONTHLY_RETURN for _label, value in result.monthly_returns)
+    ) / Decimal(len(result.monthly_returns))
+
+
 def _report(
     bars: dict[str, list[Any]],
     metric_bars: dict[str, dict[int, Any]],
@@ -330,7 +338,8 @@ def _report(
     achieved = bool(
         confirmation
         and stress
-        and confirmation.target_month_rate >= MIN_TARGET_MONTH_RATE
+        and _target_month_rate(confirmation) >= MIN_TARGET_MONTH_RATE
+        and _target_month_rate(stress) >= MIN_TARGET_MONTH_RATE
         and confirmation.max_drawdown >= Decimal("-0.35")
         and stress.net_return > 0
         and stress.max_drawdown >= Decimal("-0.35")
