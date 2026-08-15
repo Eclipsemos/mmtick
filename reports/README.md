@@ -53,6 +53,9 @@ market data.
 - `experiments/btc_regime_breakout/2026-08-14/`: daily EMA direction filtered 4h BTC Donchian
   breakouts. The development winner went flat during confirmation, while the faster long/short
   variant failed confirmation; no regime-filtered candidate is approved.
+- `experiments/factor_mining/2026-08-15/`: AlphaGPT-inspired, causal factor-expression search
+  across BTCUSDT, ETHUSDT, and SOXLUSDT. BTC and ETH candidates failed independent confirmation;
+  SOXL has inadequate independent history. No formula is approved or connected to execution.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment

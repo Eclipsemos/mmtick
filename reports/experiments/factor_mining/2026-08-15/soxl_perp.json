@@ -1,0 +1,1092 @@
+{
+  "instrument_id": "soxl_perp",
+  "data": {
+    "first_bar": "2026-05-15T14:00:00+00:00",
+    "last_bar": "2026-08-13T23:59:59.999000+00:00",
+    "source_bars_15m": 8680,
+    "funding_events": 269,
+    "history_days": 90.4166666550926
+  },
+  "execution": {
+    "signal_timing": "closed bar",
+    "fill_timing": "next bar open",
+    "fee_bps_per_fill": 5.0,
+    "slippage_bps_per_fill": 2.0,
+    "funding": "historical funding while positioned",
+    "exposure": 1.0,
+    "liquidation_modeled": false
+  },
+  "periods": {
+    "train": {
+      "start": "2026-05-17T00:00:00+00:00",
+      "end": "2026-06-30T23:59:59.999000+00:00"
+    },
+    "validation": {
+      "start": "2026-07-01T00:00:00+00:00",
+      "end": "2026-07-31T23:59:59.999000+00:00"
+    },
+    "confirmation": {
+      "start": "2026-08-01T00:00:00+00:00",
+      "end": "2026-08-10T23:59:59.999000+00:00"
+    }
+  },
+  "formula_language": {
+    "features": [
+      "ret_1_z",
+      "ret_4_z",
+      "ret_16_z",
+      "trend_20_z",
+      "range_z",
+      "volume_z",
+      "close_location_z",
+      "atr_ratio_z",
+      "funding_z"
+    ],
+    "unary_operators": [
+      "NEG",
+      "ABS",
+      "SIGN",
+      "DELAY1",
+      "DECAY3"
+    ],
+    "binary_operators": [
+      "ADD",
+      "SUB",
+      "MUL",
+      "DIV"
+    ],
+    "causality": "Every feature uses only data through its closed bar; rolling z-scores use a trailing 32-bar window and never a full-sample normalization."
+  },
+  "candidate_count": 324,
+  "development_eligible_count": 17,
+  "selection_rule": "positive train and validation return with at least four completed trades each; rank by weaker return, combined return, then drawdown. Confirmation is excluded.",
+  "selected": {
+    "id": "60m-long_only-ret_16_z-range_z-sub-threshold-0p5",
+    "formula": {
+      "tokens": [
+        "ret_16_z",
+        "range_z",
+        "SUB"
+      ],
+      "display": "(ret_16_z sub range_z)"
+    },
+    "threshold": 0.5,
+    "direction": "long_only",
+    "interval_minutes": 60,
+    "selection_score": [
+      0.19073422696517536,
+      0.8856995593675626,
+      -0.25071413590647806
+    ],
+    "train": {
+      "exposure": 1.0,
+      "initial_equity": 100000.0,
+      "final_equity": 169496.53324023873,
+      "net_return": 0.6949653324023872,
+      "max_drawdown": -0.1837392785347714,
+      "completed_trades": 84,
+      "win_rate": 0.4880952380952381,
+      "profit_factor": 1.7865034298235427,
+      "total_fees": 10927.804211982777,
+      "total_funding": -1997.2096312785027,
+      "bankrupt": false,
+      "ending_position": "FLAT",
+      "monthly_returns": [
+        {
+          "month": "2026-05",
+          "return": 0.07566554764874586
+        },
+        {
+          "month": "2026-06",
+          "return": 0.5757363765227435
+        }
+      ],
+      "positive_month_rate": 1.0
+    },
+    "validation": {
+      "exposure": 1.0,
+      "initial_equity": 100000.0,
+      "final_equity": 119073.42269651753,
+      "net_return": 0.19073422696517536,
+      "max_drawdown": -0.25071413590647806,
+      "completed_trades": 63,
+      "win_rate": 0.4126984126984127,
+      "profit_factor": 1.2264747870099102,
+      "total_fees": 6886.539577525097,
+      "total_funding": -474.11975739936713,
+      "bankrupt": false,
+      "ending_position": "FLAT",
+      "monthly_returns": [
+        {
+          "month": "2026-07",
+          "return": 0.19073422696517536
+        }
+      ],
+      "positive_month_rate": 1.0
+    },
+    "confirmation": {
+      "exposure": 1.0,
+      "initial_equity": 100000.0,
+      "final_equity": 124023.96599606864,
+      "net_return": 0.24023965996068639,
+      "max_drawdown": -0.05861196673987647,
+      "completed_trades": 17,
+      "win_rate": 0.47058823529411764,
+      "profit_factor": 2.9240563215273596,
+      "total_fees": 2040.564883396744,
+      "total_funding": -231.07464270261713,
+      "bankrupt": false,
+      "ending_position": "FLAT",
+      "monthly_returns": [
+        {
+          "month": "2026-08",
+          "return": 0.24023965996068639
+        }
+      ],
+      "positive_month_rate": 1.0
+    }
+  },
+  "top_development_candidates": [
+    {
+      "id": "60m-long_only-ret_16_z-range_z-sub-threshold-0p5",
+      "formula": {
+        "tokens": [
+          "ret_16_z",
+          "range_z",
+          "SUB"
+        ],
+        "display": "(ret_16_z sub range_z)"
+      },
+      "threshold": 0.5,
+      "direction": "long_only",
+      "interval_minutes": 60,
+      "selection_score": [
+        0.19073422696517536,
+        0.8856995593675626,
+        -0.25071413590647806
+      ],
+      "train": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 169496.53324023873,
+        "net_return": 0.6949653324023872,
+        "max_drawdown": -0.1837392785347714,
+        "completed_trades": 84,
+        "win_rate": 0.4880952380952381,
+        "profit_factor": 1.7865034298235427,
+        "total_fees": 10927.804211982777,
+        "total_funding": -1997.2096312785027,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-05",
+            "return": 0.07566554764874586
+          },
+          {
+            "month": "2026-06",
+            "return": 0.5757363765227435
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "validation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 119073.42269651753,
+        "net_return": 0.19073422696517536,
+        "max_drawdown": -0.25071413590647806,
+        "completed_trades": 63,
+        "win_rate": 0.4126984126984127,
+        "profit_factor": 1.2264747870099102,
+        "total_fees": 6886.539577525097,
+        "total_funding": -474.11975739936713,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-07",
+            "return": 0.19073422696517536
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "confirmation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 124023.96599606864,
+        "net_return": 0.24023965996068639,
+        "max_drawdown": -0.05861196673987647,
+        "completed_trades": 17,
+        "win_rate": 0.47058823529411764,
+        "profit_factor": 2.9240563215273596,
+        "total_fees": 2040.564883396744,
+        "total_funding": -231.07464270261713,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-08",
+            "return": 0.24023965996068639
+          }
+        ],
+        "positive_month_rate": 1.0
+      }
+    },
+    {
+      "id": "60m-long_only-trend_20_z-delay1-threshold-0",
+      "formula": {
+        "tokens": [
+          "trend_20_z",
+          "DELAY1"
+        ],
+        "display": "delay1(trend_20_z)"
+      },
+      "threshold": 0.0,
+      "direction": "long_only",
+      "interval_minutes": 60,
+      "selection_score": [
+        0.18917495206891888,
+        0.5903814396419809,
+        -0.3162121329891626
+      ],
+      "train": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 140120.6487573062,
+        "net_return": 0.40120648757306193,
+        "max_drawdown": -0.2640531043877068,
+        "completed_trades": 53,
+        "win_rate": 0.5660377358490566,
+        "profit_factor": 1.4079933352075757,
+        "total_fees": 6021.807671248773,
+        "total_funding": -2548.7807289470356,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-05",
+            "return": -0.06839347964550711
+          },
+          {
+            "month": "2026-06",
+            "return": 0.5040754406054155
+          }
+        ],
+        "positive_month_rate": 0.5
+      },
+      "validation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 118917.4952068919,
+        "net_return": 0.18917495206891888,
+        "max_drawdown": -0.3162121329891626,
+        "completed_trades": 43,
+        "win_rate": 0.4186046511627907,
+        "profit_factor": 1.2304138205029393,
+        "total_fees": 4395.723942621903,
+        "total_funding": -807.8212082642096,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-07",
+            "return": 0.18917495206891888
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "confirmation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 118272.14977371061,
+        "net_return": 0.18272149773710608,
+        "max_drawdown": -0.11212014609101668,
+        "completed_trades": 11,
+        "win_rate": 0.45454545454545453,
+        "profit_factor": 2.114443594778864,
+        "total_fees": 1351.1544790484,
+        "total_funding": -232.2491397809911,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-08",
+            "return": 0.18272149773710608
+          }
+        ],
+        "positive_month_rate": 1.0
+      }
+    },
+    {
+      "id": "240m-long_only-ret_4_z-range_z-sub-threshold-0p5",
+      "formula": {
+        "tokens": [
+          "ret_4_z",
+          "range_z",
+          "SUB"
+        ],
+        "display": "(ret_4_z sub range_z)"
+      },
+      "threshold": 0.5,
+      "direction": "long_only",
+      "interval_minutes": 240,
+      "selection_score": [
+        0.15806266280981643,
+        0.5056086127250248,
+        -0.26328289205739874
+      ],
+      "train": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 134754.59499152083,
+        "net_return": 0.3475459499152084,
+        "max_drawdown": -0.26328289205739874,
+        "completed_trades": 31,
+        "win_rate": 0.5806451612903226,
+        "profit_factor": 1.6050583416903448,
+        "total_fees": 3782.458555028209,
+        "total_funding": -1358.1292851129515,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-05",
+            "return": 0.08889220654980395
+          },
+          {
+            "month": "2026-06",
+            "return": 0.23753842833071476
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "validation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 115806.26628098164,
+        "net_return": 0.15806266280981643,
+        "max_drawdown": -0.2086344348183223,
+        "completed_trades": 16,
+        "win_rate": 0.5,
+        "profit_factor": 1.451874565847966,
+        "total_fees": 1720.428747827257,
+        "total_funding": -258.3101631331007,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-07",
+            "return": 0.15806266280981643
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "confirmation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 100414.32913586829,
+        "net_return": 0.004143291358682876,
+        "max_drawdown": -0.08281126228216458,
+        "completed_trades": 9,
+        "win_rate": 0.5555555555555556,
+        "profit_factor": 1.0490698842244934,
+        "total_fees": 924.877700945341,
+        "total_funding": -260.9385940043714,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-08",
+            "return": 0.004143291358682876
+          }
+        ],
+        "positive_month_rate": 1.0
+      }
+    },
+    {
+      "id": "240m-long_only-ret_4_z-trend_20_z-sub-threshold-0p5",
+      "formula": {
+        "tokens": [
+          "ret_4_z",
+          "trend_20_z",
+          "SUB"
+        ],
+        "display": "(ret_4_z sub trend_20_z)"
+      },
+      "threshold": 0.5,
+      "direction": "long_only",
+      "interval_minutes": 240,
+      "selection_score": [
+        0.157198394017154,
+        0.5670237877072642,
+        -0.2865998806930191
+      ],
+      "train": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 140982.53936901104,
+        "net_return": 0.40982539369011023,
+        "max_drawdown": -0.16626812103277283,
+        "completed_trades": 17,
+        "win_rate": 0.5294117647058824,
+        "profit_factor": 2.2090858821842483,
+        "total_fees": 1962.752566807911,
+        "total_funding": -747.7761483310636,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-05",
+            "return": 0.11274603691595138
+          },
+          {
+            "month": "2026-06",
+            "return": 0.2669785799440219
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "validation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 115719.8394017154,
+        "net_return": 0.157198394017154,
+        "max_drawdown": -0.2865998806930191,
+        "completed_trades": 13,
+        "win_rate": 0.5384615384615384,
+        "profit_factor": 1.3261572579781886,
+        "total_fees": 1322.670543786005,
+        "total_funding": -544.5110623405951,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-07",
+            "return": 0.157198394017154
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "confirmation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 97518.61842572506,
+        "net_return": -0.02481381574274944,
+        "max_drawdown": -0.10815342095970605,
+        "completed_trades": 5,
+        "win_rate": 0.8,
+        "profit_factor": 0.7381769816812399,
+        "total_fees": 521.937288786944,
+        "total_funding": 0.0,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-08",
+            "return": -0.02481381574274944
+          }
+        ],
+        "positive_month_rate": 0.0
+      }
+    },
+    {
+      "id": "60m-long_only-atr_ratio_z-neg-threshold-0",
+      "formula": {
+        "tokens": [
+          "atr_ratio_z",
+          "NEG"
+        ],
+        "display": "neg(atr_ratio_z)"
+      },
+      "threshold": 0.0,
+      "direction": "long_only",
+      "interval_minutes": 60,
+      "selection_score": [
+        0.15539089687622945,
+        0.5644306440155946,
+        -0.2531075936860815
+      ],
+      "train": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 140903.9747139365,
+        "net_return": 0.4090397471393652,
+        "max_drawdown": -0.2369907163677369,
+        "completed_trades": 27,
+        "win_rate": 0.48148148148148145,
+        "profit_factor": 1.5207580917929764,
+        "total_fees": 3567.778918167614,
+        "total_funding": -2192.356736979869,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-05",
+            "return": 0.2825295525981325
+          },
+          {
+            "month": "2026-06",
+            "return": 0.09864115355856702
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "validation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 115539.08968762294,
+        "net_return": 0.15539089687622945,
+        "max_drawdown": -0.2531075936860815,
+        "completed_trades": 11,
+        "win_rate": 0.45454545454545453,
+        "profit_factor": 1.5335986783787436,
+        "total_fees": 1028.684019571804,
+        "total_funding": -237.53395630525227,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-07",
+            "return": 0.15539089687622945
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "confirmation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 115344.9095523576,
+        "net_return": 0.15344909552357597,
+        "max_drawdown": -0.06801848012833576,
+        "completed_trades": 6,
+        "win_rate": 0.8333333333333334,
+        "profit_factor": 90.3533268061852,
+        "total_fees": 659.792440746859,
+        "total_funding": -320.7617770215445,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-08",
+            "return": 0.15344909552357597
+          }
+        ],
+        "positive_month_rate": 1.0
+      }
+    },
+    {
+      "id": "60m-long_only-atr_ratio_z-neg-threshold-0p5",
+      "formula": {
+        "tokens": [
+          "atr_ratio_z",
+          "NEG"
+        ],
+        "display": "neg(atr_ratio_z)"
+      },
+      "threshold": 0.5,
+      "direction": "long_only",
+      "interval_minutes": 60,
+      "selection_score": [
+        0.11888831512719207,
+        0.3153117104243429,
+        -0.24346047837652743
+      ],
+      "train": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 119642.33952971509,
+        "net_return": 0.19642339529715086,
+        "max_drawdown": -0.19417953057405804,
+        "completed_trades": 23,
+        "win_rate": 0.5217391304347826,
+        "profit_factor": 1.3250565116295254,
+        "total_fees": 2747.885027547923,
+        "total_funding": -1373.6912071949923,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-05",
+            "return": 0.21458315421196586
+          },
+          {
+            "month": "2026-06",
+            "return": -0.014951433215453457
+          }
+        ],
+        "positive_month_rate": 0.5
+      },
+      "validation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 111888.8315127192,
+        "net_return": 0.11888831512719207,
+        "max_drawdown": -0.24346047837652743,
+        "completed_trades": 12,
+        "win_rate": 0.5,
+        "profit_factor": 1.395850695017624,
+        "total_fees": 1117.300473132403,
+        "total_funding": -78.1732536463895,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-07",
+            "return": 0.11888831512719207
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "confirmation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 103602.69968603781,
+        "net_return": 0.03602699686037813,
+        "max_drawdown": -0.0812236631853823,
+        "completed_trades": 7,
+        "win_rate": 0.2857142857142857,
+        "profit_factor": 1.4879620740156296,
+        "total_fees": 731.698332155768,
+        "total_funding": -262.5647733584188,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-08",
+            "return": 0.03602699686037813
+          }
+        ],
+        "positive_month_rate": 1.0
+      }
+    },
+    {
+      "id": "240m-long_only-ret_4_z-range_z-mul-threshold-0p5",
+      "formula": {
+        "tokens": [
+          "ret_4_z",
+          "range_z",
+          "MUL"
+        ],
+        "display": "(ret_4_z mul range_z)"
+      },
+      "threshold": 0.5,
+      "direction": "long_only",
+      "interval_minutes": 240,
+      "selection_score": [
+        0.11869667528866572,
+        0.3149924792713477,
+        -0.25400252379131094
+      ],
+      "train": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 111869.66752886657,
+        "net_return": 0.11869667528866572,
+        "max_drawdown": -0.25400252379131094,
+        "completed_trades": 21,
+        "win_rate": 0.6666666666666666,
+        "profit_factor": 1.2807384744204078,
+        "total_fees": 2152.634897583347,
+        "total_funding": -849.9595151840813,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-05",
+            "return": -0.03852198366721244
+          },
+          {
+            "month": "2026-06",
+            "return": 0.16351768452858886
+          }
+        ],
+        "positive_month_rate": 0.5
+      },
+      "validation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 119629.5803982682,
+        "net_return": 0.19629580398268198,
+        "max_drawdown": -0.1685706525470127,
+        "completed_trades": 15,
+        "win_rate": 0.6,
+        "profit_factor": 1.8305169825590257,
+        "total_fees": 1681.447331069429,
+        "total_funding": -126.84816381637141,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-07",
+            "return": 0.19629580398268198
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "confirmation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 102164.10711442964,
+        "net_return": 0.02164107114429649,
+        "max_drawdown": -0.0199907762170579,
+        "completed_trades": 3,
+        "win_rate": 0.6666666666666666,
+        "profit_factor": 2.117517972168299,
+        "total_fees": 305.600763758157,
+        "total_funding": -55.320140418194065,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-08",
+            "return": 0.02164107114429649
+          }
+        ],
+        "positive_month_rate": 1.0
+      }
+    },
+    {
+      "id": "240m-long_only-ret_1_z-trend_20_z-add-threshold-0p5",
+      "formula": {
+        "tokens": [
+          "ret_1_z",
+          "trend_20_z",
+          "ADD"
+        ],
+        "display": "(ret_1_z add trend_20_z)"
+      },
+      "threshold": 0.5,
+      "direction": "long_only",
+      "interval_minutes": 240,
+      "selection_score": [
+        0.10852807489323248,
+        0.3737855569568698,
+        -0.2824543242233457
+      ],
+      "train": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 110852.80748932326,
+        "net_return": 0.10852807489323248,
+        "max_drawdown": -0.2824543242233457,
+        "completed_trades": 31,
+        "win_rate": 0.3548387096774194,
+        "profit_factor": 1.1864246004139225,
+        "total_fees": 3122.45107198247,
+        "total_funding": -1019.735660142282,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-05",
+            "return": -0.05305739001111716
+          },
+          {
+            "month": "2026-06",
+            "return": 0.17063913187542237
+          }
+        ],
+        "positive_month_rate": 0.5
+      },
+      "validation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 126525.74820636374,
+        "net_return": 0.26525748206363736,
+        "max_drawdown": -0.12983390191910735,
+        "completed_trades": 23,
+        "win_rate": 0.391304347826087,
+        "profit_factor": 1.8209435795200268,
+        "total_fees": 2479.055510014129,
+        "total_funding": -373.7815748081337,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-07",
+            "return": 0.26525748206363736
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "confirmation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 113088.14307854556,
+        "net_return": 0.13088143078545553,
+        "max_drawdown": -0.09181929911026256,
+        "completed_trades": 7,
+        "win_rate": 0.5714285714285714,
+        "profit_factor": 2.1951659625624993,
+        "total_fees": 784.598048056457,
+        "total_funding": -301.20450466399024,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-08",
+            "return": 0.13088143078545553
+          }
+        ],
+        "positive_month_rate": 1.0
+      }
+    },
+    {
+      "id": "60m-long_only-ret_16_z-volume_z-sub-threshold-0",
+      "formula": {
+        "tokens": [
+          "ret_16_z",
+          "volume_z",
+          "SUB"
+        ],
+        "display": "(ret_16_z sub volume_z)"
+      },
+      "threshold": 0.0,
+      "direction": "long_only",
+      "interval_minutes": 60,
+      "selection_score": [
+        0.06313174917479433,
+        1.0503694567685753,
+        -0.35005372372471283
+      ],
+      "train": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 198723.7707593781,
+        "net_return": 0.9872377075937809,
+        "max_drawdown": -0.25496505134077274,
+        "completed_trades": 80,
+        "win_rate": 0.475,
+        "profit_factor": 1.7541195194443475,
+        "total_fees": 11921.786355814682,
+        "total_funding": -2521.4768050512207,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-05",
+            "return": 0.31456970174178983
+          },
+          {
+            "month": "2026-06",
+            "return": 0.5117020458943438
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "validation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 106313.17491747944,
+        "net_return": 0.06313174917479433,
+        "max_drawdown": -0.35005372372471283,
+        "completed_trades": 51,
+        "win_rate": 0.47058823529411764,
+        "profit_factor": 1.070847159208861,
+        "total_fees": 4970.217511587526,
+        "total_funding": -452.44475734104105,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-07",
+            "return": 0.06313174917479433
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "confirmation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 128319.29345811678,
+        "net_return": 0.28319293458116784,
+        "max_drawdown": -0.05326622002544606,
+        "completed_trades": 19,
+        "win_rate": 0.5789473684210527,
+        "profit_factor": 3.8352504508187732,
+        "total_fees": 2286.261684705399,
+        "total_funding": -230.53492327181758,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-08",
+            "return": 0.28319293458116784
+          }
+        ],
+        "positive_month_rate": 1.0
+      }
+    },
+    {
+      "id": "60m-long_only-ret_16_z-trend_20_z-add-threshold-0p5",
+      "formula": {
+        "tokens": [
+          "ret_16_z",
+          "trend_20_z",
+          "ADD"
+        ],
+        "display": "(ret_16_z add trend_20_z)"
+      },
+      "threshold": 0.5,
+      "direction": "long_only",
+      "interval_minutes": 60,
+      "selection_score": [
+        0.0594362338909664,
+        0.9782669648606284,
+        -0.2892858690250244
+      ],
+      "train": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 191883.0730969662,
+        "net_return": 0.918830730969662,
+        "max_drawdown": -0.17647282291103927,
+        "completed_trades": 49,
+        "win_rate": 0.40816326530612246,
+        "profit_factor": 2.099753750456883,
+        "total_fees": 6173.004765577464,
+        "total_funding": -2878.941455056343,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-05",
+            "return": 0.0008504343136622251
+          },
+          {
+            "month": "2026-06",
+            "return": 0.917200278067031
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "validation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 105943.62338909664,
+        "net_return": 0.0594362338909664,
+        "max_drawdown": -0.2892858690250244,
+        "completed_trades": 39,
+        "win_rate": 0.3076923076923077,
+        "profit_factor": 1.0786310039165543,
+        "total_fees": 3747.215308198973,
+        "total_funding": -837.3349683423869,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-07",
+            "return": 0.0594362338909664
+          }
+        ],
+        "positive_month_rate": 1.0
+      },
+      "confirmation": {
+        "exposure": 1.0,
+        "initial_equity": 100000.0,
+        "final_equity": 107109.44911649579,
+        "net_return": 0.07109449116495781,
+        "max_drawdown": -0.12936591647943962,
+        "completed_trades": 14,
+        "win_rate": 0.21428571428571427,
+        "profit_factor": 1.4519303441403084,
+        "total_fees": 1564.083068269135,
+        "total_funding": -233.19285663308386,
+        "bankrupt": false,
+        "ending_position": "FLAT",
+        "monthly_returns": [
+          {
+            "month": "2026-08",
+            "return": 0.07109449116495781
+          }
+        ],
+        "positive_month_rate": 1.0
+      }
+    }
+  ],
+  "neighbor_confirmation_pass_rate": 0.9,
+  "stress": {
+    "train": {
+      "exposure": 1.0,
+      "initial_equity": 100000.0,
+      "final_equity": 148194.36735090736,
+      "net_return": 0.48194367350907363,
+      "max_drawdown": -0.19162950640041249,
+      "completed_trades": 84,
+      "win_rate": 0.47619047619047616,
+      "profit_factor": 1.533482908639666,
+      "total_fees": 20305.091797268004,
+      "total_funding": -1853.21881687963,
+      "bankrupt": false,
+      "ending_position": "FLAT",
+      "monthly_returns": [
+        {
+          "month": "2026-05",
+          "return": 0.025233087400609307
+        },
+        {
+          "month": "2026-06",
+          "return": 0.4454700025985456
+        }
+      ],
+      "positive_month_rate": 1.0
+    },
+    "validation": {
+      "exposure": 1.0,
+      "initial_equity": 100000.0,
+      "final_equity": 107650.84430806493,
+      "net_return": 0.07650844308064929,
+      "max_drawdown": -0.2928010385304471,
+      "completed_trades": 63,
+      "win_rate": 0.36507936507936506,
+      "profit_factor": 1.0883213477845677,
+      "total_fees": 13103.55393896827,
+      "total_funding": -471.9212989568012,
+      "bankrupt": false,
+      "ending_position": "FLAT",
+      "monthly_returns": [
+        {
+          "month": "2026-07",
+          "return": 0.07650844308064929
+        }
+      ],
+      "positive_month_rate": 1.0
+    },
+    "confirmation": {
+      "exposure": 1.0,
+      "initial_equity": 100000.0,
+      "final_equity": 120704.62870062051,
+      "net_return": 0.20704628700620512,
+      "max_drawdown": -0.0616480691210402,
+      "completed_trades": 17,
+      "win_rate": 0.4117647058823529,
+      "profit_factor": 2.45388926839736,
+      "total_fees": 4026.62026137681,
+      "total_funding": -230.64054351267853,
+      "bankrupt": false,
+      "ending_position": "FLAT",
+      "monthly_returns": [
+        {
+          "month": "2026-08",
+          "return": 0.20704628700620512
+        }
+      ],
+      "positive_month_rate": 1.0
+    }
+  },
+  "stability_gates": {
+    "all_splits_positive": true,
+    "drawdown_controlled": false,
+    "confirmation_trades": true,
+    "confirmation_months": true,
+    "parameter_neighborhood": true,
+    "cost_stress": false
+  },
+  "decision": {
+    "status": "insufficient_history",
+    "approved_for_trading": false,
+    "reason": "SOXLUSDT has insufficient independent history for factor-mining approval."
+  },
+  "generated_at": "2026-08-15T04:55:18.615617+00:00"
+}
