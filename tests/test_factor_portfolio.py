@@ -10,6 +10,13 @@ from mastermind_tick.factor_portfolio import (
     return_correlation,
     slice_returns,
 )
+from mastermind_tick.static_factor_portfolio import (
+    StaticPortfolioConfig,
+    development_eligible,
+    development_score,
+    evaluate_static_config,
+    static_weight_grid,
+)
 
 
 def test_static_portfolio_compounds_sleeves_without_daily_rebalancing() -> None:
@@ -155,3 +162,50 @@ def test_adaptive_monthly_loss_limit_moves_portfolio_to_cash() -> None:
 
     assert result.daily_returns[-1][1] == 0
     assert result.net_return > Decimal("-0.12")
+
+
+def test_static_weight_grid_normalizes_secondary_patterns_and_deduplicates() -> None:
+    configs = static_weight_grid(
+        "lead",
+        ("first", "second"),
+        lead_weights=(Decimal("0.5"),),
+        secondary_patterns=((Decimal("1"), Decimal("1")), (Decimal("2"), Decimal("2"))),
+        leverages=(Decimal("4"),),
+    )
+
+    assert len(configs) == 1
+    assert configs[0].allocation_map == {
+        "lead": Decimal("0.5"),
+        "first": Decimal("0.25"),
+        "second": Decimal("0.25"),
+    }
+    assert configs[0].id.endswith("leverage-4")
+
+
+def test_static_weight_grid_assigns_decimal_division_residual_to_last_sleeve() -> None:
+    (config,) = static_weight_grid(
+        "lead",
+        ("first", "second", "third"),
+        lead_weights=(Decimal("0.5"),),
+        secondary_patterns=((Decimal("1"), Decimal("1"), Decimal("1")),),
+        leverages=(Decimal("1"),),
+    )
+
+    assert sum(config.allocation_map.values(), Decimal("0")) == Decimal("1")
+    assert abs(config.allocation_map["third"] - config.allocation_map["first"]) <= Decimal("1e-27")
+
+
+def test_static_config_selection_uses_both_development_splits() -> None:
+    config = StaticPortfolioConfig((("factor", Decimal("1")),), Decimal("2"))
+    sleeves = {"factor": (("2026-01-01", Decimal("0.10")),)}
+    result = evaluate_static_config(sleeves, config)
+    development = {"discovery": result, "validation": result}
+
+    assert result.net_return == Decimal("0.20")
+    assert development_eligible(development)
+    assert development_score(development)[0] == Decimal("0")
+
+
+def test_static_config_rejects_invalid_allocations() -> None:
+    with pytest.raises(ValueError, match="sum to one"):
+        StaticPortfolioConfig((("first", Decimal("0.4")), ("second", Decimal("0.4"))), Decimal("1"))

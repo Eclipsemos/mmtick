@@ -69,6 +69,10 @@ market data.
 - `experiments/factor_portfolio/2026-08-15/`: 2,988-candidate BTC/ETH second-sleeve search around
   the lead-lag factor. The development-selected fixed-capital portfolio retained only 2/8 target
   months in reused confirmation, so static factor diversification is rejected.
+- `experiments/static_factor_portfolio/2026-08-15/`: development-selected fixed three/four-sleeve
+  BTC/ETH portfolios from the discovery-frozen 40-factor universe. The selected four-sleeve 4x
+  portfolio returned +184.88% with -18.29% daily-close drawdown in reused 2026 confirmation, but
+  reached the 25% target in only 3/8 months and remains rejected.
 - `experiments/event_meta_factor/2026-08-15/`: GPU XGBoost meta-label filter for sparse BTC-shock
   events. Its ROC AUC fell below 0.50 in both selection and reused confirmation, and no risk/return
   configuration passed development gates, so the ML filter is rejected.
