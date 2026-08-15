@@ -179,6 +179,11 @@ market data.
   then activated one day after a causal monthly drawdown trigger. The search audits 25,772
   development-risk-eligible controls; none exceeds 5/7 complete 2026 months under both cost
   models, and May/July remain negative. The recovery mechanism is rejected.
+- `experiments/static_defensive_trend/2026-08-15/`: the same 119 development-selected MACD
+  sleeves and 60 development-ranked pairs are held statically beside the frozen monthly-robust
+  baseline. Of 762 development-risk-eligible controls, the best reused-confirmation diagnostic
+  reaches 6/7 under both cost models: May and July clear +15%, while June remains negative. This
+  is the closest valid-protocol result so far, but it is not a strict solution or trading approval.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
