@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from bisect import bisect_left
 from dataclasses import asdict, dataclass
 from decimal import Decimal
 from typing import Any
@@ -60,6 +61,53 @@ class PortfolioResult:
                     if include_daily
                     else []
                 ),
+            }
+        )
+        return payload
+
+
+@dataclass(frozen=True)
+class AdaptivePortfolioConfig:
+    lookback_days: int
+    top_k: int
+    scoring: str
+    weighting: str
+    leverage: Decimal
+    rebalance_bps: Decimal = Decimal("7")
+    monthly_loss_limit: Decimal | None = None
+    anchor_name: str | None = None
+    anchor_weight: Decimal = Decimal("0")
+
+
+@dataclass(frozen=True)
+class AllocationRecord:
+    month: str
+    weights: tuple[tuple[str, Decimal], ...]
+    turnover: Decimal
+    cost: Decimal
+
+
+@dataclass(frozen=True)
+class AdaptivePortfolioResult(PortfolioResult):
+    rebalance_costs: Decimal
+    rebalance_count: int
+    allocation_history: tuple[AllocationRecord, ...]
+
+    def as_dict(self, *, include_daily: bool = False) -> dict[str, Any]:
+        payload = super().as_dict(include_daily=include_daily)
+        payload.update(
+            {
+                "rebalance_costs": float(self.rebalance_costs),
+                "rebalance_count": self.rebalance_count,
+                "allocation_history": [
+                    {
+                        "month": record.month,
+                        "weights": {name: float(weight) for name, weight in record.weights},
+                        "turnover": float(record.turnover),
+                        "cost": float(record.cost),
+                    }
+                    for record in self.allocation_history
+                ],
             }
         )
         return payload
@@ -134,6 +182,121 @@ def evaluate_static_portfolio(
     )
 
 
+def evaluate_adaptive_portfolio(
+    sleeves: dict[str, DailyReturns],
+    config: AdaptivePortfolioConfig,
+    *,
+    start: str,
+    end: str,
+    initial_equity: Decimal = Decimal("100000"),
+) -> AdaptivePortfolioResult:
+    """Rotate fixed-capital sleeves monthly using trailing data available before allocation."""
+    _validate_adaptive_config(sleeves, config, start, end, initial_equity)
+    labels = _aligned_labels(sleeves)
+    selected_labels = tuple(label for label in labels if start <= label <= end)
+    if not selected_labels:
+        raise ValueError("adaptive portfolio evaluation period is empty")
+    sleeve_returns = {name: dict(rows) for name, rows in sleeves.items()}
+    sleeve_equity = {name: Decimal("0") for name in sleeves}
+    reserve = initial_equity
+    current_weights: dict[str, Decimal] = {}
+    current_month: str | None = None
+    month_start_equity = initial_equity
+    paused_for_month = False
+    peak_equity = initial_equity
+    max_drawdown = Decimal("0")
+    rebalance_costs = Decimal("0")
+    allocations: list[AllocationRecord] = []
+    daily_equity: list[tuple[str, Decimal]] = []
+    bankrupt = False
+    rate = config.rebalance_bps / Decimal("10000")
+
+    def total_equity() -> Decimal:
+        return reserve + sum(sleeve_equity.values(), Decimal("0"))
+
+    for label in selected_labels:
+        month = label[:7]
+        if month != current_month:
+            current_month = month
+            paused_for_month = False
+            total = total_equity()
+            next_weights = _adaptive_weights(sleeves, config, label)
+            old_notional = {
+                name: config.leverage * current_weights.get(name, Decimal("0")) for name in sleeves
+            }
+            new_notional = {
+                name: config.leverage * next_weights.get(name, Decimal("0")) for name in sleeves
+            }
+            turnover = (
+                sum(
+                    (abs(new_notional[name] - old_notional[name]) for name in sleeves),
+                    Decimal("0"),
+                )
+                if allocations
+                else Decimal("0")
+            )
+            cost = max(total, Decimal("0")) * turnover * rate
+            total -= cost
+            rebalance_costs += cost
+            current_weights = next_weights
+            invested_fraction = sum(current_weights.values(), Decimal("0"))
+            reserve = total * (Decimal("1") - config.leverage * invested_fraction)
+            sleeve_equity = {
+                name: total * config.leverage * current_weights.get(name, Decimal("0"))
+                for name in sleeves
+            }
+            month_start_equity = total
+            allocations.append(
+                AllocationRecord(
+                    month=month,
+                    weights=tuple(sorted(current_weights.items())),
+                    turnover=turnover,
+                    cost=cost,
+                )
+            )
+
+        if not paused_for_month:
+            for name in current_weights:
+                sleeve_equity[name] *= Decimal("1") + sleeve_returns[name][label]
+        total = total_equity()
+        if (
+            not paused_for_month
+            and current_weights
+            and config.monthly_loss_limit is not None
+            and month_start_equity > 0
+            and total / month_start_equity - Decimal("1") <= -config.monthly_loss_limit
+        ):
+            close_turnover = config.leverage * sum(current_weights.values(), Decimal("0"))
+            close_cost = max(total, Decimal("0")) * close_turnover * rate
+            total -= close_cost
+            rebalance_costs += close_cost
+            reserve = total
+            sleeve_equity = {name: Decimal("0") for name in sleeves}
+            current_weights = {}
+            paused_for_month = True
+        daily_equity.append((label, total))
+        peak_equity = max(peak_equity, total)
+        if peak_equity > 0:
+            max_drawdown = min(max_drawdown, total / peak_equity - Decimal("1"))
+        if total <= 0:
+            bankrupt = True
+            break
+
+    final_equity = daily_equity[-1][1]
+    return AdaptivePortfolioResult(
+        initial_equity=initial_equity,
+        final_equity=final_equity,
+        net_return=final_equity / initial_equity - Decimal("1"),
+        max_drawdown=max_drawdown,
+        bankrupt=bankrupt,
+        daily_returns=_equity_returns(daily_equity, initial_equity, 10),
+        monthly_returns=_equity_returns(daily_equity, initial_equity, 7),
+        rebalance_costs=rebalance_costs,
+        rebalance_count=len(allocations),
+        allocation_history=tuple(allocations),
+    )
+
+
 def return_correlation(left: DailyReturns, right: DailyReturns) -> Decimal:
     """Return Pearson correlation for exactly aligned return observations."""
     if tuple(label for label, _value in left) != tuple(label for label, _value in right):
@@ -163,6 +326,88 @@ def monthly_returns(rows: DailyReturns) -> DailyReturns:
         equity *= Decimal("1") + value
         daily_equity.append((label, equity))
     return _equity_returns(daily_equity, Decimal("1"), 7)
+
+
+def _validate_adaptive_config(
+    sleeves: dict[str, DailyReturns],
+    config: AdaptivePortfolioConfig,
+    start: str,
+    end: str,
+    initial_equity: Decimal,
+) -> None:
+    if not sleeves:
+        raise ValueError("adaptive portfolio requires at least one sleeve")
+    if start > end or initial_equity <= 0:
+        raise ValueError("adaptive portfolio period or initial equity is invalid")
+    if config.lookback_days < 5 or config.top_k < 1:
+        raise ValueError("adaptive portfolio lookback and top-k must be positive")
+    if config.scoring not in {"return", "calmar"}:
+        raise ValueError("adaptive portfolio scoring is unsupported")
+    if config.weighting not in {"equal", "score"}:
+        raise ValueError("adaptive portfolio weighting is unsupported")
+    if config.leverage <= 0 or config.rebalance_bps < 0:
+        raise ValueError("adaptive portfolio leverage or cost is invalid")
+    if config.monthly_loss_limit is not None and not (
+        Decimal("0") < config.monthly_loss_limit < Decimal("1")
+    ):
+        raise ValueError("adaptive portfolio monthly loss limit is invalid")
+    if not Decimal("0") <= config.anchor_weight <= Decimal("1"):
+        raise ValueError("adaptive portfolio anchor weight is invalid")
+    if config.anchor_weight and config.anchor_name not in sleeves:
+        raise ValueError("adaptive portfolio anchor sleeve is missing")
+
+
+def _adaptive_weights(
+    sleeves: dict[str, DailyReturns],
+    config: AdaptivePortfolioConfig,
+    allocation_day: str,
+) -> dict[str, Decimal]:
+    anchor_weight = config.anchor_weight if config.anchor_name else Decimal("0")
+    reference = next(iter(sleeves.values()))
+    history_end = bisect_left(tuple(label for label, _value in reference), allocation_day)
+    candidates = []
+    for name, rows in sleeves.items():
+        if anchor_weight and name == config.anchor_name:
+            continue
+        history_start = max(0, history_end - config.lookback_days)
+        history = tuple(value for _label, value in rows[history_start:history_end])
+        if len(history) < config.lookback_days:
+            continue
+        cumulative, max_drawdown = _trailing_metrics(history)
+        if cumulative <= 0:
+            continue
+        score = (
+            cumulative
+            if config.scoring == "return"
+            else cumulative / max(abs(max_drawdown), Decimal("0.01"))
+        )
+        candidates.append((name, score))
+    ranked = sorted(candidates, key=lambda item: (item[1], item[0]), reverse=True)[: config.top_k]
+    available = Decimal("1") - anchor_weight
+    weights: dict[str, Decimal] = {}
+    if anchor_weight and config.anchor_name:
+        weights[config.anchor_name] = anchor_weight
+    if not ranked or available <= 0:
+        return weights
+    if config.weighting == "equal":
+        value = available / Decimal(len(ranked))
+        weights.update({name: value for name, _score in ranked})
+    else:
+        total_score = sum((score for _name, score in ranked), Decimal("0"))
+        weights.update({name: available * score / total_score for name, score in ranked})
+    return weights
+
+
+def _trailing_metrics(values: tuple[Decimal, ...]) -> tuple[Decimal, Decimal]:
+    equity = Decimal("1")
+    peak = equity
+    max_drawdown = Decimal("0")
+    for value in values:
+        equity *= Decimal("1") + value
+        peak = max(peak, equity)
+        if peak > 0:
+            max_drawdown = min(max_drawdown, equity / peak - Decimal("1"))
+    return equity - Decimal("1"), max_drawdown
 
 
 def _aligned_labels(sleeves: dict[str, DailyReturns]) -> tuple[str, ...]:

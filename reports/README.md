@@ -72,6 +72,10 @@ market data.
 - `experiments/event_meta_factor/2026-08-15/`: GPU XGBoost meta-label filter for sparse BTC-shock
   events. Its ROC AUC fell below 0.50 in both selection and reused confirmation, and no risk/return
   configuration passed development gates, so the ML filter is rejected.
+- `experiments/adaptive_factor_portfolio/2026-08-15/`: causal monthly rotation across a
+  discovery-frozen 41-sleeve BTC/ETH universe. The development-selected online configuration fell
+  from +487.84% in selection to -1.44% and 0/8 target months in reused confirmation, rejecting
+  trailing-performance factor rotation.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
