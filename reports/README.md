@@ -58,6 +58,10 @@ market data.
   SOXL has inadequate independent history. No formula is approved or connected to execution.
 - `experiments/deep_factor/`: GPU-only causal Transformer studies. Checkpoints are stored outside
   version control; reports retain the split metrics, costs, configuration, and rejection decision.
+- `experiments/deep_factor_v2/2026-08-15/`: cross-asset causal Transformer runs, including the
+  latest multimodal version with Binance open-interest, taker-flow, and crowding inputs. Neither
+  the OHLCV-only nor multimodal model produced a development-risk-eligible component; both remain
+  rejected and disconnected from execution.
 - `experiments/btc_order_flow/`: causal BTC aggregate-trade order-flow searches with reported and
   tick-rule direction sources evaluated independently.
 - `experiments/cross_asset_factor/`: causal BTC/ETH common-regime, rotation, relative-value, and

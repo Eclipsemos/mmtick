@@ -18,6 +18,8 @@ def test_v2_defaults_use_cross_asset_four_hour_windows() -> None:
     assert config.bar_interval_minutes == 240
     assert config.horizons == (1, 6, 18)
     assert config.ensemble_seeds == (11, 23, 42)
+    assert config.market_metrics_dir == "data/futures_metrics"
+    assert config.metric_normalization_window == 540
 
 
 def test_v2_signal_management_is_causal() -> None:

@@ -23,6 +23,11 @@ from mastermind_tick.bar_research import ResearchBar, ResearchResult, aggregate_
 from mastermind_tick.factor_mining import load_market, split_periods
 from mastermind_tick.factor_portfolio import decimal_returns, evaluate_static_portfolio
 from mastermind_tick.lead_lag_factor import evaluate_weighted_targets
+from mastermind_tick.market_metrics import (
+    METRIC_FEATURES,
+    causal_metric_features,
+    load_metric_archives,
+)
 
 V2Progress = Callable[[str, float], None]
 ASSETS = ("btc_perp", "eth_perp")
@@ -49,6 +54,8 @@ class DeepFactorV2Config:
     seed: int = 42
     ensemble_seeds: tuple[int, ...] = (11, 23, 42)
     fit_end_year: int = 2022
+    market_metrics_dir: str = "data/futures_metrics"
+    metric_normalization_window: int = 540
     fee_bps: float = 5.0
     slippage_bps: float = 2.0
 
@@ -193,6 +200,7 @@ def run_deep_factor_v2_mining(
         report_root or output_root / "reports" / "experiments" / "deep_factor_v2",
         config,
         bars,
+        series,
         device,
         torch,
         sum(parameter.numel() for parameter in models[0].parameters()),
@@ -223,10 +231,31 @@ def _prepare_series(
     config: DeepFactorV2Config,
     callback: V2Progress | None,
 ) -> list[dict[str, Any]]:
-    raw = {
-        instrument: _raw_features(np, bars[instrument], funding[instrument])
-        for instrument in ASSETS
-    }
+    metric_root = Path(config.market_metrics_dir)
+    raw = {}
+    metric_coverage = {}
+    for instrument in ASSETS:
+        price_features = _raw_features(np, bars[instrument], funding[instrument])
+        metric_snapshots = load_metric_archives(metric_root, _metric_symbol(instrument))
+        metric_values = causal_metric_features(
+            bars[instrument],
+            metric_snapshots,
+            normalization_window=config.metric_normalization_window,
+        )
+        metric_array = np.column_stack(
+            [
+                np.array(
+                    [
+                        float(value) if value is not None else np.nan
+                        for value in metric_values[name]
+                    ],
+                    dtype=np.float64,
+                )
+                for name in METRIC_FEATURES
+            ]
+        )
+        raw[instrument] = np.column_stack((price_features, metric_array))
+        metric_coverage[instrument] = len(metric_snapshots)
     periods = split_periods(ASSETS[0], bars[ASSETS[0]][-1].end_ms)
     train_start, train_end = periods["train"]
     fit_end = min(train_end, _year_end_ms(config.fit_end_year))
@@ -247,8 +276,21 @@ def _prepare_series(
         fit_mask = np.array(
             [train_start <= bar.start_ms <= fit_end for bar in bars[instrument]], dtype=bool
         )
-        mean = np.nanmean(np.where(fit_mask[:, None], combined, np.nan), axis=0)
-        std = np.nanstd(np.where(fit_mask[:, None], combined, np.nan), axis=0)
+        fit_values = np.where(fit_mask[:, None], combined, np.nan)
+        counts = np.sum(np.isfinite(fit_values), axis=0)
+        mean = np.divide(
+            np.nansum(fit_values, axis=0),
+            counts,
+            out=np.zeros(combined.shape[1], dtype=np.float64),
+            where=counts > 0,
+        )
+        variance = np.divide(
+            np.nansum((fit_values - mean) ** 2, axis=0),
+            counts,
+            out=np.zeros(combined.shape[1], dtype=np.float64),
+            where=counts > 0,
+        )
+        std = np.sqrt(variance)
         std = np.where(np.isfinite(std) & (std > 1e-8), std, 1.0)
         features = np.nan_to_num((combined - mean) / std, nan=0.0, posinf=8.0, neginf=-8.0).astype(
             np.float32
@@ -296,6 +338,8 @@ def _prepare_series(
                 "instrument_index": instrument_index,
                 "bars": bars[instrument],
                 "features": features,
+                "metric_4h_bars": metric_coverage[instrument],
+                "metric_features": list(METRIC_FEATURES),
                 "samples": samples,
                 "first_bar": _timestamp(bars[instrument][0].start_ms),
                 "last_bar": _timestamp(bars[instrument][-1].end_ms),
@@ -331,6 +375,14 @@ def _raw_features(np: Any, bars: list[ResearchBar], funding: list[list[Any]]) ->
         )
     )
     return result
+
+
+def _metric_symbol(instrument: str) -> str:
+    symbols = {"btc_perp": "BTCUSDT", "eth_perp": "ETHUSDT"}
+    try:
+        return symbols[instrument]
+    except KeyError as exc:
+        raise ValueError(f"market metrics are unsupported for {instrument}") from exc
 
 
 def _lag_return(np: Any, values: Any, lag: int) -> Any:
@@ -953,6 +1005,7 @@ def _build_report(
     report_root: Path,
     config: DeepFactorV2Config,
     bars: dict[str, list[ResearchBar]],
+    series: list[dict[str, Any]],
     device: Any,
     torch: Any,
     parameter_count: int,
@@ -997,8 +1050,12 @@ def _build_report(
                 "last_bar": _timestamp(item[-1].end_ms),
                 "bars": len(item),
                 "interval_minutes": config.bar_interval_minutes,
+                "market_metric_4h_bars": series_item["metric_4h_bars"],
+                "market_metric_features": series_item["metric_features"],
             }
             for instrument, item in bars.items()
+            for series_item in series
+            if series_item["instrument"] == instrument
         },
         "training": {
             "ensemble": histories,

@@ -424,10 +424,13 @@ function FactorMiningResult({ report }: { report: ResearchFactorReport }) {
 
 function DeepFactorResult({ report }: { report: DeepFactorReport }) {
   const portfolio = report.portfolio_selection
+  const metricData = Object.values(report.data).filter((item) => item.market_metric_4h_bars != null)
+  const metricBars = metricData.reduce((total, item) => total + (item.market_metric_4h_bars ?? 0), 0)
+  const metricFeatureCount = metricData[0]?.market_metric_features?.length ?? 0
   return (
     <div className="factor-result">
       <div className="factor-result-head"><div><span className="factor-kicker">REPORT {report.id}</span><h3>{report.model.architecture}</h3></div><strong className={report.decision.status === 'research_candidate' ? 'gain' : 'loss'}>{report.decision.status}</strong></div>
-      <div className="factor-result-stats"><div><span>参数量</span><strong>{report.model.parameters.toLocaleString()}</strong></div><div><span>验证最佳 Loss</span><strong>{report.training.best_validation_loss.toFixed(4)}</strong></div><div><span>模型 / 设备</span><strong>{report.model.ensemble_size ? `${report.model.ensemble_size} seed · ` : ''}{report.model.device}</strong></div><div><span>组合状态</span><strong>{portfolio?.selection_status ?? '旧版单模型'}</strong></div></div>
+      <div className="factor-result-stats"><div><span>参数量</span><strong>{report.model.parameters.toLocaleString()}</strong></div><div><span>验证最佳 Loss</span><strong>{report.training.best_validation_loss.toFixed(4)}</strong></div><div><span>模型 / 设备</span><strong>{report.model.ensemble_size ? `${report.model.ensemble_size} seed · ` : ''}{report.model.device}</strong></div><div><span>市场指标</span><strong>{metricFeatureCount ? `${metricFeatureCount} 项 · ${metricBars.toLocaleString()} 桶` : '未启用'}</strong></div><div><span>组合状态</span><strong>{portfolio?.selection_status ?? '旧版单模型'}</strong></div></div>
       <table className="factor-split-table"><thead><tr><th>品种 / 分段</th><th>收益</th><th>最大回撤</th><th>交易</th><th>方向准确率</th><th>IC</th></tr></thead><tbody>{Object.entries(report.metrics).flatMap(([instrument, metrics]) => (['train', 'validation', 'confirmation'] as const).map((split) => { const row = metrics[split]; return <tr key={`${instrument}-${split}`}><td>{instrument} / {split}</td><td className={row.net_return >= 0 ? 'gain' : 'loss'}>{percent(row.net_return)}</td><td className="loss">{percent(row.max_drawdown)}</td><td>{row.completed_trades}</td><td>{percent(row.direction_accuracy)}</td><td>{row.information_coefficient?.toFixed(4) ?? '--'}</td></tr> }))}</tbody></table>
       {Object.entries(report.signal_search ?? {}).map(([instrument, search]) => {
         const selected = search.selected

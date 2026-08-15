@@ -18,6 +18,8 @@ def main() -> None:
     parser.add_argument("--database", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--report-root", type=Path)
+    parser.add_argument("--metrics-dir", type=Path, default=Path("data/futures_metrics"))
+    parser.add_argument("--metric-normalization-window", type=int, default=540)
     parser.add_argument("--epochs", type=int, default=8)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--ensemble-seeds", default="11,23,42")
@@ -25,7 +27,13 @@ def main() -> None:
     seeds = tuple(int(item.strip()) for item in args.ensemble_seeds.split(",") if item.strip())
     if not seeds:
         raise ValueError("at least one ensemble seed is required")
-    config = DeepFactorV2Config(epochs=args.epochs, seed=args.seed, ensemble_seeds=seeds)
+    config = DeepFactorV2Config(
+        epochs=args.epochs,
+        seed=args.seed,
+        ensemble_seeds=seeds,
+        market_metrics_dir=str(args.metrics_dir),
+        metric_normalization_window=args.metric_normalization_window,
+    )
 
     def progress(stage: str, value: float) -> None:
         print(

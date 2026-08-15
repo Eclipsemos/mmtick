@@ -368,6 +368,8 @@ export type DeepFactorReport = {
     source_bars_15m?: number
     bars?: number
     interval_minutes?: number
+    market_metric_4h_bars?: number
+    market_metric_features?: string[]
   }>
   training: {
     history?: Array<{ epoch: number, train_loss: number, validation_loss: number }>
