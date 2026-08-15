@@ -118,7 +118,7 @@ test('contract selector applies unoptimized BTC and ETH research presets', async
   await contract.selectOption('btc_perp')
 
   await expect(page.getByRole('heading', { name: 'BTCUSDT 历史数据' })).toBeVisible()
-  await expect(page.getByText('研究基线预设，尚未优化')).toBeVisible()
+  await expect(page.getByText('研究基线已被历史验证拒绝')).toBeVisible()
   await expect(page.getByRole('button', { name: '多空' })).toHaveClass(/active/)
   await expect(page.getByLabel('ATR 周期')).toHaveValue('14,21,28')
   await expect(page.getByLabel('ATR 倍数')).toHaveValue('2,2.5,3')
@@ -127,6 +127,77 @@ test('contract selector applies unoptimized BTC and ETH research presets', async
 
   await contract.selectOption('eth_perp')
   await expect(page.getByRole('heading', { name: 'ETHUSDT 历史数据' })).toBeVisible()
+})
+
+test('BTC factor mining shows live progress and the confirmation result', async ({ page }) => {
+  await page.route('**/api/research/data-status?*', (route) => route.fulfill({ json: {
+    instrument_id: 'soxl_perp', symbol: 'SOXLUSDT', first_tick_ms: null, last_tick_ms: null,
+    tick_count: 0, raw_trade_count: 0, bar_count: 0, funding_count: 0,
+    complete_through_date: null, earliest_replay_ms: null, earliest_replay_date: null,
+    default_update_date: '2026-08-10', database_path: 'data/paper.db',
+  } }))
+  await page.route('**/api/research/factor-mining', (route) => route.fulfill({ status: 202, json: {
+    id: 'factor-job-1', kind: 'factor_mining', status: 'queued', stage: '等待研究任务队列',
+    progress: 0, created_at: '', started_at: null, completed_at: null, report_id: null,
+    error: null, message: null, result: null, request: { instrument_id: 'btc_perp' },
+  } }))
+  await page.route('**/api/research/jobs/factor-job-1', (route) => route.fulfill({ json: {
+    id: 'factor-job-1', kind: 'factor_mining', status: 'completed', stage: '因子挖掘报告已生成',
+    progress: 1, created_at: '', started_at: '', completed_at: '', report_id: 'factor-btc-test',
+    error: null, message: '完成 648 个因果公式候选；开发期合格 4 个',
+    result: { instrument_id: 'btc_perp', candidate_count: 648, development_eligible_count: 4, selected_id: 'factor-1', selected_formula: 'delay1(atr_ratio_z)', status: 'rejected_after_confirmation' }, request: { instrument_id: 'btc_perp' },
+  } }))
+  await page.route('**/api/research/factor-reports/factor-btc-test', (route) => route.fulfill({ json: {
+    id: 'factor-btc-test', generated_at: '2026-08-14T00:00:00Z', instrument_id: 'btc_perp',
+    candidate_count: 648, development_eligible_count: 4, neighbor_confirmation_pass_rate: 0,
+    data: { first_bar: '2024-01-01T00:00:00Z', last_bar: '2026-08-10T23:59:59Z', source_bars_15m: 90000, funding_events: 2800 },
+    selected: { id: 'factor-1', formula: { display: 'delay1(atr_ratio_z)', tokens: ['atr_ratio_z', 'DELAY1'] }, interval_minutes: 240, direction: 'long_only', threshold: .5,
+      train: { net_return: .2975, max_drawdown: -.2598, completed_trades: 72, positive_month_rate: .64 },
+      validation: { net_return: .0512, max_drawdown: -.3023, completed_trades: 73, positive_month_rate: .58 },
+      confirmation: { net_return: -.2406, max_drawdown: -.3051, completed_trades: 48, positive_month_rate: .38 },
+    }, top_development_candidates: [], decision: { status: 'rejected_after_confirmation', approved_for_trading: false, reason: 'No development-selected formula passed all confirmation stability gates.' },
+  } }))
+
+  await page.goto('/')
+  await expect(page.getByRole('region', { name: 'BTC 因子挖掘' })).toContainText('648 候选')
+  await page.getByRole('button', { name: '开始 BTC 挖掘' }).click()
+  await expect(page.getByText('delay1(atr_ratio_z)')).toBeVisible()
+  await expect(page.getByText('rejected_after_confirmation')).toBeVisible()
+  await expect(page.getByText('-24.06%')).toBeVisible()
+})
+
+test('GPU deep factor mining renders its completed model report', async ({ page }) => {
+  await page.route('**/api/research/data-status?*', (route) => route.fulfill({ json: {
+    instrument_id: 'soxl_perp', symbol: 'SOXLUSDT', first_tick_ms: null, last_tick_ms: null,
+    tick_count: 0, raw_trade_count: 0, bar_count: 0, funding_count: 0,
+    complete_through_date: null, earliest_replay_ms: null, earliest_replay_date: null,
+    default_update_date: '2026-08-10', database_path: 'data/paper.db',
+  } }))
+  await page.route('**/api/research/deep-factor-reports', (route) => route.fulfill({ json: [] }))
+  await page.route('**/api/research/deep-factor', (route) => route.fulfill({ status: 202, json: {
+    id: 'deep-job-1', kind: 'deep_factor', status: 'queued', stage: '等待研究任务队列',
+    progress: 0, created_at: '', started_at: null, completed_at: null, report_id: null,
+    error: null, message: null, result: null, request: { instruments: ['btc_perp', 'eth_perp'] },
+  } }))
+  await page.route('**/api/research/jobs/deep-job-1', (route) => route.fulfill({ json: {
+    id: 'deep-job-1', kind: 'deep_factor', status: 'completed', stage: 'GPU 深度因子报告已生成',
+    progress: 1, created_at: '', started_at: '', completed_at: '', report_id: 'deep-test',
+    error: null, message: '完成 btc_perp, eth_perp；模型决策 rejected_after_confirmation',
+    result: { instruments: ['btc_perp', 'eth_perp'], status: 'rejected_after_confirmation' }, request: {},
+  } }))
+  await page.route('**/api/research/deep-factor-reports/deep-test', (route) => route.fulfill({ json: {
+    id: 'deep-test', generated_at: '2026-08-15T00:00:00Z',
+    model: { architecture: 'causal temporal Transformer encoder', parameters: 2679174, device: 'cuda', torch_version: '2.13.0+cu130', cuda_version: '13.0', checkpoint: 'data/deep_factor_models/test.pt' },
+    data: {}, training: { history: [{ epoch: 1, train_loss: .69, validation_loss: .68 }], best_validation_loss: .68 },
+    metrics: { btc_perp: { train: { samples: 100, direction_accuracy: .52, information_coefficient: .02, net_return: -.1, max_drawdown: -.12, completed_trades: 10, win_rate: .5, profit_factor: 1 }, validation: { samples: 100, direction_accuracy: .51, information_coefficient: .01, net_return: -.05, max_drawdown: -.08, completed_trades: 8, win_rate: .5, profit_factor: 1 }, confirmation: { samples: 100, direction_accuracy: .5, information_coefficient: 0, net_return: -.2, max_drawdown: -.22, completed_trades: 7, win_rate: .4, profit_factor: .8 } } },
+    decision: { status: 'rejected_after_confirmation', approved_for_trading: false, reason: 'Deep model did not pass the independent confirmation or drawdown gates.' },
+  } }))
+
+  await page.goto('/')
+  await expect(page.getByRole('region', { name: '深度因子挖掘' })).toContainText('RTX 4090')
+  await page.getByRole('button', { name: '启动 GPU 深挖' }).click()
+  await expect(page.getByText('causal temporal Transformer encoder')).toBeVisible()
+  await expect(page.getByText('2,679,174')).toBeVisible()
 })
 
 test('research workbench fits a mobile viewport', async ({ page }) => {

@@ -1,4 +1,4 @@
-import type { AggTrade, EquityPoint, EventItem, Fill, FundingPayment, LiveReadiness, LiveSession, OhlcvBar, Order, Overview, ResearchBacktestRequest, ResearchDataStatus, ResearchInstrumentId, ResearchJob, ResearchPreset, ResearchReport, ResearchReportSummary, ReturnSummary, WarehouseSummary } from './types'
+import type { AggTrade, DeepFactorReport, EquityPoint, EventItem, Fill, FundingPayment, LiveReadiness, LiveSession, OhlcvBar, Order, Overview, ResearchBacktestRequest, ResearchDataStatus, ResearchFactorReport, ResearchFactorReportSummary, ResearchInstrumentId, ResearchJob, ResearchPreset, ResearchReport, ResearchReportSummary, ReturnSummary, WarehouseSummary } from './types'
 
 export class ApiError extends Error {
   status: number
@@ -104,9 +104,21 @@ export const api = {
     postJson<ResearchJob>('/api/research/data-update', { instrument_id: instrumentId, target_date: targetDate }),
   runResearchBacktest: (request: ResearchBacktestRequest) =>
     postJson<ResearchJob>('/api/research/backtests', request),
+  runFactorMining: (instrumentId: ResearchInstrumentId = 'btc_perp') =>
+    postJson<ResearchJob>('/api/research/factor-mining', { instrument_id: instrumentId }),
+  runDeepFactorMining: (instruments: ResearchInstrumentId[] = ['btc_perp', 'eth_perp']) =>
+    postJson<ResearchJob>('/api/research/deep-factor', { instruments }),
   researchJob: (jobId: string) => getJson<ResearchJob>(`/api/research/jobs/${jobId}`),
   researchReports: (instrumentId: ResearchInstrumentId) =>
     getJson<ResearchReportSummary[]>(`/api/research/reports?instrument_id=${instrumentId}`),
   researchReport: (reportId: string) =>
     getJson<ResearchReport>(`/api/research/reports/${reportId}`),
+  researchFactorReport: (reportId: string) =>
+    getJson<ResearchFactorReport>(`/api/research/factor-reports/${reportId}`),
+  researchFactorReports: (instrumentId: ResearchInstrumentId = 'btc_perp') =>
+    getJson<ResearchFactorReportSummary[]>(`/api/research/factor-reports?instrument_id=${instrumentId}`),
+  researchDeepFactorReports: () =>
+    getJson<Array<{ id: string, generated_at: string, instruments: string[], status: string }>>('/api/research/deep-factor-reports'),
+  researchDeepFactorReport: (reportId: string) =>
+    getJson<DeepFactorReport>(`/api/research/deep-factor-reports/${reportId}`),
 }

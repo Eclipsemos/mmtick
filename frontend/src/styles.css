@@ -601,6 +601,36 @@ footer { height: 44px; padding: 0 30px; display: flex; align-items: center; just
 .lab-job.completed .lab-progress i { background: var(--green); }
 .spin { animation: lab-spin 1s linear infinite; }
 @keyframes lab-spin { to { transform: rotate(360deg); } }
+.factor-mining-panel { border: 1px solid var(--line); background: var(--surface); }
+.factor-mining-body { padding: 15px 16px 16px; display: grid; gap: 12px; }
+.factor-mining-intro { min-height: 42px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.factor-mining-intro p { margin: 6px 0 0; color: var(--muted); font: 10px 'DM Mono', monospace; }
+.factor-kicker { color: var(--muted); font: 9px 'DM Mono', monospace; }
+.factor-stage-board { padding: 12px; border: 1px solid var(--line); background: #f8fafb; }
+.factor-stage-track { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.factor-stage-track > div { min-width: 0; display: flex; align-items: center; gap: 7px; color: #9aa7ae; font: 10px 'DM Mono', monospace; }
+.factor-stage-track > div::after { content: ''; height: 1px; flex: 1; margin-left: 3px; background: #d8e1e5; }
+.factor-stage-track > div:last-child::after { display: none; }
+.factor-stage-track i { width: 18px; height: 18px; display: inline-grid; place-items: center; border: 1px solid currentColor; border-radius: 50%; font-style: normal; font-size: 9px; }
+.factor-stage-track > div.active { color: var(--blue); }
+.factor-stage-track > div.active::after { background: var(--blue); }
+.factor-stage-meta { margin-top: 11px; display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font: 10px 'DM Mono', monospace; }
+.factor-stage-meta strong { color: var(--ink); font: inherit; white-space: nowrap; }
+.factor-result { border: 1px solid var(--line); background: #fff; }
+.factor-result-head { min-height: 58px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 15px; border-bottom: 1px solid var(--line); }
+.factor-result-head h3 { max-width: 680px; margin: 5px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 12px 'DM Mono', monospace; }
+.factor-result-head > strong { font: 10px 'DM Mono', monospace; text-align: right; }
+.factor-result-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
+.factor-result-stats div { min-width: 0; min-height: 59px; padding: 11px 13px; border-left: 1px solid var(--line); }
+.factor-result-stats div:first-child { border-left: 0; }
+.factor-result-stats span, .factor-result-stats strong { display: block; }
+.factor-result-stats span { overflow: hidden; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.factor-result-stats strong { margin-top: 8px; font: 11px 'DM Mono', monospace; }
+.factor-split-table { width: 100%; border-collapse: collapse; }
+.factor-split-table th, .factor-split-table td { height: 33px; padding: 6px 12px; border-bottom: 1px solid #e8edf0; text-align: right; font: 9px 'DM Mono', monospace; white-space: nowrap; }
+.factor-split-table th:first-child, .factor-split-table td:first-child { text-align: left; }
+.factor-split-table th { color: var(--muted); background: #f8fafb; font-weight: 500; }
+.factor-decision { margin: 0; padding: 10px 13px; color: var(--muted); font-size: 10px; }
 .lab-section-head { min-height: 58px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
 .lab-section-head > div { flex: 1; }
 .lab-section-head > strong { font: 10px 'DM Mono', monospace; white-space: nowrap; }
@@ -656,6 +686,9 @@ footer { height: 44px; padding: 0 30px; display: flex; align-items: center; just
 @media (max-width: 1180px) {
   .lab-data-band { grid-template-columns: 1fr; }
   .lab-data-band form { justify-content: flex-start; }
+  .factor-result-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .factor-result-stats div:nth-child(odd) { border-left: 0; }
+  .factor-result-stats div:nth-child(n + 3) { border-top: 1px solid var(--line); }
   .lab-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lab-form-grid fieldset:nth-child(3) { border-left: 0; border-top: 1px solid var(--line); }
   .lab-form-grid fieldset:nth-child(4) { border-top: 1px solid var(--line); }
@@ -680,8 +713,18 @@ footer { height: 44px; padding: 0 30px; display: flex; align-items: center; just
 @media (max-width: 430px) {
   .lab-data-band form { align-items: stretch; flex-direction: column; }
   .lab-data-band form input { width: 100%; }
+  .factor-mining-intro { align-items: stretch; flex-direction: column; }
+  .factor-mining-intro .lab-run { width: 100%; }
+  .factor-stage-track > div { gap: 4px; font-size: 9px; }
+  .factor-stage-track > div::after { margin-left: 1px; }
+  .factor-stage-track i { width: 16px; height: 16px; }
+  .factor-stage-track span { display: none; }
+  .factor-result-head h3 { max-width: 220px; }
   .lab-section-head { align-items: flex-start; }
   .lab-result-summary { grid-template-columns: 1fr; }
   .lab-result-summary div:nth-child(n) { border-left: 0; border-top: 1px solid var(--line); }
   .lab-result-summary div:first-child { border-top: 0; }
+  .factor-result-stats { grid-template-columns: 1fr; }
+  .factor-result-stats div:nth-child(n) { border-left: 0; border-top: 1px solid var(--line); }
+  .factor-result-stats div:first-child { border-top: 0; }
 }

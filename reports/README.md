@@ -56,6 +56,8 @@ market data.
 - `experiments/factor_mining/2026-08-15/`: AlphaGPT-inspired, causal factor-expression search
   across BTCUSDT, ETHUSDT, and SOXLUSDT. BTC and ETH candidates failed independent confirmation;
   SOXL has inadequate independent history. No formula is approved or connected to execution.
+- `experiments/deep_factor/`: GPU-only causal Transformer studies. Checkpoints are stored outside
+  version control; reports retain the split metrics, costs, configuration, and rejection decision.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment

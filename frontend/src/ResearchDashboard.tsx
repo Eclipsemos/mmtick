@@ -3,8 +3,10 @@ import {
   BarChart3,
   CalendarDays,
   CheckCircle2,
+  Cpu,
   Database,
   FileBarChart,
+  FlaskConical,
   Play,
   RefreshCw,
   Settings2,
@@ -26,6 +28,8 @@ import { api, ApiError } from './api'
 import type {
   ResearchBacktestRequest,
   ResearchCandidate,
+  DeepFactorReport,
+  ResearchFactorReport,
   ResearchInstrumentId,
   ResearchJob,
 } from './types'
@@ -105,6 +109,10 @@ export default function ResearchDashboard() {
   const [reentryAtr, setReentryAtr] = useState(1.4)
   const [updateJobId, setUpdateJobId] = useState('')
   const [backtestJobId, setBacktestJobId] = useState('')
+  const [factorJobId, setFactorJobId] = useState('')
+  const [factorReportId, setFactorReportId] = useState('')
+  const [deepJobId, setDeepJobId] = useState('')
+  const [deepReportId, setDeepReportId] = useState('')
   const [reportId, setReportId] = useState('')
   const [selectedCandidateId, setSelectedCandidateId] = useState('')
 
@@ -121,6 +129,10 @@ export default function ResearchDashboard() {
     queryKey: ['research-reports', instrumentId],
     queryFn: () => api.researchReports(instrumentId),
   })
+  const factorReports = useQuery({
+    queryKey: ['research-factor-reports', 'btc_perp'],
+    queryFn: () => api.researchFactorReports('btc_perp'),
+  })
   const updateJob = useQuery({
     queryKey: ['research-job', updateJobId],
     queryFn: () => api.researchJob(updateJobId),
@@ -133,10 +145,36 @@ export default function ResearchDashboard() {
     enabled: Boolean(backtestJobId),
     refetchInterval: (query) => ['completed', 'failed'].includes(query.state.data?.status ?? '') ? false : 1000,
   })
+  const factorJob = useQuery({
+    queryKey: ['research-job', factorJobId],
+    queryFn: () => api.researchJob(factorJobId),
+    enabled: Boolean(factorJobId),
+    refetchInterval: (query) => ['completed', 'failed'].includes(query.state.data?.status ?? '') ? false : 1000,
+  })
   const report = useQuery({
     queryKey: ['research-report', reportId],
     queryFn: () => api.researchReport(reportId),
     enabled: Boolean(reportId),
+  })
+  const factorReport = useQuery({
+    queryKey: ['research-factor-report', factorReportId],
+    queryFn: () => api.researchFactorReport(factorReportId),
+    enabled: Boolean(factorReportId),
+  })
+  const deepReports = useQuery({
+    queryKey: ['research-deep-factor-reports'],
+    queryFn: api.researchDeepFactorReports,
+  })
+  const deepJob = useQuery({
+    queryKey: ['research-job', deepJobId],
+    queryFn: () => api.researchJob(deepJobId),
+    enabled: Boolean(deepJobId),
+    refetchInterval: (query) => ['completed', 'failed'].includes(query.state.data?.status ?? '') ? false : 1000,
+  })
+  const deepReport = useQuery({
+    queryKey: ['research-deep-factor-report', deepReportId],
+    queryFn: () => api.researchDeepFactorReport(deepReportId),
+    enabled: Boolean(deepReportId),
   })
   const updateMutation = useMutation({
     mutationFn: api.updateResearchData,
@@ -145,6 +183,14 @@ export default function ResearchDashboard() {
   const backtestMutation = useMutation({
     mutationFn: api.runResearchBacktest,
     onSuccess: (job) => { setBacktestJobId(job.id); setReportId(''); setSelectedCandidateId('') },
+  })
+  const factorMiningMutation = useMutation({
+    mutationFn: () => api.runFactorMining('btc_perp'),
+    onSuccess: (job) => { setFactorJobId(job.id); setFactorReportId('') },
+  })
+  const deepMiningMutation = useMutation({
+    mutationFn: () => api.runDeepFactorMining(),
+    onSuccess: (job) => { setDeepJobId(job.id); setDeepReportId('') },
   })
 
   useEffect(() => {
@@ -185,6 +231,26 @@ export default function ResearchDashboard() {
     }
   }, [backtestJob.data])
   useEffect(() => {
+    if (factorJob.data?.status === 'completed' && factorJob.data.report_id) {
+      setFactorReportId(factorJob.data.report_id)
+    }
+  }, [factorJob.data])
+  useEffect(() => {
+    if (!factorJobId && !factorReportId && factorReports.data?.length) {
+      setFactorReportId(factorReports.data[0].id)
+    }
+  }, [factorJobId, factorReportId, factorReports.data])
+  useEffect(() => {
+    if (deepJob.data?.status === 'completed' && deepJob.data.report_id) {
+      setDeepReportId(deepJob.data.report_id)
+    }
+  }, [deepJob.data])
+  useEffect(() => {
+    if (!deepJobId && !deepReportId && deepReports.data?.length) {
+      setDeepReportId(deepReports.data[0].id)
+    }
+  }, [deepJobId, deepReportId, deepReports.data])
+  useEffect(() => {
     if (!reportId && !backtestJobId && reports.data?.length) {
       setReportId(reports.data[0].id)
     }
@@ -196,6 +262,8 @@ export default function ResearchDashboard() {
   const selected = report.data?.candidates.find((item) => item.id === selectedCandidateId)
     ?? report.data?.candidates[0]
   const busy = ['queued', 'running'].includes(backtestJob.data?.status ?? '')
+  const factorBusy = ['queued', 'running'].includes(factorJob.data?.status ?? '')
+  const deepBusy = ['queued', 'running'].includes(deepJob.data?.status ?? '')
   const invalidGrid = candidateCount < 1 || candidateCount > 24
 
   function submitBacktest(event: FormEvent) {
@@ -231,13 +299,41 @@ export default function ResearchDashboard() {
       </section>
       <JobProgress job={updateJob.data} />
 
+      <section className="factor-mining-panel" aria-label="BTC 因子挖掘">
+        <header className="lab-section-head"><FlaskConical size={17} /><div><span>CAUSAL FACTOR MINING</span><h2>BTCUSDT 因子批量挖掘</h2></div><strong>648 候选</strong></header>
+        <div className="factor-mining-body">
+          <div className="factor-mining-intro">
+            <div><span className="factor-kicker">ALPHAGPT-INSPIRED / RESEARCH ONLY</span><p>闭合 K 线 / 下一根开盘 / 5 + 2 bps 成本 / 不创建订单</p></div>
+            <button className="lab-run" type="button" disabled={factorBusy || factorMiningMutation.isPending || busy} onClick={() => factorMiningMutation.mutate()}><Play size={16} />开始 BTC 挖掘</button>
+          </div>
+          <JobProgress job={factorJob.data} />
+          {factorJob.data?.status === 'running' && <FactorMiningStages stage={factorJob.data.stage} progress={factorJob.data.progress} />}
+          {factorMiningMutation.error && <div className="lab-error"><TriangleAlert size={15} />{errorMessage(factorMiningMutation.error)}</div>}
+          {factorReport.data && <FactorMiningResult report={factorReport.data} />}
+        </div>
+      </section>
+
+      <section className="factor-mining-panel deep-factor-panel" aria-label="深度因子挖掘">
+        <header className="lab-section-head"><Cpu size={17} /><div><span>GPU TRANSFORMER / CAUSAL</span><h2>BTC + ETH 深度因子挖掘</h2></div><strong>RTX 4090</strong></header>
+        <div className="factor-mining-body">
+          <div className="factor-mining-intro">
+            <div><span className="factor-kicker">PYTORCH 2.13 / CUDA 13.0</span><p>多周期方向与收益预测 · 成本后回测诊断</p></div>
+            <button className="lab-run" type="button" disabled={deepBusy || deepMiningMutation.isPending || busy || factorBusy} onClick={() => deepMiningMutation.mutate()}><Cpu size={16} />启动 GPU 深挖</button>
+          </div>
+          <JobProgress job={deepJob.data} />
+          {deepJob.data?.status === 'running' && <FactorMiningStages stage={deepJob.data.stage} progress={deepJob.data.progress} />}
+          {deepMiningMutation.error && <div className="lab-error"><TriangleAlert size={15} />{errorMessage(deepMiningMutation.error)}</div>}
+          {deepReport.data && <DeepFactorResult report={deepReport.data} />}
+        </div>
+      </section>
+
       <form className="lab-workbench" onSubmit={submitBacktest}>
         <header className="lab-section-head"><Settings2 size={17} /><div><span>ATR GRID</span><h2>批量回测参数</h2></div><strong>{candidateCount} / 24 候选</strong></header>
         <div className="lab-form-grid">
           <fieldset>
             <legend>范围与方向</legend>
             <label>合约<select value={instrumentId} onChange={(event) => setInstrumentId(event.target.value as ResearchInstrumentId)}>{presets.data?.map((item) => <option key={item.instrument_id} value={item.instrument_id}>{item.symbol} 永续合约</option>)}</select></label>
-            <small>{preset?.status === 'baseline_unoptimized' ? '研究基线预设，尚未优化' : 'SOXL 历史候选网格'}</small>
+            <small>{preset?.status === 'researched_candidate_grid' ? 'SOXL 历史候选网格' : preset?.status === 'baseline_rejected_validation' ? '研究基线已被历史验证拒绝' : '研究基线预设，尚未优化'}</small>
             <div className="lab-field-pair"><label>开始日期<input type="date" value={startDate} min={dataStatus.data?.earliest_replay_date ?? undefined} onChange={(event) => setStartDate(event.target.value)} required /></label><label>结束日期<input type="date" value={endDate} max={dataStatus.data?.complete_through_date ?? dataStatus.data?.default_update_date ?? yesterdayUtc} onChange={(event) => setEndDate(event.target.value)} required /></label></div>
             <div className="lab-label">方向</div>
             <div className="lab-segments" role="group" aria-label="交易方向">
@@ -292,6 +388,47 @@ export default function ResearchDashboard() {
           <PerformancePanel title="每日收益" rows={selected.daily} daily />
         </div>
       </>}
+    </div>
+  )
+}
+
+function FactorMiningStages({ stage, progress }: { stage: string, progress: number }) {
+  const candidateMatch = stage.match(/(\d+)\/(\d+)/)
+  const candidate = candidateMatch ? `${candidateMatch[1]} / ${candidateMatch[2]}` : '--'
+  const stages = [
+    ['数据', progress >= 0.1],
+    ['特征', progress >= 0.14],
+    ['候选公式', progress >= 0.15 && progress < 0.9],
+    ['稳定性', progress >= 0.9],
+    ['报告', progress >= 0.98],
+  ] as const
+  return (
+    <div className="factor-stage-board">
+      <div className="factor-stage-track">{stages.map(([label, active], index) => <div key={label} className={active ? 'active' : ''}><i>{index + 1}</i><span>{label}</span></div>)}</div>
+      <div className="factor-stage-meta"><span>{stage}</span><strong>{candidate} 候选</strong></div>
+    </div>
+  )
+}
+
+function FactorMiningResult({ report }: { report: ResearchFactorReport }) {
+  const selected = report.selected
+  return (
+    <div className="factor-result">
+      <div className="factor-result-head"><div><span className="factor-kicker">REPORT {report.id}</span><h3>{selected?.formula.display ?? '没有可用候选'}</h3></div><strong className={report.decision.status === 'research_candidate' ? 'gain' : 'loss'}>{report.decision.status}</strong></div>
+      <div className="factor-result-stats"><div><span>候选公式</span><strong>{report.candidate_count}</strong></div><div><span>开发期合格</span><strong>{report.development_eligible_count}</strong></div><div><span>邻域确认通过</span><strong>{percent(report.neighbor_confirmation_pass_rate)}</strong></div><div><span>交易批准</span><strong>否</strong></div></div>
+      {selected && <table className="factor-split-table"><thead><tr><th>分段</th><th>收益</th><th>最大回撤</th><th>交易</th><th>正月率</th></tr></thead><tbody>{(['train', 'validation', 'confirmation'] as const).map((name) => { const row = selected[name]; return <tr key={name}><td>{name}</td><td className={row.net_return >= 0 ? 'gain' : 'loss'}>{percent(row.net_return)}</td><td className="loss">{percent(row.max_drawdown)}</td><td>{row.completed_trades}</td><td>{percent(row.positive_month_rate)}</td></tr> })}</tbody></table>}
+      <p className="factor-decision">{report.decision.reason}</p>
+    </div>
+  )
+}
+
+function DeepFactorResult({ report }: { report: DeepFactorReport }) {
+  return (
+    <div className="factor-result">
+      <div className="factor-result-head"><div><span className="factor-kicker">REPORT {report.id}</span><h3>{report.model.architecture}</h3></div><strong className={report.decision.status === 'research_candidate' ? 'gain' : 'loss'}>{report.decision.status}</strong></div>
+      <div className="factor-result-stats"><div><span>参数量</span><strong>{report.model.parameters.toLocaleString()}</strong></div><div><span>验证最佳 Loss</span><strong>{report.training.best_validation_loss.toFixed(4)}</strong></div><div><span>设备</span><strong>{report.model.device}</strong></div><div><span>交易批准</span><strong>否</strong></div></div>
+      <table className="factor-split-table"><thead><tr><th>品种 / 分段</th><th>收益</th><th>最大回撤</th><th>交易</th><th>方向准确率</th><th>IC</th></tr></thead><tbody>{Object.entries(report.metrics).flatMap(([instrument, metrics]) => (['train', 'validation', 'confirmation'] as const).map((split) => { const row = metrics[split]; return <tr key={`${instrument}-${split}`}><td>{instrument} / {split}</td><td className={row.net_return >= 0 ? 'gain' : 'loss'}>{percent(row.net_return)}</td><td className="loss">{percent(row.max_drawdown)}</td><td>{row.completed_trades}</td><td>{percent(row.direction_accuracy)}</td><td>{row.information_coefficient?.toFixed(4) ?? '--'}</td></tr> }))}</tbody></table>
+      <p className="factor-decision">{report.decision.reason}</p>
     </div>
   )
 }

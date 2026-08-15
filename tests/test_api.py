@@ -44,6 +44,11 @@ def test_health_and_empty_overview(tmp_path) -> None:
                 "atr_multipliers": [1, 2, 3, 4, 5],
             },
         )
+        factor_mining = client.post(
+            "/api/research/factor-mining",
+            json={"instrument_id": "btc_perp"},
+        )
+        factor_reports = client.get("/api/research/factor-reports?instrument_id=btc_perp")
 
     assert health.status_code == 200
     assert health.json()["service"] == "mastermind-tick"
@@ -79,9 +84,12 @@ def test_health_and_empty_overview(tmp_path) -> None:
         ]
         == "baseline_rejected_validation"
     )
-    assert next(
-        item for item in research_presets.json() if item["instrument_id"] == "btc_perp"
-    )["history_start_date"] == "2024-01-01"
+    assert (
+        next(item for item in research_presets.json() if item["instrument_id"] == "btc_perp")[
+            "history_start_date"
+        ]
+        == "2024-01-01"
+    )
     assert btc_status.status_code == 200
     assert btc_status.json()["symbol"] == "BTCUSDT"
     assert btc_status.json()["tick_count"] == 0
@@ -90,6 +98,11 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert eth_status.json()["tick_count"] == 0
     assert oversized_grid.status_code == 400
     assert "24 candidates" in oversized_grid.json()["detail"]
+    assert factor_mining.status_code == 202
+    assert factor_mining.json()["kind"] == "factor_mining"
+    assert factor_mining.json()["request"] == {"instrument_id": "btc_perp"}
+    assert factor_reports.status_code == 200
+    assert all(item["instrument_id"] == "btc_perp" for item in factor_reports.json())
 
     funding = client.get("/api/funding?account_id=soxl_perp")
     assert funding.status_code == 200
@@ -112,6 +125,31 @@ def test_active_strategy_uses_recommended_atr_parameters() -> None:
     assert settings.live_futures.profit_activation_atr == 0.0
     assert settings.live_futures.profit_trailing_atr == 0.0
     assert settings.live_futures.continuation_reentry_atr == 0.0
+
+
+def test_deep_factor_endpoint_submits_gpu_worker_request(tmp_path, monkeypatch) -> None:
+    base_settings = load_settings("config/settings.toml")
+    settings = replace(
+        base_settings,
+        database_path=tmp_path / "paper.db",
+        frontend_dist=tmp_path / "missing-frontend",
+    )
+    app = create_app(settings, start_engine=False)
+    captured: list[tuple[str, ...]] = []
+
+    def submit(instruments: tuple[str, ...]) -> dict:
+        captured.append(instruments)
+        return {"id": "deep-test", "kind": "deep_factor", "request": {"instruments": instruments}}
+
+    monkeypatch.setattr(app.state.research_lab, "submit_deep_factor_mining", submit)
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/research/deep-factor", json={"instruments": ["btc_perp", "eth_perp"]}
+        )
+
+    assert response.status_code == 202
+    assert response.json()["kind"] == "deep_factor"
+    assert captured == [("btc_perp", "eth_perp")]
 
 
 def test_chart_endpoints_page_backwards_with_time_cursor(tmp_path) -> None:

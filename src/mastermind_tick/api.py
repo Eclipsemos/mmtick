@@ -79,6 +79,16 @@ class ResearchBacktestRequest(BaseModel):
     continuation_reentry_atr: float | None = Field(default=None, ge=0, le=20)
 
 
+class ResearchFactorMiningRequest(BaseModel):
+    instrument_id: Literal["btc_perp", "eth_perp", "soxl_perp"] = "btc_perp"
+
+
+class ResearchDeepFactorRequest(BaseModel):
+    instruments: list[Literal["btc_perp", "eth_perp", "soxl_perp"]] = Field(
+        default=["btc_perp", "eth_perp"], min_length=1, max_length=2
+    )
+
+
 def create_app(settings: Settings | None = None, *, start_engine: bool = True) -> FastAPI:
     resolved = settings or load_settings(os.getenv("MMTICK_CONFIG", "config/settings.toml"))
     store = PaperStore(resolved.database_path)
@@ -403,6 +413,20 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
+    @app.post("/api/research/factor-mining", status_code=202)
+    def research_factor_mining(payload: ResearchFactorMiningRequest) -> dict:
+        try:
+            return research_lab.submit_factor_mining(payload.instrument_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.post("/api/research/deep-factor", status_code=202)
+    def research_deep_factor(payload: ResearchDeepFactorRequest) -> dict:
+        try:
+            return research_lab.submit_deep_factor_mining(tuple(dict.fromkeys(payload.instruments)))
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     @app.get("/api/research/jobs/{job_id}")
     def research_job(job_id: str) -> dict:
         job = research_lab.get_job(job_id)
@@ -421,6 +445,30 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         report = research_lab.get_report(report_id)
         if report is None:
             raise HTTPException(status_code=404, detail="research report not found")
+        return report
+
+    @app.get("/api/research/factor-reports")
+    def research_factor_reports(
+        instrument_id: Literal["soxl_perp", "btc_perp", "eth_perp"] | None = None,
+    ) -> list[dict]:
+        return research_lab.list_factor_reports(instrument_id)
+
+    @app.get("/api/research/factor-reports/{report_id}")
+    def research_factor_report(report_id: str) -> dict:
+        report = research_lab.get_factor_report(report_id)
+        if report is None:
+            raise HTTPException(status_code=404, detail="factor-mining report not found")
+        return report
+
+    @app.get("/api/research/deep-factor-reports")
+    def research_deep_factor_reports() -> list[dict]:
+        return research_lab.list_deep_factor_reports()
+
+    @app.get("/api/research/deep-factor-reports/{report_id}")
+    def research_deep_factor_report(report_id: str) -> dict:
+        report = research_lab.get_deep_factor_report(report_id)
+        if report is None:
+            raise HTTPException(status_code=404, detail="deep factor report not found")
         return report
 
     frontend_dist = resolved.frontend_dist

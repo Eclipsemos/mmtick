@@ -238,7 +238,7 @@ export type ResearchPreset = {
   position_fraction: number
   fee_bps: number
   slippage_bps: number
-  status: 'researched_candidate_grid' | 'baseline_unoptimized'
+  status: 'researched_candidate_grid' | 'baseline_unoptimized' | 'baseline_rejected_validation'
 }
 
 export type ResearchDataStatus = {
@@ -259,7 +259,7 @@ export type ResearchDataStatus = {
 
 export type ResearchJob = {
   id: string
-  kind: 'data_update' | 'backtest'
+  kind: 'data_update' | 'backtest' | 'factor_mining'
   status: 'queued' | 'running' | 'completed' | 'failed'
   stage: string
   progress: number
@@ -269,7 +269,75 @@ export type ResearchJob = {
   report_id: string | null
   error: string | null
   message: string | null
+  result?: Record<string, unknown> | null
   request: Record<string, unknown>
+}
+
+export type ResearchFactorSplit = {
+  net_return: number
+  max_drawdown: number
+  completed_trades: number
+  positive_month_rate: number
+}
+
+export type ResearchFactorCandidate = {
+  id: string
+  formula: { display: string, tokens: string[] }
+  interval_minutes: number
+  direction: string
+  threshold: number
+  train: ResearchFactorSplit
+  validation: ResearchFactorSplit
+  confirmation: ResearchFactorSplit
+}
+
+export type ResearchFactorReport = {
+  id: string
+  generated_at: string
+  instrument_id: string
+  candidate_count: number
+  development_eligible_count: number
+  selected: ResearchFactorCandidate | null
+  top_development_candidates: ResearchFactorCandidate[]
+  neighbor_confirmation_pass_rate: number
+  decision: { status: string, approved_for_trading: boolean, reason: string }
+  data: { first_bar: string, last_bar: string, source_bars_15m: number, funding_events: number }
+}
+
+export type ResearchFactorReportSummary = {
+  id: string
+  generated_at: string
+  instrument_id: string
+  candidate_count: number
+  status: string
+}
+
+export type DeepFactorSplit = {
+  samples: number
+  direction_accuracy: number | null
+  information_coefficient: number | null
+  net_return: number
+  max_drawdown: number
+  completed_trades: number
+  win_rate: number | null
+  profit_factor: number | null
+}
+
+export type DeepFactorReport = {
+  id: string
+  generated_at: string
+  model: {
+    architecture: string
+    parameters: number
+    device: string
+    torch_version: string
+    cuda_version: string | null
+    checkpoint: string
+  }
+  data: Record<string, { first_bar: string, last_bar: string, source_bars_15m: number }>
+  training: { history: Array<{ epoch: number, train_loss: number, validation_loss: number }>, best_validation_loss: number }
+  metrics: Record<string, Record<'train' | 'validation' | 'confirmation', DeepFactorSplit>>
+  decision: { status: string, approved_for_trading: boolean, reason: string }
 }
 
 export type ResearchReportSummary = {

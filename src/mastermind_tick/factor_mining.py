@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import itertools
 import sqlite3
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
@@ -38,6 +39,7 @@ UNARY_OPERATORS = ("NEG", "ABS", "SIGN", "DELAY1", "DECAY3")
 BINARY_OPERATORS = ("ADD", "SUB", "MUL", "DIV")
 SEARCH_UNARY_OPERATORS = ("NEG", "DELAY1", "DECAY3")
 SEARCH_BINARY_OPERATORS = ("ADD", "SUB", "MUL")
+FactorProgress = Callable[[str, float], None]
 
 
 @dataclass(frozen=True)
@@ -268,8 +270,10 @@ def mine_instrument(
     bars: list[ResearchBar],
     funding_rates: list[FundingRate],
     config: FactorMiningConfig,
+    progress_callback: FactorProgress | None = None,
 ) -> dict[str, Any]:
     """Rank factor formulas by development splits, then separately inspect confirmation."""
+    _report_progress(progress_callback, "加载历史 15m K 线与资金费", 0.04)
     periods = split_periods(config.instrument_id, bars[-1].end_ms)
     by_interval = {interval: aggregate_bars(bars, interval) for interval in config.intervals}
     funding = {
@@ -280,9 +284,11 @@ def mine_instrument(
         interval: causal_features(interval_bars, funding[interval])
         for interval, interval_bars in by_interval.items()
     }
+    _report_progress(progress_callback, "构建因果特征与公式语言", 0.14)
     candidates = candidate_library(config)
     rows: list[dict[str, Any]] = []
-    for candidate in candidates:
+    total_candidates = len(candidates)
+    for index, candidate in enumerate(candidates, start=1):
         interval_bars = by_interval[candidate.interval_minutes]
         features = features_by_interval[candidate.interval_minutes]
         values = evaluate_formula(candidate.formula, features)
@@ -306,6 +312,11 @@ def mine_instrument(
                 "score": _selection_score(results["train"], results["validation"]),
             }
         )
+        _report_progress(
+            progress_callback,
+            f"评估候选公式 {index}/{total_candidates}",
+            0.14 + 0.74 * index / total_candidates,
+        )
     eligible = [
         row
         for row in rows
@@ -328,6 +339,7 @@ def mine_instrument(
         else 0.0
     )
     selected_payload = _serialize_row(selected) if selected is not None else None
+    _report_progress(progress_callback, "验证确认期、参数邻域与成本压力", 0.93)
     stress: dict[str, dict[str, Any]] = {}
     gates: dict[str, bool] = {}
     if selected is not None:
@@ -357,6 +369,7 @@ def mine_instrument(
     history_days = (bars[-1].end_ms - bars[0].start_ms) / 86_400_000
     enough_history = config.instrument_id != "soxl_perp" and history_days >= 730
     stable = bool(selected is not None and enough_history and all(gates.values()))
+    _report_progress(progress_callback, "生成因子挖掘报告", 0.98)
     return {
         "instrument_id": config.instrument_id,
         "data": {
@@ -417,6 +430,11 @@ def mine_instrument(
             ),
         },
     }
+
+
+def _report_progress(callback: FactorProgress | None, stage: str, progress: float) -> None:
+    if callback is not None:
+        callback(stage, max(0.0, min(1.0, progress)))
 
 
 def _return_series(values: tuple[Decimal, ...], lookback: int) -> tuple[Decimal | None, ...]:

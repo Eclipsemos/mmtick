@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import subprocess
 import sys
@@ -11,10 +12,12 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass, replace
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 from mastermind_tick.backtest import ReplayParameters, run_parameter_grid
 from mastermind_tick.config import InstrumentSettings, Settings
+from mastermind_tick.factor_mining import FactorMiningConfig, load_market, mine_instrument
 
 DAY_MS = 86_400_000
 MAX_CANDIDATES = 24
@@ -123,6 +126,12 @@ class ResearchLab:
         self.presets = research_presets(settings)
         self.report_dir = settings.project_root / "reports" / "backtests"
         self.report_dir.mkdir(parents=True, exist_ok=True)
+        self.factor_report_dir = settings.project_root / "reports" / "experiments" / "factor_mining"
+        self.factor_report_dir.mkdir(parents=True, exist_ok=True)
+        self.deep_factor_report_dir = (
+            settings.project_root / "reports" / "experiments" / "deep_factor"
+        )
+        self.deep_factor_report_dir.mkdir(parents=True, exist_ok=True)
         self._jobs: dict[str, dict[str, Any]] = {}
         self._lock = threading.Lock()
         self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="research")
@@ -238,6 +247,26 @@ class ResearchLab:
         self._executor.submit(self._run_backtest, job["id"], request)
         return job
 
+    def submit_factor_mining(self, instrument_id: str) -> dict[str, Any]:
+        if instrument_id not in {"btc_perp", "eth_perp", "soxl_perp"}:
+            raise ValueError(f"unsupported factor-mining instrument: {instrument_id}")
+        job = self._new_job("factor_mining", {"instrument_id": instrument_id})
+        self._executor.submit(self._run_factor_mining, job["id"], instrument_id)
+        return job
+
+    def submit_deep_factor_mining(self, instruments: tuple[str, ...]) -> dict[str, Any]:
+        allowed = {"btc_perp", "eth_perp", "soxl_perp"}
+        if not instruments or set(instruments) - allowed:
+            raise ValueError("deep factor instruments must be BTC, ETH, or SOXL")
+        if len(instruments) > 2 or "soxl_perp" in instruments:
+            raise ValueError("the first deep-factor run supports BTC and ETH only")
+        python = Path("/home/spaceaic/env/.venv/bin/python")
+        if not python.is_file():
+            raise ValueError(f"GPU research Python environment not found: {python}")
+        job = self._new_job("deep_factor", {"instruments": list(instruments)})
+        self._executor.submit(self._run_deep_factor, job["id"], instruments, python)
+        return job
+
     def get_job(self, job_id: str) -> dict[str, Any] | None:
         with self._lock:
             job = self._jobs.get(job_id)
@@ -251,6 +280,70 @@ class ResearchLab:
         if not path.is_file():
             return None
         return json.loads(path.read_text(encoding="utf-8"))
+
+    def get_factor_report(self, report_id: str) -> dict[str, Any] | None:
+        valid_characters = "abcdefghijklmnopqrstuvwxyz0123456789-_"
+        if not report_id or any(value not in valid_characters for value in report_id):
+            return None
+        matches = list(self.factor_report_dir.glob(f"*/{report_id}.json"))
+        if len(matches) != 1:
+            return None
+        try:
+            return json.loads(matches[0].read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return None
+
+    def list_factor_reports(self, instrument_id: str | None = None) -> list[dict[str, Any]]:
+        reports = []
+        for path in sorted(self.factor_report_dir.glob("*/*.json"), reverse=True):
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                if "id" not in payload or "generated_at" not in payload:
+                    continue
+                if instrument_id and payload.get("instrument_id") != instrument_id:
+                    continue
+                reports.append(
+                    {
+                        "id": payload["id"],
+                        "generated_at": payload["generated_at"],
+                        "instrument_id": payload["instrument_id"],
+                        "candidate_count": payload["candidate_count"],
+                        "status": payload["decision"]["status"],
+                    }
+                )
+            except (KeyError, json.JSONDecodeError, OSError):
+                continue
+        return reports[:20]
+
+    def get_deep_factor_report(self, report_id: str) -> dict[str, Any] | None:
+        if not report_id or any(
+            value not in "abcdefghijklmnopqrstuvwxyz0123456789-_" for value in report_id
+        ):
+            return None
+        matches = list(self.deep_factor_report_dir.glob(f"*/{report_id}.json"))
+        if len(matches) != 1:
+            return None
+        try:
+            return json.loads(matches[0].read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return None
+
+    def list_deep_factor_reports(self) -> list[dict[str, Any]]:
+        reports = []
+        for path in sorted(self.deep_factor_report_dir.glob("*/*.json"), reverse=True):
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                reports.append(
+                    {
+                        "id": payload["id"],
+                        "generated_at": payload["generated_at"],
+                        "instruments": list(payload["data"]),
+                        "status": payload["decision"]["status"],
+                    }
+                )
+            except (KeyError, json.JSONDecodeError, OSError):
+                continue
+        return reports[:20]
 
     def list_reports(self, instrument_id: str | None = None) -> list[dict[str, Any]]:
         reports = []
@@ -287,6 +380,7 @@ class ResearchLab:
             "report_id": None,
             "error": None,
             "message": None,
+            "result": None,
             "request": request,
         }
         with self._lock:
@@ -458,6 +552,148 @@ class ResearchLab:
         except Exception as exc:
             self._fail_job(job_id, exc)
 
+    def _run_factor_mining(self, job_id: str, instrument_id: str) -> None:
+        self._update_job(
+            job_id,
+            status="running",
+            stage="读取只读 BTC 历史数据",
+            progress=0.01,
+            started_at=datetime.now(UTC).isoformat(),
+        )
+        try:
+            bars, funding = load_market(self.settings.database_path, instrument_id)
+            direction_options = (
+                ("long_only",)
+                if instrument_id == "soxl_perp"
+                else (
+                    "long_only",
+                    "long_short",
+                )
+            )
+
+            def progress(stage: str, value: float) -> None:
+                self._update_job(job_id, stage=stage, progress=value)
+
+            payload = mine_instrument(
+                bars,
+                funding,
+                FactorMiningConfig(
+                    instrument_id=instrument_id,
+                    direction_options=direction_options,
+                ),
+                progress_callback=progress,
+            )
+            generated_at = datetime.now(UTC)
+            report_id = f"factor-{instrument_id}-{generated_at.strftime('%Y%m%d-%H%M%S-%f')}"
+            payload["id"] = report_id
+            payload["generated_at"] = generated_at.isoformat()
+            output_dir = self.factor_report_dir / generated_at.date().isoformat()
+            output_dir.mkdir(parents=True, exist_ok=True)
+            (output_dir / f"{report_id}.json").write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+            )
+            (output_dir / f"{report_id}.md").write_text(
+                _factor_report_markdown(payload), encoding="utf-8"
+            )
+            selected = payload["selected"]
+            self._update_job(
+                job_id,
+                status="completed",
+                stage="因子挖掘报告已生成",
+                progress=1.0,
+                completed_at=datetime.now(UTC).isoformat(),
+                report_id=report_id,
+                message=(
+                    f"完成 {payload['candidate_count']} 个因果公式候选；"
+                    f"开发期合格 {payload['development_eligible_count']} 个"
+                ),
+                result={
+                    "instrument_id": instrument_id,
+                    "candidate_count": payload["candidate_count"],
+                    "development_eligible_count": payload["development_eligible_count"],
+                    "selected_id": selected["id"] if selected else None,
+                    "selected_formula": selected["formula"]["display"] if selected else None,
+                    "status": payload["decision"]["status"],
+                },
+            )
+        except Exception as exc:
+            self._fail_job(job_id, exc)
+
+    def _run_deep_factor(self, job_id: str, instruments: tuple[str, ...], python: Path) -> None:
+        self._update_job(
+            job_id,
+            status="running",
+            stage="启动 GPU 深度因子 worker",
+            progress=0.01,
+            started_at=datetime.now(UTC).isoformat(),
+        )
+        command = [
+            str(python),
+            str(self.settings.project_root / "scripts" / "train_deep_factor.py"),
+            "--database",
+            str(self.settings.database_path),
+            "--output-root",
+            str(self.settings.project_root),
+            "--report-root",
+            str(self.deep_factor_report_dir),
+            "--instruments",
+            ",".join(instruments),
+        ]
+        environment = os.environ.copy()
+        source_path = str(self.settings.project_root / "src")
+        environment["PYTHONPATH"] = source_path + os.pathsep + environment.get("PYTHONPATH", "")
+        completed_report: dict[str, Any] | None = None
+        try:
+            process = subprocess.Popen(
+                command,
+                cwd=self.settings.project_root,
+                env=environment,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+            )
+            assert process.stdout is not None
+            for line in process.stdout:
+                try:
+                    event = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if event.get("event") == "progress":
+                    self._update_job(
+                        job_id,
+                        stage=event.get("stage", "GPU 深度因子计算"),
+                        progress=float(event.get("progress", 0.0)),
+                    )
+                elif event.get("event") == "error":
+                    raise RuntimeError(str(event.get("error", "deep factor worker failed")))
+                elif event.get("event") == "completed":
+                    completed_report = event.get("report")
+            return_code = process.wait()
+            if return_code != 0:
+                raise RuntimeError(f"deep factor worker exited with code {return_code}")
+            if completed_report is None:
+                raise RuntimeError("deep factor worker did not return a report")
+            self._update_job(
+                job_id,
+                status="completed",
+                stage="GPU 深度因子报告已生成",
+                progress=1.0,
+                completed_at=datetime.now(UTC).isoformat(),
+                report_id=completed_report["id"],
+                message=(
+                    f"完成 {', '.join(instruments)}；"
+                    f"模型决策 {completed_report['decision']['status']}"
+                ),
+                result={
+                    "instruments": list(instruments),
+                    "status": completed_report["decision"]["status"],
+                    "checkpoint": completed_report["model"]["checkpoint"],
+                },
+            )
+        except Exception as exc:
+            self._fail_job(job_id, exc)
+
     def _preset(self, instrument_id: str) -> ResearchPreset:
         preset = self.presets.get(instrument_id)
         if preset is None:
@@ -484,6 +720,45 @@ class ResearchLab:
 
 def _date_start_ms(value: date) -> int:
     return int(datetime.combine(value, datetime.min.time(), UTC).timestamp() * 1000)
+
+
+def _factor_report_markdown(payload: dict[str, Any]) -> str:
+    selected = payload["selected"]
+    lines = [
+        f"# {payload['instrument_id']} Causal Factor Mining",
+        "",
+        f"Generated: {payload['generated_at']}",
+        "",
+        "Research only. Formula discovery cannot create orders or change paper/live settings.",
+        "",
+        "## Result",
+        "",
+        f"- Candidate formulas: {payload['candidate_count']:,}.",
+        f"- Development eligible: {payload['development_eligible_count']:,}.",
+        f"- Decision: `{payload['decision']['status']}`.",
+        "",
+    ]
+    if selected is not None:
+        lines.extend(
+            [
+                "## Selected Development Formula",
+                "",
+                f"- ID: `{selected['id']}`",
+                f"- Formula: `{selected['formula']['display']}`",
+                "",
+                "| Split | Return | Max drawdown | Trades |",
+                "|---|---:|---:|---:|",
+            ]
+        )
+        for name in ("train", "validation", "confirmation"):
+            result = selected[name]
+            lines.append(
+                f"| {name} | {result['net_return']:.2%} | {result['max_drawdown']:.2%} | "
+                f"{result['completed_trades']} |"
+            )
+        lines.append("")
+    lines.extend([payload["decision"]["reason"], ""])
+    return "\n".join(lines)
 
 
 def _period_rows(

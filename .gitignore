@@ -11,6 +11,7 @@ data/backups/
 data/history_soxl/
 data/history_btc/
 data/history_eth/
+data/deep_factor_models/
 data/run/
 frontend/node_modules/
 frontend/dist/

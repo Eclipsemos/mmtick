@@ -1,0 +1,143 @@
+{
+  "id": "deep-factor-20260815-060136-799243",
+  "generated_at": "2026-08-15T06:01:36.799243+00:00",
+  "model": {
+    "architecture": "causal temporal Transformer encoder",
+    "parameters": 2691462,
+    "device": "cuda",
+    "torch_version": "2.13.0+cu130",
+    "cuda_version": "13.0",
+    "checkpoint": "/home/spaceaic/mmtick/data/deep_factor_models/deep-factor-20260815-060129.pt",
+    "config": {
+      "instruments": [
+        "btc_perp",
+        "eth_perp"
+      ],
+      "sequence_length": 96,
+      "horizons": [
+        4,
+        16,
+        96
+      ],
+      "model_dim": 192,
+      "layers": 6,
+      "heads": 6,
+      "batch_size": 256,
+      "epochs": 12,
+      "patience": 3,
+      "learning_rate": 0.0003,
+      "weight_decay": 0.0001,
+      "fee_bps": 5.0,
+      "slippage_bps": 2.0,
+      "seed": 42
+    }
+  },
+  "data": {
+    "btc_perp": {
+      "first_bar": "2024-01-01T00:00:00+00:00",
+      "last_bar": "2026-08-11T23:59:59.999000+00:00",
+      "source_bars_15m": 91584
+    },
+    "eth_perp": {
+      "first_bar": "2024-01-01T00:00:00+00:00",
+      "last_bar": "2026-08-11T23:59:59.999000+00:00",
+      "source_bars_15m": 91584
+    }
+  },
+  "training": {
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 0.6897700835034192,
+        "validation_loss": 0.6911226083070804
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.678138403066126,
+        "validation_loss": 0.7398154622032529
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.6545696849841995,
+        "validation_loss": 0.7661718350627047
+      },
+      {
+        "epoch": 4,
+        "train_loss": 0.6149589956044201,
+        "validation_loss": 0.7837907217797779
+      }
+    ],
+    "best_validation_loss": 0.6911226083070804
+  },
+  "metrics": {
+    "btc_perp": {
+      "train": {
+        "samples": 32064,
+        "direction_accuracy": 0.5262911676646707,
+        "information_coefficient": 0.035445610470103237,
+        "net_return": -0.8992681705899007,
+        "max_drawdown": -0.9000972058704199,
+        "completed_trades": 2178,
+        "win_rate": 0.4150596877869605,
+        "profit_factor": 0.46024263392932163
+      },
+      "validation": {
+        "samples": 34944,
+        "direction_accuracy": 0.5103594322344323,
+        "information_coefficient": 0.007001257804591818,
+        "net_return": -0.9532229408809392,
+        "max_drawdown": -0.9534707483547971,
+        "completed_trades": 2403,
+        "win_rate": 0.2875572201414898,
+        "profit_factor": 0.418990530124431
+      },
+      "confirmation": {
+        "samples": 21216,
+        "direction_accuracy": 0.513433257918552,
+        "information_coefficient": 0.018654550576257516,
+        "net_return": -0.8147493339586649,
+        "max_drawdown": -0.8152521372382603,
+        "completed_trades": 1314,
+        "win_rate": 0.3105022831050228,
+        "profit_factor": 0.3646267636492289
+      }
+    },
+    "eth_perp": {
+      "train": {
+        "samples": 32064,
+        "direction_accuracy": 0.5164982534930139,
+        "information_coefficient": 0.03742843272951756,
+        "net_return": -0.879644605561246,
+        "max_drawdown": -0.8805699054173471,
+        "completed_trades": 1926,
+        "win_rate": 0.46002076843198336,
+        "profit_factor": 0.4858277614227064
+      },
+      "validation": {
+        "samples": 34944,
+        "direction_accuracy": 0.5030620421245421,
+        "information_coefficient": -0.012990132179681304,
+        "net_return": -0.958487539374414,
+        "max_drawdown": -0.958525904810534,
+        "completed_trades": 2180,
+        "win_rate": 0.4756880733944954,
+        "profit_factor": 0.5591048138627019
+      },
+      "confirmation": {
+        "samples": 21216,
+        "direction_accuracy": 0.5125377073906485,
+        "information_coefficient": 0.009616544771651171,
+        "net_return": -0.7598316424185835,
+        "max_drawdown": -0.7601363754941365,
+        "completed_trades": 1056,
+        "win_rate": 0.42140151515151514,
+        "profit_factor": 0.4780504248637231
+      }
+    }
+  },
+  "decision": {
+    "status": "rejected_after_confirmation",
+    "approved_for_trading": false,
+    "reason": "Deep model did not pass the independent confirmation or drawdown gates."
+  }
+}
