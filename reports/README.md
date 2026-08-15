@@ -62,6 +62,10 @@ market data.
   tick-rule direction sources evaluated independently.
 - `experiments/cross_asset_factor/`: causal BTC/ETH common-regime, rotation, relative-value, and
   adaptive factor-efficacy portfolios with development-only exposure selection.
+- `experiments/btc_eth_lead_lag/2026-08-15/`: causal 4h BTC return-shock factors trading delayed
+  ETH response. This is the strongest factor found so far, but its development-selected dynamic
+  sizing reached the 25% monthly target in only 2/8 reused confirmation months, below the required
+  4/8. It remains rejected and research-only; 2026 is not a fresh holdout.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
