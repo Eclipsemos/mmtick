@@ -1,0 +1,4748 @@
+{
+  "id": "deep-factor-20260815-064741-660490",
+  "generated_at": "2026-08-15T06:47:41.660490+00:00",
+  "model": {
+    "architecture": "causal temporal Transformer encoder",
+    "parameters": 2691462,
+    "device": "cuda",
+    "torch_version": "2.13.0+cu130",
+    "cuda_version": "13.0",
+    "checkpoint": "data/deep_factor_models/deep-factor-20260815-064703.pt",
+    "config": {
+      "instruments": [
+        "btc_perp",
+        "eth_perp"
+      ],
+      "sequence_length": 96,
+      "horizons": [
+        4,
+        16,
+        96
+      ],
+      "model_dim": 192,
+      "layers": 6,
+      "heads": 6,
+      "batch_size": 256,
+      "epochs": 12,
+      "patience": 3,
+      "learning_rate": 0.0003,
+      "weight_decay": 0.0001,
+      "fee_bps": 5.0,
+      "slippage_bps": 2.0,
+      "seed": 42
+    }
+  },
+  "data": {
+    "btc_perp": {
+      "first_bar": "2024-01-01T00:00:00+00:00",
+      "last_bar": "2026-08-11T23:59:59.999000+00:00",
+      "source_bars_15m": 91584
+    },
+    "eth_perp": {
+      "first_bar": "2024-01-01T00:00:00+00:00",
+      "last_bar": "2026-08-11T23:59:59.999000+00:00",
+      "source_bars_15m": 91584
+    }
+  },
+  "training": {
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 0.6897700835034192,
+        "validation_loss": 0.6911226083070804
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.678138403066126,
+        "validation_loss": 0.7398154622032529
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.6545696849841995,
+        "validation_loss": 0.7661718350627047
+      },
+      {
+        "epoch": 4,
+        "train_loss": 0.6149589956044201,
+        "validation_loss": 0.7837907217797779
+      }
+    ],
+    "best_validation_loss": 0.6911226083070804
+  },
+  "metrics": {
+    "btc_perp": {
+      "train": {
+        "samples": 32064,
+        "direction_accuracy": 0.5262911676646707,
+        "information_coefficient": 0.035445610470103237,
+        "net_return": 0.33404477620446893,
+        "max_drawdown": -0.1654517359131602,
+        "completed_trades": 94,
+        "win_rate": 0.723404255319149,
+        "profit_factor": 1.9630148873637459,
+        "total_fees": 11232.30233944895,
+        "total_funding": -403.3076230041563,
+        "ending_position": "FLAT",
+        "positive_month_rate": 0.6363636363636364,
+        "target_25pct_month_rate": 0.0,
+        "median_monthly_return": 0.015657833867795574,
+        "worst_monthly_return": -0.03815785987661903,
+        "monthly_returns": [
+          {
+            "label": "2024-02",
+            "return": -0.0102871060518028
+          },
+          {
+            "label": "2024-03",
+            "return": 0.18570699031813404
+          },
+          {
+            "label": "2024-04",
+            "return": 0.0528340470232554
+          },
+          {
+            "label": "2024-05",
+            "return": 0.015657833867795574
+          },
+          {
+            "label": "2024-06",
+            "return": 0.002538055075310516
+          },
+          {
+            "label": "2024-07",
+            "return": -0.03815785987661903
+          },
+          {
+            "label": "2024-08",
+            "return": 0.026827233020111637
+          },
+          {
+            "label": "2024-09",
+            "return": -0.01335692036222248
+          },
+          {
+            "label": "2024-10",
+            "return": 0.0
+          },
+          {
+            "label": "2024-11",
+            "return": 0.026368233206590187
+          },
+          {
+            "label": "2024-12",
+            "return": 0.06025696234436675
+          }
+        ]
+      },
+      "validation": {
+        "samples": 34944,
+        "direction_accuracy": 0.5103594322344323,
+        "information_coefficient": 0.007001257804591818,
+        "net_return": 0.08400369306762395,
+        "max_drawdown": -0.08359626145396774,
+        "completed_trades": 62,
+        "win_rate": 0.6129032258064516,
+        "profit_factor": 1.2930420259242073,
+        "total_fees": 6545.06882385468,
+        "total_funding": -207.9868289829248,
+        "ending_position": "FLAT",
+        "positive_month_rate": 0.5833333333333334,
+        "target_25pct_month_rate": 0.0,
+        "median_monthly_return": 0.006595772768418095,
+        "worst_monthly_return": -0.03086832627324457,
+        "monthly_returns": [
+          {
+            "label": "2025-01",
+            "return": 0.05332891419172664
+          },
+          {
+            "label": "2025-02",
+            "return": -0.028464330910982483
+          },
+          {
+            "label": "2025-03",
+            "return": 0.024602708223223975
+          },
+          {
+            "label": "2025-04",
+            "return": 0.03879885593962443
+          },
+          {
+            "label": "2025-05",
+            "return": 0.0008564778555378117
+          },
+          {
+            "label": "2025-06",
+            "return": 0.006595772768418095
+          },
+          {
+            "label": "2025-07",
+            "return": 0.0
+          },
+          {
+            "label": "2025-08",
+            "return": 0.0
+          },
+          {
+            "label": "2025-09",
+            "return": 0.0
+          },
+          {
+            "label": "2025-10",
+            "return": -0.03086832627324457
+          },
+          {
+            "label": "2025-11",
+            "return": 0.011156099943028635
+          },
+          {
+            "label": "2025-12",
+            "return": 0.008075693796381726
+          }
+        ]
+      },
+      "confirmation": {
+        "samples": 21216,
+        "direction_accuracy": 0.513433257918552,
+        "information_coefficient": 0.018654550576257516,
+        "net_return": -0.04311575780080529,
+        "max_drawdown": -0.21473737293604572,
+        "completed_trades": 46,
+        "win_rate": 0.782608695652174,
+        "profit_factor": 0.811000743464701,
+        "total_fees": 4423.81598997373,
+        "total_funding": 0.0039811532013291125,
+        "ending_position": "FLAT",
+        "positive_month_rate": 0.25,
+        "target_25pct_month_rate": 0.0,
+        "median_monthly_return": 0.0,
+        "worst_monthly_return": -0.07362517801651002,
+        "monthly_returns": [
+          {
+            "label": "2026-01",
+            "return": 0.020775921315776
+          },
+          {
+            "label": "2026-02",
+            "return": -0.07362517801651002
+          },
+          {
+            "label": "2026-03",
+            "return": -6.725646716050008e-05
+          },
+          {
+            "label": "2026-04",
+            "return": 0.0
+          },
+          {
+            "label": "2026-05",
+            "return": 0.0
+          },
+          {
+            "label": "2026-06",
+            "return": 0.011978889471796183
+          },
+          {
+            "label": "2026-07",
+            "return": 0.0
+          },
+          {
+            "label": "2026-08",
+            "return": 0.0
+          }
+        ]
+      }
+    },
+    "eth_perp": {
+      "train": {
+        "samples": 32064,
+        "direction_accuracy": 0.5164982534930139,
+        "information_coefficient": 0.03742843272951756,
+        "net_return": 0.026313877911380082,
+        "max_drawdown": -0.1821834925063218,
+        "completed_trades": 50,
+        "win_rate": 0.58,
+        "profit_factor": 1.0632886455250796,
+        "total_fees": 5068.886175026613,
+        "total_funding": -66.9550420333787,
+        "ending_position": "FLAT",
+        "positive_month_rate": 0.5454545454545454,
+        "target_25pct_month_rate": 0.0,
+        "median_monthly_return": 0.01651782083477013,
+        "worst_monthly_return": -0.1084403427715527,
+        "monthly_returns": [
+          {
+            "label": "2024-02",
+            "return": -0.005288791003301
+          },
+          {
+            "label": "2024-03",
+            "return": 0.027117229863414846
+          },
+          {
+            "label": "2024-04",
+            "return": 0.06268979048568622
+          },
+          {
+            "label": "2024-05",
+            "return": -0.0077450509667508745
+          },
+          {
+            "label": "2024-06",
+            "return": 0.01651782083477013
+          },
+          {
+            "label": "2024-07",
+            "return": -0.01616422555184559
+          },
+          {
+            "label": "2024-08",
+            "return": -0.1084403427715527
+          },
+          {
+            "label": "2024-09",
+            "return": -0.009305632295545813
+          },
+          {
+            "label": "2024-10",
+            "return": 0.02342000834870537
+          },
+          {
+            "label": "2024-11",
+            "return": 0.02181197548153122
+          },
+          {
+            "label": "2024-12",
+            "return": 0.031289964953611527
+          }
+        ]
+      },
+      "validation": {
+        "samples": 34944,
+        "direction_accuracy": 0.5030620421245421,
+        "information_coefficient": -0.012990132179681304,
+        "net_return": 0.0033507635184739765,
+        "max_drawdown": -0.1855939409298608,
+        "completed_trades": 102,
+        "win_rate": 0.6078431372549019,
+        "profit_factor": 1.0037987249590987,
+        "total_fees": 10137.881508105413,
+        "total_funding": -32.234834391190354,
+        "ending_position": "FLAT",
+        "positive_month_rate": 0.5,
+        "target_25pct_month_rate": 0.0,
+        "median_monthly_return": 0.005116690385164318,
+        "worst_monthly_return": -0.05488358106216106,
+        "monthly_returns": [
+          {
+            "label": "2025-01",
+            "return": 0.06474267838874839
+          },
+          {
+            "label": "2025-02",
+            "return": -0.05488358106216106
+          },
+          {
+            "label": "2025-03",
+            "return": -0.031145380720289252
+          },
+          {
+            "label": "2025-04",
+            "return": 0.01030497340510807
+          },
+          {
+            "label": "2025-05",
+            "return": 0.03324645148898295
+          },
+          {
+            "label": "2025-06",
+            "return": -0.04199346311634263
+          },
+          {
+            "label": "2025-07",
+            "return": 0.0
+          },
+          {
+            "label": "2025-08",
+            "return": 0.022592398558562286
+          },
+          {
+            "label": "2025-09",
+            "return": 0.005116690385164318
+          },
+          {
+            "label": "2025-10",
+            "return": 0.057696004358285584
+          },
+          {
+            "label": "2025-11",
+            "return": -0.015166591222623288
+          },
+          {
+            "label": "2025-12",
+            "return": -0.03883790848188536
+          }
+        ]
+      },
+      "confirmation": {
+        "samples": 21216,
+        "direction_accuracy": 0.5125377073906485,
+        "information_coefficient": 0.009616544771651171,
+        "net_return": -0.03535672655269306,
+        "max_drawdown": -0.22668607175757938,
+        "completed_trades": 35,
+        "win_rate": 0.5428571428571428,
+        "profit_factor": 0.8879970475058945,
+        "total_fees": 3287.248811005438,
+        "total_funding": 126.73009772813191,
+        "ending_position": "FLAT",
+        "positive_month_rate": 0.125,
+        "target_25pct_month_rate": 0.0,
+        "median_monthly_return": 0.0,
+        "worst_monthly_return": -0.11859104751275731,
+        "monthly_returns": [
+          {
+            "label": "2026-01",
+            "return": -0.012516043034394991
+          },
+          {
+            "label": "2026-02",
+            "return": -0.11859104751275731
+          },
+          {
+            "label": "2026-03",
+            "return": -0.01172514885655931
+          },
+          {
+            "label": "2026-04",
+            "return": 0.0
+          },
+          {
+            "label": "2026-05",
+            "return": 0.0
+          },
+          {
+            "label": "2026-06",
+            "return": 0.12145406729872042
+          },
+          {
+            "label": "2026-07",
+            "return": 0.0
+          },
+          {
+            "label": "2026-08",
+            "return": 0.0
+          }
+        ]
+      }
+    }
+  },
+  "signal_search": {
+    "btc_perp": {
+      "candidate_count": 144,
+      "development_eligible_count": 57,
+      "selection_rule": "Use train and validation only. Rank target-month coverage first, then positive-month coverage, weaker split return, combined return, and drawdown. Confirmation is excluded.",
+      "selected": {
+        "parameters": {
+          "id": "long-entry-0.60-ema-8-hold-1-cooldown-8-confirm-2",
+          "direction": "long_only",
+          "entry_threshold": 0.6,
+          "smoothing_bars": 8,
+          "minimum_hold_bars": 1,
+          "cooldown_bars": 8,
+          "confirmation_bars": 2
+        },
+        "score": [
+          0.0,
+          0.5833333333333334,
+          0.08400369306762395,
+          0.4180484692720929,
+          -0.1654517359131602
+        ],
+        "train": {
+          "net_return": 0.33404477620446893,
+          "max_drawdown": -0.1654517359131602,
+          "completed_trades": 94,
+          "win_rate": 0.723404255319149,
+          "profit_factor": 1.9630148873637459,
+          "total_fees": 11232.30233944895,
+          "total_funding": -403.3076230041563,
+          "ending_position": "FLAT",
+          "positive_month_rate": 0.6363636363636364,
+          "target_25pct_month_rate": 0.0,
+          "median_monthly_return": 0.015657833867795574,
+          "worst_monthly_return": -0.03815785987661903,
+          "monthly_returns": [
+            {
+              "label": "2024-02",
+              "return": -0.0102871060518028
+            },
+            {
+              "label": "2024-03",
+              "return": 0.18570699031813404
+            },
+            {
+              "label": "2024-04",
+              "return": 0.0528340470232554
+            },
+            {
+              "label": "2024-05",
+              "return": 0.015657833867795574
+            },
+            {
+              "label": "2024-06",
+              "return": 0.002538055075310516
+            },
+            {
+              "label": "2024-07",
+              "return": -0.03815785987661903
+            },
+            {
+              "label": "2024-08",
+              "return": 0.026827233020111637
+            },
+            {
+              "label": "2024-09",
+              "return": -0.01335692036222248
+            },
+            {
+              "label": "2024-10",
+              "return": 0.0
+            },
+            {
+              "label": "2024-11",
+              "return": 0.026368233206590187
+            },
+            {
+              "label": "2024-12",
+              "return": 0.06025696234436675
+            }
+          ]
+        },
+        "validation": {
+          "net_return": 0.08400369306762395,
+          "max_drawdown": -0.08359626145396774,
+          "completed_trades": 62,
+          "win_rate": 0.6129032258064516,
+          "profit_factor": 1.2930420259242073,
+          "total_fees": 6545.06882385468,
+          "total_funding": -207.9868289829248,
+          "ending_position": "FLAT",
+          "positive_month_rate": 0.5833333333333334,
+          "target_25pct_month_rate": 0.0,
+          "median_monthly_return": 0.006595772768418095,
+          "worst_monthly_return": -0.03086832627324457,
+          "monthly_returns": [
+            {
+              "label": "2025-01",
+              "return": 0.05332891419172664
+            },
+            {
+              "label": "2025-02",
+              "return": -0.028464330910982483
+            },
+            {
+              "label": "2025-03",
+              "return": 0.024602708223223975
+            },
+            {
+              "label": "2025-04",
+              "return": 0.03879885593962443
+            },
+            {
+              "label": "2025-05",
+              "return": 0.0008564778555378117
+            },
+            {
+              "label": "2025-06",
+              "return": 0.006595772768418095
+            },
+            {
+              "label": "2025-07",
+              "return": 0.0
+            },
+            {
+              "label": "2025-08",
+              "return": 0.0
+            },
+            {
+              "label": "2025-09",
+              "return": 0.0
+            },
+            {
+              "label": "2025-10",
+              "return": -0.03086832627324457
+            },
+            {
+              "label": "2025-11",
+              "return": 0.011156099943028635
+            },
+            {
+              "label": "2025-12",
+              "return": 0.008075693796381726
+            }
+          ]
+        },
+        "confirmation": {
+          "net_return": -0.04311575780080529,
+          "max_drawdown": -0.21473737293604572,
+          "completed_trades": 46,
+          "win_rate": 0.782608695652174,
+          "profit_factor": 0.811000743464701,
+          "total_fees": 4423.81598997373,
+          "total_funding": 0.0039811532013291125,
+          "ending_position": "FLAT",
+          "positive_month_rate": 0.25,
+          "target_25pct_month_rate": 0.0,
+          "median_monthly_return": 0.0,
+          "worst_monthly_return": -0.07362517801651002,
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.020775921315776
+            },
+            {
+              "label": "2026-02",
+              "return": -0.07362517801651002
+            },
+            {
+              "label": "2026-03",
+              "return": -6.725646716050008e-05
+            },
+            {
+              "label": "2026-04",
+              "return": 0.0
+            },
+            {
+              "label": "2026-05",
+              "return": 0.0
+            },
+            {
+              "label": "2026-06",
+              "return": 0.011978889471796183
+            },
+            {
+              "label": "2026-07",
+              "return": 0.0
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0
+            }
+          ]
+        }
+      },
+      "top_development_candidates": [
+        {
+          "parameters": {
+            "id": "long-entry-0.60-ema-8-hold-1-cooldown-8-confirm-2",
+            "direction": "long_only",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 8,
+            "confirmation_bars": 2
+          },
+          "score": [
+            0.0,
+            0.5833333333333334,
+            0.08400369306762395,
+            0.4180484692720929,
+            -0.1654517359131602
+          ],
+          "train": {
+            "net_return": 0.33404477620446893,
+            "max_drawdown": -0.1654517359131602,
+            "completed_trades": 94,
+            "win_rate": 0.723404255319149,
+            "profit_factor": 1.9630148873637459,
+            "total_fees": 11232.30233944895,
+            "total_funding": -403.3076230041563,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.6363636363636364,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.015657833867795574,
+            "worst_monthly_return": -0.03815785987661903,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": -0.0102871060518028
+              },
+              {
+                "label": "2024-03",
+                "return": 0.18570699031813404
+              },
+              {
+                "label": "2024-04",
+                "return": 0.0528340470232554
+              },
+              {
+                "label": "2024-05",
+                "return": 0.015657833867795574
+              },
+              {
+                "label": "2024-06",
+                "return": 0.002538055075310516
+              },
+              {
+                "label": "2024-07",
+                "return": -0.03815785987661903
+              },
+              {
+                "label": "2024-08",
+                "return": 0.026827233020111637
+              },
+              {
+                "label": "2024-09",
+                "return": -0.01335692036222248
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.026368233206590187
+              },
+              {
+                "label": "2024-12",
+                "return": 0.06025696234436675
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.08400369306762395,
+            "max_drawdown": -0.08359626145396774,
+            "completed_trades": 62,
+            "win_rate": 0.6129032258064516,
+            "profit_factor": 1.2930420259242073,
+            "total_fees": 6545.06882385468,
+            "total_funding": -207.9868289829248,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.006595772768418095,
+            "worst_monthly_return": -0.03086832627324457,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.05332891419172664
+              },
+              {
+                "label": "2025-02",
+                "return": -0.028464330910982483
+              },
+              {
+                "label": "2025-03",
+                "return": 0.024602708223223975
+              },
+              {
+                "label": "2025-04",
+                "return": 0.03879885593962443
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0008564778555378117
+              },
+              {
+                "label": "2025-06",
+                "return": 0.006595772768418095
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": 0.0
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": -0.03086832627324457
+              },
+              {
+                "label": "2025-11",
+                "return": 0.011156099943028635
+              },
+              {
+                "label": "2025-12",
+                "return": 0.008075693796381726
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.04311575780080529,
+            "max_drawdown": -0.21473737293604572,
+            "completed_trades": 46,
+            "win_rate": 0.782608695652174,
+            "profit_factor": 0.811000743464701,
+            "total_fees": 4423.81598997373,
+            "total_funding": 0.0039811532013291125,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.25,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.07362517801651002,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.020775921315776
+              },
+              {
+                "label": "2026-02",
+                "return": -0.07362517801651002
+              },
+              {
+                "label": "2026-03",
+                "return": -6.725646716050008e-05
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.011978889471796183
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-short-entry-0.60-ema-8-hold-1-cooldown-8-confirm-2",
+            "direction": "long_short",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 8,
+            "confirmation_bars": 2
+          },
+          "score": [
+            0.0,
+            0.5833333333333334,
+            0.08340689007449362,
+            0.415995746909116,
+            -0.16543174241109967
+          ],
+          "train": {
+            "net_return": 0.33258885683462236,
+            "max_drawdown": -0.16543174241109967,
+            "completed_trades": 97,
+            "win_rate": 0.7216494845360825,
+            "profit_factor": 1.9475460567139493,
+            "total_fees": 11603.70101684156,
+            "total_funding": -403.51529665620575,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.6363636363636364,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.015656685254651463,
+            "worst_monthly_return": -0.03815165238025466,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": -0.0097078772939178
+              },
+              {
+                "label": "2024-03",
+                "return": 0.18570632262897493
+              },
+              {
+                "label": "2024-04",
+                "return": 0.05283046800912639
+              },
+              {
+                "label": "2024-05",
+                "return": 0.015656685254651463
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0025377936711555786
+              },
+              {
+                "label": "2024-07",
+                "return": -0.03815165238025466
+              },
+              {
+                "label": "2024-08",
+                "return": 0.02683665467019048
+              },
+              {
+                "label": "2024-09",
+                "return": -0.013352036190397924
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.026370931408287165
+              },
+              {
+                "label": "2024-12",
+                "return": 0.05846147028101826
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.08340689007449362,
+            "max_drawdown": -0.0836460035415918,
+            "completed_trades": 63,
+            "win_rate": 0.6031746031746031,
+            "profit_factor": 1.2905373811129448,
+            "total_fees": 6644.68240883265,
+            "total_funding": -207.92840613798765,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0065930840533560174,
+            "worst_monthly_return": -0.030870899439244835,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.05332891419172664
+              },
+              {
+                "label": "2025-02",
+                "return": -0.028464330910982483
+              },
+              {
+                "label": "2025-03",
+                "return": 0.024095330255305032
+              },
+              {
+                "label": "2025-04",
+                "return": 0.038788207693557356
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0008561116156217901
+              },
+              {
+                "label": "2025-06",
+                "return": 0.0065930840533560174
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": 0.0
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": -0.030870899439244835
+              },
+              {
+                "label": "2025-11",
+                "return": 0.01111483948357597
+              },
+              {
+                "label": "2025-12",
+                "return": 0.00807706507452075
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.04311575780080529,
+            "max_drawdown": -0.21473737293604572,
+            "completed_trades": 46,
+            "win_rate": 0.782608695652174,
+            "profit_factor": 0.811000743464701,
+            "total_fees": 4423.81598997373,
+            "total_funding": 0.0039811532013291125,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.25,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.07362517801651002,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.020775921315776
+              },
+              {
+                "label": "2026-02",
+                "return": -0.07362517801651002
+              },
+              {
+                "label": "2026-03",
+                "return": -6.725646716050008e-05
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.011978889471796183
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-short-entry-0.60-ema-8-hold-1-cooldown-0-confirm-2",
+            "direction": "long_short",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 0,
+            "confirmation_bars": 2
+          },
+          "score": [
+            0.0,
+            0.5833333333333334,
+            0.08044666700311388,
+            0.37842891356578184,
+            -0.16812672320603791
+          ],
+          "train": {
+            "net_return": 0.297982246562668,
+            "max_drawdown": -0.16812672320603791,
+            "completed_trades": 110,
+            "win_rate": 0.7454545454545455,
+            "profit_factor": 1.8425506686729252,
+            "total_fees": 12511.28402408581,
+            "total_funding": -517.6176967473908,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.6363636363636364,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0026682063936115837,
+            "worst_monthly_return": -0.04014338663462683,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": -0.0097078772939178
+              },
+              {
+                "label": "2024-03",
+                "return": 0.13110236291551028
+              },
+              {
+                "label": "2024-04",
+                "return": 0.043547927064613086
+              },
+              {
+                "label": "2024-05",
+                "return": 0.0026682063936115837
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0025385254702026423
+              },
+              {
+                "label": "2024-07",
+                "return": -0.04014338663462683
+              },
+              {
+                "label": "2024-08",
+                "return": 0.021690981224899934
+              },
+              {
+                "label": "2024-09",
+                "return": -0.013353575409872434
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.0404832652007953
+              },
+              {
+                "label": "2024-12",
+                "return": 0.09726174079082864
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.08044666700311388,
+            "max_drawdown": -0.10319631450618302,
+            "completed_trades": 74,
+            "win_rate": 0.5675675675675675,
+            "profit_factor": 1.246638739417772,
+            "total_fees": 7755.39230756087,
+            "total_funding": -210.6746045877414,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0022944888006990647,
+            "worst_monthly_return": -0.03451275780971423,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.0413519214536867
+              },
+              {
+                "label": "2025-02",
+                "return": -0.03451275780971423
+              },
+              {
+                "label": "2025-03",
+                "return": 0.015869208642516223
+              },
+              {
+                "label": "2025-04",
+                "return": 0.0764437530526872
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0008564167075422942
+              },
+              {
+                "label": "2025-06",
+                "return": 0.0065940219402658064
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": 0.0
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": -0.02940764895667976
+              },
+              {
+                "label": "2025-11",
+                "return": 0.0022944888006990647
+              },
+              {
+                "label": "2025-12",
+                "return": 0.002701816661074582
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.008568407516325984,
+            "max_drawdown": -0.21457272928670187,
+            "completed_trades": 52,
+            "win_rate": 0.7884615384615384,
+            "profit_factor": 0.9633752623945147,
+            "total_fees": 5022.56133541647,
+            "total_funding": -8.58993471612836,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.25,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.06539916183986468,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.0164742303795243
+              },
+              {
+                "label": "2026-02",
+                "return": -0.06539916183986468
+              },
+              {
+                "label": "2026-03",
+                "return": -4.707482742761396e-05
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.043663895062322815
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-entry-0.60-ema-8-hold-1-cooldown-0-confirm-2",
+            "direction": "long_only",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 0,
+            "confirmation_bars": 2
+          },
+          "score": [
+            0.0,
+            0.5833333333333334,
+            0.07492367305587325,
+            0.3689886711634034,
+            -0.16814295907174476
+          ],
+          "train": {
+            "net_return": 0.2940649981075301,
+            "max_drawdown": -0.16814295907174476,
+            "completed_trades": 107,
+            "win_rate": 0.7383177570093458,
+            "profit_factor": 1.8400511595582778,
+            "total_fees": 12145.56476629047,
+            "total_funding": -517.3029393365197,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.6363636363636364,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0026643287143595347,
+            "worst_monthly_return": -0.04014786199194858,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": -0.0102871060518028
+              },
+              {
+                "label": "2024-03",
+                "return": 0.13110634594712287
+              },
+              {
+                "label": "2024-04",
+                "return": 0.043541974811232245
+              },
+              {
+                "label": "2024-05",
+                "return": 0.0026643287143595347
+              },
+              {
+                "label": "2024-06",
+                "return": 0.002537431995972336
+              },
+              {
+                "label": "2024-07",
+                "return": -0.04014786199194858
+              },
+              {
+                "label": "2024-08",
+                "return": 0.021692130593379697
+              },
+              {
+                "label": "2024-09",
+                "return": -0.013355472021810774
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.04048552234709086
+              },
+              {
+                "label": "2024-12",
+                "return": 0.09460190870263628
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.07492367305587325,
+            "max_drawdown": -0.10322299506322241,
+            "completed_trades": 72,
+            "win_rate": 0.5694444444444444,
+            "profit_factor": 1.2307884088204684,
+            "total_fees": 7528.41638504085,
+            "total_funding": -209.9405256718255,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.002276103517323766,
+            "worst_monthly_return": -0.03451275780971423,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.0413519214536867
+              },
+              {
+                "label": "2025-02",
+                "return": -0.03451275780971423
+              },
+              {
+                "label": "2025-03",
+                "return": 0.010670621635456238
+              },
+              {
+                "label": "2025-04",
+                "return": 0.07646785480704343
+              },
+              {
+                "label": "2025-05",
+                "return": 0.000856029188137779
+              },
+              {
+                "label": "2025-06",
+                "return": 0.00659780376611796
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": 0.0
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": -0.029412184250054207
+              },
+              {
+                "label": "2025-11",
+                "return": 0.002276103517323766
+              },
+              {
+                "label": "2025-12",
+                "return": 0.0027047187370028724
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.008568407516325984,
+            "max_drawdown": -0.21457272928670187,
+            "completed_trades": 52,
+            "win_rate": 0.7884615384615384,
+            "profit_factor": 0.9633752623945147,
+            "total_fees": 5022.56133541647,
+            "total_funding": -8.58993471612836,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.25,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.06539916183986468,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.0164742303795243
+              },
+              {
+                "label": "2026-02",
+                "return": -0.06539916183986468
+              },
+              {
+                "label": "2026-03",
+                "return": -4.707482742761396e-05
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.043663895062322815
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-short-entry-0.60-ema-8-hold-8-cooldown-8-confirm-2",
+            "direction": "long_short",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 8,
+            "cooldown_bars": 8,
+            "confirmation_bars": 2
+          },
+          "score": [
+            0.0,
+            0.5454545454545454,
+            0.08296254000751377,
+            0.36250886288973316,
+            -0.15849309586022461
+          ],
+          "train": {
+            "net_return": 0.27954632288221937,
+            "max_drawdown": -0.15849309586022461,
+            "completed_trades": 85,
+            "win_rate": 0.6352941176470588,
+            "profit_factor": 1.6595586593855438,
+            "total_fees": 10168.5066428348,
+            "total_funding": -535.1087027832612,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5454545454545454,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0016090377750494155,
+            "worst_monthly_return": -0.025634758856906636,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": -0.0144338781350776
+              },
+              {
+                "label": "2024-03",
+                "return": 0.18419576725264986
+              },
+              {
+                "label": "2024-04",
+                "return": 0.07396817967421546
+              },
+              {
+                "label": "2024-05",
+                "return": -0.014351825696414995
+              },
+              {
+                "label": "2024-06",
+                "return": 0.002537349762814322
+              },
+              {
+                "label": "2024-07",
+                "return": -0.025634758856906636
+              },
+              {
+                "label": "2024-08",
+                "return": 0.05147291317922966
+              },
+              {
+                "label": "2024-09",
+                "return": -0.009839197431374173
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.016737889712349442
+              },
+              {
+                "label": "2024-12",
+                "return": 0.0016090377750494155
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.08296254000751377,
+            "max_drawdown": -0.0832164418008017,
+            "completed_trades": 59,
+            "win_rate": 0.5423728813559322,
+            "profit_factor": 1.2607426943442963,
+            "total_fees": 6248.60214116186,
+            "total_funding": -222.0837109667633,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.006594997651210284,
+            "worst_monthly_return": -0.02892802038862649,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.04041784512692303
+              },
+              {
+                "label": "2025-02",
+                "return": -0.002656249904270624
+              },
+              {
+                "label": "2025-03",
+                "return": 0.028940032743923514
+              },
+              {
+                "label": "2025-04",
+                "return": 0.007441266253389888
+              },
+              {
+                "label": "2025-05",
+                "return": 0.00897981339627777
+              },
+              {
+                "label": "2025-06",
+                "return": 0.006594997651210284
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": 0.0
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": -0.02892802038862649
+              },
+              {
+                "label": "2025-11",
+                "return": 0.01828781133437742
+              },
+              {
+                "label": "2025-12",
+                "return": 0.002517026695917006
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": 0.03146837931162043,
+            "max_drawdown": -0.215160863874209,
+            "completed_trades": 43,
+            "win_rate": 0.7674418604651163,
+            "profit_factor": 1.1345077285377867,
+            "total_fees": 4263.52736923763,
+            "total_funding": -13.347086740327223,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.375,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.060559199380131386,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.0147097644078218
+              },
+              {
+                "label": "2026-02",
+                "return": -0.060559199380131386
+              },
+              {
+                "label": "2026-03",
+                "return": 0.05543578562314268
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.025210028969896277
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-entry-0.65-ema-8-hold-1-cooldown-8-confirm-2",
+            "direction": "long_only",
+            "entry_threshold": 0.65,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 8,
+            "confirmation_bars": 2
+          },
+          "score": [
+            0.0,
+            0.5,
+            0.19019970566094876,
+            0.4157875014263284,
+            -0.06412009944650014
+          ],
+          "train": {
+            "net_return": 0.22558779576537966,
+            "max_drawdown": -0.06412009944650014,
+            "completed_trades": 27,
+            "win_rate": 0.9259259259259259,
+            "profit_factor": 26.028733936139428,
+            "total_fees": 3030.59942384183,
+            "total_funding": -41.46185636020408,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5454545454545454,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.006890448038393359,
+            "worst_monthly_return": -0.003566547513651617,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": 0.0
+              },
+              {
+                "label": "2024-03",
+                "return": 0.0782007356444049
+              },
+              {
+                "label": "2024-04",
+                "return": 0.03309772641320674
+              },
+              {
+                "label": "2024-05",
+                "return": -0.003566547513651617
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0
+              },
+              {
+                "label": "2024-07",
+                "return": 0.006890448038393359
+              },
+              {
+                "label": "2024-08",
+                "return": 0.06751264185415431
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.010052232367660003
+              },
+              {
+                "label": "2024-12",
+                "return": 0.01708211672998979
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.19019970566094876,
+            "max_drawdown": -0.055474276278793005,
+            "completed_trades": 36,
+            "win_rate": 0.6666666666666666,
+            "profit_factor": 3.8890758899026934,
+            "total_fees": 3987.39386730493,
+            "total_funding": -45.12773378019393,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.013854391729359563,
+            "worst_monthly_return": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.0287188941134004
+              },
+              {
+                "label": "2025-02",
+                "return": 0.026802861667227975
+              },
+              {
+                "label": "2025-03",
+                "return": 0.047221153271277065
+              },
+              {
+                "label": "2025-04",
+                "return": 0.03296856196796968
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0
+              },
+              {
+                "label": "2025-06",
+                "return": 0.0
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": 0.0
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": 0.02738910217903893
+              },
+              {
+                "label": "2025-11",
+                "return": 0.013854391729359563
+              },
+              {
+                "label": "2025-12",
+                "return": 0.0
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.020617248992042102,
+            "max_drawdown": -0.18511502509235483,
+            "completed_trades": 13,
+            "win_rate": 0.6153846153846154,
+            "profit_factor": 0.8598004269986472,
+            "total_fees": 1262.01989756792,
+            "total_funding": 12.782145083709826,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.05587466125517652,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.0
+              },
+              {
+                "label": "2026-02",
+                "return": -0.05587466125517652
+              },
+              {
+                "label": "2026-03",
+                "return": 0.0
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.03734399535342174
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-short-entry-0.65-ema-8-hold-1-cooldown-8-confirm-2",
+            "direction": "long_short",
+            "entry_threshold": 0.65,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 8,
+            "confirmation_bars": 2
+          },
+          "score": [
+            0.0,
+            0.5,
+            0.19019970566094876,
+            0.4157875014263284,
+            -0.06412009944650014
+          ],
+          "train": {
+            "net_return": 0.22558779576537966,
+            "max_drawdown": -0.06412009944650014,
+            "completed_trades": 27,
+            "win_rate": 0.9259259259259259,
+            "profit_factor": 26.028733936139428,
+            "total_fees": 3030.59942384183,
+            "total_funding": -41.46185636020408,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5454545454545454,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.006890448038393359,
+            "worst_monthly_return": -0.003566547513651617,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": 0.0
+              },
+              {
+                "label": "2024-03",
+                "return": 0.0782007356444049
+              },
+              {
+                "label": "2024-04",
+                "return": 0.03309772641320674
+              },
+              {
+                "label": "2024-05",
+                "return": -0.003566547513651617
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0
+              },
+              {
+                "label": "2024-07",
+                "return": 0.006890448038393359
+              },
+              {
+                "label": "2024-08",
+                "return": 0.06751264185415431
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.010052232367660003
+              },
+              {
+                "label": "2024-12",
+                "return": 0.01708211672998979
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.19019970566094876,
+            "max_drawdown": -0.055474276278793005,
+            "completed_trades": 36,
+            "win_rate": 0.6666666666666666,
+            "profit_factor": 3.8890758899026934,
+            "total_fees": 3987.39386730493,
+            "total_funding": -45.12773378019393,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.013854391729359563,
+            "worst_monthly_return": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.0287188941134004
+              },
+              {
+                "label": "2025-02",
+                "return": 0.026802861667227975
+              },
+              {
+                "label": "2025-03",
+                "return": 0.047221153271277065
+              },
+              {
+                "label": "2025-04",
+                "return": 0.03296856196796968
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0
+              },
+              {
+                "label": "2025-06",
+                "return": 0.0
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": 0.0
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": 0.02738910217903893
+              },
+              {
+                "label": "2025-11",
+                "return": 0.013854391729359563
+              },
+              {
+                "label": "2025-12",
+                "return": 0.0
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.020617248992042102,
+            "max_drawdown": -0.18511502509235483,
+            "completed_trades": 13,
+            "win_rate": 0.6153846153846154,
+            "profit_factor": 0.8598004269986472,
+            "total_fees": 1262.01989756792,
+            "total_funding": 12.782145083709826,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.05587466125517652,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.0
+              },
+              {
+                "label": "2026-02",
+                "return": -0.05587466125517652
+              },
+              {
+                "label": "2026-03",
+                "return": 0.0
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.03734399535342174
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-entry-0.65-ema-8-hold-1-cooldown-0-confirm-1",
+            "direction": "long_only",
+            "entry_threshold": 0.65,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1
+          },
+          "score": [
+            0.0,
+            0.5,
+            0.18618386624771352,
+            0.4286511585624452,
+            -0.0975813325944437
+          ],
+          "train": {
+            "net_return": 0.18618386624771352,
+            "max_drawdown": -0.0975813325944437,
+            "completed_trades": 39,
+            "win_rate": 0.7692307692307693,
+            "profit_factor": 3.2082861226825643,
+            "total_fees": 4313.38919979207,
+            "total_funding": -45.4468074165793,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5454545454545454,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.000640380312048295,
+            "worst_monthly_return": -0.0016713045832889607,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": 0.0
+              },
+              {
+                "label": "2024-03",
+                "return": 0.0910678903621262
+              },
+              {
+                "label": "2024-04",
+                "return": 0.027563431802756385
+              },
+              {
+                "label": "2024-05",
+                "return": 0.000640380312048295
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0
+              },
+              {
+                "label": "2024-07",
+                "return": -0.0016713045832889607
+              },
+              {
+                "label": "2024-08",
+                "return": 0.024504043331722073
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.0076297785266218
+              },
+              {
+                "label": "2024-12",
+                "return": 0.025947996790044274
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.24246729231473163,
+            "max_drawdown": -0.07435149049437993,
+            "completed_trades": 53,
+            "win_rate": 0.6792452830188679,
+            "profit_factor": 3.364914175187141,
+            "total_fees": 6000.91102153201,
+            "total_funding": -76.1739294148283,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0230799410756944,
+            "worst_monthly_return": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.025640833162284923
+              },
+              {
+                "label": "2025-02",
+                "return": 0.03992046050579426
+              },
+              {
+                "label": "2025-03",
+                "return": 0.033224638501399326
+              },
+              {
+                "label": "2025-04",
+                "return": 0.06177196226840869
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0
+              },
+              {
+                "label": "2025-06",
+                "return": 0.0
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": 0.0
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": 0.0230799410756944
+              },
+              {
+                "label": "2025-11",
+                "return": 0.03789629667534396
+              },
+              {
+                "label": "2025-12",
+                "return": 0.0
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.04358649939776363,
+            "max_drawdown": -0.1880145923820659,
+            "completed_trades": 14,
+            "win_rate": 0.6428571428571429,
+            "profit_factor": 0.7074848332115273,
+            "total_fees": 1367.3348912713,
+            "total_funding": 11.331809774937296,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.056490963098601694,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.0
+              },
+              {
+                "label": "2026-02",
+                "return": -0.056490963098601694
+              },
+              {
+                "label": "2026-03",
+                "return": 0.0
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.013677096027842978
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-short-entry-0.65-ema-8-hold-1-cooldown-0-confirm-1",
+            "direction": "long_short",
+            "entry_threshold": 0.65,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1
+          },
+          "score": [
+            0.0,
+            0.5,
+            0.18618386624771352,
+            0.4286511585624452,
+            -0.0975813325944437
+          ],
+          "train": {
+            "net_return": 0.18618386624771352,
+            "max_drawdown": -0.0975813325944437,
+            "completed_trades": 39,
+            "win_rate": 0.7692307692307693,
+            "profit_factor": 3.2082861226825643,
+            "total_fees": 4313.38919979207,
+            "total_funding": -45.4468074165793,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5454545454545454,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.000640380312048295,
+            "worst_monthly_return": -0.0016713045832889607,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": 0.0
+              },
+              {
+                "label": "2024-03",
+                "return": 0.0910678903621262
+              },
+              {
+                "label": "2024-04",
+                "return": 0.027563431802756385
+              },
+              {
+                "label": "2024-05",
+                "return": 0.000640380312048295
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0
+              },
+              {
+                "label": "2024-07",
+                "return": -0.0016713045832889607
+              },
+              {
+                "label": "2024-08",
+                "return": 0.024504043331722073
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.0076297785266218
+              },
+              {
+                "label": "2024-12",
+                "return": 0.025947996790044274
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.24246729231473163,
+            "max_drawdown": -0.07435149049437993,
+            "completed_trades": 53,
+            "win_rate": 0.6792452830188679,
+            "profit_factor": 3.364914175187141,
+            "total_fees": 6000.91102153201,
+            "total_funding": -76.1739294148283,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0230799410756944,
+            "worst_monthly_return": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.025640833162284923
+              },
+              {
+                "label": "2025-02",
+                "return": 0.03992046050579426
+              },
+              {
+                "label": "2025-03",
+                "return": 0.033224638501399326
+              },
+              {
+                "label": "2025-04",
+                "return": 0.06177196226840869
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0
+              },
+              {
+                "label": "2025-06",
+                "return": 0.0
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": 0.0
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": 0.0230799410756944
+              },
+              {
+                "label": "2025-11",
+                "return": 0.03789629667534396
+              },
+              {
+                "label": "2025-12",
+                "return": 0.0
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.04358649939776363,
+            "max_drawdown": -0.1880145923820659,
+            "completed_trades": 14,
+            "win_rate": 0.6428571428571429,
+            "profit_factor": 0.7074848332115273,
+            "total_fees": 1367.3348912713,
+            "total_funding": 11.331809774937296,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.056490963098601694,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.0
+              },
+              {
+                "label": "2026-02",
+                "return": -0.056490963098601694
+              },
+              {
+                "label": "2026-03",
+                "return": 0.0
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.013677096027842978
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-entry-0.65-ema-8-hold-1-cooldown-0-confirm-2",
+            "direction": "long_only",
+            "entry_threshold": 0.65,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 0,
+            "confirmation_bars": 2
+          },
+          "score": [
+            0.0,
+            0.5,
+            0.17419836055346374,
+            0.44964900339026603,
+            -0.07244793259161111
+          ],
+          "train": {
+            "net_return": 0.27545064283680226,
+            "max_drawdown": -0.07074516621829004,
+            "completed_trades": 33,
+            "win_rate": 0.8787878787878788,
+            "profit_factor": 14.974782233597388,
+            "total_fees": 3755.3858019446,
+            "total_funding": -45.94827965517327,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5454545454545454,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0068902088669363145,
+            "worst_monthly_return": -0.0035664042864956723,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": 0.0
+              },
+              {
+                "label": "2024-03",
+                "return": 0.0899616143615519
+              },
+              {
+                "label": "2024-04",
+                "return": 0.02993507599578897
+              },
+              {
+                "label": "2024-05",
+                "return": -0.0035664042864956723
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0
+              },
+              {
+                "label": "2024-07",
+                "return": 0.0068902088669363145
+              },
+              {
+                "label": "2024-08",
+                "return": 0.09157220760688999
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.01005436334088743
+              },
+              {
+                "label": "2024-12",
+                "return": 0.027105148948806283
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.17419836055346374,
+            "max_drawdown": -0.07244793259161111,
+            "completed_trades": 44,
+            "win_rate": 0.6363636363636364,
+            "profit_factor": 2.727766322338198,
+            "total_fees": 4834.7218223847,
+            "total_funding": -58.70542342892426,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.022996763906986583,
+            "worst_monthly_return": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.0261068723413317
+              },
+              {
+                "label": "2025-02",
+                "return": 0.02680452233611654
+              },
+              {
+                "label": "2025-03",
+                "return": 0.026780580638770212
+              },
+              {
+                "label": "2025-04",
+                "return": 0.03283795041461037
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0
+              },
+              {
+                "label": "2025-06",
+                "return": 0.0
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": 0.0
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": 0.022996763906986583
+              },
+              {
+                "label": "2025-11",
+                "return": 0.027252027721367724
+              },
+              {
+                "label": "2025-12",
+                "return": 0.0
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.05183302512108956,
+            "max_drawdown": -0.1855772224083862,
+            "completed_trades": 13,
+            "win_rate": 0.6153846153846154,
+            "profit_factor": 0.6477305675580124,
+            "total_fees": 1249.30028889348,
+            "total_funding": 12.6525544645242,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.0648212665314366,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": 0.0
+              },
+              {
+                "label": "2026-02",
+                "return": -0.0648212665314366
+              },
+              {
+                "label": "2026-03",
+                "return": 0.0
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.01388851237257488
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        }
+      ],
+      "neighbor_confirmation_pass_rate": 0.0,
+      "stress_confirmation": {
+        "fee_bps": 10.0,
+        "slippage_bps": 5.0,
+        "net_return": -0.11106587287941276,
+        "max_drawdown": -0.22415849067879862,
+        "completed_trades": 46,
+        "win_rate": 0.6304347826086957,
+        "profit_factor": 0.5422712000529281,
+        "total_fees": 8539.55665747155,
+        "total_funding": 0.29122388027325274,
+        "ending_position": "FLAT",
+        "positive_month_rate": 0.125,
+        "target_25pct_month_rate": 0.0,
+        "median_monthly_return": 0.0,
+        "worst_monthly_return": -0.09925342301768775,
+        "monthly_returns": [
+          {
+            "label": "2026-01",
+            "return": 0.013465939733259
+          },
+          {
+            "label": "2026-02",
+            "return": -0.09925342301768775
+          },
+          {
+            "label": "2026-03",
+            "return": -0.011201698275697825
+          },
+          {
+            "label": "2026-04",
+            "return": 0.0
+          },
+          {
+            "label": "2026-05",
+            "return": 0.0
+          },
+          {
+            "label": "2026-06",
+            "return": -0.015195351985892754
+          },
+          {
+            "label": "2026-07",
+            "return": 0.0
+          },
+          {
+            "label": "2026-08",
+            "return": 0.0
+          }
+        ]
+      }
+    },
+    "eth_perp": {
+      "candidate_count": 144,
+      "development_eligible_count": 35,
+      "selection_rule": "Use train and validation only. Rank target-month coverage first, then positive-month coverage, weaker split return, combined return, and drawdown. Confirmation is excluded.",
+      "selected": {
+        "parameters": {
+          "id": "long-entry-0.60-ema-1-hold-8-cooldown-8-confirm-2",
+          "direction": "long_only",
+          "entry_threshold": 0.6,
+          "smoothing_bars": 1,
+          "minimum_hold_bars": 8,
+          "cooldown_bars": 8,
+          "confirmation_bars": 2
+        },
+        "score": [
+          0.0,
+          0.5,
+          0.0033507635184739765,
+          0.029664641429854057,
+          -0.1855939409298608
+        ],
+        "train": {
+          "net_return": 0.026313877911380082,
+          "max_drawdown": -0.1821834925063218,
+          "completed_trades": 50,
+          "win_rate": 0.58,
+          "profit_factor": 1.0632886455250796,
+          "total_fees": 5068.886175026613,
+          "total_funding": -66.9550420333787,
+          "ending_position": "FLAT",
+          "positive_month_rate": 0.5454545454545454,
+          "target_25pct_month_rate": 0.0,
+          "median_monthly_return": 0.01651782083477013,
+          "worst_monthly_return": -0.1084403427715527,
+          "monthly_returns": [
+            {
+              "label": "2024-02",
+              "return": -0.005288791003301
+            },
+            {
+              "label": "2024-03",
+              "return": 0.027117229863414846
+            },
+            {
+              "label": "2024-04",
+              "return": 0.06268979048568622
+            },
+            {
+              "label": "2024-05",
+              "return": -0.0077450509667508745
+            },
+            {
+              "label": "2024-06",
+              "return": 0.01651782083477013
+            },
+            {
+              "label": "2024-07",
+              "return": -0.01616422555184559
+            },
+            {
+              "label": "2024-08",
+              "return": -0.1084403427715527
+            },
+            {
+              "label": "2024-09",
+              "return": -0.009305632295545813
+            },
+            {
+              "label": "2024-10",
+              "return": 0.02342000834870537
+            },
+            {
+              "label": "2024-11",
+              "return": 0.02181197548153122
+            },
+            {
+              "label": "2024-12",
+              "return": 0.031289964953611527
+            }
+          ]
+        },
+        "validation": {
+          "net_return": 0.0033507635184739765,
+          "max_drawdown": -0.1855939409298608,
+          "completed_trades": 102,
+          "win_rate": 0.6078431372549019,
+          "profit_factor": 1.0037987249590987,
+          "total_fees": 10137.881508105413,
+          "total_funding": -32.234834391190354,
+          "ending_position": "FLAT",
+          "positive_month_rate": 0.5,
+          "target_25pct_month_rate": 0.0,
+          "median_monthly_return": 0.005116690385164318,
+          "worst_monthly_return": -0.05488358106216106,
+          "monthly_returns": [
+            {
+              "label": "2025-01",
+              "return": 0.06474267838874839
+            },
+            {
+              "label": "2025-02",
+              "return": -0.05488358106216106
+            },
+            {
+              "label": "2025-03",
+              "return": -0.031145380720289252
+            },
+            {
+              "label": "2025-04",
+              "return": 0.01030497340510807
+            },
+            {
+              "label": "2025-05",
+              "return": 0.03324645148898295
+            },
+            {
+              "label": "2025-06",
+              "return": -0.04199346311634263
+            },
+            {
+              "label": "2025-07",
+              "return": 0.0
+            },
+            {
+              "label": "2025-08",
+              "return": 0.022592398558562286
+            },
+            {
+              "label": "2025-09",
+              "return": 0.005116690385164318
+            },
+            {
+              "label": "2025-10",
+              "return": 0.057696004358285584
+            },
+            {
+              "label": "2025-11",
+              "return": -0.015166591222623288
+            },
+            {
+              "label": "2025-12",
+              "return": -0.03883790848188536
+            }
+          ]
+        },
+        "confirmation": {
+          "net_return": -0.03535672655269306,
+          "max_drawdown": -0.22668607175757938,
+          "completed_trades": 35,
+          "win_rate": 0.5428571428571428,
+          "profit_factor": 0.8879970475058945,
+          "total_fees": 3287.248811005438,
+          "total_funding": 126.73009772813191,
+          "ending_position": "FLAT",
+          "positive_month_rate": 0.125,
+          "target_25pct_month_rate": 0.0,
+          "median_monthly_return": 0.0,
+          "worst_monthly_return": -0.11859104751275731,
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": -0.012516043034394991
+            },
+            {
+              "label": "2026-02",
+              "return": -0.11859104751275731
+            },
+            {
+              "label": "2026-03",
+              "return": -0.01172514885655931
+            },
+            {
+              "label": "2026-04",
+              "return": 0.0
+            },
+            {
+              "label": "2026-05",
+              "return": 0.0
+            },
+            {
+              "label": "2026-06",
+              "return": 0.12145406729872042
+            },
+            {
+              "label": "2026-07",
+              "return": 0.0
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0
+            }
+          ]
+        }
+      },
+      "top_development_candidates": [
+        {
+          "parameters": {
+            "id": "long-entry-0.60-ema-1-hold-8-cooldown-8-confirm-2",
+            "direction": "long_only",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 1,
+            "minimum_hold_bars": 8,
+            "cooldown_bars": 8,
+            "confirmation_bars": 2
+          },
+          "score": [
+            0.0,
+            0.5,
+            0.0033507635184739765,
+            0.029664641429854057,
+            -0.1855939409298608
+          ],
+          "train": {
+            "net_return": 0.026313877911380082,
+            "max_drawdown": -0.1821834925063218,
+            "completed_trades": 50,
+            "win_rate": 0.58,
+            "profit_factor": 1.0632886455250796,
+            "total_fees": 5068.886175026613,
+            "total_funding": -66.9550420333787,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5454545454545454,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.01651782083477013,
+            "worst_monthly_return": -0.1084403427715527,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": -0.005288791003301
+              },
+              {
+                "label": "2024-03",
+                "return": 0.027117229863414846
+              },
+              {
+                "label": "2024-04",
+                "return": 0.06268979048568622
+              },
+              {
+                "label": "2024-05",
+                "return": -0.0077450509667508745
+              },
+              {
+                "label": "2024-06",
+                "return": 0.01651782083477013
+              },
+              {
+                "label": "2024-07",
+                "return": -0.01616422555184559
+              },
+              {
+                "label": "2024-08",
+                "return": -0.1084403427715527
+              },
+              {
+                "label": "2024-09",
+                "return": -0.009305632295545813
+              },
+              {
+                "label": "2024-10",
+                "return": 0.02342000834870537
+              },
+              {
+                "label": "2024-11",
+                "return": 0.02181197548153122
+              },
+              {
+                "label": "2024-12",
+                "return": 0.031289964953611527
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.0033507635184739765,
+            "max_drawdown": -0.1855939409298608,
+            "completed_trades": 102,
+            "win_rate": 0.6078431372549019,
+            "profit_factor": 1.0037987249590987,
+            "total_fees": 10137.881508105413,
+            "total_funding": -32.234834391190354,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.005116690385164318,
+            "worst_monthly_return": -0.05488358106216106,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.06474267838874839
+              },
+              {
+                "label": "2025-02",
+                "return": -0.05488358106216106
+              },
+              {
+                "label": "2025-03",
+                "return": -0.031145380720289252
+              },
+              {
+                "label": "2025-04",
+                "return": 0.01030497340510807
+              },
+              {
+                "label": "2025-05",
+                "return": 0.03324645148898295
+              },
+              {
+                "label": "2025-06",
+                "return": -0.04199346311634263
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": 0.022592398558562286
+              },
+              {
+                "label": "2025-09",
+                "return": 0.005116690385164318
+              },
+              {
+                "label": "2025-10",
+                "return": 0.057696004358285584
+              },
+              {
+                "label": "2025-11",
+                "return": -0.015166591222623288
+              },
+              {
+                "label": "2025-12",
+                "return": -0.03883790848188536
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.03535672655269306,
+            "max_drawdown": -0.22668607175757938,
+            "completed_trades": 35,
+            "win_rate": 0.5428571428571428,
+            "profit_factor": 0.8879970475058945,
+            "total_fees": 3287.248811005438,
+            "total_funding": 126.73009772813191,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.11859104751275731,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": -0.012516043034394991
+              },
+              {
+                "label": "2026-02",
+                "return": -0.11859104751275731
+              },
+              {
+                "label": "2026-03",
+                "return": -0.01172514885655931
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.12145406729872042
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-short-entry-0.60-ema-8-hold-1-cooldown-0-confirm-1",
+            "direction": "long_short",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1
+          },
+          "score": [
+            0.0,
+            0.45454545454545453,
+            0.08160077371023795,
+            0.18595360849001652,
+            -0.18826887288999436
+          ],
+          "train": {
+            "net_return": 0.08160077371023795,
+            "max_drawdown": -0.1494900366507125,
+            "completed_trades": 27,
+            "win_rate": 0.7777777777777778,
+            "profit_factor": 1.5447572182857854,
+            "total_fees": 2799.65404551146,
+            "total_funding": -15.59188145274447,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.45454545454545453,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.02196821227002748,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": -0.00454097787200145
+              },
+              {
+                "label": "2024-03",
+                "return": 0.04067824858529992
+              },
+              {
+                "label": "2024-04",
+                "return": 0.011753859887285735
+              },
+              {
+                "label": "2024-05",
+                "return": -0.02196821227002748
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0
+              },
+              {
+                "label": "2024-07",
+                "return": 0.01159968064923216
+              },
+              {
+                "label": "2024-08",
+                "return": 0.00825372585698692
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.0
+              },
+              {
+                "label": "2024-12",
+                "return": 0.03447682412956677
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.10435283477977857,
+            "max_drawdown": -0.18826887288999436,
+            "completed_trades": 60,
+            "win_rate": 0.7166666666666667,
+            "profit_factor": 1.354938337317561,
+            "total_fees": 6001.028445441643,
+            "total_funding": 13.5904845214991,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0059536035886145755,
+            "worst_monthly_return": -0.054289217296721946,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.02233826580002411
+              },
+              {
+                "label": "2025-02",
+                "return": -0.054289217296721946
+              },
+              {
+                "label": "2025-03",
+                "return": -0.025117257428594837
+              },
+              {
+                "label": "2025-04",
+                "return": 0.07130889149125018
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0
+              },
+              {
+                "label": "2025-06",
+                "return": 0.023903093048945577
+              },
+              {
+                "label": "2025-07",
+                "return": -0.0003381262655499014
+              },
+              {
+                "label": "2025-08",
+                "return": 0.0059536035886145755
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": 0.03326965752243191
+              },
+              {
+                "label": "2025-11",
+                "return": 0.03219545147899315
+              },
+              {
+                "label": "2025-12",
+                "return": -0.004085055731182437
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.07805376549290935,
+            "max_drawdown": -0.19728787497097255,
+            "completed_trades": 17,
+            "win_rate": 0.5882352941176471,
+            "profit_factor": 0.5424823094122003,
+            "total_fees": 1589.569776656584,
+            "total_funding": 72.2867519376495,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.05123748902864254,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": -0.04610965420230268
+              },
+              {
+                "label": "2026-02",
+                "return": -0.05123748902864254
+              },
+              {
+                "label": "2026-03",
+                "return": 0.0
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.01870778645633845
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-entry-0.60-ema-4-hold-8-cooldown-0-confirm-1",
+            "direction": "long_only",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 4,
+            "minimum_hold_bars": 8,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1
+          },
+          "score": [
+            0.0,
+            0.45454545454545453,
+            0.07179132517461118,
+            0.19241511153156032,
+            -0.22764545072974826
+          ],
+          "train": {
+            "net_return": 0.12062378635694915,
+            "max_drawdown": -0.1516839978173879,
+            "completed_trades": 34,
+            "win_rate": 0.5588235294117647,
+            "profit_factor": 1.4946442623002436,
+            "total_fees": 3715.36928816148,
+            "total_funding": -64.58886773960559,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.45454545454545453,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.031004837644882592,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": 0.0
+              },
+              {
+                "label": "2024-03",
+                "return": 0.0642262363195099
+              },
+              {
+                "label": "2024-04",
+                "return": 0.06474460684111133
+              },
+              {
+                "label": "2024-05",
+                "return": 0.011323215259939401
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0
+              },
+              {
+                "label": "2024-07",
+                "return": -0.006798643419619372
+              },
+              {
+                "label": "2024-08",
+                "return": -0.031004837644882592
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.004716202599491362
+              },
+              {
+                "label": "2024-12",
+                "return": 0.01131891624101229
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.07179132517461118,
+            "max_drawdown": -0.22764545072974826,
+            "completed_trades": 76,
+            "win_rate": 0.5921052631578947,
+            "profit_factor": 1.1164455482804274,
+            "total_fees": 7290.100859061437,
+            "total_funding": -3.161214315445438,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.017691274061273264,
+            "worst_monthly_return": -0.09840694416518972,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.04811695014293754
+              },
+              {
+                "label": "2025-02",
+                "return": -0.09840694416518972
+              },
+              {
+                "label": "2025-03",
+                "return": -0.023940477785258416
+              },
+              {
+                "label": "2025-04",
+                "return": 0.029347504708523094
+              },
+              {
+                "label": "2025-05",
+                "return": 0.019704900886552915
+              },
+              {
+                "label": "2025-06",
+                "return": 0.013782595997007093
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": -0.01737543278898257
+              },
+              {
+                "label": "2025-09",
+                "return": 0.017691274061273264
+              },
+              {
+                "label": "2025-10",
+                "return": 0.029207581317249768
+              },
+              {
+                "label": "2025-11",
+                "return": 0.06194499339889245
+              },
+              {
+                "label": "2025-12",
+                "return": -0.000866291459972245
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.10336511821791951,
+            "max_drawdown": -0.23876370331371766,
+            "completed_trades": 23,
+            "win_rate": 0.6086956521739131,
+            "profit_factor": 0.5847216915600979,
+            "total_fees": 2116.201527519384,
+            "total_funding": 118.76385703143343,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.11168288006816711,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": -0.028631558462079997
+              },
+              {
+                "label": "2026-02",
+                "return": -0.11168288006816711
+              },
+              {
+                "label": "2026-03",
+                "return": 0.0
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.03911498654945777
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-entry-0.60-ema-8-hold-8-cooldown-0-confirm-1",
+            "direction": "long_only",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 8,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1
+          },
+          "score": [
+            0.0,
+            0.45454545454545453,
+            0.03228570023200572,
+            0.15632258986156936,
+            -0.2055732018943682
+          ],
+          "train": {
+            "net_return": 0.12403688962956363,
+            "max_drawdown": -0.14896959478963834,
+            "completed_trades": 19,
+            "win_rate": 0.7368421052631579,
+            "profit_factor": 1.949792406125161,
+            "total_fees": 2069.632855477717,
+            "total_funding": -19.897256531919826,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.45454545454545453,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.0029478729363043962,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": 0.0
+              },
+              {
+                "label": "2024-03",
+                "return": 0.046577285917663316
+              },
+              {
+                "label": "2024-04",
+                "return": 0.03473335729765948
+              },
+              {
+                "label": "2024-05",
+                "return": 0.031198423895391694
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0
+              },
+              {
+                "label": "2024-07",
+                "return": -0.0029478729363043962
+              },
+              {
+                "label": "2024-08",
+                "return": 0.005509646475120636
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.0
+              },
+              {
+                "label": "2024-12",
+                "return": 0.00400173517439179
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.03228570023200572,
+            "max_drawdown": -0.2055732018943682,
+            "completed_trades": 44,
+            "win_rate": 0.6136363636363636,
+            "profit_factor": 1.0947510893016863,
+            "total_fees": 4135.576957077677,
+            "total_funding": -23.395105219750814,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.00571538497483611,
+            "worst_monthly_return": -0.09104060603594114,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.00571538497483611
+              },
+              {
+                "label": "2025-02",
+                "return": -0.09104060603594114
+              },
+              {
+                "label": "2025-03",
+                "return": -0.017700010297193078
+              },
+              {
+                "label": "2025-04",
+                "return": 0.06287070659470606
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0
+              },
+              {
+                "label": "2025-06",
+                "return": 0.027389642765141012
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": 0.008064969016616613
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": 0.014672746654174383
+              },
+              {
+                "label": "2025-11",
+                "return": 0.029214878780619815
+              },
+              {
+                "label": "2025-12",
+                "return": 0.0
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.06454589843775944,
+            "max_drawdown": -0.20772518569063791,
+            "completed_trades": 14,
+            "win_rate": 0.5714285714285714,
+            "profit_factor": 0.6222235888641978,
+            "total_fees": 1304.408642801125,
+            "total_funding": 83.74331765918026,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.05729509219850287,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": -0.052485594286421015
+              },
+              {
+                "label": "2026-02",
+                "return": -0.05729509219850287
+              },
+              {
+                "label": "2026-03",
+                "return": 0.0
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.04727537976795629
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-short-entry-0.60-ema-8-hold-8-cooldown-0-confirm-1",
+            "direction": "long_short",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 8,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1
+          },
+          "score": [
+            0.0,
+            0.45454545454545453,
+            0.03051837091402995,
+            0.1545989281016032,
+            -0.2055732018943682
+          ],
+          "train": {
+            "net_return": 0.12408055718757324,
+            "max_drawdown": -0.1491105348745682,
+            "completed_trades": 25,
+            "win_rate": 0.68,
+            "profit_factor": 1.7270756959600606,
+            "total_fees": 2694.992171117972,
+            "total_funding": -8.37487410070337,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.45454545454545453,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.00454097787200145,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": -0.00454097787200145
+              },
+              {
+                "label": "2024-03",
+                "return": 0.06893904461494041
+              },
+              {
+                "label": "2024-04",
+                "return": 0.034733287071593504
+              },
+              {
+                "label": "2024-05",
+                "return": 0.00011452143092137291
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0
+              },
+              {
+                "label": "2024-07",
+                "return": -0.0029479018624410792
+              },
+              {
+                "label": "2024-08",
+                "return": 0.0055088882244294325
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.0
+              },
+              {
+                "label": "2024-12",
+                "return": 0.018214293001771974
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.03051837091402995,
+            "max_drawdown": -0.2055732018943682,
+            "completed_trades": 51,
+            "win_rate": 0.5882352941176471,
+            "profit_factor": 1.0868087420924935,
+            "total_fees": 4837.606149508125,
+            "total_funding": 13.617343149119947,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5833333333333334,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.00571538497483611,
+            "worst_monthly_return": -0.09104060603594114,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.00571538497483611
+              },
+              {
+                "label": "2025-02",
+                "return": -0.09104060603594114
+              },
+              {
+                "label": "2025-03",
+                "return": -0.017700010297193078
+              },
+              {
+                "label": "2025-04",
+                "return": 0.06287070659470606
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0
+              },
+              {
+                "label": "2025-06",
+                "return": 0.027389642765141012
+              },
+              {
+                "label": "2025-07",
+                "return": 0.002624671998799431
+              },
+              {
+                "label": "2025-08",
+                "return": 0.008887923796940957
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": 0.01467290484034965
+              },
+              {
+                "label": "2025-11",
+                "return": 0.029213241230367986
+              },
+              {
+                "label": "2025-12",
+                "return": -0.0051361225845073365
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.05099786306881621,
+            "max_drawdown": -0.20772518569063791,
+            "completed_trades": 16,
+            "win_rate": 0.5625,
+            "profit_factor": 0.7181024889382274,
+            "total_fees": 1489.722670326801,
+            "total_funding": 83.74331765918026,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.05729509219850287,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": -0.052485594286421015
+              },
+              {
+                "label": "2026-02",
+                "return": -0.05729509219850287
+              },
+              {
+                "label": "2026-03",
+                "return": 0.0
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.06244290521086622
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-entry-0.60-ema-4-hold-1-cooldown-0-confirm-1",
+            "direction": "long_only",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 4,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1
+          },
+          "score": [
+            0.0,
+            0.45454545454545453,
+            0.029777975127057345,
+            0.15996217842020527,
+            -0.20098499241568693
+          ],
+          "train": {
+            "net_return": 0.029777975127057345,
+            "max_drawdown": -0.15048954128412645,
+            "completed_trades": 41,
+            "win_rate": 0.6829268292682927,
+            "profit_factor": 1.1468113304490937,
+            "total_fees": 4178.383892995032,
+            "total_funding": -37.41436250323331,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.45454545454545453,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.027039211684746767,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": 0.0
+              },
+              {
+                "label": "2024-03",
+                "return": 0.012744401504610056
+              },
+              {
+                "label": "2024-04",
+                "return": 0.023818490665856135
+              },
+              {
+                "label": "2024-05",
+                "return": 0.009364239482104252
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0
+              },
+              {
+                "label": "2024-07",
+                "return": 0.005483362285401667
+              },
+              {
+                "label": "2024-08",
+                "return": -0.027039211684746767
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.008307659751714866
+              },
+              {
+                "label": "2024-12",
+                "return": -0.002507654344277206
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.13018420329314792,
+            "max_drawdown": -0.20098499241568693,
+            "completed_trades": 93,
+            "win_rate": 0.7096774193548387,
+            "profit_factor": 1.2637081644160615,
+            "total_fees": 9423.468120685084,
+            "total_funding": -13.022422754125138,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.6666666666666666,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.004297371228039222,
+            "worst_monthly_return": -0.06650359193340472,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.05441715593025742
+              },
+              {
+                "label": "2025-02",
+                "return": -0.06650359193340472
+              },
+              {
+                "label": "2025-03",
+                "return": -0.0089634845449792
+              },
+              {
+                "label": "2025-04",
+                "return": 0.0466990494895641
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0008644562025702072
+              },
+              {
+                "label": "2025-06",
+                "return": 0.0099255300220215
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": -0.014730540686268907
+              },
+              {
+                "label": "2025-09",
+                "return": 0.004297371228039222
+              },
+              {
+                "label": "2025-10",
+                "return": 0.03545443817221477
+              },
+              {
+                "label": "2025-11",
+                "return": 0.06445940307882463
+              },
+              {
+                "label": "2025-12",
+                "return": 0.004085211601842535
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.10677278375854386,
+            "max_drawdown": -0.2164893481534808,
+            "completed_trades": 32,
+            "win_rate": 0.71875,
+            "profit_factor": 0.5582064457388825,
+            "total_fees": 2970.073128718803,
+            "total_funding": 85.9617701464167,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.07674993532967628,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": -0.04086821018679158
+              },
+              {
+                "label": "2026-02",
+                "return": -0.07674993532967628
+              },
+              {
+                "label": "2026-03",
+                "return": 0.0
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.008705328440295248
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-entry-0.60-ema-4-hold-8-cooldown-8-confirm-1",
+            "direction": "long_only",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 4,
+            "minimum_hold_bars": 8,
+            "cooldown_bars": 8,
+            "confirmation_bars": 1
+          },
+          "score": [
+            0.0,
+            0.45454545454545453,
+            0.02623326125427594,
+            0.14086604754474377,
+            -0.19263556056592804
+          ],
+          "train": {
+            "net_return": 0.11463278629046783,
+            "max_drawdown": -0.15168331984033737,
+            "completed_trades": 28,
+            "win_rate": 0.6071428571428571,
+            "profit_factor": 1.5323364902472474,
+            "total_fees": 3061.346709883128,
+            "total_funding": -51.50406509008918,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.45454545454545453,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.03818071557083337,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": 0.0
+              },
+              {
+                "label": "2024-03",
+                "return": 0.04843101387052941
+              },
+              {
+                "label": "2024-04",
+                "return": 0.06474368708846126
+              },
+              {
+                "label": "2024-05",
+                "return": 0.01132326028675459
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0
+              },
+              {
+                "label": "2024-07",
+                "return": -0.006798595563317719
+              },
+              {
+                "label": "2024-08",
+                "return": 0.026466963528385914
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.0068878548894412295
+              },
+              {
+                "label": "2024-12",
+                "return": -0.03818071557083337
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.02623326125427594,
+            "max_drawdown": -0.19263556056592804,
+            "completed_trades": 64,
+            "win_rate": 0.578125,
+            "profit_factor": 1.0471210788264849,
+            "total_fees": 6156.113043086439,
+            "total_funding": -4.500774395967031,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.014115926917539743,
+            "worst_monthly_return": -0.07525758803401385,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.02569913434477016
+              },
+              {
+                "label": "2025-02",
+                "return": -0.07525758803401385
+              },
+              {
+                "label": "2025-03",
+                "return": -0.011299233195647757
+              },
+              {
+                "label": "2025-04",
+                "return": 0.03570678883943923
+              },
+              {
+                "label": "2025-05",
+                "return": 0.01970498505425647
+              },
+              {
+                "label": "2025-06",
+                "return": -0.020526285060414328
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": -0.01737593588559083
+              },
+              {
+                "label": "2025-09",
+                "return": 0.017690961413672126
+              },
+              {
+                "label": "2025-10",
+                "return": 0.014115926917539743
+              },
+              {
+                "label": "2025-11",
+                "return": 0.04405114350031768
+              },
+              {
+                "label": "2025-12",
+                "return": -0.0008662967071106634
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.023673613918566996,
+            "max_drawdown": -0.2161676929083304,
+            "completed_trades": 23,
+            "win_rate": 0.6086956521739131,
+            "profit_factor": 0.889399321116441,
+            "total_fees": 2175.841398364419,
+            "total_funding": 121.81077813371948,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.07051477360540505,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": -0.028631558462079997
+              },
+              {
+                "label": "2026-02",
+                "return": -0.07051477360540505
+              },
+              {
+                "label": "2026-03",
+                "return": 0.0
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.08135562979865235
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-entry-0.60-ema-8-hold-1-cooldown-0-confirm-1",
+            "direction": "long_only",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 0,
+            "confirmation_bars": 1
+          },
+          "score": [
+            0.0,
+            0.4166666666666667,
+            0.10262920356920793,
+            0.20925376981254845,
+            -0.18826887288999436
+          ],
+          "train": {
+            "net_return": 0.1066245662433405,
+            "max_drawdown": -0.13655474251257357,
+            "completed_trades": 20,
+            "win_rate": 0.85,
+            "profit_factor": 1.9501630552667575,
+            "total_fees": 2108.402599218037,
+            "total_funding": -26.948821113913105,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5454545454545454,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.008252671064030985,
+            "worst_monthly_return": 0.0,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": 0.0
+              },
+              {
+                "label": "2024-03",
+                "return": 0.03354667089125212
+              },
+              {
+                "label": "2024-04",
+                "return": 0.011753726708192757
+              },
+              {
+                "label": "2024-05",
+                "return": 0.008429059902411724
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0
+              },
+              {
+                "label": "2024-07",
+                "return": 0.011599657073899731
+              },
+              {
+                "label": "2024-08",
+                "return": 0.008252671064030985
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.0
+              },
+              {
+                "label": "2024-12",
+                "return": 0.028897222622923647
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.10262920356920793,
+            "max_drawdown": -0.18826887288999436,
+            "completed_trades": 52,
+            "win_rate": 0.7307692307692307,
+            "profit_factor": 1.3558808105602613,
+            "total_fees": 5150.87858053799,
+            "total_funding": -15.16903075321716,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.4166666666666667,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.054289217296721946,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.02233826580002411
+              },
+              {
+                "label": "2025-02",
+                "return": -0.054289217296721946
+              },
+              {
+                "label": "2025-03",
+                "return": -0.025117257428594837
+              },
+              {
+                "label": "2025-04",
+                "return": 0.07130889149125018
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0
+              },
+              {
+                "label": "2025-06",
+                "return": 0.023903093048945577
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": -5.8121645405967387e-05
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": 0.03326973198018176
+              },
+              {
+                "label": "2025-11",
+                "return": 0.032195880655846484
+              },
+              {
+                "label": "2025-12",
+                "return": 0.0
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.08129044183309325,
+            "max_drawdown": -0.19728787497097255,
+            "completed_trades": 15,
+            "win_rate": 0.6,
+            "profit_factor": 0.5104619323207491,
+            "total_fees": 1406.536738952975,
+            "total_funding": 72.2867519376495,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.05123748902864254,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": -0.04610965420230268
+              },
+              {
+                "label": "2026-02",
+                "return": -0.05123748902864254
+              },
+              {
+                "label": "2026-03",
+                "return": 0.0
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.015131409367768656
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-entry-0.60-ema-8-hold-8-cooldown-8-confirm-1",
+            "direction": "long_only",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 8,
+            "cooldown_bars": 8,
+            "confirmation_bars": 1
+          },
+          "score": [
+            0.0,
+            0.4166666666666667,
+            0.005634668868209482,
+            0.12941634534658697,
+            -0.17856415378619295
+          ],
+          "train": {
+            "net_return": 0.1237816764783775,
+            "max_drawdown": -0.14896959478963834,
+            "completed_trades": 17,
+            "win_rate": 0.8235294117647058,
+            "profit_factor": 2.0552779494996773,
+            "total_fees": 1842.243307778788,
+            "total_funding": -22.503242079462463,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.45454545454545453,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.0029478729363043962,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": 0.0
+              },
+              {
+                "label": "2024-03",
+                "return": 0.046577285917663316
+              },
+              {
+                "label": "2024-04",
+                "return": 0.03473335729765948
+              },
+              {
+                "label": "2024-05",
+                "return": 0.031198423895391694
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0
+              },
+              {
+                "label": "2024-07",
+                "return": -0.0029478729363043962
+              },
+              {
+                "label": "2024-08",
+                "return": 0.005281492417971342
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.0
+              },
+              {
+                "label": "2024-12",
+                "return": 0.004001587939261595
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.005634668868209482,
+            "max_drawdown": -0.17856415378619295,
+            "completed_trades": 37,
+            "win_rate": 0.6486486486486487,
+            "profit_factor": 1.0175920118682857,
+            "total_fees": 3546.200125497379,
+            "total_funding": -26.928925279672754,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.4166666666666667,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.05993263637922216,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.00571538497483611
+              },
+              {
+                "label": "2025-02",
+                "return": -0.05993263637922216
+              },
+              {
+                "label": "2025-03",
+                "return": -0.024307868289571672
+              },
+              {
+                "label": "2025-04",
+                "return": 0.061760901409121396
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0
+              },
+              {
+                "label": "2025-06",
+                "return": 0.006484881767827826
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": 0.008064692425849927
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": 0.014672983894399392
+              },
+              {
+                "label": "2025-11",
+                "return": -0.002656229330207586
+              },
+              {
+                "label": "2025-12",
+                "return": 0.0
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.03393668863109184,
+            "max_drawdown": -0.20772518569063791,
+            "completed_trades": 14,
+            "win_rate": 0.6428571428571429,
+            "profit_factor": 0.7942159373813834,
+            "total_fees": 1316.574674312424,
+            "total_funding": 84.25985553924039,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.052485594286421015,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": -0.052485594286421015
+              },
+              {
+                "label": "2026-02",
+                "return": -0.0374896489763033
+              },
+              {
+                "label": "2026-03",
+                "return": 0.0
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.05928874708544791
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "parameters": {
+            "id": "long-entry-0.60-ema-8-hold-1-cooldown-8-confirm-2",
+            "direction": "long_only",
+            "entry_threshold": 0.6,
+            "smoothing_bars": 8,
+            "minimum_hold_bars": 1,
+            "cooldown_bars": 8,
+            "confirmation_bars": 2
+          },
+          "score": [
+            0.0,
+            0.36363636363636365,
+            0.07334189639356385,
+            0.18264478723685246,
+            -0.15144776377128039
+          ],
+          "train": {
+            "net_return": 0.07334189639356385,
+            "max_drawdown": -0.15144776377128039,
+            "completed_trades": 17,
+            "win_rate": 0.8235294117647058,
+            "profit_factor": 1.6877058021366411,
+            "total_fees": 1771.545044754379,
+            "total_funding": -26.85311433923647,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.36363636363636365,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.028756717019135354,
+            "monthly_returns": [
+              {
+                "label": "2024-02",
+                "return": 0.0
+              },
+              {
+                "label": "2024-03",
+                "return": 0.05964276333079261
+              },
+              {
+                "label": "2024-04",
+                "return": 0.008469300699155417
+              },
+              {
+                "label": "2024-05",
+                "return": 0.005771882210001893
+              },
+              {
+                "label": "2024-06",
+                "return": 0.0
+              },
+              {
+                "label": "2024-07",
+                "return": 0.0
+              },
+              {
+                "label": "2024-08",
+                "return": -0.028756717019135354
+              },
+              {
+                "label": "2024-09",
+                "return": 0.0
+              },
+              {
+                "label": "2024-10",
+                "return": 0.0
+              },
+              {
+                "label": "2024-11",
+                "return": 0.0
+              },
+              {
+                "label": "2024-12",
+                "return": 0.028225581616929785
+              }
+            ]
+          },
+          "validation": {
+            "net_return": 0.10930289084328859,
+            "max_drawdown": -0.13717323740266807,
+            "completed_trades": 36,
+            "win_rate": 0.6944444444444444,
+            "profit_factor": 1.4478746308606076,
+            "total_fees": 3687.924385995524,
+            "total_funding": -0.6608915156165973,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.5,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0003675895145881393,
+            "worst_monthly_return": -0.00022582425977964846,
+            "monthly_returns": [
+              {
+                "label": "2025-01",
+                "return": 0.0091823415458453
+              },
+              {
+                "label": "2025-02",
+                "return": 0.000736713466253981
+              },
+              {
+                "label": "2025-03",
+                "return": -0.00022582425977964846
+              },
+              {
+                "label": "2025-04",
+                "return": 0.04640623938151433
+              },
+              {
+                "label": "2025-05",
+                "return": 0.0
+              },
+              {
+                "label": "2025-06",
+                "return": 0.0003675895145881393
+              },
+              {
+                "label": "2025-07",
+                "return": 0.0
+              },
+              {
+                "label": "2025-08",
+                "return": -0.00022371267972420947
+              },
+              {
+                "label": "2025-09",
+                "return": 0.0
+              },
+              {
+                "label": "2025-10",
+                "return": 0.03813128480614172
+              },
+              {
+                "label": "2025-11",
+                "return": 0.01121548229290465
+              },
+              {
+                "label": "2025-12",
+                "return": 0.0
+              }
+            ]
+          },
+          "confirmation": {
+            "net_return": -0.020898795418078958,
+            "max_drawdown": -0.18140222226740066,
+            "completed_trades": 14,
+            "win_rate": 0.5714285714285714,
+            "profit_factor": 0.8400915007376676,
+            "total_fees": 1380.431514112644,
+            "total_funding": 68.25100892874829,
+            "ending_position": "FLAT",
+            "positive_month_rate": 0.125,
+            "target_25pct_month_rate": 0.0,
+            "median_monthly_return": 0.0,
+            "worst_monthly_return": -0.03016654159641312,
+            "monthly_returns": [
+              {
+                "label": "2026-01",
+                "return": -0.00183761607333556
+              },
+              {
+                "label": "2026-02",
+                "return": -0.03016654159641312
+              },
+              {
+                "label": "2026-03",
+                "return": 0.0
+              },
+              {
+                "label": "2026-04",
+                "return": 0.0
+              },
+              {
+                "label": "2026-05",
+                "return": 0.0
+              },
+              {
+                "label": "2026-06",
+                "return": 0.011414609942862518
+              },
+              {
+                "label": "2026-07",
+                "return": 0.0
+              },
+              {
+                "label": "2026-08",
+                "return": 0.0
+              }
+            ]
+          }
+        }
+      ],
+      "neighbor_confirmation_pass_rate": 0.0,
+      "stress_confirmation": {
+        "fee_bps": 10.0,
+        "slippage_bps": 5.0,
+        "net_return": -0.0879615867069765,
+        "max_drawdown": -0.23907491938557932,
+        "completed_trades": 35,
+        "win_rate": 0.5142857142857142,
+        "profit_factor": 0.735918295091117,
+        "total_fees": 6400.434067250245,
+        "total_funding": 123.81309034759565,
+        "ending_position": "FLAT",
+        "positive_month_rate": 0.125,
+        "target_25pct_month_rate": 0.0,
+        "median_monthly_return": 0.0,
+        "worst_monthly_return": -0.1409471151735603,
+        "monthly_returns": [
+          {
+            "label": "2026-01",
+            "return": -0.020397515194600757
+          },
+          {
+            "label": "2026-02",
+            "return": -0.1409471151735603
+          },
+          {
+            "label": "2026-03",
+            "return": -0.014891374855460517
+          },
+          {
+            "label": "2026-04",
+            "return": 0.0
+          },
+          {
+            "label": "2026-05",
+            "return": 0.0
+          },
+          {
+            "label": "2026-06",
+            "return": 0.10016856093351341
+          },
+          {
+            "label": "2026-07",
+            "return": 0.0
+          },
+          {
+            "label": "2026-08",
+            "return": 0.0
+          }
+        ]
+      }
+    }
+  },
+  "decision": {
+    "status": "rejected_after_confirmation",
+    "approved_for_trading": false,
+    "monthly_target": {
+      "return": 0.25,
+      "minimum_confirmation_target_month_rate": 0.5,
+      "minimum_confirmation_positive_month_rate": 0.5
+    },
+    "reason": "Deep model did not pass the independent confirmation, drawdown, or 25% monthly-target gates."
+  }
+}
