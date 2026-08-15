@@ -92,6 +92,12 @@ market data.
 - `experiments/factor_risk_overlay/2026-08-15/`: leverage with next-day monthly loss and profit
   locks. All 20 development-risk-eligible configurations remained at 3/8 target months or less in
   the explicitly non-selective 2026 neighborhood diagnostic.
+- `experiments/funding_spread_factor/2026-08-15/`: BTC/ETH realized funding-spread carry and
+  crowding-follow pairs. The selected market-neutral pair was approximately flat in 2026 and left
+  the static hybrid at 3/8 target months.
+- `experiments/funding_event_factor/2026-08-15/`: extreme funding z-score continuation/reversal
+  events and two-factor hybrids. The development-selected hybrid returned +217.30% with -19.76%
+  drawdown in reused 2026, but still reached only 3/8 target months.
 - `experiments/event_meta_factor/2026-08-15/`: GPU XGBoost meta-label filter for sparse BTC-shock
   events. Its ROC AUC fell below 0.50 in both selection and reused confirmation, and no risk/return
   configuration passed development gates, so the ML filter is rejected.
