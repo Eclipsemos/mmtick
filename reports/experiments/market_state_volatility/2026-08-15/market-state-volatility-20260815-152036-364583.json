@@ -1,0 +1,4676 @@
+{
+  "generated_at": "2026-08-15T15:20:36.361461+00:00",
+  "strategy": "causal market-state overlay with causal volatility target",
+  "data": {
+    "btc_perp": {
+      "price_first": "2020-01-01T00:00:00+00:00",
+      "price_last": "2026-08-11T23:59:59.999000+00:00",
+      "metric_first": "2021-01-01T00:00:00+00:00",
+      "metric_last": "2026-08-14T23:59:59.999000+00:00"
+    },
+    "eth_perp": {
+      "price_first": "2020-01-01T00:00:00+00:00",
+      "price_last": "2026-08-11T23:59:59.999000+00:00",
+      "metric_first": "2021-12-01T00:00:00+00:00",
+      "metric_last": "2026-08-14T23:59:59.999000+00:00"
+    }
+  },
+  "search": {
+    "state_candidate_count": 4320,
+    "state_shortlist_count": 300,
+    "volatility_candidate_count": 36,
+    "development_selection_only": true,
+    "development_monthly_target": 0.15
+  },
+  "selection": {
+    "eligible_count": 3154,
+    "selected": {
+      "state": {
+        "baseline": "anchor",
+        "signal": {
+          "id": "eth_perp-540-top_retail_spread",
+          "asset": "eth_perp",
+          "window_4h": 540,
+          "feature": "top_retail_spread"
+        },
+        "config": {
+          "threshold": 1.25,
+          "low_exposure": 0.8,
+          "high_exposure": 2.0,
+          "mode": "below",
+          "turnover_bps": 7.0
+        }
+      },
+      "volatility": {
+        "lookback_days": 20,
+        "target_daily_volatility": 0.03,
+        "minimum_exposure": 0.6,
+        "maximum_exposure": 1.1,
+        "rebalance_frequency": "daily"
+      },
+      "score": [
+        0.25,
+        1.5833333333333333,
+        0.5833333333333334,
+        0.5493212666104031,
+        -0.15503139136664185,
+        -0.3387056607538045
+      ],
+      "development": {
+        "discovery": {
+          "initial_equity": 100000.0,
+          "final_equity": 2102494.2823163895,
+          "net_return": 20.024942823163897,
+          "max_drawdown": -0.3387056607538045,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2021-01",
+              "return": 1.7978563471655076
+            },
+            {
+              "label": "2021-02",
+              "return": 0.11442224747397248
+            },
+            {
+              "label": "2021-03",
+              "return": -0.13602893446702163
+            },
+            {
+              "label": "2021-04",
+              "return": 0.33588632685873593
+            },
+            {
+              "label": "2021-05",
+              "return": -0.10860542058458869
+            },
+            {
+              "label": "2021-06",
+              "return": -0.00927110963789239
+            },
+            {
+              "label": "2021-07",
+              "return": 0.09920308018750945
+            },
+            {
+              "label": "2021-08",
+              "return": 0.2832905462933784
+            },
+            {
+              "label": "2021-09",
+              "return": -0.033530468470189874
+            },
+            {
+              "label": "2021-10",
+              "return": 0.02965619860353555
+            },
+            {
+              "label": "2021-11",
+              "return": 0.2845177183742057
+            },
+            {
+              "label": "2021-12",
+              "return": -0.12653398941309796
+            },
+            {
+              "label": "2022-01",
+              "return": 0.37018338821248004
+            },
+            {
+              "label": "2022-02",
+              "return": 0.279781028824986
+            },
+            {
+              "label": "2022-03",
+              "return": -0.05656186766659815
+            },
+            {
+              "label": "2022-04",
+              "return": -0.05912411618218716
+            },
+            {
+              "label": "2022-05",
+              "return": -0.06516276855355024
+            },
+            {
+              "label": "2022-06",
+              "return": -0.10760215638780395
+            },
+            {
+              "label": "2022-07",
+              "return": 0.22403610754043002
+            },
+            {
+              "label": "2022-08",
+              "return": 0.1101352729268296
+            },
+            {
+              "label": "2022-09",
+              "return": -0.15174397470542267
+            },
+            {
+              "label": "2022-10",
+              "return": 0.20235898752062695
+            },
+            {
+              "label": "2022-11",
+              "return": 0.12201153312018263
+            },
+            {
+              "label": "2022-12",
+              "return": 0.1534518486732552
+            },
+            {
+              "label": "2023-01",
+              "return": 0.15888457911372222
+            },
+            {
+              "label": "2023-02",
+              "return": 0.15227038075940344
+            },
+            {
+              "label": "2023-03",
+              "return": 0.22900354391301142
+            },
+            {
+              "label": "2023-04",
+              "return": -0.1327364357419954
+            },
+            {
+              "label": "2023-05",
+              "return": -0.04326255631313289
+            },
+            {
+              "label": "2023-06",
+              "return": 0.05007963947070864
+            },
+            {
+              "label": "2023-07",
+              "return": -0.038924994136280915
+            },
+            {
+              "label": "2023-08",
+              "return": 0.33480131863017826
+            },
+            {
+              "label": "2023-09",
+              "return": -0.04346116139848181
+            },
+            {
+              "label": "2023-10",
+              "return": 0.03922550559391066
+            },
+            {
+              "label": "2023-11",
+              "return": 0.0070822428519659196
+            },
+            {
+              "label": "2023-12",
+              "return": -0.01791535607773111
+            }
+          ],
+          "positive_month_rate": 0.5833333333333334,
+          "target_25pct_month_rate": 0.19444444444444445,
+          "worst_month": -0.15174397470542267,
+          "target_15pct_month_rate": 0.3611111111111111
+        },
+        "validation": {
+          "initial_equity": 100000.0,
+          "final_equity": 240402.71482424354,
+          "net_return": 1.4040271482424356,
+          "max_drawdown": -0.27867651345553424,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2024-01",
+              "return": 0.15046485321689526
+            },
+            {
+              "label": "2024-02",
+              "return": 0.18941487411639576
+            },
+            {
+              "label": "2024-03",
+              "return": -0.06398487124786541
+            },
+            {
+              "label": "2024-04",
+              "return": -0.1504876707866274
+            },
+            {
+              "label": "2024-05",
+              "return": -0.01450219367193777
+            },
+            {
+              "label": "2024-06",
+              "return": 0.044516388288767
+            },
+            {
+              "label": "2024-07",
+              "return": -0.022760297924242834
+            },
+            {
+              "label": "2024-08",
+              "return": 0.13621198222934455
+            },
+            {
+              "label": "2024-09",
+              "return": -0.01599152765322369
+            },
+            {
+              "label": "2024-10",
+              "return": 0.032278751792437416
+            },
+            {
+              "label": "2024-11",
+              "return": 0.2014873614916163
+            },
+            {
+              "label": "2024-12",
+              "return": 0.020788541929218914
+            },
+            {
+              "label": "2025-01",
+              "return": -0.1351721828463714
+            },
+            {
+              "label": "2025-02",
+              "return": 0.1928458518796224
+            },
+            {
+              "label": "2025-03",
+              "return": -0.019012191531660543
+            },
+            {
+              "label": "2025-04",
+              "return": 0.08189038863739824
+            },
+            {
+              "label": "2025-05",
+              "return": -0.004655393695995185
+            },
+            {
+              "label": "2025-06",
+              "return": 0.32584141369347824
+            },
+            {
+              "label": "2025-07",
+              "return": 0.06482949460690214
+            },
+            {
+              "label": "2025-08",
+              "return": 0.03611750331575985
+            },
+            {
+              "label": "2025-09",
+              "return": -0.15503139136664185
+            },
+            {
+              "label": "2025-10",
+              "return": 0.0495622387971836
+            },
+            {
+              "label": "2025-11",
+              "return": 0.16336470105550094
+            },
+            {
+              "label": "2025-12",
+              "return": -0.05655138037583326
+            }
+          ],
+          "positive_month_rate": 0.5833333333333334,
+          "target_25pct_month_rate": 0.041666666666666664,
+          "worst_month": -0.15503139136664185,
+          "target_15pct_month_rate": 0.25
+        },
+        "2021": {
+          "initial_equity": 100000.0,
+          "final_equity": 500539.2646324185,
+          "net_return": 4.005392646324186,
+          "max_drawdown": -0.24459417760600044,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2021-01",
+              "return": 1.7978563471655076
+            },
+            {
+              "label": "2021-02",
+              "return": 0.11442224747397248
+            },
+            {
+              "label": "2021-03",
+              "return": -0.13602893446702163
+            },
+            {
+              "label": "2021-04",
+              "return": 0.33588632685873593
+            },
+            {
+              "label": "2021-05",
+              "return": -0.10860542058458869
+            },
+            {
+              "label": "2021-06",
+              "return": -0.00927110963789239
+            },
+            {
+              "label": "2021-07",
+              "return": 0.09920308018750945
+            },
+            {
+              "label": "2021-08",
+              "return": 0.2832905462933784
+            },
+            {
+              "label": "2021-09",
+              "return": -0.033530468470189874
+            },
+            {
+              "label": "2021-10",
+              "return": 0.02965619860353555
+            },
+            {
+              "label": "2021-11",
+              "return": 0.2845177183742057
+            },
+            {
+              "label": "2021-12",
+              "return": -0.12653398941309796
+            }
+          ],
+          "positive_month_rate": 0.5833333333333334,
+          "target_25pct_month_rate": 0.3333333333333333,
+          "worst_month": -0.13602893446702163,
+          "target_15pct_month_rate": 0.3333333333333333
+        },
+        "2022": {
+          "initial_equity": 100000.0,
+          "final_equity": 232890.67068877985,
+          "net_return": 1.3289067068877984,
+          "max_drawdown": -0.3387056607538045,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2022-01",
+              "return": 0.3700869169942282
+            },
+            {
+              "label": "2022-02",
+              "return": 0.279781028824986
+            },
+            {
+              "label": "2022-03",
+              "return": -0.05656186766659815
+            },
+            {
+              "label": "2022-04",
+              "return": -0.05912411618218716
+            },
+            {
+              "label": "2022-05",
+              "return": -0.06516276855355024
+            },
+            {
+              "label": "2022-06",
+              "return": -0.10760215638780395
+            },
+            {
+              "label": "2022-07",
+              "return": 0.22403610754043002
+            },
+            {
+              "label": "2022-08",
+              "return": 0.1101352729268296
+            },
+            {
+              "label": "2022-09",
+              "return": -0.15174397470542267
+            },
+            {
+              "label": "2022-10",
+              "return": 0.20235898752062695
+            },
+            {
+              "label": "2022-11",
+              "return": 0.12201153312018263
+            },
+            {
+              "label": "2022-12",
+              "return": 0.1534518486732552
+            }
+          ],
+          "positive_month_rate": 0.5833333333333334,
+          "target_25pct_month_rate": 0.16666666666666666,
+          "worst_month": -0.15174397470542267,
+          "target_15pct_month_rate": 0.4166666666666667
+        },
+        "2023": {
+          "initial_equity": 100000.0,
+          "final_equity": 180327.92529858102,
+          "net_return": 0.8032792529858103,
+          "max_drawdown": -0.21734072344774313,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2023-01",
+              "return": 0.15874845491170964
+            },
+            {
+              "label": "2023-02",
+              "return": 0.15227038075940344
+            },
+            {
+              "label": "2023-03",
+              "return": 0.22900354391301142
+            },
+            {
+              "label": "2023-04",
+              "return": -0.1327364357419954
+            },
+            {
+              "label": "2023-05",
+              "return": -0.04326255631313289
+            },
+            {
+              "label": "2023-06",
+              "return": 0.05007963947070864
+            },
+            {
+              "label": "2023-07",
+              "return": -0.038924994136280915
+            },
+            {
+              "label": "2023-08",
+              "return": 0.33480131863017826
+            },
+            {
+              "label": "2023-09",
+              "return": -0.04346116139848181
+            },
+            {
+              "label": "2023-10",
+              "return": 0.03922550559391066
+            },
+            {
+              "label": "2023-11",
+              "return": 0.0070822428519659196
+            },
+            {
+              "label": "2023-12",
+              "return": -0.01791535607773111
+            }
+          ],
+          "positive_month_rate": 0.5833333333333334,
+          "target_25pct_month_rate": 0.08333333333333333,
+          "worst_month": -0.1327364357419954,
+          "target_15pct_month_rate": 0.3333333333333333
+        },
+        "2024": {
+          "initial_equity": 100000.0,
+          "final_equity": 154932.12666104033,
+          "net_return": 0.5493212666104031,
+          "max_drawdown": -0.27867651345553424,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2024-01",
+              "return": 0.15046485321689526
+            },
+            {
+              "label": "2024-02",
+              "return": 0.18941487411639576
+            },
+            {
+              "label": "2024-03",
+              "return": -0.06398487124786541
+            },
+            {
+              "label": "2024-04",
+              "return": -0.1504876707866274
+            },
+            {
+              "label": "2024-05",
+              "return": -0.01450219367193777
+            },
+            {
+              "label": "2024-06",
+              "return": 0.044516388288767
+            },
+            {
+              "label": "2024-07",
+              "return": -0.022760297924242834
+            },
+            {
+              "label": "2024-08",
+              "return": 0.13621198222934455
+            },
+            {
+              "label": "2024-09",
+              "return": -0.01599152765322369
+            },
+            {
+              "label": "2024-10",
+              "return": 0.032278751792437416
+            },
+            {
+              "label": "2024-11",
+              "return": 0.2014873614916163
+            },
+            {
+              "label": "2024-12",
+              "return": 0.020788541929218914
+            }
+          ],
+          "positive_month_rate": 0.5833333333333334,
+          "target_25pct_month_rate": 0.0,
+          "worst_month": -0.1504876707866274,
+          "target_15pct_month_rate": 0.25
+        },
+        "2025": {
+          "initial_equity": 100000.0,
+          "final_equity": 155155.6311314659,
+          "net_return": 0.5515563113146589,
+          "max_drawdown": -0.22718263499607952,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2025-01",
+              "return": -0.1352326045534881
+            },
+            {
+              "label": "2025-02",
+              "return": 0.1928458518796224
+            },
+            {
+              "label": "2025-03",
+              "return": -0.019012191531660543
+            },
+            {
+              "label": "2025-04",
+              "return": 0.08189038863739824
+            },
+            {
+              "label": "2025-05",
+              "return": -0.004655393695995185
+            },
+            {
+              "label": "2025-06",
+              "return": 0.32584141369347824
+            },
+            {
+              "label": "2025-07",
+              "return": 0.06482949460690214
+            },
+            {
+              "label": "2025-08",
+              "return": 0.03611750331575985
+            },
+            {
+              "label": "2025-09",
+              "return": -0.15503139136664185
+            },
+            {
+              "label": "2025-10",
+              "return": 0.0495622387971836
+            },
+            {
+              "label": "2025-11",
+              "return": 0.16336470105550094
+            },
+            {
+              "label": "2025-12",
+              "return": -0.05655138037583326
+            }
+          ],
+          "positive_month_rate": 0.5833333333333334,
+          "target_25pct_month_rate": 0.08333333333333333,
+          "worst_month": -0.15503139136664185,
+          "target_15pct_month_rate": 0.25
+        }
+      }
+    },
+    "top_development_configurations": [
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.6,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.25,
+          1.5833333333333333,
+          0.5833333333333334,
+          0.5493212666104031,
+          -0.15503139136664185,
+          -0.3387056607538045
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.5,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.25,
+          1.5833333333333333,
+          0.5833333333333334,
+          0.5442953070151784,
+          -0.15503139136664185,
+          -0.3387056607538045
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.25,
+          1.5833333333333333,
+          0.5833333333333334,
+          0.5432011028801649,
+          -0.15503139136664185,
+          -0.3387056607538045
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.7,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.5,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.25,
+          1.5833333333333333,
+          0.5833333333333334,
+          0.44305576654494694,
+          -0.16245163304857746,
+          -0.3148858674669223
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.75,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.5,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.25,
+          1.5833333333333333,
+          0.5833333333333334,
+          0.43542047369528963,
+          -0.16419860567045302,
+          -0.3148858674669223
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.7,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.6,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.25,
+          1.5833333333333333,
+          0.5833333333333334,
+          0.431629144610241,
+          -0.16151939603331997,
+          -0.3151395422729624
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.5,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.25,
+          1.5833333333333333,
+          0.5833333333333334,
+          0.42909437012951157,
+          -0.1659432969347551,
+          -0.3148858674669223
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.25,
+          1.5833333333333333,
+          0.5833333333333334,
+          0.42584998512267713,
+          -0.16139357901156787,
+          -0.32187461343981744
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.75,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.6,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.25,
+          1.5833333333333333,
+          0.5833333333333334,
+          0.4238300390779317,
+          -0.1633416536401599,
+          -0.3151395422729624
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.75,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.25,
+          1.5833333333333333,
+          0.5833333333333334,
+          0.42343761033943383,
+          -0.15943352528676355,
+          -0.32187461343981744
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.6,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.25,
+          1.5833333333333333,
+          0.5833333333333334,
+          0.41747396914565105,
+          -0.16516145134103158,
+          -0.3151395422729624
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-180-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 180,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.25,
+          1.5,
+          0.5833333333333334,
+          0.5778402483639276,
+          -0.19026776422086858,
+          -0.3387056607538045
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-180-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 180,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.6,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.25,
+          1.5,
+          0.5833333333333334,
+          0.571856883932845,
+          -0.19026776422086858,
+          -0.3387056607538045
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-180-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 180,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.5,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.25,
+          1.5,
+          0.5833333333333334,
+          0.5659340979473816,
+          -0.19026776422086858,
+          -0.3387056607538045
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "btc_perp-540-top_account_crowding",
+            "asset": "btc_perp",
+            "window_4h": 540,
+            "feature": "top_account_crowding"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.7,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.025,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.16666666666666666,
+          1.6666666666666667,
+          0.5833333333333334,
+          0.5127846643245332,
+          -0.2532589532794246,
+          -0.3463167568362408
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "btc_perp-540-top_account_crowding",
+            "asset": "btc_perp",
+            "window_4h": 540,
+            "feature": "top_account_crowding"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.6,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.025,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.16666666666666666,
+          1.6666666666666667,
+          0.5833333333333334,
+          0.5112732483812814,
+          -0.25402351805821527,
+          -0.3360951309185753
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "btc_perp-540-top_account_crowding",
+            "asset": "btc_perp",
+            "window_4h": 540,
+            "feature": "top_account_crowding"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.6,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.16666666666666666,
+          1.6666666666666667,
+          0.5833333333333334,
+          0.5027301168542004,
+          -0.24632819992576738,
+          -0.3387056607538045
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "btc_perp-540-top_account_crowding",
+            "asset": "btc_perp",
+            "window_4h": 540,
+            "feature": "top_account_crowding"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.7,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.16666666666666666,
+          1.6666666666666667,
+          0.5833333333333334,
+          0.49861745665426255,
+          -0.2537083210256024,
+          -0.34276712493070033
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "btc_perp-540-top_account_crowding",
+            "asset": "btc_perp",
+            "window_4h": 540,
+            "feature": "top_account_crowding"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.6,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.5,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.16666666666666666,
+          1.6666666666666667,
+          0.5833333333333334,
+          0.4974120952572981,
+          -0.20381682864124934,
+          -0.3387056607538045
+        ]
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "btc_perp-540-top_account_crowding",
+            "asset": "btc_perp",
+            "window_4h": 540,
+            "feature": "top_account_crowding"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.6,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.6,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "score": [
+          0.16666666666666666,
+          1.6666666666666667,
+          0.5833333333333334,
+          0.4962350638260788,
+          -0.2073246682552049,
+          -0.3387056607538045
+        ]
+      }
+    ]
+  },
+  "confirmation": {
+    "initial_equity": 100000.0,
+    "final_equity": 282834.0694885513,
+    "net_return": 1.828340694885513,
+    "max_drawdown": -0.28189380073820774,
+    "bankrupt": false,
+    "daily_returns": [
+      {
+        "label": "2026-01-01",
+        "return": -0.00014
+      },
+      {
+        "label": "2026-01-02",
+        "return": 0.0
+      },
+      {
+        "label": "2026-01-03",
+        "return": 0.0
+      },
+      {
+        "label": "2026-01-04",
+        "return": 0.0
+      },
+      {
+        "label": "2026-01-05",
+        "return": 0.020461865292362384
+      },
+      {
+        "label": "2026-01-06",
+        "return": -0.003691296922559393
+      },
+      {
+        "label": "2026-01-07",
+        "return": 0.010362246138470844
+      },
+      {
+        "label": "2026-01-08",
+        "return": 0.0
+      },
+      {
+        "label": "2026-01-09",
+        "return": 0.0
+      },
+      {
+        "label": "2026-01-10",
+        "return": 0.0
+      },
+      {
+        "label": "2026-01-11",
+        "return": 0.0
+      },
+      {
+        "label": "2026-01-12",
+        "return": 0.0
+      },
+      {
+        "label": "2026-01-13",
+        "return": 0.019089916008014796
+      },
+      {
+        "label": "2026-01-14",
+        "return": 0.013801640839225254
+      },
+      {
+        "label": "2026-01-15",
+        "return": -0.04279429420543246
+      },
+      {
+        "label": "2026-01-16",
+        "return": -0.04221812869994508
+      },
+      {
+        "label": "2026-01-17",
+        "return": 0.0
+      },
+      {
+        "label": "2026-01-18",
+        "return": 0.0
+      },
+      {
+        "label": "2026-01-19",
+        "return": 0.005214903001286046
+      },
+      {
+        "label": "2026-01-20",
+        "return": 0.052642009088189244
+      },
+      {
+        "label": "2026-01-21",
+        "return": -0.04409131586821923
+      },
+      {
+        "label": "2026-01-22",
+        "return": 0.006684021531560133
+      },
+      {
+        "label": "2026-01-23",
+        "return": -0.0003951823968758265
+      },
+      {
+        "label": "2026-01-24",
+        "return": -0.0009402252037972751
+      },
+      {
+        "label": "2026-01-25",
+        "return": -0.007277100986797484
+      },
+      {
+        "label": "2026-01-26",
+        "return": -0.03525085832248656
+      },
+      {
+        "label": "2026-01-27",
+        "return": 0.013659147085266912
+      },
+      {
+        "label": "2026-01-28",
+        "return": -0.001902981290529159
+      },
+      {
+        "label": "2026-01-29",
+        "return": 0.04820278307347601
+      },
+      {
+        "label": "2026-01-30",
+        "return": 0.20511331274359654
+      },
+      {
+        "label": "2026-01-31",
+        "return": 0.2627824222781908
+      },
+      {
+        "label": "2026-02-01",
+        "return": 0.01610357924616482
+      },
+      {
+        "label": "2026-02-02",
+        "return": -0.012531011237526838
+      },
+      {
+        "label": "2026-02-03",
+        "return": -0.03959993047941541
+      },
+      {
+        "label": "2026-02-04",
+        "return": 0.15420125183600483
+      },
+      {
+        "label": "2026-02-05",
+        "return": 0.4079918578510305
+      },
+      {
+        "label": "2026-02-06",
+        "return": 0.07001508370029064
+      },
+      {
+        "label": "2026-02-07",
+        "return": -0.0021444210840462765
+      },
+      {
+        "label": "2026-02-08",
+        "return": 0.005514757163277977
+      },
+      {
+        "label": "2026-02-09",
+        "return": -0.0017226062184098711
+      },
+      {
+        "label": "2026-02-10",
+        "return": -0.004995061478385179
+      },
+      {
+        "label": "2026-02-11",
+        "return": -0.0015944337035302236
+      },
+      {
+        "label": "2026-02-12",
+        "return": -0.000998343329943679
+      },
+      {
+        "label": "2026-02-13",
+        "return": 0.0018385234640006635
+      },
+      {
+        "label": "2026-02-14",
+        "return": 0.0017535784702354834
+      },
+      {
+        "label": "2026-02-15",
+        "return": -0.00590750033339203
+      },
+      {
+        "label": "2026-02-16",
+        "return": -0.0009117621443314862
+      },
+      {
+        "label": "2026-02-17",
+        "return": 0.006270060180741913
+      },
+      {
+        "label": "2026-02-18",
+        "return": 0.0
+      },
+      {
+        "label": "2026-02-19",
+        "return": 0.0
+      },
+      {
+        "label": "2026-02-20",
+        "return": 0.0
+      },
+      {
+        "label": "2026-02-21",
+        "return": 0.0
+      },
+      {
+        "label": "2026-02-22",
+        "return": -0.000504
+      },
+      {
+        "label": "2026-02-23",
+        "return": 0.006097582874924073
+      },
+      {
+        "label": "2026-02-24",
+        "return": 0.0
+      },
+      {
+        "label": "2026-02-25",
+        "return": 0.050657809367212155
+      },
+      {
+        "label": "2026-02-26",
+        "return": -0.0036140372892300393
+      },
+      {
+        "label": "2026-02-27",
+        "return": -0.006633478907272328
+      },
+      {
+        "label": "2026-02-28",
+        "return": -0.07748361972830095
+      },
+      {
+        "label": "2026-03-01",
+        "return": -0.020715490546917265
+      },
+      {
+        "label": "2026-03-02",
+        "return": 0.007477001849611828
+      },
+      {
+        "label": "2026-03-03",
+        "return": -0.013072213958798474
+      },
+      {
+        "label": "2026-03-04",
+        "return": 0.1851425436743646
+      },
+      {
+        "label": "2026-03-05",
+        "return": -0.008532903708685778
+      },
+      {
+        "label": "2026-03-06",
+        "return": 0.0011279708793527985
+      },
+      {
+        "label": "2026-03-07",
+        "return": -0.0005533747874045052
+      },
+      {
+        "label": "2026-03-08",
+        "return": -5.35835239594008e-07
+      },
+      {
+        "label": "2026-03-09",
+        "return": -1.2880547926263983e-08
+      },
+      {
+        "label": "2026-03-10",
+        "return": -0.0005553449091778448
+      },
+      {
+        "label": "2026-03-11",
+        "return": -3.9515392933778335e-09
+      },
+      {
+        "label": "2026-03-12",
+        "return": 0.0
+      },
+      {
+        "label": "2026-03-13",
+        "return": 0.0
+      },
+      {
+        "label": "2026-03-14",
+        "return": 0.0
+      },
+      {
+        "label": "2026-03-15",
+        "return": -3.9515392933778335e-09
+      },
+      {
+        "label": "2026-03-16",
+        "return": 0.0029044154482562477
+      },
+      {
+        "label": "2026-03-17",
+        "return": -0.0022471019587867935
+      },
+      {
+        "label": "2026-03-18",
+        "return": 0.0027197256948833792
+      },
+      {
+        "label": "2026-03-19",
+        "return": 0.008944252789816984
+      },
+      {
+        "label": "2026-03-20",
+        "return": -0.0005454519809028012
+      },
+      {
+        "label": "2026-03-21",
+        "return": -0.0007006182014125773
+      },
+      {
+        "label": "2026-03-22",
+        "return": -0.0011604755504176275
+      },
+      {
+        "label": "2026-03-23",
+        "return": 0.013517237471491968
+      },
+      {
+        "label": "2026-03-24",
+        "return": -0.010715811245816017
+      },
+      {
+        "label": "2026-03-25",
+        "return": -0.0038730684736917463
+      },
+      {
+        "label": "2026-03-26",
+        "return": 0.02320468798773147
+      },
+      {
+        "label": "2026-03-27",
+        "return": 0.029152580770233822
+      },
+      {
+        "label": "2026-03-28",
+        "return": 0.0027448036422362816
+      },
+      {
+        "label": "2026-03-29",
+        "return": 0.0
+      },
+      {
+        "label": "2026-03-30",
+        "return": -0.006983893385327129
+      },
+      {
+        "label": "2026-03-31",
+        "return": 0.0
+      },
+      {
+        "label": "2026-04-01",
+        "return": 0.0
+      },
+      {
+        "label": "2026-04-02",
+        "return": -0.004264006541690156
+      },
+      {
+        "label": "2026-04-03",
+        "return": 0.0
+      },
+      {
+        "label": "2026-04-04",
+        "return": 0.0
+      },
+      {
+        "label": "2026-04-05",
+        "return": 0.0
+      },
+      {
+        "label": "2026-04-06",
+        "return": 0.0034176736118903435
+      },
+      {
+        "label": "2026-04-07",
+        "return": 0.08774057427384196
+      },
+      {
+        "label": "2026-04-08",
+        "return": -0.010512900935270903
+      },
+      {
+        "label": "2026-04-09",
+        "return": -2.7780683944220016e-06
+      },
+      {
+        "label": "2026-04-10",
+        "return": -0.0001304258106192256
+      },
+      {
+        "label": "2026-04-11",
+        "return": -0.0024688836947629193
+      },
+      {
+        "label": "2026-04-12",
+        "return": -0.005485551462533212
+      },
+      {
+        "label": "2026-04-13",
+        "return": 0.016889257095784933
+      },
+      {
+        "label": "2026-04-14",
+        "return": -0.005680056015339552
+      },
+      {
+        "label": "2026-04-15",
+        "return": 0.005404872119760151
+      },
+      {
+        "label": "2026-04-16",
+        "return": -0.00031565033579857374
+      },
+      {
+        "label": "2026-04-17",
+        "return": -0.006906487063219034
+      },
+      {
+        "label": "2026-04-18",
+        "return": -0.006024517487224199
+      },
+      {
+        "label": "2026-04-19",
+        "return": -0.0015737801666535196
+      },
+      {
+        "label": "2026-04-20",
+        "return": -0.000924
+      },
+      {
+        "label": "2026-04-21",
+        "return": -0.000924
+      },
+      {
+        "label": "2026-04-22",
+        "return": 0.0
+      },
+      {
+        "label": "2026-04-23",
+        "return": 0.0
+      },
+      {
+        "label": "2026-04-24",
+        "return": 0.0
+      },
+      {
+        "label": "2026-04-25",
+        "return": 0.0
+      },
+      {
+        "label": "2026-04-26",
+        "return": 0.0
+      },
+      {
+        "label": "2026-04-27",
+        "return": 0.0010833629367383545
+      },
+      {
+        "label": "2026-04-28",
+        "return": -0.00036580042821126
+      },
+      {
+        "label": "2026-04-29",
+        "return": 0.0006141014961476036
+      },
+      {
+        "label": "2026-04-30",
+        "return": -0.00301667522760474
+      },
+      {
+        "label": "2026-05-01",
+        "return": 0.0
+      },
+      {
+        "label": "2026-05-02",
+        "return": 0.0
+      },
+      {
+        "label": "2026-05-03",
+        "return": 0.0
+      },
+      {
+        "label": "2026-05-04",
+        "return": -0.0032453877451671343
+      },
+      {
+        "label": "2026-05-05",
+        "return": 0.0027311078897867516
+      },
+      {
+        "label": "2026-05-06",
+        "return": 5.909834873117122e-05
+      },
+      {
+        "label": "2026-05-07",
+        "return": 0.004695839917735374
+      },
+      {
+        "label": "2026-05-08",
+        "return": -0.0026616767412665425
+      },
+      {
+        "label": "2026-05-09",
+        "return": 0.0
+      },
+      {
+        "label": "2026-05-10",
+        "return": -0.000924
+      },
+      {
+        "label": "2026-05-11",
+        "return": -0.015136941476392099
+      },
+      {
+        "label": "2026-05-12",
+        "return": 0.03999967081121382
+      },
+      {
+        "label": "2026-05-13",
+        "return": -0.05127545788507599
+      },
+      {
+        "label": "2026-05-14",
+        "return": -0.04655672643056626
+      },
+      {
+        "label": "2026-05-15",
+        "return": -0.052258296000215324
+      },
+      {
+        "label": "2026-05-16",
+        "return": -0.09323564312549593
+      },
+      {
+        "label": "2026-05-17",
+        "return": -2.307834710224299e-06
+      },
+      {
+        "label": "2026-05-18",
+        "return": 0.004220252924474436
+      },
+      {
+        "label": "2026-05-19",
+        "return": -0.00022196922240594962
+      },
+      {
+        "label": "2026-05-20",
+        "return": -0.00021476982770641682
+      },
+      {
+        "label": "2026-05-21",
+        "return": -1.9172984496465377e-07
+      },
+      {
+        "label": "2026-05-22",
+        "return": 0.001070296997926046
+      },
+      {
+        "label": "2026-05-23",
+        "return": -0.05464114929501136
+      },
+      {
+        "label": "2026-05-24",
+        "return": -0.0015323835407780346
+      },
+      {
+        "label": "2026-05-25",
+        "return": -1.342685389895428e-07
+      },
+      {
+        "label": "2026-05-26",
+        "return": -1.2561452923784565e-07
+      },
+      {
+        "label": "2026-05-27",
+        "return": -5.883394886270166e-11
+      },
+      {
+        "label": "2026-05-28",
+        "return": 0.002268764556910369
+      },
+      {
+        "label": "2026-05-29",
+        "return": -0.0001517390831662291
+      },
+      {
+        "label": "2026-05-30",
+        "return": -0.00020092469009528693
+      },
+      {
+        "label": "2026-05-31",
+        "return": -1.3608229109702106e-08
+      },
+      {
+        "label": "2026-06-01",
+        "return": -0.027913535926667128
+      },
+      {
+        "label": "2026-06-02",
+        "return": 0.127073499299143
+      },
+      {
+        "label": "2026-06-03",
+        "return": 0.007161841863288401
+      },
+      {
+        "label": "2026-06-04",
+        "return": 0.02576106287426251
+      },
+      {
+        "label": "2026-06-05",
+        "return": 0.1118270174149016
+      },
+      {
+        "label": "2026-06-06",
+        "return": -0.00017930060262545078
+      },
+      {
+        "label": "2026-06-07",
+        "return": -0.0032996340567153825
+      },
+      {
+        "label": "2026-06-08",
+        "return": 0.001383571497659561
+      },
+      {
+        "label": "2026-06-09",
+        "return": -0.006354226183480833
+      },
+      {
+        "label": "2026-06-10",
+        "return": -0.0016386551901943487
+      },
+      {
+        "label": "2026-06-11",
+        "return": 0.00017964716961949665
+      },
+      {
+        "label": "2026-06-12",
+        "return": -5.649236475310727e-09
+      },
+      {
+        "label": "2026-06-13",
+        "return": -1.6679931731131346e-05
+      },
+      {
+        "label": "2026-06-14",
+        "return": -1.492795443947277e-08
+      },
+      {
+        "label": "2026-06-15",
+        "return": 0.009924616769465693
+      },
+      {
+        "label": "2026-06-16",
+        "return": -0.0015005322096434198
+      },
+      {
+        "label": "2026-06-17",
+        "return": -0.0060354143205347535
+      },
+      {
+        "label": "2026-06-18",
+        "return": 0.006456030782778143
+      },
+      {
+        "label": "2026-06-19",
+        "return": 0.002820712400425212
+      },
+      {
+        "label": "2026-06-20",
+        "return": -1.0961419304436199e-07
+      },
+      {
+        "label": "2026-06-21",
+        "return": 0.0
+      },
+      {
+        "label": "2026-06-22",
+        "return": -5.274680117351503e-06
+      },
+      {
+        "label": "2026-06-23",
+        "return": 0.0004620116297520549
+      },
+      {
+        "label": "2026-06-24",
+        "return": -0.014180056071104733
+      },
+      {
+        "label": "2026-06-25",
+        "return": 0.05517846275607014
+      },
+      {
+        "label": "2026-06-26",
+        "return": -0.020269167264892363
+      },
+      {
+        "label": "2026-06-27",
+        "return": 0.0
+      },
+      {
+        "label": "2026-06-28",
+        "return": 0.0
+      },
+      {
+        "label": "2026-06-29",
+        "return": -0.001994382879551572
+      },
+      {
+        "label": "2026-06-30",
+        "return": -0.009165249806087628
+      },
+      {
+        "label": "2026-07-01",
+        "return": 0.007516121487930266
+      },
+      {
+        "label": "2026-07-02",
+        "return": 0.0014657583577317656
+      },
+      {
+        "label": "2026-07-03",
+        "return": 0.007033235743889043
+      },
+      {
+        "label": "2026-07-04",
+        "return": 0.003597355600119693
+      },
+      {
+        "label": "2026-07-05",
+        "return": 0.0
+      },
+      {
+        "label": "2026-07-06",
+        "return": 0.0
+      },
+      {
+        "label": "2026-07-07",
+        "return": 0.0
+      },
+      {
+        "label": "2026-07-08",
+        "return": 0.0
+      },
+      {
+        "label": "2026-07-09",
+        "return": 0.0
+      },
+      {
+        "label": "2026-07-10",
+        "return": 0.0
+      },
+      {
+        "label": "2026-07-11",
+        "return": 0.0
+      },
+      {
+        "label": "2026-07-12",
+        "return": 1.019559097604599e-06
+      },
+      {
+        "label": "2026-07-13",
+        "return": 0.008072497185252183
+      },
+      {
+        "label": "2026-07-14",
+        "return": -0.028552654152208385
+      },
+      {
+        "label": "2026-07-15",
+        "return": 0.0005128123383221743
+      },
+      {
+        "label": "2026-07-16",
+        "return": -0.00612288608257498
+      },
+      {
+        "label": "2026-07-17",
+        "return": -0.0013761861446273066
+      },
+      {
+        "label": "2026-07-18",
+        "return": 0.0
+      },
+      {
+        "label": "2026-07-19",
+        "return": 0.0
+      },
+      {
+        "label": "2026-07-20",
+        "return": 0.0
+      },
+      {
+        "label": "2026-07-21",
+        "return": 0.0
+      },
+      {
+        "label": "2026-07-22",
+        "return": 0.0
+      },
+      {
+        "label": "2026-07-23",
+        "return": 0.0
+      },
+      {
+        "label": "2026-07-24",
+        "return": -0.0010156857921051845
+      },
+      {
+        "label": "2026-07-25",
+        "return": -0.009692701587391378
+      },
+      {
+        "label": "2026-07-26",
+        "return": -0.032725442273084486
+      },
+      {
+        "label": "2026-07-27",
+        "return": -0.005737468258361431
+      },
+      {
+        "label": "2026-07-28",
+        "return": -0.0011640182991520507
+      },
+      {
+        "label": "2026-07-29",
+        "return": -0.00015110655668068115
+      },
+      {
+        "label": "2026-07-30",
+        "return": -0.002077756404538557
+      },
+      {
+        "label": "2026-07-31",
+        "return": -0.01867879631381179
+      },
+      {
+        "label": "2026-08-01",
+        "return": -0.0017565622582691857
+      },
+      {
+        "label": "2026-08-02",
+        "return": -0.002634989821069667
+      },
+      {
+        "label": "2026-08-03",
+        "return": -0.006968476612711155
+      },
+      {
+        "label": "2026-08-04",
+        "return": 0.010334736449681449
+      },
+      {
+        "label": "2026-08-05",
+        "return": 0.0020814003010281644
+      },
+      {
+        "label": "2026-08-06",
+        "return": -0.001143385073714368
+      },
+      {
+        "label": "2026-08-07",
+        "return": 0.0019316540379769264
+      },
+      {
+        "label": "2026-08-08",
+        "return": 0.0
+      },
+      {
+        "label": "2026-08-09",
+        "return": 0.0
+      },
+      {
+        "label": "2026-08-10",
+        "return": 0.0015993408397714727
+      }
+    ],
+    "monthly_returns": [
+      {
+        "label": "2026-01",
+        "return": 0.5290520504718844
+      },
+      {
+        "label": "2026-02",
+        "return": 0.6117159967189799
+      },
+      {
+        "label": "2026-03",
+        "return": 0.21011196213393163
+      },
+      {
+        "label": "2026-04",
+        "return": 0.06460747613096807
+      },
+      {
+        "label": "2026-05",
+        "return": -0.24287624066519933
+      },
+      {
+        "label": "2026-06",
+        "return": 0.2708834477611725
+      },
+      {
+        "label": "2026-07",
+        "return": -0.07726693895942678
+      },
+      {
+        "label": "2026-08",
+        "return": 0.0033609413391400373
+      }
+    ],
+    "positive_month_rate": 0.75,
+    "target_25pct_month_rate": 0.375,
+    "worst_month": -0.24287624066519933
+  },
+  "stress_confirmation": {
+    "initial_equity": 100000.0,
+    "final_equity": 241332.31101964283,
+    "net_return": 1.413323110196428,
+    "max_drawdown": -0.32488483343219715,
+    "bankrupt": false,
+    "daily_returns": [],
+    "monthly_returns": [
+      {
+        "label": "2026-01",
+        "return": 0.4740250906492845
+      },
+      {
+        "label": "2026-02",
+        "return": 0.5859612875282568
+      },
+      {
+        "label": "2026-03",
+        "return": 0.18473092324254275
+      },
+      {
+        "label": "2026-04",
+        "return": 0.05361807937861952
+      },
+      {
+        "label": "2026-05",
+        "return": -0.28001624683656967
+      },
+      {
+        "label": "2026-06",
+        "return": 0.26816897561413156
+      },
+      {
+        "label": "2026-07",
+        "return": -0.09185801572904116
+      },
+      {
+        "label": "2026-08",
+        "return": -0.0026180599417009896
+      }
+    ],
+    "positive_month_rate": 0.625,
+    "target_25pct_month_rate": 0.375,
+    "worst_month": -0.28001624683656967,
+    "target_15pct_month_rate": 0.5
+  },
+  "confirmation_neighborhood_diagnostic": {
+    "used_for_selection": false,
+    "configuration_count": 20,
+    "meeting_gate_count": 3,
+    "configurations": [
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.6,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 282834.0694885513,
+          "net_return": 1.828340694885513,
+          "max_drawdown": -0.28189380073820774,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.5290520504718844
+            },
+            {
+              "label": "2026-02",
+              "return": 0.6117159967189799
+            },
+            {
+              "label": "2026-03",
+              "return": 0.21011196213393163
+            },
+            {
+              "label": "2026-04",
+              "return": 0.06460747613096807
+            },
+            {
+              "label": "2026-05",
+              "return": -0.24287624066519933
+            },
+            {
+              "label": "2026-06",
+              "return": 0.2708834477611725
+            },
+            {
+              "label": "2026-07",
+              "return": -0.07726693895942678
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0033609413391400373
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.375,
+          "worst_month": -0.24287624066519933,
+          "target_15pct_month_rate": 0.5
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 241332.31101964283,
+          "net_return": 1.413323110196428,
+          "max_drawdown": -0.32488483343219715,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.4740250906492845
+            },
+            {
+              "label": "2026-02",
+              "return": 0.5859612875282568
+            },
+            {
+              "label": "2026-03",
+              "return": 0.18473092324254275
+            },
+            {
+              "label": "2026-04",
+              "return": 0.05361807937861952
+            },
+            {
+              "label": "2026-05",
+              "return": -0.28001624683656967
+            },
+            {
+              "label": "2026-06",
+              "return": 0.26816897561413156
+            },
+            {
+              "label": "2026-07",
+              "return": -0.09185801572904116
+            },
+            {
+              "label": "2026-08",
+              "return": -0.0026180599417009896
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.375,
+          "worst_month": -0.28001624683656967,
+          "target_15pct_month_rate": 0.5
+        },
+        "meets_confirmation_gates": true
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.5,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 259709.01151099094,
+          "net_return": 1.5970901151099093,
+          "max_drawdown": -0.28189380073820774,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.5290520504718844
+            },
+            {
+              "label": "2026-02",
+              "return": 0.4799389942705653
+            },
+            {
+              "label": "2026-03",
+              "return": 0.21011196213393163
+            },
+            {
+              "label": "2026-04",
+              "return": 0.06460747613096807
+            },
+            {
+              "label": "2026-05",
+              "return": -0.24287624066519933
+            },
+            {
+              "label": "2026-06",
+              "return": 0.2708834477611725
+            },
+            {
+              "label": "2026-07",
+              "return": -0.07726693895942678
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0033609413391400373
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.375,
+          "worst_month": -0.24287624066519933,
+          "target_15pct_month_rate": 0.5
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 221962.11047204773,
+          "net_return": 1.2196211047204775,
+          "max_drawdown": -0.32488483343219715,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.4740250906492845
+            },
+            {
+              "label": "2026-02",
+              "return": 0.4586663220495398
+            },
+            {
+              "label": "2026-03",
+              "return": 0.18473092324254275
+            },
+            {
+              "label": "2026-04",
+              "return": 0.05361807937861952
+            },
+            {
+              "label": "2026-05",
+              "return": -0.28001624683656967
+            },
+            {
+              "label": "2026-06",
+              "return": 0.26816897561413156
+            },
+            {
+              "label": "2026-07",
+              "return": -0.09185801572904116
+            },
+            {
+              "label": "2026-08",
+              "return": -0.0026180599417009896
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.375,
+          "worst_month": -0.28001624683656967,
+          "target_15pct_month_rate": 0.5
+        },
+        "meets_confirmation_gates": true
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 314924.34362713905,
+          "net_return": 2.1492434362713904,
+          "max_drawdown": -0.28189380073820774,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.5690660893392407
+            },
+            {
+              "label": "2026-02",
+              "return": 0.7497373516002648
+            },
+            {
+              "label": "2026-03",
+              "return": 0.209620049250692
+            },
+            {
+              "label": "2026-04",
+              "return": 0.06460747613096807
+            },
+            {
+              "label": "2026-05",
+              "return": -0.24287624066519933
+            },
+            {
+              "label": "2026-06",
+              "return": 0.270730628823983
+            },
+            {
+              "label": "2026-07",
+              "return": -0.07726693895942678
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0033609413391400373
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.375,
+          "worst_month": -0.24287624066519933,
+          "target_15pct_month_rate": 0.5
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 268277.8051667429,
+          "net_return": 1.682778051667429,
+          "max_drawdown": -0.32488483343219715,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.5130016098313461
+            },
+            {
+              "label": "2026-02",
+              "return": 0.7187526834315394
+            },
+            {
+              "label": "2026-03",
+              "return": 0.1841277562471519
+            },
+            {
+              "label": "2026-04",
+              "return": 0.05361807937861952
+            },
+            {
+              "label": "2026-05",
+              "return": -0.28001624683656967
+            },
+            {
+              "label": "2026-06",
+              "return": 0.26797952114792345
+            },
+            {
+              "label": "2026-07",
+              "return": -0.09185801572904116
+            },
+            {
+              "label": "2026-08",
+              "return": -0.0026180599417009896
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.375,
+          "worst_month": -0.28001624683656967,
+          "target_15pct_month_rate": 0.5
+        },
+        "meets_confirmation_gates": true
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.7,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.5,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 214947.4085337467,
+          "net_return": 1.149474085337467,
+          "max_drawdown": -0.25561931210829886,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.40472646627807807
+            },
+            {
+              "label": "2026-02",
+              "return": 0.4928668508052418
+            },
+            {
+              "label": "2026-03",
+              "return": 0.1609170862298464
+            },
+            {
+              "label": "2026-04",
+              "return": 0.056337418773953596
+            },
+            {
+              "label": "2026-05",
+              "return": -0.226917091087754
+            },
+            {
+              "label": "2026-06",
+              "return": 0.15639184882430385
+            },
+            {
+              "label": "2026-07",
+              "return": -0.06780840817276426
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0029498815145595973
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.226917091087754,
+          "target_15pct_month_rate": 0.5
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 186469.00109311807,
+          "net_return": 0.8646900109311807,
+          "max_drawdown": -0.2964096375275404,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.3575848070320694
+            },
+            {
+              "label": "2026-02",
+              "return": 0.4725393784058909
+            },
+            {
+              "label": "2026-03",
+              "return": 0.14142940665778067
+            },
+            {
+              "label": "2026-04",
+              "return": 0.04636737836757544
+            },
+            {
+              "label": "2026-05",
+              "return": -0.2619557647121013
+            },
+            {
+              "label": "2026-06",
+              "return": 0.1536855724063185
+            },
+            {
+              "label": "2026-07",
+              "return": -0.08069333833189755
+            },
+            {
+              "label": "2026-08",
+              "return": -0.002278690613794147
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.2619557647121013,
+          "target_15pct_month_rate": 0.375
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.75,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.5,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 215407.6203419173,
+          "net_return": 1.1540762034191732,
+          "max_drawdown": -0.25609034666968866,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.4005167136738723
+            },
+            {
+              "label": "2026-02",
+              "return": 0.4921667860094753
+            },
+            {
+              "label": "2026-03",
+              "return": 0.16149888812066052
+            },
+            {
+              "label": "2026-04",
+              "return": 0.06083311407138807
+            },
+            {
+              "label": "2026-05",
+              "return": -0.22524365867558419
+            },
+            {
+              "label": "2026-06",
+              "return": 0.16054795880126396
+            },
+            {
+              "label": "2026-07",
+              "return": -0.07254480146284659
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0031557350776309687
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.22524365867558419,
+          "target_15pct_month_rate": 0.5
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 186541.04270170946,
+          "net_return": 0.8654104270170946,
+          "max_drawdown": -0.29615970357131033,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.352912860849607
+            },
+            {
+              "label": "2026-02",
+              "return": 0.4719373634186225
+            },
+            {
+              "label": "2026-03",
+              "return": 0.14203768019360238
+            },
+            {
+              "label": "2026-04",
+              "return": 0.05048275009245321
+            },
+            {
+              "label": "2026-05",
+              "return": -0.2600114153732002
+            },
+            {
+              "label": "2026-06",
+              "return": 0.1576451567325648
+            },
+            {
+              "label": "2026-07",
+              "return": -0.08628692522871763
+            },
+            {
+              "label": "2026-08",
+              "return": -0.002447944133348543
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.2600114153732002,
+          "target_15pct_month_rate": 0.375
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.7,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.6,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 242723.35168947763,
+          "net_return": 1.427233516894776,
+          "max_drawdown": -0.25561931210829886,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.45386697688962113
+            },
+            {
+              "label": "2026-02",
+              "return": 0.6258400097456263
+            },
+            {
+              "label": "2026-03",
+              "return": 0.16155170760980778
+            },
+            {
+              "label": "2026-04",
+              "return": 0.056337418773953596
+            },
+            {
+              "label": "2026-05",
+              "return": -0.226917091087754
+            },
+            {
+              "label": "2026-06",
+              "return": 0.1578635570464202
+            },
+            {
+              "label": "2026-07",
+              "return": -0.06780840817276426
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0029498815145595973
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.226917091087754,
+          "target_15pct_month_rate": 0.5
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 209993.45832998463,
+          "net_return": 1.0999345832998462,
+          "max_drawdown": -0.2964096375275404,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.4055870829257634
+            },
+            {
+              "label": "2026-02",
+              "return": 0.6009405266113474
+            },
+            {
+              "label": "2026-03",
+              "return": 0.1408262845805442
+            },
+            {
+              "label": "2026-04",
+              "return": 0.04636737836757544
+            },
+            {
+              "label": "2026-05",
+              "return": -0.2619557647121013
+            },
+            {
+              "label": "2026-06",
+              "return": 0.15482732639310676
+            },
+            {
+              "label": "2026-07",
+              "return": -0.08069333833189755
+            },
+            {
+              "label": "2026-08",
+              "return": -0.002278690613794147
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.2619557647121013,
+          "target_15pct_month_rate": 0.375
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.5,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 216467.1812401841,
+          "net_return": 1.164671812401841,
+          "max_drawdown": -0.25659691222796205,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.40070978882705466
+            },
+            {
+              "label": "2026-02",
+              "return": 0.49148708159805893
+            },
+            {
+              "label": "2026-03",
+              "return": 0.16206559914821453
+            },
+            {
+              "label": "2026-04",
+              "return": 0.06530376468858996
+            },
+            {
+              "label": "2026-05",
+              "return": -0.2236359887860213
+            },
+            {
+              "label": "2026-06",
+              "return": 0.1644520986656955
+            },
+            {
+              "label": "2026-07",
+              "return": -0.07726693895942678
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0033609413391400373
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.2236359887860213,
+          "target_15pct_month_rate": 0.5
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 187229.7902428453,
+          "net_return": 0.872297902428453,
+          "max_drawdown": -0.2958600838808474,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.35321236874770545
+            },
+            {
+              "label": "2026-02",
+              "return": 0.4713565156700318
+            },
+            {
+              "label": "2026-03",
+              "return": 0.1426315270673848
+            },
+            {
+              "label": "2026-04",
+              "return": 0.05472968622560593
+            },
+            {
+              "label": "2026-05",
+              "return": -0.25814102050724974
+            },
+            {
+              "label": "2026-06",
+              "return": 0.16120017045807242
+            },
+            {
+              "label": "2026-07",
+              "return": -0.09185801572904116
+            },
+            {
+              "label": "2026-08",
+              "return": -0.0026180599417009896
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.25814102050724974,
+          "target_15pct_month_rate": 0.375
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 281979.32598817145,
+          "net_return": 1.8197932598817148,
+          "max_drawdown": -0.25696262232196293,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.4987050135565789
+            },
+            {
+              "label": "2026-02",
+              "return": 0.7626785049766024
+            },
+            {
+              "label": "2026-03",
+              "return": 0.16341529911287386
+            },
+            {
+              "label": "2026-04",
+              "return": 0.06530376468858996
+            },
+            {
+              "label": "2026-05",
+              "return": -0.22361635265996993
+            },
+            {
+              "label": "2026-06",
+              "return": 0.19814702948109197
+            },
+            {
+              "label": "2026-07",
+              "return": -0.07726693895942678
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0033609413391400373
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.22361635265996993,
+          "target_15pct_month_rate": 0.5
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 242501.74460501797,
+          "net_return": 1.4250174460501799,
+          "max_drawdown": -0.29634871987491146,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.44889774583514525
+            },
+            {
+              "label": "2026-02",
+              "return": 0.7326796622337831
+            },
+            {
+              "label": "2026-03",
+              "return": 0.14126727373214404
+            },
+            {
+              "label": "2026-04",
+              "return": 0.05472968622560593
+            },
+            {
+              "label": "2026-05",
+              "return": -0.2582107631886135
+            },
+            {
+              "label": "2026-06",
+              "return": 0.1943580405484927
+            },
+            {
+              "label": "2026-07",
+              "return": -0.09185801572904116
+            },
+            {
+              "label": "2026-08",
+              "return": -0.0026180599417009896
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.2582107631886135,
+          "target_15pct_month_rate": 0.375
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.75,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.6,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 244216.56521335538,
+          "net_return": 1.442165652133554,
+          "max_drawdown": -0.25609034666968866,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.4495087177857033
+            },
+            {
+              "label": "2026-02",
+              "return": 0.6249989479711427
+            },
+            {
+              "label": "2026-03",
+              "return": 0.1621428186472696
+            },
+            {
+              "label": "2026-04",
+              "return": 0.06083311407138807
+            },
+            {
+              "label": "2026-05",
+              "return": -0.22524365867558419
+            },
+            {
+              "label": "2026-06",
+              "return": 0.1667241635175066
+            },
+            {
+              "label": "2026-07",
+              "return": -0.07254480146284659
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0031557350776309687
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.22524365867558419,
+          "target_15pct_month_rate": 0.5
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 210904.3481295918,
+          "net_return": 1.109043481295918,
+          "max_drawdown": -0.29615970357131033,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.40074735337194833
+            },
+            {
+              "label": "2026-02",
+              "return": 0.6002195572961386
+            },
+            {
+              "label": "2026-03",
+              "return": 0.14144207381792867
+            },
+            {
+              "label": "2026-04",
+              "return": 0.05048275009245321
+            },
+            {
+              "label": "2026-05",
+              "return": -0.2600114153732002
+            },
+            {
+              "label": "2026-06",
+              "return": 0.16341034013669123
+            },
+            {
+              "label": "2026-07",
+              "return": -0.08628692522871763
+            },
+            {
+              "label": "2026-08",
+              "return": -0.002447944133348543
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.2600114153732002,
+          "target_15pct_month_rate": 0.375
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.75,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 278558.85656747804,
+          "net_return": 1.7855885656747805,
+          "max_drawdown": -0.2562789412993414,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.4985007218975342
+            },
+            {
+              "label": "2026-02",
+              "return": 0.7636784832673558
+            },
+            {
+              "label": "2026-03",
+              "return": 0.16285618837573354
+            },
+            {
+              "label": "2026-04",
+              "return": 0.06083311407138807
+            },
+            {
+              "label": "2026-05",
+              "return": -0.22523263868325036
+            },
+            {
+              "label": "2026-06",
+              "return": 0.18531806846895738
+            },
+            {
+              "label": "2026-07",
+              "return": -0.07254480146284659
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0031557350776309687
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.22523263868325036,
+          "target_15pct_month_rate": 0.5
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 239847.80040012617,
+          "net_return": 1.3984780040012617,
+          "max_drawdown": -0.2964197582143344,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.4485818458942897
+            },
+            {
+              "label": "2026-02",
+              "return": 0.7335290025691247
+            },
+            {
+              "label": "2026-03",
+              "return": 0.14067812804151186
+            },
+            {
+              "label": "2026-04",
+              "return": 0.05048275009245321
+            },
+            {
+              "label": "2026-05",
+              "return": -0.26005580600242884
+            },
+            {
+              "label": "2026-06",
+              "return": 0.18185766454918975
+            },
+            {
+              "label": "2026-07",
+              "return": -0.08628692522871763
+            },
+            {
+              "label": "2026-08",
+              "return": -0.002447944133348543
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.26005580600242884,
+          "target_15pct_month_rate": 0.375
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-540-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 540,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.02,
+          "minimum_exposure": 0.6,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 246422.23104055267,
+          "net_return": 1.4642223104055265,
+          "max_drawdown": -0.25659691222796205,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.4497074011918168
+            },
+            {
+              "label": "2026-02",
+              "return": 0.6241799367736269
+            },
+            {
+              "label": "2026-03",
+              "return": 0.16271807006394756
+            },
+            {
+              "label": "2026-04",
+              "return": 0.06530376468858996
+            },
+            {
+              "label": "2026-05",
+              "return": -0.2236359887860213
+            },
+            {
+              "label": "2026-06",
+              "return": 0.17548972258661422
+            },
+            {
+              "label": "2026-07",
+              "return": -0.07726693895942678
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0033609413391400373
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.2236359887860213,
+          "target_15pct_month_rate": 0.5
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 212564.58211994887,
+          "net_return": 1.1256458211994889,
+          "max_drawdown": -0.2958600838808474,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.4010550572914254
+            },
+            {
+              "label": "2026-02",
+              "return": 0.5995214428037038
+            },
+            {
+              "label": "2026-03",
+              "return": 0.14204247397008352
+            },
+            {
+              "label": "2026-04",
+              "return": 0.05472968622560593
+            },
+            {
+              "label": "2026-05",
+              "return": -0.25814102050724974
+            },
+            {
+              "label": "2026-06",
+              "return": 0.171886623407972
+            },
+            {
+              "label": "2026-07",
+              "return": -0.09185801572904116
+            },
+            {
+              "label": "2026-08",
+              "return": -0.0026180599417009896
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.25,
+          "worst_month": -0.25814102050724974,
+          "target_15pct_month_rate": 0.375
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-180-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 180,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 299311.70955239696,
+          "net_return": 1.9931170955239694,
+          "max_drawdown": -0.2403851827880926,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.5664311654421835
+            },
+            {
+              "label": "2026-02",
+              "return": 0.8128226785427973
+            },
+            {
+              "label": "2026-03",
+              "return": 0.10673709951618827
+            },
+            {
+              "label": "2026-04",
+              "return": 0.06402281475585767
+            },
+            {
+              "label": "2026-05",
+              "return": -0.19171897844421193
+            },
+            {
+              "label": "2026-06",
+              "return": 0.2994797598098966
+            },
+            {
+              "label": "2026-07",
+              "return": -0.1434505765250582
+            },
+            {
+              "label": "2026-08",
+              "return": -0.0051048132129160465
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.375,
+          "worst_month": -0.19171897844421193,
+          "target_15pct_month_rate": 0.375
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 257061.02918354794,
+          "net_return": 1.5706102918354794,
+          "max_drawdown": -0.2720822105849142,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.5075597061611692
+            },
+            {
+              "label": "2026-02",
+              "return": 0.7974862257399405
+            },
+            {
+              "label": "2026-03",
+              "return": 0.09015278671539269
+            },
+            {
+              "label": "2026-04",
+              "return": 0.052371021546970355
+            },
+            {
+              "label": "2026-05",
+              "return": -0.2207980814467365
+            },
+            {
+              "label": "2026-06",
+              "return": 0.29737561428603465
+            },
+            {
+              "label": "2026-07",
+              "return": -0.1697239500919875
+            },
+            {
+              "label": "2026-08",
+              "return": -0.014851624535558402
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.375,
+          "worst_month": -0.2207980814467365,
+          "target_15pct_month_rate": 0.375
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-180-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 180,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.6,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 269175.6814928429,
+          "net_return": 1.6917568149284288,
+          "max_drawdown": -0.2403851827880926,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.526481906051268
+            },
+            {
+              "label": "2026-02",
+              "return": 0.6727662682840204
+            },
+            {
+              "label": "2026-03",
+              "return": 0.10673709951618827
+            },
+            {
+              "label": "2026-04",
+              "return": 0.06402281475585767
+            },
+            {
+              "label": "2026-05",
+              "return": -0.19171897844421193
+            },
+            {
+              "label": "2026-06",
+              "return": 0.2996348574488688
+            },
+            {
+              "label": "2026-07",
+              "return": -0.1434505765250582
+            },
+            {
+              "label": "2026-08",
+              "return": -0.0051048132129160465
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.375,
+          "worst_month": -0.19171897844421193,
+          "target_15pct_month_rate": 0.375
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 231346.36477661078,
+          "net_return": 1.3134636477661077,
+          "max_drawdown": -0.2720822105849142,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.4687210274500859
+            },
+            {
+              "label": "2026-02",
+              "return": 0.6602092734908902
+            },
+            {
+              "label": "2026-03",
+              "return": 0.09015278671539269
+            },
+            {
+              "label": "2026-04",
+              "return": 0.052371021546970355
+            },
+            {
+              "label": "2026-05",
+              "return": -0.2207980814467365
+            },
+            {
+              "label": "2026-06",
+              "return": 0.297567957687016
+            },
+            {
+              "label": "2026-07",
+              "return": -0.1697239500919875
+            },
+            {
+              "label": "2026-08",
+              "return": -0.014851624535558402
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.375,
+          "worst_month": -0.2207980814467365,
+          "target_15pct_month_rate": 0.375
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "eth_perp-180-top_retail_spread",
+            "asset": "eth_perp",
+            "window_4h": 180,
+            "feature": "top_retail_spread"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.8,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.5,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 247627.07032436325,
+          "net_return": 1.4762707032436326,
+          "max_drawdown": -0.2403851827880926,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.526481906051268
+            },
+            {
+              "label": "2026-02",
+              "return": 0.5388545059320434
+            },
+            {
+              "label": "2026-03",
+              "return": 0.10673709951618827
+            },
+            {
+              "label": "2026-04",
+              "return": 0.06402281475585767
+            },
+            {
+              "label": "2026-05",
+              "return": -0.19171897844421193
+            },
+            {
+              "label": "2026-06",
+              "return": 0.2996348574488688
+            },
+            {
+              "label": "2026-07",
+              "return": -0.1434505765250582
+            },
+            {
+              "label": "2026-08",
+              "return": -0.0051048132129160465
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.375,
+          "worst_month": -0.19171897844421193,
+          "target_15pct_month_rate": 0.375
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 213005.97581570267,
+          "net_return": 1.1300597581570266,
+          "max_drawdown": -0.2720822105849142,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.4687210274500859
+            },
+            {
+              "label": "2026-02",
+              "return": 0.5285932705261098
+            },
+            {
+              "label": "2026-03",
+              "return": 0.09015278671539269
+            },
+            {
+              "label": "2026-04",
+              "return": 0.052371021546970355
+            },
+            {
+              "label": "2026-05",
+              "return": -0.2207980814467365
+            },
+            {
+              "label": "2026-06",
+              "return": 0.297567957687016
+            },
+            {
+              "label": "2026-07",
+              "return": -0.1697239500919875
+            },
+            {
+              "label": "2026-08",
+              "return": -0.014851624535558402
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.375,
+          "worst_month": -0.2207980814467365,
+          "target_15pct_month_rate": 0.375
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "btc_perp-540-top_account_crowding",
+            "asset": "btc_perp",
+            "window_4h": 540,
+            "feature": "top_account_crowding"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.7,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.025,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 154453.25402575356,
+          "net_return": 0.5445325402575355,
+          "max_drawdown": -0.20123921338601722,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.04430310627235474
+            },
+            {
+              "label": "2026-02",
+              "return": 0.2265675429267257
+            },
+            {
+              "label": "2026-03",
+              "return": 0.03867063075438226
+            },
+            {
+              "label": "2026-04",
+              "return": 0.16018296153553177
+            },
+            {
+              "label": "2026-05",
+              "return": -0.13256598797112076
+            },
+            {
+              "label": "2026-06",
+              "return": 0.23382575030760097
+            },
+            {
+              "label": "2026-07",
+              "return": -0.06780840817276426
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0029498815145595973
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.0,
+          "worst_month": -0.13256598797112076,
+          "target_15pct_month_rate": 0.375
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 134925.41509165568,
+          "net_return": 0.3492541509165568,
+          "max_drawdown": -0.2278915219519097,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.0006789236287695278
+            },
+            {
+              "label": "2026-02",
+              "return": 0.21707102911864878
+            },
+            {
+              "label": "2026-03",
+              "return": 0.017288623736866966
+            },
+            {
+              "label": "2026-04",
+              "return": 0.14665575590890156
+            },
+            {
+              "label": "2026-05",
+              "return": -0.1599490495988526
+            },
+            {
+              "label": "2026-06",
+              "return": 0.23262382950645227
+            },
+            {
+              "label": "2026-07",
+              "return": -0.08069333833189755
+            },
+            {
+              "label": "2026-08",
+              "return": -0.002278690613794147
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.0,
+          "worst_month": -0.1599490495988526,
+          "target_15pct_month_rate": 0.25
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "btc_perp-540-top_account_crowding",
+            "asset": "btc_perp",
+            "window_4h": 540,
+            "feature": "top_account_crowding"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.6,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.025,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 144438.8486946533,
+          "net_return": 0.44438848694653293,
+          "max_drawdown": -0.20123921338601722,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.008612982495974692
+            },
+            {
+              "label": "2026-02",
+              "return": 0.1915038879094321
+            },
+            {
+              "label": "2026-03",
+              "return": 0.02494269999029712
+            },
+            {
+              "label": "2026-04",
+              "return": 0.15888983656512887
+            },
+            {
+              "label": "2026-05",
+              "return": -0.12476646215808697
+            },
+            {
+              "label": "2026-06",
+              "return": 0.22456645329026634
+            },
+            {
+              "label": "2026-07",
+              "return": -0.05829283804130107
+            },
+            {
+              "label": "2026-08",
+              "return": 0.002536232730364629
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.0,
+          "worst_month": -0.12476646215808697,
+          "target_15pct_month_rate": 0.375
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 126949.24430756987,
+          "net_return": 0.26949244307569864,
+          "max_drawdown": -0.2190229353584688,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": -0.032605271865683
+            },
+            {
+              "label": "2026-02",
+              "return": 0.18295201610113243
+            },
+            {
+              "label": "2026-03",
+              "return": 0.004111579438165831
+            },
+            {
+              "label": "2026-04",
+              "return": 0.14571894064187776
+            },
+            {
+              "label": "2026-05",
+              "return": -0.15164847227837303
+            },
+            {
+              "label": "2026-06",
+              "return": 0.22383493771616006
+            },
+            {
+              "label": "2026-07",
+              "return": -0.06943852388529875
+            },
+            {
+              "label": "2026-08",
+              "return": -0.001942772716876425
+            }
+          ],
+          "positive_month_rate": 0.5,
+          "target_25pct_month_rate": 0.0,
+          "worst_month": -0.15164847227837303,
+          "target_15pct_month_rate": 0.25
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "btc_perp-540-top_account_crowding",
+            "asset": "btc_perp",
+            "window_4h": 540,
+            "feature": "top_account_crowding"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.6,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 148687.84730909832,
+          "net_return": 0.48687847309098314,
+          "max_drawdown": -0.20123921338601722,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.025893503877540275
+            },
+            {
+              "label": "2026-02",
+              "return": 0.1914417185522207
+            },
+            {
+              "label": "2026-03",
+              "return": 0.02494269999029712
+            },
+            {
+              "label": "2026-04",
+              "return": 0.15888983656512887
+            },
+            {
+              "label": "2026-05",
+              "return": -0.1295241410485526
+            },
+            {
+              "label": "2026-06",
+              "return": 0.24619489628673744
+            },
+            {
+              "label": "2026-07",
+              "return": -0.05829283804130107
+            },
+            {
+              "label": "2026-08",
+              "return": 0.002536232730364629
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.0,
+          "worst_month": -0.1295241410485526,
+          "target_15pct_month_rate": 0.375
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 130423.2349348579,
+          "net_return": 0.30423234934857896,
+          "max_drawdown": -0.22668917891459517,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": -0.01673234083344718
+            },
+            {
+              "label": "2026-02",
+              "return": 0.1828197286328827
+            },
+            {
+              "label": "2026-03",
+              "return": 0.004111579438165831
+            },
+            {
+              "label": "2026-04",
+              "return": 0.14571894064187776
+            },
+            {
+              "label": "2026-05",
+              "return": -0.15698707340313353
+            },
+            {
+              "label": "2026-06",
+              "return": 0.24500139446607958
+            },
+            {
+              "label": "2026-07",
+              "return": -0.06943852388529875
+            },
+            {
+              "label": "2026-08",
+              "return": -0.001942772716876425
+            }
+          ],
+          "positive_month_rate": 0.5,
+          "target_25pct_month_rate": 0.0,
+          "worst_month": -0.15698707340313353,
+          "target_15pct_month_rate": 0.25
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "btc_perp-540-top_account_crowding",
+            "asset": "btc_perp",
+            "window_4h": 540,
+            "feature": "top_account_crowding"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.7,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.7,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 162179.96459837857,
+          "net_return": 0.6217996459837858,
+          "max_drawdown": -0.20797257782859577,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.05972729436694339
+            },
+            {
+              "label": "2026-02",
+              "return": 0.22652727597115488
+            },
+            {
+              "label": "2026-03",
+              "return": 0.03867063075438226
+            },
+            {
+              "label": "2026-04",
+              "return": 0.16018296153553177
+            },
+            {
+              "label": "2026-05",
+              "return": -0.13804588617215802
+            },
+            {
+              "label": "2026-06",
+              "return": 0.2848516188270808
+            },
+            {
+              "label": "2026-07",
+              "return": -0.06780840817276426
+            },
+            {
+              "label": "2026-08",
+              "return": 0.0029498815145595973
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.125,
+          "worst_month": -0.13804588617215802,
+          "target_15pct_month_rate": 0.375
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 141461.66954996504,
+          "net_return": 0.41461669549965036,
+          "max_drawdown": -0.2366752197458331,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.014629543725382384
+            },
+            {
+              "label": "2026-02",
+              "return": 0.2169853930465817
+            },
+            {
+              "label": "2026-03",
+              "return": 0.017288623736866966
+            },
+            {
+              "label": "2026-04",
+              "return": 0.14665575590890156
+            },
+            {
+              "label": "2026-05",
+              "return": -0.1660783205228785
+            },
+            {
+              "label": "2026-06",
+              "return": 0.28402579106218334
+            },
+            {
+              "label": "2026-07",
+              "return": -0.08069333833189755
+            },
+            {
+              "label": "2026-08",
+              "return": -0.002278690613794147
+            }
+          ],
+          "positive_month_rate": 0.625,
+          "target_25pct_month_rate": 0.125,
+          "worst_month": -0.1660783205228785,
+          "target_15pct_month_rate": 0.25
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "btc_perp-540-top_account_crowding",
+            "asset": "btc_perp",
+            "window_4h": 540,
+            "feature": "top_account_crowding"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.6,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.5,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 146607.34950823087,
+          "net_return": 0.4660734950823088,
+          "max_drawdown": -0.20123921338601722,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.025893503877540275
+            },
+            {
+              "label": "2026-02",
+              "return": 0.17236754299986207
+            },
+            {
+              "label": "2026-03",
+              "return": 0.02494269999029712
+            },
+            {
+              "label": "2026-04",
+              "return": 0.16126527335582844
+            },
+            {
+              "label": "2026-05",
+              "return": -0.1295241410485526
+            },
+            {
+              "label": "2026-06",
+              "return": 0.24619489628673744
+            },
+            {
+              "label": "2026-07",
+              "return": -0.05829283804130107
+            },
+            {
+              "label": "2026-08",
+              "return": 0.002536232730364629
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.0,
+          "worst_month": -0.1295241410485526,
+          "target_15pct_month_rate": 0.375
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 128717.16079443823,
+          "net_return": 0.2871716079443823,
+          "max_drawdown": -0.22467724951053883,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": -0.01673234083344718
+            },
+            {
+              "label": "2026-02",
+              "return": 0.16431797690618444
+            },
+            {
+              "label": "2026-03",
+              "return": 0.004111579438165831
+            },
+            {
+              "label": "2026-04",
+              "return": 0.14869976744865418
+            },
+            {
+              "label": "2026-05",
+              "return": -0.15698707340313353
+            },
+            {
+              "label": "2026-06",
+              "return": 0.24500139446607958
+            },
+            {
+              "label": "2026-07",
+              "return": -0.06943852388529875
+            },
+            {
+              "label": "2026-08",
+              "return": -0.001942772716876425
+            }
+          ],
+          "positive_month_rate": 0.5,
+          "target_25pct_month_rate": 0.0,
+          "worst_month": -0.15698707340313353,
+          "target_15pct_month_rate": 0.25
+        },
+        "meets_confirmation_gates": false
+      },
+      {
+        "state": {
+          "baseline": "anchor",
+          "signal": {
+            "id": "btc_perp-540-top_account_crowding",
+            "asset": "btc_perp",
+            "window_4h": 540,
+            "feature": "top_account_crowding"
+          },
+          "config": {
+            "threshold": 1.25,
+            "low_exposure": 0.6,
+            "high_exposure": 2.0,
+            "mode": "below",
+            "turnover_bps": 7.0
+          }
+        },
+        "volatility": {
+          "lookback_days": 20,
+          "target_daily_volatility": 0.03,
+          "minimum_exposure": 0.6,
+          "maximum_exposure": 1.1,
+          "rebalance_frequency": "daily"
+        },
+        "base": {
+          "initial_equity": 100000.0,
+          "final_equity": 147028.36484093507,
+          "net_return": 0.4702836484093506,
+          "max_drawdown": -0.20123921338601722,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": 0.025893503877540275
+            },
+            {
+              "label": "2026-02",
+              "return": 0.17573425491998965
+            },
+            {
+              "label": "2026-03",
+              "return": 0.02494269999029712
+            },
+            {
+              "label": "2026-04",
+              "return": 0.16126527335582844
+            },
+            {
+              "label": "2026-05",
+              "return": -0.1295241410485526
+            },
+            {
+              "label": "2026-06",
+              "return": 0.24619489628673744
+            },
+            {
+              "label": "2026-07",
+              "return": -0.05829283804130107
+            },
+            {
+              "label": "2026-08",
+              "return": 0.002536232730364629
+            }
+          ],
+          "positive_month_rate": 0.75,
+          "target_25pct_month_rate": 0.0,
+          "worst_month": -0.1295241410485526,
+          "target_15pct_month_rate": 0.375
+        },
+        "stress": {
+          "initial_equity": 100000.0,
+          "final_equity": 129070.66777226585,
+          "net_return": 0.29070667772265857,
+          "max_drawdown": -0.22467724951053883,
+          "bankrupt": false,
+          "daily_returns": [],
+          "monthly_returns": [
+            {
+              "label": "2026-01",
+              "return": -0.01673234083344718
+            },
+            {
+              "label": "2026-02",
+              "return": 0.16751564322127505
+            },
+            {
+              "label": "2026-03",
+              "return": 0.004111579438165831
+            },
+            {
+              "label": "2026-04",
+              "return": 0.14869976744865418
+            },
+            {
+              "label": "2026-05",
+              "return": -0.15698707340313353
+            },
+            {
+              "label": "2026-06",
+              "return": 0.24500139446607958
+            },
+            {
+              "label": "2026-07",
+              "return": -0.06943852388529875
+            },
+            {
+              "label": "2026-08",
+              "return": -0.001942772716876425
+            }
+          ],
+          "positive_month_rate": 0.5,
+          "target_25pct_month_rate": 0.0,
+          "worst_month": -0.15698707340313353,
+          "target_15pct_month_rate": 0.25
+        },
+        "meets_confirmation_gates": false
+      }
+    ]
+  },
+  "target": {
+    "monthly_return": 0.15,
+    "minimum_confirmation_target_month_rate": 0.5,
+    "achieved": true
+  },
+  "decision": {
+    "status": "research_candidate",
+    "approved_for_trading": false,
+    "reason": "The development-selected overlay met reused base and stress confirmation gates; fresh forward evidence remains required."
+  },
+  "costs": {
+    "base_component_fee_bps": 5.0,
+    "base_component_slippage_bps": 2.0,
+    "base_overlay_turnover_bps": 7.0,
+    "stress_component_fee_bps": 10.0,
+    "stress_component_slippage_bps": 5.0,
+    "stress_overlay_turnover_bps": 15.0
+  },
+  "limitations": [
+    "2026 is reused confirmation evidence and is not a fresh holdout.",
+    "The market-state signal uses only the last complete prior UTC-day 4h snapshot.",
+    "Volatility estimates use only returns closed before each exposure day; split prefixes are retained as warmup.",
+    "Drawdown is measured at daily closes; borrowing cost and liquidation are not modeled.",
+    "This research candidate is not connected to paper or live execution."
+  ],
+  "id": "market-state-volatility-20260815-152036-364583"
+}
