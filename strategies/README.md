@@ -7,6 +7,7 @@
 
 | 策略/部署 | 用途 | 状态 | 文档 |
 |---|---|---|---|
+| BTC/ETH 扩展月历路由 v1 | 当前最佳跨品种研究策略 | 冻结模拟盘候选；禁止实盘 | [candidates/btc_eth_expanding_calendar_router_v1.md](candidates/btc_eth_expanding_calendar_router_v1.md) |
 | SOXL ATR32x3 仅做多 | 当前完整历史研究基线 | 冻结研究基线 | [current_research_baseline.md](current_research_baseline.md) |
 | SOXL True Range 波差 v1 | 冻结前向研究候选 | 证据不足，未批准 | [candidates/soxl_volatility_spread_true_range_v1.md](candidates/soxl_volatility_spread_true_range_v1.md) |
 | BTC 日线 EMA(10,50) 多空 v1 | 冻结前向研究候选 | 暂不拒绝，未批准交易 | [candidates/btc_daily_ema_10_50_long_short_v1.md](candidates/btc_daily_ema_10_50_long_short_v1.md) |
