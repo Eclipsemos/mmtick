@@ -234,6 +234,7 @@ function App() {
     refetchInterval: 1000,
   })
   const selectedOverviewAccount = overview.data?.accounts.find((item) => item.id === accountId)
+  const marketSelectionReady = mode === 'live' || Boolean(selectedOverviewAccount)
   const marketInstrumentId = mode === 'live'
     ? 'soxl_perp'
     : selectedOverviewAccount?.runtime.market_data_id ?? accountId
@@ -288,11 +289,12 @@ function App() {
   const aggTrades = useQuery({
     queryKey: ['agg-trades', mode, marketInstrumentId],
     queryFn: () => api.aggTrades(marketInstrumentId),
-    enabled: view === 'warehouse',
+    enabled: view === 'warehouse' && marketSelectionReady,
   })
   const ohlcv = useQuery({
     queryKey: ['ohlcv', mode, marketInstrumentId, marketIntervalMinutes],
     queryFn: () => api.ohlcv(marketInstrumentId, undefined, marketIntervalMinutes),
+    enabled: marketSelectionReady,
     refetchInterval: 5000,
   })
   const equityHistory = useTimePaginatedSeries(
@@ -788,6 +790,16 @@ function Monitor({
   const positionSide = positionQuantity > 0 ? '多头' : positionQuantity < 0 ? '空头' : '空仓'
   const positive = Number(account.total_pnl) >= 0
   const netCashFlow = Number(account.net_cash_flow ?? 0)
+  const latestMarketBar = bars.reduce<OhlcvBar | undefined>(
+    (latest, bar) => !latest || bar.end_ms > latest.end_ms ? bar : latest,
+    undefined,
+  )
+  const displayPrice = runtime.paper_model === 'portfolio'
+    ? latestMarketBar?.close ?? null
+    : account.last_price
+  const displayPriceAt = runtime.paper_model === 'portfolio'
+    ? latestMarketBar?.end_ms ?? null
+    : account.last_snapshot_ms
 
   return (
     <>
@@ -800,8 +812,8 @@ function Monitor({
           <p>{runtime.name}</p>
         </div>
         <div className="quote-block">
-          <strong>{money(account.last_price, account.currency)}</strong>
-          <span><Clock3 size={13} />{time(account.last_snapshot_ms)}</span>
+          <strong>{money(displayPrice, account.currency)}</strong>
+          <span><Clock3 size={13} />{time(displayPriceAt)}</span>
         </div>
         <div className="source-block">
           <span className={`runtime ${runtime.status.toLowerCase()}`}>
@@ -824,14 +836,27 @@ function Monitor({
       <DecisionStatus runtime={runtime} />
 
       <section className="workspace-grid">
-        <PriceSignalPanel
+        {runtime.paper_model === 'portfolio' ? (
+          <OfficialKlinePanel
+            validation={account.runtime.kline_state.validation}
+            intervalMinutes={account.runtime.strategy_config.bar_minutes}
+            bars={bars}
+            fills={accountFills}
+            paperModel={account.runtime.paper_model}
+            loadOlder={loadOlderOhlcv}
+            loadingOlder={loadingOlderOhlcv}
+            hasOlder={hasOlderOhlcv}
+          />
+        ) : (
+          <PriceSignalPanel
           account={account}
           equity={equity}
           fills={accountFills}
           loadOlder={loadOlderEquity}
           loadingOlder={loadingOlderEquity}
           hasOlder={hasOlderEquity}
-        />
+          />
+        )}
 
         <div className="panel strategy-panel">
           <div className="panel-head">
@@ -917,7 +942,7 @@ function Monitor({
         </div>
       </section>
 
-      <OfficialKlinePanel
+      {runtime.paper_model !== 'portfolio' && <OfficialKlinePanel
         validation={account.runtime.kline_state.validation}
         intervalMinutes={account.runtime.strategy_config.bar_minutes}
         bars={bars}
@@ -926,7 +951,7 @@ function Monitor({
         loadOlder={loadOlderOhlcv}
         loadingOlder={loadingOlderOhlcv}
         hasOlder={hasOlderOhlcv}
-      />
+      />}
 
       <section className="lower-grid">
         <div className="panel fills-panel">
@@ -1681,6 +1706,8 @@ const decisionText = {
   ARMED_FOR_LONG: ['等待做多', '当前价格在 ATR 线下方，向上穿越后建立多头'],
   ARMED_FOR_SHORT: ['等待做空', '当前价格在 ATR 线上方，向下穿越后建立空头'],
   WAITING_FOR_RESET: ['等待重新武装', '当前价格虽高于 ATR，但没有新的下方到上方穿越'],
+  WAITING_FOR_DAILY_CLOSE: ['等待首个日线收盘', '预热已完成；首个完整前向 UTC 日尚未结束，当前没有组合持仓'],
+  PORTFOLIO_ACTIVE: ['组合日线运行中', '按冻结月历映射监控状态袖套与三个趋势袖套'],
 } as const
 
 const triggerText: Record<string, string> = {
@@ -1694,6 +1721,7 @@ const triggerText: Record<string, string> = {
   TREND_FILTER_RECOVERY: '趋势效率恢复至开仓阈值',
   PRICE_CROSS_ABOVE: '价格实时向上穿越 ATR 线',
   PRICE_BELOW_THEN_CROSS_ABOVE: '价格先回到 ATR 线下方，再重新上穿',
+  NEXT_UTC_DAILY_CLOSE: '等待下一根完整 UTC 日线收盘',
 }
 
 const crossReasonText: Record<string, string> = {
@@ -1712,6 +1740,7 @@ const crossReasonText: Record<string, string> = {
 function DecisionStatus({ runtime }: { runtime: Account['runtime'] }) {
   const decision = runtime.decision
   const strategy = runtime.strategy
+  const isPortfolio = runtime.paper_model === 'portfolio'
   const copy = decisionText[decision.state] ?? [
     '状态同步中',
     '前后端策略状态版本暂时不一致，等待服务刷新',
@@ -1721,11 +1750,16 @@ function DecisionStatus({ runtime }: { runtime: Account['runtime'] }) {
     || decision.state === 'ARMED_FOR_SHORT'
     || decision.state === 'HOLDING_LONG'
     || decision.state === 'HOLDING_SHORT'
+    || decision.state === 'PORTFOLIO_ACTIVE'
     ? 'ready'
     : decision.state === 'PAUSED'
       ? 'blocked'
       : 'waiting'
-  const lastCross = strategy.last_cross
+  const lastCross = isPortfolio
+    ? decision.last_signal
+      ? `最近组合信号 · ${time(decision.last_signal.timestamp_ms)}`
+      : '尚无完整前向日信号'
+    : strategy.last_cross
     ? `${strategy.last_cross === 'UP' ? '向上穿越' : '向下穿越'} · ${
         strategy.last_cross_result === 'BUY_SIGNAL'
           ? '已发出买入信号'
@@ -1747,16 +1781,16 @@ function DecisionStatus({ runtime }: { runtime: Account['runtime'] }) {
       <dl className="decision-facts">
         <div><dt>仓位</dt><dd>{decision.position_side === 'LONG' ? '多头持仓' : decision.position_side === 'SHORT' ? '空头持仓' : '空仓'}</dd></div>
         <div><dt>订单</dt><dd>{decision.has_pending_order ? '待成交' : '无待成交'}</dd></div>
-        <div><dt>最近 Tick 穿越</dt><dd>{lastCross}</dd></div>
+        <div><dt>{isPortfolio ? '最近日线信号' : '最近 Tick 穿越'}</dt><dd>{lastCross}</dd></div>
         <div><dt>下一触发条件</dt><dd>{triggerText[decision.next_trigger] ?? decision.next_trigger}</dd></div>
       </dl>
       <div className="decision-gates" aria-label="买入门控">
         <Gate open={decision.trading_enabled} label="策略运行" />
-        <Gate open={decision.strategy_ready} label="ATR 就绪" />
-        <Gate open={decision.trend_filter_passed} label="趋势过滤通过" />
+        <Gate open={decision.strategy_ready} label={isPortfolio ? '组合预热就绪' : 'ATR 就绪'} />
+        <Gate open={decision.trend_filter_passed} label={isPortfolio ? '月历映射就绪' : '趋势过滤通过'} />
         <Gate open={!decision.has_pending_order} label="无待成交单" />
-        <Gate open={decision.action_lock_open} label="本 K 线动作锁开放" />
-        <Gate open={decision.signal_confirmation === 'TICK'} label="Tick 实时检测" />
+        <Gate open={decision.action_lock_open} label={isPortfolio ? '月度锁未触发' : '本 K 线动作锁开放'} />
+        <Gate open={isPortfolio ? decision.signal_confirmation === 'DAILY_CLOSE' : decision.signal_confirmation === 'TICK'} label={isPortfolio ? 'UTC 日线检测' : 'Tick 实时检测'} />
       </div>
     </section>
   )

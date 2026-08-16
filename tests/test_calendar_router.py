@@ -1,7 +1,7 @@
 from decimal import Decimal
 
-from mastermind_tick.calendar_router import _mapping, _portfolio_return
-from mastermind_tick.config import InstrumentSettings
+from mastermind_tick.calendar_router import RouterRuntime, _mapping, _portfolio_return
+from mastermind_tick.config import InstrumentSettings, load_settings
 from mastermind_tick.models import Bar
 from mastermind_tick.store import PaperStore
 
@@ -12,6 +12,28 @@ def test_frozen_mapping_has_three_unique_candidates_for_every_month() -> None:
     assert set(mapping) == set(range(1, 13))
     assert all(len(candidates) == 3 for candidates in mapping.values())
     assert all("long_only" in candidate for values in mapping.values() for candidate in values)
+
+
+def test_empty_forward_ledger_waits_for_first_daily_close(tmp_path) -> None:
+    settings = load_settings("config/settings.toml")
+    store = PaperStore(tmp_path / "paper.db")
+    portfolio = settings.portfolio_paper
+    store.ensure_portfolio_account(
+        portfolio.id,
+        portfolio.symbol,
+        portfolio.display_symbol,
+        portfolio.venue,
+        portfolio.currency,
+        settings.initial_cash,
+        1,
+    )
+    runtime = RouterRuntime(portfolio, store, Decimal("100000"), status="LIVE")
+
+    view = runtime.view()
+
+    assert view["decision"]["state"] == "WAITING_FOR_DAILY_CLOSE"
+    assert view["decision"]["has_position"] is False
+    assert view["decision"]["next_trigger"] == "NEXT_UTC_DAILY_CLOSE"
 
 
 def test_portfolio_return_applies_state_trend_and_turnover_costs() -> None:

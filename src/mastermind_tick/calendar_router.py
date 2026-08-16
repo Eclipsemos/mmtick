@@ -203,6 +203,15 @@ class RouterRuntime:
     def view(self) -> dict[str, Any]:
         latest = self.store.portfolio_ledger(self.settings.id, "base")
         state = latest[-1]["state"] if latest else {}
+        has_forward_day = bool(latest)
+        month_locked = bool(state.get("month_locked"))
+        decision_state = (
+            "PAUSED"
+            if month_locked
+            else "PORTFOLIO_ACTIVE"
+            if has_forward_day
+            else "WAITING_FOR_DAILY_CLOSE"
+        )
         return {
             "id": self.settings.id,
             "symbol": self.settings.symbol,
@@ -254,7 +263,9 @@ class RouterRuntime:
                 "atr": None,
                 "trailing_stop": None,
                 "price": None,
-                "relation": "warming" if self.status != "LIVE" else "above",
+                "relation": (
+                    "warming" if self.status != "LIVE" or not has_forward_day else "above"
+                ),
                 "bar_start_ms": state.get("timestamp_ms"),
                 "bought_this_bar": False,
                 "flattened_this_bar": False,
@@ -270,11 +281,11 @@ class RouterRuntime:
                 "last_cross_reason": None,
             },
             "decision": {
-                "state": "PAUSED" if state.get("month_locked") else "HOLDING_LONG",
-                "reason": "UTC monthly lock" if state.get("month_locked") else self.status_message,
-                "next_trigger": "Next complete UTC daily bar",
+                "state": decision_state,
+                "reason": "UTC monthly lock" if month_locked else self.status_message,
+                "next_trigger": "NEXT_UTC_DAILY_CLOSE",
                 "trading_enabled": self.status == "LIVE",
-                "has_position": bool(state),
+                "has_position": has_forward_day and not month_locked,
                 "position_side": "FLAT",
                 "allow_short": True,
                 "has_pending_order": False,
