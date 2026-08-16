@@ -160,7 +160,14 @@ class LiveFuturesTrader:
             self.status = "DISABLED"
             self.status_message = "Live Futures runtime is disabled"
             return
-        runtime = engine.runtimes.get(self.instrument.market_id)
+        runtime = next(
+            (
+                value
+                for value in engine.runtimes.values()
+                if value.instrument.market_id == self.instrument.market_id
+            ),
+            None,
+        )
         if runtime is None or not runtime.strategy_ready:
             self._block("MARKET_STRATEGY_NOT_READY")
             self.status = "BLOCKED"
