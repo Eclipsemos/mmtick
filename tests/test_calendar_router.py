@@ -1,19 +1,44 @@
+import asyncio
 from collections import deque
+from datetime import UTC, datetime
 from decimal import Decimal
 
+import pytest
+
 from mastermind_tick.calendar_router import (
+    DAILY_WARMUP_START_MS,
+    FOUR_HOUR_HISTORY_START_MS,
+    FOUR_HOUR_MS,
+    REPLAY_START_MS,
     RouterRuntime,
     _all_macd_candidates,
     _causal_volatility_exposure,
     _funding_by_bar,
+    _klines_from,
     _mapping,
     _metric_zscores,
     _portfolio_return,
     _route_turnover,
+    _validate_metric_warmup,
+    _validate_replay_inputs,
 )
 from mastermind_tick.config import InstrumentSettings, load_settings
 from mastermind_tick.models import Bar, FundingRate, FuturesMetricBar
 from mastermind_tick.store import PaperStore
+
+
+def _continuous_bars(start_ms: int, interval_ms: int, count: int) -> list[Bar]:
+    return [
+        Bar(
+            start_ms + index * interval_ms,
+            start_ms + (index + 1) * interval_ms - 1,
+            Decimal("100"),
+            Decimal("101"),
+            Decimal("99"),
+            Decimal("100"),
+        )
+        for index in range(count)
+    ]
 
 
 def test_frozen_mapping_has_three_unique_candidates_for_every_month() -> None:
@@ -137,6 +162,115 @@ def test_metric_zscore_requires_540_complete_aligned_4h_snapshots() -> None:
     assert complete[bars[538].start_ms][0] is None
     assert complete[bars[539].start_ms][0] is not None
     assert missing[bars[539].start_ms][0] is None
+
+
+def test_replay_validation_requires_continuous_pre_start_signal_history() -> None:
+    four_hour_count = 540 + 12
+    daily_count = 64 + 12
+    btc4 = _continuous_bars(FOUR_HOUR_HISTORY_START_MS, FOUR_HOUR_MS, four_hour_count)
+    eth4 = _continuous_bars(FOUR_HOUR_HISTORY_START_MS, FOUR_HOUR_MS, four_hour_count)
+    btcd = _continuous_bars(DAILY_WARMUP_START_MS, 86_400_000, daily_count)
+    ethd = _continuous_bars(DAILY_WARMUP_START_MS, 86_400_000, daily_count)
+
+    details = _validate_replay_inputs(btc4, eth4, btcd, ethd)
+
+    assert details["btc_4h"]["pre_replay_bar_count"] == 540
+    assert details["eth_4h"]["continuous"] is True
+    assert details["btc_1d"]["pre_replay_bar_count"] == 64
+
+
+def test_replay_validation_rejects_the_previous_134_bar_warmup() -> None:
+    short_start = REPLAY_START_MS - 134 * FOUR_HOUR_MS
+    btc4 = _continuous_bars(short_start, FOUR_HOUR_MS, 150)
+    eth4 = _continuous_bars(short_start, FOUR_HOUR_MS, 150)
+    btcd = _continuous_bars(DAILY_WARMUP_START_MS, 86_400_000, 76)
+    ethd = _continuous_bars(DAILY_WARMUP_START_MS, 86_400_000, 76)
+
+    with pytest.raises(RuntimeError, match="after required"):
+        _validate_replay_inputs(btc4, eth4, btcd, ethd)
+
+
+def test_replay_validation_rejects_a_pre_start_gap() -> None:
+    btc4 = _continuous_bars(FOUR_HOUR_HISTORY_START_MS, FOUR_HOUR_MS, 552)
+    eth4 = _continuous_bars(FOUR_HOUR_HISTORY_START_MS, FOUR_HOUR_MS, 552)
+    del eth4[100]
+    btcd = _continuous_bars(DAILY_WARMUP_START_MS, 86_400_000, 76)
+    ethd = _continuous_bars(DAILY_WARMUP_START_MS, 86_400_000, 76)
+
+    with pytest.raises(RuntimeError, match="not aligned"):
+        _validate_replay_inputs(btc4, eth4, btcd, ethd)
+
+
+def test_metric_warmup_must_form_a_score_before_replay_start() -> None:
+    eth4 = _continuous_bars(FOUR_HOUR_HISTORY_START_MS, FOUR_HOUR_MS, 541)
+    complete = [
+        FuturesMetricBar(
+            bar.start_ms,
+            bar.end_ms,
+            Decimal("1.2"),
+            Decimal("1.1"),
+            "archive",
+        )
+        for bar in eth4
+    ]
+
+    details = _validate_metric_warmup(eth4, complete)
+
+    assert details["first_replay_score_at_ms"] == REPLAY_START_MS - FOUR_HOUR_MS
+    with pytest.raises(RuntimeError, match="unavailable before replay start"):
+        _validate_metric_warmup(eth4, complete[1:])
+
+
+def test_kline_loader_pages_past_binance_single_request_limit(monkeypatch) -> None:
+    interval_ms = FOUR_HOUR_MS
+    start_ms = int(datetime(2025, 1, 1, tzinfo=UTC).timestamp() * 1000)
+    all_rows = [
+        [
+            start_ms + index * interval_ms,
+            "100",
+            "101",
+            "99",
+            "100",
+            "1",
+            start_ms + (index + 1) * interval_ms - 1,
+            "0",
+            1,
+        ]
+        for index in range(1510)
+    ]
+    requested_starts = []
+
+    class Response:
+        def __init__(self, payload):
+            self.payload = payload
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self):
+            return self.payload
+
+    class Client:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return None
+
+        async def get(self, _url, *, params):
+            requested_starts.append(params["startTime"])
+            offset = (params["startTime"] - start_ms) // interval_ms
+            return Response(all_rows[offset : offset + params["limit"]])
+
+    monkeypatch.setattr("mastermind_tick.calendar_router.httpx.AsyncClient", Client)
+
+    bars = asyncio.run(_klines_from("BTCUSDT", "4h", interval_ms, start_ms))
+
+    assert len(bars) == 1510
+    assert requested_starts == [start_ms, start_ms + 1500 * interval_ms]
 
 
 def test_portfolio_day_persists_normalized_sleeve_audit_events(tmp_path) -> None:

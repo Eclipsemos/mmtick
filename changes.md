@@ -4,8 +4,14 @@
 
 ### BTC/ETH 前向实现修复
 
-- 将组合运行实现升级为 `calendar-router-forward-v3`；修复发生在首条完整前向日账本产生之前，
+- 将组合运行实现升级为 `calendar-router-forward-v4`；修复发生在首条完整前向日账本产生之前，
   因此没有删除、覆盖或重标任何已发布的前向收益。
+- 4h 与日线改为分页加载，不再受 Binance 单次 1,500 根 K 线上限影响；资金费同样分页读取。
+  4h 数据从 2025-10-03 UTC 开始，覆盖回放前 540 根完整 K 线；日线从各合约上线首日开始，
+  避免 EMA MACD 因有限窗口初始化而漂移。
+- 新增强制预热门禁：验证 BTC/ETH 时间对齐、K 线连续、回放前数量，以及 60 日冲击、最长
+  MACD 和 ETH 市场指标在 2026-01-01 回放前已经形成有效因果信号。任何一项失败均标记
+  `validation: FAILED`，且禁止写入前向账本。
 - 接入 Binance ETH top-position 与 global-account ratio，归档不可变 4h 快照，并严格使用
   540 根完整 4h 数据计算 `log(top/global)` z-score；只有当日因果输入确实缺失时才使用 1.0x
   unavailable fallback。

@@ -32,14 +32,19 @@ from mastermind_tick.store import PaperStore
 
 DAY_MS = 86_400_000
 FOUR_HOUR_MS = 14_400_000
-DATA_VERSION = "binance-public-independent-sleeves-v3"
-IMPLEMENTATION_VERSION = "calendar-router-forward-v3"
+DATA_VERSION = "binance-public-full-warmup-v4"
+IMPLEMENTATION_VERSION = "calendar-router-forward-v4"
 METRIC_ARCHIVE_BASE = "https://data.binance.vision/data/futures/um/daily/metrics"
 METRIC_REST_BASE = "https://fapi.binance.com/futures/data"
 FORWARD_START_MS = int(datetime(2026, 8, 16, tzinfo=UTC).timestamp() * 1000)
 REPLAY_START_MS = int(datetime(2026, 1, 1, tzinfo=UTC).timestamp() * 1000)
 METRIC_WINDOW = 540
-METRIC_HISTORY_DAYS = 130
+SHOCK_WINDOW_60D = 360
+PRE_REPLAY_4H_BARS = SHOCK_WINDOW_60D + 2
+DAILY_WARMUP_BARS = 64
+FOUR_HOUR_HISTORY_START_MS = REPLAY_START_MS - METRIC_WINDOW * FOUR_HOUR_MS
+DAILY_HISTORY_START_MS = 0
+DAILY_WARMUP_START_MS = REPLAY_START_MS - DAILY_WARMUP_BARS * DAY_MS
 
 
 @dataclass
@@ -53,6 +58,8 @@ class RouterRuntime:
     last_day: str | None = None
     error_count: int = 0
     task: asyncio.Task[None] | None = None
+    input_validation: str = "PENDING"
+    input_validation_details: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
         self.definition = json.loads(self.settings.strategy_path.read_text(encoding="utf-8"))
@@ -87,6 +94,7 @@ class RouterRuntime:
             except Exception as exc:
                 self.error_count += 1
                 self.status = "DEGRADED"
+                self.input_validation = "FAILED"
                 self.status_message = f"Daily refresh failed: {type(exc).__name__}: {exc}"
                 self.store.add_event(
                     self.settings.id,
@@ -100,19 +108,14 @@ class RouterRuntime:
     async def update(self) -> None:
         now_ms = int(time.time() * 1000)
         btc_4h, eth_4h, btc_daily, eth_daily, btc_funding, eth_funding = await asyncio.gather(
-            _klines("BTCUSDT", "4h", 1500),
-            _klines("ETHUSDT", "4h", 1500),
-            _klines("BTCUSDT", "1d", 400),
-            _klines("ETHUSDT", "1d", 400),
-            _funding("BTCUSDT", now_ms - 260 * DAY_MS, now_ms),
-            _funding("ETHUSDT", now_ms - 260 * DAY_MS, now_ms),
+            _klines_from("BTCUSDT", "4h", FOUR_HOUR_MS, FOUR_HOUR_HISTORY_START_MS),
+            _klines_from("ETHUSDT", "4h", FOUR_HOUR_MS, FOUR_HOUR_HISTORY_START_MS),
+            _klines_from("BTCUSDT", "1d", DAY_MS, DAILY_HISTORY_START_MS),
+            _klines_from("ETHUSDT", "1d", DAY_MS, DAILY_HISTORY_START_MS),
+            _funding("BTCUSDT", REPLAY_START_MS, now_ms),
+            _funding("ETHUSDT", REPLAY_START_MS, now_ms),
         )
-        if len(btc_4h) < 540 or len(eth_4h) < 540:
-            raise RuntimeError("fewer than 540 complete 4h warm-up bars")
-        if len(btc_daily) < 80 or len(eth_daily) < 80:
-            raise RuntimeError("fewer than 80 complete daily warm-up bars")
-        _require_aligned(btc_4h, eth_4h)
-        _require_aligned(btc_daily, eth_daily)
+        validation = _validate_replay_inputs(btc_4h, eth_4h, btc_daily, eth_daily)
         self.store.upsert_history_bars(_market("btc_perp", "BTCUSDT"), 240, btc_4h, DATA_VERSION)
         self.store.upsert_history_bars(_market("eth_perp", "ETHUSDT"), 240, eth_4h, DATA_VERSION)
         self.store.upsert_history_bars(
@@ -132,6 +135,9 @@ class RouterRuntime:
         eth_metrics = self.store.futures_metric_bars(
             "ETHUSDT", 240, eth_4h[0].start_ms, eth_4h[-1].end_ms
         )
+        validation["eth_metrics"] = _validate_metric_warmup(eth_4h, eth_metrics)
+        self.input_validation_details = validation
+        self.input_validation = "COMPLETE"
 
         existing = {
             (row["ledger"], row["day"])
@@ -287,7 +293,8 @@ class RouterRuntime:
             "market_state": state.get("metrics", {}),
             "kline_state": {
                 "source": DATA_VERSION,
-                "validation": "COMPLETE" if self.status == "LIVE" else "PENDING",
+                "validation": self.input_validation,
+                "details": self.input_validation_details or {},
                 "last_official_bar_start_ms": state.get("timestamp_ms"),
                 "last_verified_at_ms": self.last_update_ms,
                 "mismatches": 0,
@@ -344,15 +351,39 @@ class RouterRuntime:
         }
 
 
-async def _klines(symbol: str, interval: str, limit: int) -> list[Bar]:
-    async with httpx.AsyncClient(timeout=30, trust_env=True) as client:
-        response = await client.get(
-            f"{BINANCE_FUTURES_REST}/klines",
-            params={"symbol": symbol, "interval": interval, "limit": limit},
-        )
-        response.raise_for_status()
-        payload = response.json()
+async def _klines_from(
+    symbol: str,
+    interval: str,
+    interval_ms: int,
+    start_ms: int,
+) -> list[Bar]:
+    """Load every complete bar from a fixed start, paging beyond Binance's 1,500 limit."""
+    cursor = start_ms
+    rows_by_start: dict[int, list[Any]] = {}
     now_ms = int(time.time() * 1000)
+    async with httpx.AsyncClient(timeout=30, trust_env=True) as client:
+        while cursor < now_ms:
+            response = await client.get(
+                f"{BINANCE_FUTURES_REST}/klines",
+                params={
+                    "symbol": symbol,
+                    "interval": interval,
+                    "startTime": cursor,
+                    "limit": 1500,
+                },
+            )
+            response.raise_for_status()
+            payload = response.json()
+            if not payload:
+                break
+            for row in payload:
+                rows_by_start[int(row[0])] = row
+            next_cursor = int(payload[-1][0]) + interval_ms
+            if next_cursor <= cursor:
+                raise RuntimeError(f"{symbol} {interval} kline pagination did not advance")
+            cursor = next_cursor
+            if len(payload) < 1500:
+                break
     return [
         Bar(
             int(row[0]),
@@ -360,36 +391,60 @@ async def _klines(symbol: str, interval: str, limit: int) -> list[Bar]:
             *(Decimal(row[index]) for index in (1, 2, 3, 4, 5)),
             int(row[8]),
         )
-        for row in payload
-        if int(row[6]) < now_ms
+        for _start, row in sorted(rows_by_start.items())
+        if int(row[0]) >= start_ms and int(row[6]) < now_ms
     ]
 
 
 async def _funding(symbol: str, start_ms: int, end_ms: int) -> list[FundingRate]:
+    values: dict[int, FundingRate] = {}
+    cursor = start_ms
     async with httpx.AsyncClient(timeout=30, trust_env=True) as client:
-        response = await client.get(
-            f"{BINANCE_FUTURES_REST}/fundingRate",
-            params={"symbol": symbol, "startTime": start_ms, "endTime": end_ms, "limit": 1000},
-        )
-        response.raise_for_status()
-        payload = response.json()
-    return [
-        FundingRate(int(row["fundingTime"]), Decimal(row["fundingRate"]), Decimal(row["markPrice"]))
-        for row in payload
-    ]
+        while cursor <= end_ms:
+            response = await client.get(
+                f"{BINANCE_FUTURES_REST}/fundingRate",
+                params={
+                    "symbol": symbol,
+                    "startTime": cursor,
+                    "endTime": end_ms,
+                    "limit": 1000,
+                },
+            )
+            response.raise_for_status()
+            payload = response.json()
+            if not payload:
+                break
+            for row in payload:
+                timestamp_ms = int(row["fundingTime"])
+                values[timestamp_ms] = FundingRate(
+                    timestamp_ms,
+                    Decimal(row["fundingRate"]),
+                    Decimal(row["markPrice"]),
+                )
+            next_cursor = int(payload[-1]["fundingTime"]) + 1
+            if next_cursor <= cursor:
+                raise RuntimeError(f"{symbol} funding pagination did not advance")
+            cursor = next_cursor
+            if len(payload) < 1000:
+                break
+    return [values[timestamp] for timestamp in sorted(values)]
 
 
 async def _refresh_metric_history(store: PaperStore, symbol: str, now_ms: int) -> None:
     """Cache immutable archive history, then fill not-yet-archived buckets from REST."""
     end_day = datetime.fromtimestamp(now_ms / 1000, UTC).date() - timedelta(days=1)
-    start_day = end_day - timedelta(days=METRIC_HISTORY_DAYS - 1)
+    start_day = datetime.fromtimestamp(FOUR_HOUR_HISTORY_START_MS / 1000, UTC).date()
     existing = store.futures_metric_bars(
         symbol,
         240,
         int(datetime.combine(start_day, datetime.min.time(), UTC).timestamp() * 1000),
         now_ms,
     )
-    loaded_days = {_day(item.start_ms) for item in existing}
+    day_counts: dict[str, int] = {}
+    for item in existing:
+        day = _day(item.start_ms)
+        day_counts[day] = day_counts.get(day, 0) + 1
+    loaded_days = {day for day, count in day_counts.items() if count >= DAY_MS // FOUR_HOUR_MS}
     missing_days = [
         start_day + timedelta(days=offset)
         for offset in range((end_day - start_day).days + 1)
@@ -507,6 +562,111 @@ def _require_aligned(left: list[Bar], right: list[Bar]) -> None:
         a.start_ms != b.start_ms for a, b in zip(left, right, strict=True)
     ):
         raise RuntimeError("BTC and ETH bars are not aligned")
+
+
+def _validate_replay_inputs(
+    btc4: list[Bar],
+    eth4: list[Bar],
+    btcd: list[Bar],
+    ethd: list[Bar],
+) -> dict[str, Any]:
+    """Require causal signal history before allowing any forward ledger write."""
+    _require_aligned(btc4, eth4)
+    btc_daily_replay = [bar.start_ms for bar in btcd if bar.start_ms >= REPLAY_START_MS]
+    eth_daily_replay = [bar.start_ms for bar in ethd if bar.start_ms >= REPLAY_START_MS]
+    if btc_daily_replay != eth_daily_replay:
+        raise RuntimeError("BTC and ETH daily replay bars are not aligned")
+    details = {
+        "btc_4h": _validate_bar_warmup(
+            btc4,
+            "BTCUSDT 4h",
+            FOUR_HOUR_MS,
+            FOUR_HOUR_HISTORY_START_MS,
+            PRE_REPLAY_4H_BARS,
+        ),
+        "eth_4h": _validate_bar_warmup(
+            eth4,
+            "ETHUSDT 4h",
+            FOUR_HOUR_MS,
+            FOUR_HOUR_HISTORY_START_MS,
+            PRE_REPLAY_4H_BARS,
+        ),
+        "btc_1d": _validate_bar_warmup(
+            btcd,
+            "BTCUSDT 1d",
+            DAY_MS,
+            None,
+            DAILY_WARMUP_BARS,
+        ),
+        "eth_1d": _validate_bar_warmup(
+            ethd,
+            "ETHUSDT 1d",
+            DAY_MS,
+            None,
+            DAILY_WARMUP_BARS,
+        ),
+    }
+    for label, bars in (("BTCUSDT", btc4), ("ETHUSDT", eth4)):
+        replay_index = bisect.bisect_left([bar.start_ms for bar in bars], REPLAY_START_MS)
+        if _zreturns(bars, SHOCK_WINDOW_60D)[replay_index - 1] is None:
+            raise RuntimeError(f"{label} 60-day shock signal is unavailable before replay start")
+    longest_macd = "btc_perp-macd-1440m-16-48-14-long_only-confirm3"
+    for label, bars in (("BTCUSDT", btcd), ("ETHUSDT", ethd)):
+        replay_index = bisect.bisect_left([bar.start_ms for bar in bars], REPLAY_START_MS)
+        if _macd_candidate(bars, longest_macd)[replay_index - 1] is None:
+            raise RuntimeError(f"{label} longest MACD signal is unavailable before replay start")
+    return details
+
+
+def _validate_bar_warmup(
+    bars: list[Bar],
+    label: str,
+    interval_ms: int,
+    required_start_ms: int | None,
+    required_pre_replay_bars: int,
+) -> dict[str, Any]:
+    if not bars:
+        raise RuntimeError(f"{label} history is empty")
+    if required_start_ms is not None and bars[0].start_ms > required_start_ms:
+        raise RuntimeError(
+            f"{label} history starts at {bars[0].start_ms}, after required {required_start_ms}"
+        )
+    for previous, current in zip(bars, bars[1:], strict=False):
+        if current.start_ms != previous.start_ms + interval_ms:
+            raise RuntimeError(
+                f"{label} history gap between {previous.start_ms} and {current.start_ms}"
+            )
+    starts = [bar.start_ms for bar in bars]
+    replay_index = bisect.bisect_left(starts, REPLAY_START_MS)
+    if replay_index >= len(bars) or starts[replay_index] != REPLAY_START_MS:
+        raise RuntimeError(f"{label} does not contain the replay-start bar")
+    if replay_index < required_pre_replay_bars:
+        raise RuntimeError(
+            f"{label} has {replay_index} pre-replay bars; requires {required_pre_replay_bars}"
+        )
+    return {
+        "start_ms": bars[0].start_ms,
+        "end_ms": bars[-1].end_ms,
+        "bar_count": len(bars),
+        "pre_replay_bar_count": replay_index,
+        "continuous": True,
+    }
+
+
+def _validate_metric_warmup(eth4: list[Bar], metrics: list[FuturesMetricBar]) -> dict[str, Any]:
+    score_at = REPLAY_START_MS - FOUR_HOUR_MS
+    scores = _metric_zscores(eth4, metrics)
+    score, source = scores.get(score_at, (None, None))
+    if score is None:
+        raise RuntimeError("ETH futures metric z-score is unavailable before replay start")
+    return {
+        "start_ms": metrics[0].start_ms,
+        "end_ms": metrics[-1].end_ms,
+        "bar_count": len(metrics),
+        "first_replay_score_at_ms": score_at,
+        "first_replay_score": str(score),
+        "source": source,
+    }
 
 
 def _daily_states(
