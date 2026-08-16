@@ -139,6 +139,53 @@ def test_portfolio_ledger_exposes_base_and_stress_books(tmp_path) -> None:
     assert response.json()[0]["state"] == {"targets": {}}
 
 
+def test_portfolio_sleeve_event_endpoint_exposes_audit_records(tmp_path) -> None:
+    settings = replace(
+        load_settings("config/settings.toml"),
+        database_path=tmp_path / "paper.db",
+        frontend_dist=tmp_path / "missing-frontend",
+    )
+    app = create_app(settings, start_engine=False)
+    portfolio = settings.portfolio_paper
+    app.state.store.ensure_portfolio_account(
+        portfolio.id,
+        portfolio.symbol,
+        portfolio.display_symbol,
+        portfolio.venue,
+        portfolio.currency,
+        settings.initial_cash,
+        1,
+    )
+    event = {
+        "timestamp_ms": 2,
+        "sleeve_id": "trend",
+        "instrument_id": "btc_perp",
+        "event_type": "COMPONENT_FILL",
+    }
+    app.state.store.save_portfolio_day(
+        portfolio.id,
+        "base",
+        "2026-08-16",
+        3,
+        Decimal("100000"),
+        Decimal("0"),
+        Decimal("100000"),
+        False,
+        {},
+        "test-v1",
+        [event],
+    )
+
+    with TestClient(app) as client:
+        response = client.get(
+            f"/api/accounts/{portfolio.id}/portfolio-sleeve-events",
+            params={"ledger": "base", "day": "2026-08-16"},
+        )
+
+    assert response.status_code == 200
+    assert response.json()[0]["payload"] == event
+
+
 def test_chart_endpoints_page_backwards_with_time_cursor(tmp_path) -> None:
     settings = replace(
         load_settings("config/settings.toml"),

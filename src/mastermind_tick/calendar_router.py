@@ -3,25 +3,43 @@
 from __future__ import annotations
 
 import asyncio
+import bisect
 import contextlib
+import csv
+import io
 import json
 import time
+import zipfile
 from collections import deque
 from dataclasses import dataclass
-from datetime import UTC, datetime
-from decimal import Decimal
+from datetime import UTC, date, datetime, timedelta
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 import httpx
 
+from mastermind_tick.calendar_router_model import (
+    apply_state_volatility_overlay,
+    attach_events,
+    combine_calendar_route,
+    combine_static_anchor,
+    replay_independent_sleeve,
+)
 from mastermind_tick.config import PortfolioPaperSettings
 from mastermind_tick.feeds import BINANCE_FUTURES_REST
-from mastermind_tick.models import Bar, FundingRate
+from mastermind_tick.models import Bar, FundingRate, FuturesMetricBar
 from mastermind_tick.store import PaperStore
 
 DAY_MS = 86_400_000
 FOUR_HOUR_MS = 14_400_000
-DATA_VERSION = "binance-public-closed-bars-v1"
+DATA_VERSION = "binance-public-independent-sleeves-v3"
+IMPLEMENTATION_VERSION = "calendar-router-forward-v3"
+METRIC_ARCHIVE_BASE = "https://data.binance.vision/data/futures/um/daily/metrics"
+METRIC_REST_BASE = "https://fapi.binance.com/futures/data"
+FORWARD_START_MS = int(datetime(2026, 8, 16, tzinfo=UTC).timestamp() * 1000)
+REPLAY_START_MS = int(datetime(2026, 1, 1, tzinfo=UTC).timestamp() * 1000)
+METRIC_WINDOW = 540
+METRIC_HISTORY_DAYS = 130
 
 
 @dataclass
@@ -82,12 +100,12 @@ class RouterRuntime:
     async def update(self) -> None:
         now_ms = int(time.time() * 1000)
         btc_4h, eth_4h, btc_daily, eth_daily, btc_funding, eth_funding = await asyncio.gather(
-            _klines("BTCUSDT", "4h", 600),
-            _klines("ETHUSDT", "4h", 600),
-            _klines("BTCUSDT", "1d", 120),
-            _klines("ETHUSDT", "1d", 120),
-            _funding("BTCUSDT", now_ms - 100 * DAY_MS, now_ms),
-            _funding("ETHUSDT", now_ms - 100 * DAY_MS, now_ms),
+            _klines("BTCUSDT", "4h", 1500),
+            _klines("ETHUSDT", "4h", 1500),
+            _klines("BTCUSDT", "1d", 400),
+            _klines("ETHUSDT", "1d", 400),
+            _funding("BTCUSDT", now_ms - 260 * DAY_MS, now_ms),
+            _funding("ETHUSDT", now_ms - 260 * DAY_MS, now_ms),
         )
         if len(btc_4h) < 540 or len(eth_4h) < 540:
             raise RuntimeError("fewer than 540 complete 4h warm-up bars")
@@ -110,15 +128,11 @@ class RouterRuntime:
             for funding in values:
                 self.store.record_funding_rate(market_id, symbol, funding, source=DATA_VERSION)
 
-        days = _daily_states(
-            self.definition,
-            btc_4h,
-            eth_4h,
-            btc_daily,
-            eth_daily,
-            btc_funding,
-            eth_funding,
+        await _refresh_metric_history(self.store, "ETHUSDT", now_ms)
+        eth_metrics = self.store.futures_metric_bars(
+            "ETHUSDT", 240, eth_4h[0].start_ms, eth_4h[-1].end_ms
         )
+
         existing = {
             (row["ledger"], row["day"])
             for ledger in ("base", "stress")
@@ -128,9 +142,20 @@ class RouterRuntime:
             name: self.store.portfolio_ledger(self.settings.id, name) for name in ("base", "stress")
         }
         for name, costs in (
-            ("base", (Decimal("7"), Decimal("7"))),
-            ("stress", (Decimal("15"), Decimal("15"))),
+            ("base", (Decimal("5"), Decimal("2"), Decimal("7"))),
+            ("stress", (Decimal("10"), Decimal("5"), Decimal("15"))),
         ):
+            days = _daily_states(
+                self.definition,
+                btc_4h,
+                eth_4h,
+                btc_daily,
+                eth_daily,
+                btc_funding,
+                eth_funding,
+                eth_metrics,
+                *costs,
+            )
             prior = ledgers[name][-1] if ledgers[name] else None
             equity = Decimal(prior["equity"]) if prior else self.initial_cash
             month_start = Decimal(prior["month_start_equity"]) if prior else equity
@@ -149,9 +174,9 @@ class RouterRuntime:
                     locked = False
                     previous_month = month
                 outer_exposure = Decimal("0") if locked else Decimal("4")
-                raw_return = Decimal("0") if locked else _portfolio_return(state, *costs)
+                raw_return = Decimal("0") if locked else _portfolio_return(state)
                 outer_turnover_cost = (
-                    abs(outer_exposure - previous_outer) * costs[1] / Decimal("10000")
+                    abs(outer_exposure - previous_outer) * costs[2] / Decimal("10000")
                 )
                 daily_return = outer_exposure * raw_return - outer_turnover_cost
                 equity *= Decimal("1") + daily_return
@@ -167,16 +192,29 @@ class RouterRuntime:
                     "outer_turnover_cost": str(outer_turnover_cost),
                     "month_return": str(month_return),
                     "month_locked": locked,
-                    "metrics_state": "unavailable",
-                    "metrics_exposure": "1",
-                    "sleeve_costs": {
-                        sleeve_id: str(
-                            Decimal(sleeve["turnover"]) * (costs[0] + costs[1]) / Decimal("10000")
-                        )
-                        for sleeve_id, sleeve in state["sleeves"].items()
-                    },
+                    "implementation_version": IMPLEMENTATION_VERSION,
+                    "metrics_state": state["metrics"]["state"],
+                    "metrics_exposure": state["metrics"]["exposure"],
                     "immutable_forward_record": True,
                 }
+                state_payload["costs"] = {
+                    **state["costs"],
+                    "outer_route": str(outer_turnover_cost),
+                }
+                events = list(state["audit_events"])
+                if outer_exposure != previous_outer:
+                    events.append(
+                        {
+                            "timestamp_ms": state["timestamp_ms"] - DAY_MS + 1,
+                            "sleeve_id": "outer_exposure",
+                            "instrument_id": None,
+                            "event_type": "OUTER_EXPOSURE_REBALANCE",
+                            "target_before": str(previous_outer),
+                            "target_after": str(outer_exposure),
+                            "turnover": str(abs(outer_exposure - previous_outer)),
+                            "route_cost": str(outer_turnover_cost),
+                        }
+                    )
                 self.store.save_portfolio_day(
                     self.settings.id,
                     name,
@@ -188,6 +226,7 @@ class RouterRuntime:
                     locked,
                     state_payload,
                     DATA_VERSION,
+                    events,
                 )
                 previous_outer = outer_exposure
         self.last_update_ms = now_ms
@@ -245,7 +284,7 @@ class RouterRuntime:
                 "fill_timing": "next_daily_open",
             },
             "feed": "binance_futures_daily_rest",
-            "market_state": {},
+            "market_state": state.get("metrics", {}),
             "kline_state": {
                 "source": DATA_VERSION,
                 "validation": "COMPLETE" if self.status == "LIVE" else "PENDING",
@@ -340,6 +379,112 @@ async def _funding(symbol: str, start_ms: int, end_ms: int) -> list[FundingRate]
     ]
 
 
+async def _refresh_metric_history(store: PaperStore, symbol: str, now_ms: int) -> None:
+    """Cache immutable archive history, then fill not-yet-archived buckets from REST."""
+    end_day = datetime.fromtimestamp(now_ms / 1000, UTC).date() - timedelta(days=1)
+    start_day = end_day - timedelta(days=METRIC_HISTORY_DAYS - 1)
+    existing = store.futures_metric_bars(
+        symbol,
+        240,
+        int(datetime.combine(start_day, datetime.min.time(), UTC).timestamp() * 1000),
+        now_ms,
+    )
+    loaded_days = {_day(item.start_ms) for item in existing}
+    missing_days = [
+        start_day + timedelta(days=offset)
+        for offset in range((end_day - start_day).days + 1)
+        if (start_day + timedelta(days=offset)).isoformat() not in loaded_days
+    ]
+    if missing_days:
+        semaphore = asyncio.Semaphore(12)
+        async with httpx.AsyncClient(timeout=30, trust_env=True) as client:
+
+            async def fetch(day: date) -> list[FuturesMetricBar]:
+                async with semaphore:
+                    return await _metric_archive(client, symbol, day)
+
+            archived = await asyncio.gather(*(fetch(day) for day in missing_days))
+        store.upsert_futures_metric_bars(
+            symbol, 240, [bar for values in archived for bar in values]
+        )
+    store.upsert_futures_metric_bars(symbol, 240, await _metric_rest(symbol, now_ms))
+
+
+async def _metric_archive(
+    client: httpx.AsyncClient, symbol: str, day: date
+) -> list[FuturesMetricBar]:
+    name = f"{symbol}-metrics-{day.isoformat()}.zip"
+    response = await client.get(f"{METRIC_ARCHIVE_BASE}/{symbol}/{name}")
+    if response.status_code == 404:
+        return []
+    response.raise_for_status()
+    groups: dict[int, tuple[int, Decimal, Decimal]] = {}
+    with zipfile.ZipFile(io.BytesIO(response.content)) as bundle:
+        members = [item for item in bundle.namelist() if item.endswith(".csv")]
+        if len(members) != 1:
+            raise RuntimeError(f"unexpected Binance metric archive members for {day}")
+        with bundle.open(members[0]) as source:
+            for row in csv.DictReader(io.TextIOWrapper(source, encoding="utf-8")):
+                try:
+                    top = Decimal(row["sum_toptrader_long_short_ratio"])
+                    global_account = Decimal(row["count_long_short_ratio"])
+                    timestamp = int(
+                        datetime.fromisoformat(row["create_time"]).replace(tzinfo=UTC).timestamp()
+                        * 1000
+                    )
+                except (InvalidOperation, KeyError, TypeError, ValueError):
+                    continue
+                if top <= 0 or global_account <= 0:
+                    continue
+                bucket = timestamp // FOUR_HOUR_MS * FOUR_HOUR_MS
+                previous = groups.get(bucket)
+                if previous is None or timestamp > previous[0]:
+                    groups[bucket] = (timestamp, top, global_account)
+    return [
+        FuturesMetricBar(
+            start_ms,
+            start_ms + FOUR_HOUR_MS - 1,
+            values[1],
+            values[2],
+            "binance-vision-futures-metrics-5m",
+        )
+        for start_ms, values in sorted(groups.items())
+    ]
+
+
+async def _metric_rest(symbol: str, now_ms: int) -> list[FuturesMetricBar]:
+    async with httpx.AsyncClient(timeout=30, trust_env=True) as client:
+        top_response, global_response = await asyncio.gather(
+            client.get(
+                f"{METRIC_REST_BASE}/topLongShortPositionRatio",
+                params={"symbol": symbol, "period": "4h", "limit": 500},
+            ),
+            client.get(
+                f"{METRIC_REST_BASE}/globalLongShortAccountRatio",
+                params={"symbol": symbol, "period": "4h", "limit": 500},
+            ),
+        )
+    top_response.raise_for_status()
+    global_response.raise_for_status()
+    top = {int(row["timestamp"]): Decimal(row["longShortRatio"]) for row in top_response.json()}
+    global_account = {
+        int(row["timestamp"]): Decimal(row["longShortRatio"]) for row in global_response.json()
+    }
+    return [
+        FuturesMetricBar(
+            start_ms,
+            start_ms + FOUR_HOUR_MS - 1,
+            top[start_ms],
+            global_account[start_ms],
+            "binance-futures-metrics-rest-4h",
+        )
+        for start_ms in sorted(top.keys() & global_account.keys())
+        if start_ms + FOUR_HOUR_MS - 1 < now_ms
+        and top[start_ms] > 0
+        and global_account[start_ms] > 0
+    ]
+
+
 def _market(instrument_id: str, symbol: str):
     from mastermind_tick.config import InstrumentSettings
 
@@ -372,6 +517,10 @@ def _daily_states(
     ethd: list[Bar],
     btc_funding: list[FundingRate],
     eth_funding: list[FundingRate],
+    eth_metrics: list[FuturesMetricBar],
+    fee_bps: Decimal,
+    slippage_bps: Decimal,
+    route_cost_bps: Decimal,
 ) -> list[dict[str, Any]]:
     btc_scores_15, eth_scores_15 = _shock_scores(btc4, eth4, 90)
     btc_scores_60, eth_scores_60 = _shock_scores(btc4, eth4, 360)
@@ -379,10 +528,23 @@ def _daily_states(
         _shock_targets(btc_scores_15, eth_scores_15, Decimal("2"), 12, "underreaction"),
         btc_scores_15,
     )
-    eth_eth = _event(_shock_targets(eth_scores_60, eth_scores_60, Decimal("2.5"), 12, "none"), True)
-    btc_btc = _event(_shock_targets(btc_scores_15, btc_scores_15, Decimal("2"), 4, "none"), False)
+    eth_eth = _event(
+        _shock_targets(eth_scores_60, eth_scores_60, Decimal("2.5"), 12, "none"),
+        True,
+    )
+    btc_btc = _event(
+        _shock_targets(btc_scores_15, btc_scores_15, Decimal("2"), 4, "none"),
+        False,
+    )
     eth_btc = _event(
-        _shock_targets(eth_scores_60, btc_scores_60, Decimal("1.5"), 12, "underreaction"), False
+        _shock_targets(
+            eth_scores_60,
+            btc_scores_60,
+            Decimal("1.5"),
+            12,
+            "underreaction",
+        ),
+        False,
     )
     mapping = {
         int(month): tuple(candidates)
@@ -392,124 +554,367 @@ def _daily_states(
         raise RuntimeError("strategy JSON does not match the frozen runtime mapping")
     daily_targets = {
         candidate: _macd_candidate(btcd if candidate.startswith("btc") else ethd, candidate)
-        for candidates in mapping.values()
-        for candidate in candidates
+        for candidate in _all_macd_candidates()
     }
-    by_day_4h: dict[str, list[int]] = {}
-    for index, bar in enumerate(btc4):
-        by_day_4h.setdefault(_day(bar.start_ms), []).append(index)
-    funding_by_day = {
-        "btc": _funding_by_day(btc_funding),
-        "eth": _funding_by_day(eth_funding),
+    replay_end_ms = min(btc4[-1].end_ms, eth4[-1].end_ms)
+    component_specs = {
+        "lead_lag": (eth4, lead, eth_funding, Decimal("0.15"), "eth_perp"),
+        ("event-eth_perp-to-eth_perp-continuation-60d-threshold-2p5-hold-12x4h-none-long_only"): (
+            eth4,
+            eth_eth,
+            eth_funding,
+            None,
+            "eth_perp",
+        ),
+        ("event-btc_perp-to-btc_perp-continuation-15d-threshold-2-hold-4x4h-none-long_short"): (
+            btc4,
+            btc_btc,
+            btc_funding,
+            None,
+            "btc_perp",
+        ),
+        (
+            "event-eth_perp-to-btc_perp-continuation-60d-threshold-1p5-"
+            "hold-12x4h-underreaction-long_short"
+        ): (btc4, eth_btc, btc_funding, None, "btc_perp"),
     }
-    start = datetime(2026, 8, 16, tzinfo=UTC).timestamp() * 1000
+    allocations = {
+        "lead_lag": Decimal("0.40"),
+        (
+            "event-eth_perp-to-eth_perp-continuation-60d-threshold-2p5-hold-12x4h-none-long_only"
+        ): Decimal("0.15"),
+        (
+            "event-btc_perp-to-btc_perp-continuation-15d-threshold-2-hold-4x4h-none-long_short"
+        ): Decimal("0.30"),
+        (
+            "event-eth_perp-to-btc_perp-continuation-60d-threshold-1p5-"
+            "hold-12x4h-underreaction-long_short"
+        ): Decimal("0.15"),
+    }
+    component_replays = {
+        sleeve_id: replay_independent_sleeve(
+            bars,
+            targets,
+            funding,
+            start_ms=REPLAY_START_MS,
+            end_ms=replay_end_ms,
+            fee_bps=fee_bps,
+            slippage_bps=slippage_bps,
+            monthly_loss_limit=monthly_loss_limit,
+        )
+        for sleeve_id, (
+            bars,
+            targets,
+            funding,
+            monthly_loss_limit,
+            _instrument_id,
+        ) in component_specs.items()
+    }
+    anchor = combine_static_anchor(component_replays, allocations, leverage=Decimal("4"))
+    metric_scores = _metric_zscores(eth4, eth_metrics)
+    metrics_by_day = {}
+    for day in anchor:
+        day_start_ms = int(datetime.fromisoformat(day).replace(tzinfo=UTC).timestamp() * 1000)
+        metric_start_ms = day_start_ms - FOUR_HOUR_MS
+        score, source = metric_scores.get(metric_start_ms, (None, None))
+        metrics_by_day[day] = (score, source, metric_start_ms)
+    state = apply_state_volatility_overlay(
+        anchor,
+        metrics_by_day,
+        route_cost_bps=route_cost_bps,
+    )
+    trend_replays = {
+        candidate: replay_independent_sleeve(
+            btcd if candidate.startswith("btc") else ethd,
+            tuple(Decimal(value) if value is not None else None for value in targets),
+            btc_funding if candidate.startswith("btc") else eth_funding,
+            start_ms=REPLAY_START_MS,
+            end_ms=min(btcd[-1].end_ms, ethd[-1].end_ms),
+            fee_bps=fee_bps,
+            slippage_bps=slippage_bps,
+        )
+        for candidate, targets in daily_targets.items()
+    }
+    route = combine_calendar_route(
+        state,
+        trend_replays,
+        mapping,
+        route_cost_bps=route_cost_bps,
+    )
     result = []
-    state_returns: deque[Decimal] = deque(maxlen=20)
-    previous_state = {"btc": Decimal("0"), "eth": Decimal("0")}
-    previous_trend: dict[str, Decimal] = {}
-    for day_index, (btc, eth) in enumerate(zip(btcd, ethd, strict=True)):
-        day = _day(btc.start_ms)
-        indices = by_day_4h.get(day, [])
-        state_return = Decimal("0")
-        turnover = Decimal("0")
-        state_turnover = Decimal("0")
-        end_targets = dict(previous_state)
-        for index in indices:
-            btc_target = Decimal("4") * (
-                Decimal("0.30") * Decimal(btc_btc[index])
-                + Decimal("0.15") * Decimal(eth_btc[index])
+    for day, route_day in route.items():
+        day_start_ms = int(datetime.fromisoformat(day).replace(tzinfo=UTC).timestamp() * 1000)
+        if day_start_ms < FORWARD_START_MS:
+            continue
+        selected = route_day["selected"]
+        state_day = state[day]
+        anchor_day = anchor[day]
+        audit_events: list[dict[str, Any]] = []
+        component_details = {}
+        state_base_targets = {"btc": Decimal("0"), "eth": Decimal("0")}
+        for sleeve_id, (
+            _bars,
+            _targets,
+            _funding,
+            _monthly_loss_limit,
+            instrument_id,
+        ) in component_specs.items():
+            sleeve_day = component_replays[sleeve_id][day]
+            allocation = allocations[sleeve_id]
+            asset = "btc" if instrument_id == "btc_perp" else "eth"
+            state_base_targets[asset] += Decimal("4") * allocation * sleeve_day.target
+            events = attach_events(
+                sleeve_day,
+                sleeve_id,
+                instrument_id,
+                capitalized=True,
             )
-            eth_target = Decimal("4") * (
-                Decimal("0.40") * Decimal(lead[index]) + Decimal("0.15") * Decimal(eth_eth[index])
-            )
-            if index:
-                btc_ret = btc4[index].close / btc4[index].open - Decimal("1")
-                eth_ret = eth4[index].close / eth4[index].open - Decimal("1")
-                state_return += previous_state["btc"] * btc_ret + previous_state["eth"] * eth_ret
-            target_turnover = abs(btc_target - previous_state["btc"]) + abs(
-                eth_target - previous_state["eth"]
-            )
-            state_turnover += target_turnover
-            turnover += target_turnover
-            previous_state = {"btc": btc_target, "eth": eth_target}
-            end_targets = dict(previous_state)
-        state_return -= end_targets["btc"] * funding_by_day["btc"].get(
-            day, Decimal("0")
-        ) + end_targets["eth"] * funding_by_day["eth"].get(day, Decimal("0"))
-        vol = (
-            (
-                sum((value * value for value in state_returns), Decimal("0"))
-                / Decimal(len(state_returns))
-            ).sqrt()
-            if state_returns
-            else Decimal("0")
-        )
-        vol_exposure = (
-            min(Decimal("1.1"), max(Decimal("0.6"), Decimal("0.03") / vol)) if vol else Decimal("1")
-        )
-        state_return *= vol_exposure
-        state_returns.append(state_return)
-        selected = mapping[datetime.fromtimestamp(btc.start_ms / 1000, UTC).month]
-        trend_returns = []
-        trend_targets = {}
-        trend_turnovers = {}
+            for event in events:
+                event["anchor_allocation"] = str(allocation)
+                event["anchor_leverage"] = "4"
+            audit_events.extend(events)
+            component_details[sleeve_id] = {
+                "instrument_id": instrument_id,
+                "allocation": str(allocation),
+                "cash": str(sleeve_day.cash),
+                "quantity": str(sleeve_day.quantity),
+                "equity": str(sleeve_day.equity),
+                "target": str(sleeve_day.target),
+                "return": str(sleeve_day.daily_return),
+                "fee_amount": str(sleeve_day.fee_amount),
+                "slippage_amount": str(sleeve_day.slippage_amount),
+                "funding_amount": str(sleeve_day.funding_amount),
+                "allocated_equity": str(anchor_day["allocated_equity"][sleeve_id]),
+            }
+        trend_details = {}
         for candidate in selected:
-            target = (
-                Decimal(daily_targets[candidate][day_index - 1] or 0) if day_index else Decimal("0")
+            sleeve_day = trend_replays[candidate][day]
+            instrument_id = "btc_perp" if candidate.startswith("btc") else "eth_perp"
+            audit_events.extend(
+                attach_events(
+                    sleeve_day,
+                    candidate,
+                    instrument_id,
+                    capitalized=True,
+                )
             )
-            asset_bar = btc if candidate.startswith("btc") else eth
-            asset_return = asset_bar.close / asset_bar.open - Decimal("1")
-            trend_returns.append(target * asset_return)
-            target_turnover = abs(target - previous_trend.get(candidate, Decimal("0")))
-            turnover += target_turnover
-            trend_turnovers[candidate] = target_turnover
-            trend_targets[candidate] = str(target)
-            previous_trend[candidate] = target
-        for candidate, target_value in trend_targets.items():
-            asset = "btc" if candidate.startswith("btc") else "eth"
-            funding_cost = Decimal(target_value) * funding_by_day[asset].get(day, Decimal("0"))
-            trend_returns[selected.index(candidate)] -= funding_cost
-        if btc.start_ms >= start:
-            result.append(
+            trend_details[candidate] = {
+                "instrument_id": instrument_id,
+                "cash": str(sleeve_day.cash),
+                "quantity": str(sleeve_day.quantity),
+                "equity": str(sleeve_day.equity),
+                "target": str(sleeve_day.target),
+                "return": str(sleeve_day.daily_return),
+                "fee_amount": str(sleeve_day.fee_amount),
+                "slippage_amount": str(sleeve_day.slippage_amount),
+                "funding_amount": str(sleeve_day.funding_amount),
+            }
+        if state_day["route_turnover"]:
+            audit_events.append(
                 {
-                    "day": day,
-                    "timestamp_ms": btc.end_ms,
-                    "state_return": str(state_return),
-                    "state_targets": {k: str(v) for k, v in end_targets.items()},
-                    "state_volatility_exposure": str(vol_exposure),
-                    "trend_returns": [str(v) for v in trend_returns],
-                    "trend_targets": trend_targets,
-                    "turnover": str(turnover),
-                    "sleeves": {
-                        "state": {
-                            "targets": {key: str(value) for key, value in end_targets.items()},
-                            "return": str(state_return),
-                            "turnover": str(state_turnover),
-                        },
-                        **{
-                            candidate: {
-                                "asset": "btc_perp" if candidate.startswith("btc") else "eth_perp",
-                                "target": trend_targets[candidate],
-                                "return": str(trend_returns[index]),
-                                "turnover": str(trend_turnovers[candidate]),
-                            }
-                            for index, candidate in enumerate(selected)
-                        },
-                    },
+                    "timestamp_ms": day_start_ms,
+                    "sleeve_id": "state_overlay",
+                    "instrument_id": None,
+                    "event_type": "STATE_EXPOSURE_REBALANCE",
+                    "target_before": None,
+                    "target_after": str(state_day["combined_exposure"]),
+                    "metric_exposure": str(state_day["signal_exposure"]),
+                    "volatility_exposure": str(state_day["volatility_exposure"]),
+                    "turnover": str(state_day["route_turnover"]),
+                    "route_cost": str(state_day["route_cost"]),
+                    "capitalized": True,
                 }
             )
+        if route_day["route_turnover"]:
+            audit_events.append(
+                {
+                    "timestamp_ms": day_start_ms,
+                    "sleeve_id": "calendar_route",
+                    "instrument_id": None,
+                    "event_type": "CALENDAR_ROUTE_REBALANCE",
+                    "weights_before": {
+                        key: str(value) for key, value in route_day["route_weights_before"].items()
+                    },
+                    "weights_after": {
+                        key: str(value) for key, value in route_day["route_weights"].items()
+                    },
+                    "turnover": str(route_day["route_turnover"]),
+                    "route_cost": str(route_day["route_cost"]),
+                    "capitalized": True,
+                }
+            )
+        metric_score = state_day["metric_score"]
+        metric_exposure = state_day["signal_exposure"]
+        combined_exposure = state_day["combined_exposure"]
+        metrics_state = (
+            "unavailable"
+            if metric_score is None
+            else "high"
+            if metric_exposure == Decimal("2")
+            else "normal"
+        )
+        result.append(
+            {
+                "day": day,
+                "timestamp_ms": day_start_ms + DAY_MS - 1,
+                "raw_return": str(route_day["return"]),
+                "state_return": str(state_day["return"]),
+                "state_anchor_return": str(anchor_day["return"]),
+                "state_signal_return_for_volatility": str(state_day["signal_return"]),
+                "state_targets": {
+                    key: str(value * combined_exposure) for key, value in state_base_targets.items()
+                },
+                "state_base_targets": {
+                    key: str(value) for key, value in state_base_targets.items()
+                },
+                "state_metric_exposure": str(metric_exposure),
+                "state_volatility_exposure": str(state_day["volatility_exposure"]),
+                "state_combined_exposure": str(combined_exposure),
+                "state_realized_rms": (
+                    str(state_day["rms"]) if state_day["rms"] is not None else None
+                ),
+                "trend_targets": {
+                    candidate: str(trend_replays[candidate][day].target) for candidate in selected
+                },
+                "trend_selected": list(selected),
+                "shadow_candidate_count": len(trend_replays),
+                "metrics": {
+                    "state": metrics_state,
+                    "zscore": str(metric_score) if metric_score is not None else None,
+                    "exposure": str(metric_exposure),
+                    "bar_start_ms": state_day["metric_start_ms"],
+                    "source": state_day["metric_source"],
+                    "window_bars": METRIC_WINDOW,
+                },
+                "costs": {
+                    "component_fee": str(-route_day["fee_return"]),
+                    "component_slippage": str(-route_day["slippage_return"]),
+                    "state_route": str(Decimal("0.5") * state_day["route_cost"]),
+                    "calendar_route": str(route_day["route_cost"]),
+                    "outer_route": "0",
+                },
+                "funding_return": str(route_day["funding_return"]),
+                "audit_events": audit_events,
+                "sleeves": {
+                    "state": {
+                        "return": str(state_day["return"]),
+                        "anchor_equity": str(anchor_day["equity"]),
+                        "borrow_reserve": str(anchor_day["reserve"]),
+                        "signal_exposure": str(metric_exposure),
+                        "volatility_exposure": str(state_day["volatility_exposure"]),
+                        "combined_exposure": str(combined_exposure),
+                        "components": component_details,
+                    },
+                    "trend": {
+                        "selected": list(selected),
+                        "route_turnover": str(route_day["route_turnover"]),
+                        "route_cost": str(route_day["route_cost"]),
+                        "components": trend_details,
+                    },
+                },
+            }
+        )
     return result
 
 
-def _portfolio_return(
-    state: dict[str, Any], component_cost_bps: Decimal, route_cost_bps: Decimal
-) -> Decimal:
-    gross = Decimal("0.5") * Decimal(state["state_return"]) + sum(
-        (Decimal(v) for v in state["trend_returns"]), Decimal("0")
-    ) / Decimal("6")
-    return gross - Decimal(state["turnover"]) * (component_cost_bps + route_cost_bps) / Decimal(
-        "10000"
+def _portfolio_return(state: dict[str, Any]) -> Decimal:
+    """Return an already costed raw portfolio day; outer exposure is applied separately."""
+    return Decimal(state["raw_return"])
+
+
+def _causal_volatility_exposure(
+    prior_state_returns: deque[Decimal],
+) -> tuple[Decimal, Decimal | None]:
+    """Use exactly 20 returns that closed before the exposure day."""
+    if len(prior_state_returns) < 20:
+        return Decimal("1"), None
+    rms = (
+        sum((value * value for value in prior_state_returns), Decimal("0"))
+        / Decimal(len(prior_state_returns))
+    ).sqrt()
+    exposure = (
+        Decimal("1.1")
+        if rms == 0
+        else min(Decimal("1.1"), max(Decimal("0.6"), Decimal("0.03") / rms))
     )
+    return exposure, rms
+
+
+def _route_turnover(
+    previous_weights: dict[str, Decimal], current_weights: dict[str, Decimal]
+) -> Decimal:
+    names = set(previous_weights) | set(current_weights)
+    return sum(
+        (
+            abs(current_weights.get(name, Decimal("0")) - previous_weights.get(name, Decimal("0")))
+            for name in names
+        ),
+        Decimal("0"),
+    ) / Decimal("2")
+
+
+def _all_macd_candidates() -> tuple[str, ...]:
+    return tuple(
+        f"{asset}_perp-macd-1440m-{fast}-{slow}-{signal}-long_only-confirm{confirmation}"
+        for asset in ("btc", "eth")
+        for fast, slow in ((5, 15), (8, 24), (10, 30), (12, 36), (16, 48))
+        for signal in (5, 9, 14)
+        for confirmation in (1, 2, 3)
+    )
+
+
+def _funding_by_bar(bars: list[Bar], values: list[FundingRate]) -> list[list[FundingRate]]:
+    ends = [bar.end_ms for bar in bars]
+    result: list[list[FundingRate]] = [[] for _bar in bars]
+    for value in values:
+        index = bisect.bisect_left(ends, value.timestamp_ms)
+        if index < len(bars) and bars[index].start_ms <= value.timestamp_ms:
+            result[index].append(value)
+    return result
+
+
+def _metric_zscores(
+    bars: list[Bar], metrics: list[FuturesMetricBar]
+) -> dict[int, tuple[Decimal | None, str | None]]:
+    by_start = {item.start_ms: item for item in metrics}
+    values: deque[Decimal | None] = deque()
+    total = Decimal("0")
+    total_squared = Decimal("0")
+    missing = 0
+    result: dict[int, tuple[Decimal | None, str | None]] = {}
+    for bar in bars:
+        metric = by_start.get(bar.start_ms)
+        value = (
+            (metric.top_position_ratio / metric.global_account_ratio).ln()
+            if metric is not None
+            and metric.top_position_ratio > 0
+            and metric.global_account_ratio > 0
+            else None
+        )
+        values.append(value)
+        if value is None:
+            missing += 1
+        else:
+            total += value
+            total_squared += value * value
+        if len(values) > METRIC_WINDOW:
+            expired = values.popleft()
+            if expired is None:
+                missing -= 1
+            else:
+                total -= expired
+                total_squared -= expired * expired
+        score = None
+        if len(values) == METRIC_WINDOW and not missing and value is not None:
+            mean = total / Decimal(METRIC_WINDOW)
+            variance = max(Decimal("0"), total_squared / Decimal(METRIC_WINDOW) - mean * mean)
+            deviation = variance.sqrt()
+            score = (
+                Decimal("0") if deviation <= Decimal("0.00000001") else (value - mean) / deviation
+            )
+            score = max(Decimal("-8"), min(Decimal("8"), score))
+        result[bar.start_ms] = (score, metric.source if metric is not None else None)
+    return result
 
 
 def _macd_candidate(bars: list[Bar], candidate: str) -> tuple[int | None, ...]:

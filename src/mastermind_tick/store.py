@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from mastermind_tick.config import ExecutionSettings, InstrumentSettings
-from mastermind_tick.models import Bar, FundingRate, Side, StrategySignal, Tick
+from mastermind_tick.models import Bar, FundingRate, FuturesMetricBar, Side, StrategySignal, Tick
 
 SCHEMA = """
 PRAGMA journal_mode=WAL;
@@ -194,6 +194,33 @@ CREATE TABLE IF NOT EXISTS portfolio_daily_ledger (
     PRIMARY KEY (account_id, ledger, day)
 );
 
+CREATE TABLE IF NOT EXISTS portfolio_sleeve_events (
+    account_id TEXT NOT NULL REFERENCES accounts(id),
+    ledger TEXT NOT NULL,
+    day TEXT NOT NULL,
+    event_index INTEGER NOT NULL,
+    timestamp_ms INTEGER NOT NULL,
+    sleeve_id TEXT NOT NULL,
+    instrument_id TEXT,
+    event_type TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    data_version TEXT NOT NULL,
+    created_at_ms INTEGER NOT NULL,
+    PRIMARY KEY (account_id, ledger, day, event_index)
+);
+
+CREATE TABLE IF NOT EXISTS futures_metric_bars (
+    symbol TEXT NOT NULL,
+    interval_minutes INTEGER NOT NULL,
+    start_ms INTEGER NOT NULL,
+    end_ms INTEGER NOT NULL,
+    top_position_ratio TEXT NOT NULL,
+    global_account_ratio TEXT NOT NULL,
+    source TEXT NOT NULL,
+    created_at_ms INTEGER NOT NULL,
+    PRIMARY KEY (symbol, interval_minutes, start_ms)
+);
+
 CREATE TABLE IF NOT EXISTS ohlcv_bars (
     instrument_id TEXT NOT NULL,
     symbol TEXT NOT NULL,
@@ -228,6 +255,10 @@ CREATE INDEX IF NOT EXISTS idx_ohlcv_instrument_time
     ON ohlcv_bars(instrument_id, interval_minutes, start_ms DESC);
 CREATE INDEX IF NOT EXISTS idx_portfolio_ledger_account_time
     ON portfolio_daily_ledger(account_id, timestamp_ms);
+CREATE INDEX IF NOT EXISTS idx_portfolio_sleeve_events_account_time
+    ON portfolio_sleeve_events(account_id, timestamp_ms);
+CREATE INDEX IF NOT EXISTS idx_futures_metric_symbol_time
+    ON futures_metric_bars(symbol, interval_minutes, start_ms);
 """
 
 WAREHOUSE_TABLES = (
@@ -243,6 +274,8 @@ WAREHOUSE_TABLES = (
     "agg_trades",
     "reconstructed_signals",
     "portfolio_daily_ledger",
+    "portfolio_sleeve_events",
+    "futures_metric_bars",
 )
 
 
@@ -440,6 +473,7 @@ class PaperStore:
         month_locked: bool,
         state: dict[str, Any],
         data_version: str,
+        sleeve_events: list[dict[str, Any]] | None = None,
     ) -> bool:
         now_ms = int(time.time() * 1000)
         with self.connection() as connection:
@@ -466,6 +500,28 @@ class PaperStore:
             ).rowcount
             if not inserted:
                 return False
+            for index, event in enumerate(sleeve_events or []):
+                connection.execute(
+                    """
+                    INSERT INTO portfolio_sleeve_events (
+                        account_id, ledger, day, event_index, timestamp_ms, sleeve_id,
+                        instrument_id, event_type, payload_json, data_version, created_at_ms
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        account_id,
+                        ledger,
+                        day,
+                        index,
+                        int(event["timestamp_ms"]),
+                        str(event["sleeve_id"]),
+                        event.get("instrument_id"),
+                        str(event["event_type"]),
+                        json.dumps(event, ensure_ascii=False, sort_keys=True),
+                        data_version,
+                        now_ms,
+                    ),
+                )
             if ledger == "base":
                 initial_row = connection.execute(
                     "SELECT initial_cash FROM accounts WHERE id = ?", (account_id,)
@@ -512,11 +568,93 @@ class PaperStore:
             ).fetchall()
         return [{**dict(row), "state": json.loads(row["state_json"])} for row in rows]
 
+    def portfolio_sleeve_events(
+        self, account_id: str, ledger: str, day: str | None = None
+    ) -> list[dict[str, Any]]:
+        clauses = ["account_id = ?", "ledger = ?"]
+        params: list[Any] = [account_id, ledger]
+        if day is not None:
+            clauses.append("day = ?")
+            params.append(day)
+        with self.connection() as connection:
+            rows = connection.execute(
+                f"""
+                SELECT * FROM portfolio_sleeve_events
+                WHERE {" AND ".join(clauses)}
+                ORDER BY timestamp_ms, event_index
+                """,
+                params,
+            ).fetchall()
+        return [{**dict(row), "payload": json.loads(row["payload_json"])} for row in rows]
+
+    def upsert_futures_metric_bars(
+        self, symbol: str, interval_minutes: int, bars: list[FuturesMetricBar]
+    ) -> int:
+        """Insert first-seen metric snapshots without rewriting published forward inputs."""
+        now_ms = int(time.time() * 1000)
+        with self.connection() as connection:
+            return sum(
+                connection.execute(
+                    """
+                    INSERT OR IGNORE INTO futures_metric_bars (
+                        symbol, interval_minutes, start_ms, end_ms, top_position_ratio,
+                        global_account_ratio, source, created_at_ms
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        symbol,
+                        interval_minutes,
+                        bar.start_ms,
+                        bar.end_ms,
+                        str(bar.top_position_ratio),
+                        str(bar.global_account_ratio),
+                        bar.source,
+                        now_ms,
+                    ),
+                ).rowcount
+                for bar in bars
+            )
+
+    def futures_metric_bars(
+        self,
+        symbol: str,
+        interval_minutes: int,
+        start_ms: int | None = None,
+        end_ms: int | None = None,
+    ) -> list[FuturesMetricBar]:
+        clauses = ["symbol = ?", "interval_minutes = ?"]
+        params: list[Any] = [symbol, interval_minutes]
+        if start_ms is not None:
+            clauses.append("start_ms >= ?")
+            params.append(start_ms)
+        if end_ms is not None:
+            clauses.append("end_ms <= ?")
+            params.append(end_ms)
+        with self.connection() as connection:
+            rows = connection.execute(
+                f"""
+                SELECT * FROM futures_metric_bars
+                WHERE {" AND ".join(clauses)} ORDER BY start_ms
+                """,
+                params,
+            ).fetchall()
+        return [
+            FuturesMetricBar(
+                int(row["start_ms"]),
+                int(row["end_ms"]),
+                Decimal(row["top_position_ratio"]),
+                Decimal(row["global_account_ratio"]),
+                str(row["source"]),
+            )
+            for row in rows
+        ]
+
     def delete_paper_account(self, account_id: str) -> None:
         """Delete only account-scoped paper records; shared market data is untouched."""
         with self.connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
             for table in (
+                "portfolio_sleeve_events",
                 "portfolio_daily_ledger",
                 "reconstructed_signals",
                 "funding_payments",

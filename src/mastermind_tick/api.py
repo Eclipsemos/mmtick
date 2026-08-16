@@ -264,6 +264,17 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
             raise HTTPException(status_code=404, detail=f"not a portfolio account: {account_id}")
         return store.portfolio_ledger(account_id, ledger)
 
+    @app.get("/api/accounts/{account_id}/portfolio-sleeve-events")
+    def portfolio_sleeve_events(
+        account_id: str,
+        ledger: Annotated[str, Query(pattern="^(base|stress)$")] = "base",
+        day: Annotated[str | None, Query(pattern=r"^\d{4}-\d{2}-\d{2}$")] = None,
+    ) -> list[dict]:
+        _require_account(resolved, store, account_id)
+        if not resolved.portfolio_paper.enabled or account_id != resolved.portfolio_paper.id:
+            raise HTTPException(status_code=404, detail=f"not a portfolio account: {account_id}")
+        return store.portfolio_sleeve_events(account_id, ledger, day)
+
     @app.get("/api/fills")
     def fills(
         account_id: str = "soxl_perp_long",

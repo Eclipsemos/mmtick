@@ -59,6 +59,17 @@ class FundingRate:
     mark_price: Decimal
 
 
+@dataclass(frozen=True)
+class FuturesMetricBar:
+    """Closed Binance futures positioning snapshot reduced to one 4h bucket."""
+
+    start_ms: int
+    end_ms: int
+    top_position_ratio: Decimal
+    global_account_ratio: Decimal
+    source: str
+
+
 @dataclass
 class Bar:
     start_ms: int
