@@ -8,6 +8,28 @@ import httpx
 from mastermind_tick.binance_futures import BinanceFuturesClient
 
 
+def test_time_sync_uses_cache_busting_nonce(monkeypatch) -> None:
+    captured: dict[str, object] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured["request"] = request
+        return httpx.Response(200, json={"serverTime": 1_700_000_000_125})
+
+    monkeypatch.setattr(
+        "mastermind_tick.binance_futures.time.time", lambda: 1_700_000_000.0
+    )
+    http = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    client = BinanceFuturesClient("https://fapi.binance.test", client=http)
+
+    offset = asyncio.run(client.sync_time())
+
+    request = captured["request"]
+    assert isinstance(request, httpx.Request)
+    assert parse_qs(request.url.query.decode()) == {"nonce": ["1700000000000"]}
+    assert offset == 125
+    asyncio.run(http.aclose())
+
+
 def test_tradfi_contract_uses_signed_stock_contract_endpoint(monkeypatch) -> None:
     captured: dict[str, object] = {}
 

@@ -89,7 +89,8 @@ class BinanceFuturesClient:
 
     async def sync_time(self) -> int:
         before = int(time.time() * 1000)
-        payload = await self._request("GET", "/fapi/v1/time")
+        # A per-request nonce prevents transparent HTTP caches from serving a stale clock.
+        payload = await self._request("GET", "/fapi/v1/time", {"nonce": before})
         after = int(time.time() * 1000)
         self.time_offset_ms = int(payload["serverTime"]) - (before + after) // 2
         return self.time_offset_ms
