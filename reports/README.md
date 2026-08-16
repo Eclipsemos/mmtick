@@ -217,6 +217,14 @@ market data.
   persistently from long-only to long/short calendar maps on the following day. The selected rule
   remains 6/7 and deepens the May loss, while none of 2,985 development-risk-eligible controls
   reaches strict 7/7. This post-confirmation mechanism extension is rejected.
+- `experiments/conditional_calendar_complement/2026-08-15/`: prior-year weak-month screens add
+  development-ranked daily MACD complements to the frozen expanding calendar. The long/short and
+  derived short-only searches both remain 6/7 and lose heavily in May; neither search contains a
+  strict base-and-stress configuration. This post-confirmation family extension is rejected.
+- `experiments/provider_calendar_router/2026-08-15/`: each calendar month chooses between the
+  frozen expanding calendar and a coarse volatility-guard provider using only earlier same-month
+  results. The development-selected route improves January and February but retains the calendar
+  provider in May, so all 156 eligible controls remain at or below 6/7. The family is rejected.
 
 The strategy catalog lives in [`../strategies/`](../strategies/README.md). When a report and the
 catalog disagree, the catalog is authoritative for the current research baseline and deployment
