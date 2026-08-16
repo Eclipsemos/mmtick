@@ -228,12 +228,16 @@ function App() {
   const [flattenError, setFlattenError] = useState('')
   const [liveActionMessage, setLiveActionMessage] = useState('')
   const accountId = mode === 'live' ? 'soxl_perp_live' : paperAccountId
-  const marketInstrumentId = mode === 'live' ? 'soxl_perp' : accountId
   const overview = useQuery({
     queryKey: ['overview', mode],
     queryFn: mode === 'live' ? api.liveOverview : api.overview,
     refetchInterval: 1000,
   })
+  const selectedOverviewAccount = overview.data?.accounts.find((item) => item.id === accountId)
+  const marketInstrumentId = mode === 'live'
+    ? 'soxl_perp'
+    : selectedOverviewAccount?.runtime.market_data_id ?? accountId
+  const marketIntervalMinutes = selectedOverviewAccount?.runtime.strategy_config.bar_minutes ?? 15
   const liveReadiness = useQuery({
     queryKey: ['live-readiness'],
     queryFn: api.liveReadiness,
@@ -246,8 +250,8 @@ function App() {
     [accountId, mode],
   )
   const ohlcvPage = useCallback(
-    (_scope: string, beforeMs?: number) => api.ohlcv(marketInstrumentId, beforeMs),
-    [marketInstrumentId],
+    (_scope: string, beforeMs?: number) => api.ohlcv(marketInstrumentId, beforeMs, marketIntervalMinutes),
+    [marketInstrumentId, marketIntervalMinutes],
   )
   const equity = useQuery({
     queryKey: ['equity', mode, accountId],
@@ -287,8 +291,8 @@ function App() {
     enabled: view === 'warehouse',
   })
   const ohlcv = useQuery({
-    queryKey: ['ohlcv', mode, marketInstrumentId],
-    queryFn: () => api.ohlcv(marketInstrumentId),
+    queryKey: ['ohlcv', mode, marketInstrumentId, marketIntervalMinutes],
+    queryFn: () => api.ohlcv(marketInstrumentId, undefined, marketIntervalMinutes),
     refetchInterval: 5000,
   })
   const equityHistory = useTimePaginatedSeries(
@@ -299,7 +303,7 @@ function App() {
     2000,
   )
   const ohlcvHistory = useTimePaginatedSeries(
-    `${mode}:${marketInstrumentId}`,
+    `${mode}:${marketInstrumentId}:${marketIntervalMinutes}`,
     ohlcv.data ?? [],
     ohlcvTimestamp,
     ohlcvPage,
@@ -526,7 +530,7 @@ function App() {
               </div>
             )}
             <div className="scope-chips">
-              <span>{account?.symbol ?? 'INITIALIZING'}</span><span>15m</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : view === 'returns' ? 'PERFORMANCE' : account?.runtime.allow_short ? 'LONG / SHORT' : 'LONG ONLY'}</span>
+              <span>{account?.symbol ?? 'INITIALIZING'}</span><span>{account?.runtime.paper_model === 'portfolio' ? '1D' : '15m'}</span><span>{view === 'warehouse' ? 'TICK ARCHIVE' : view === 'returns' ? 'PERFORMANCE' : account?.runtime.paper_model === 'portfolio' ? 'PORTFOLIO' : account?.runtime.allow_short ? 'LONG / SHORT' : 'LONG ONLY'}</span>
             </div>
           </div>
         </section>
@@ -813,7 +817,7 @@ function Monitor({
         <Metric label="累计收益" value={percent(account.total_return)} sub={money(account.total_pnl, account.currency)} tone={positive ? 'good' : 'bad'} icon={positive ? <TrendingUp /> : <TrendingDown />} />
         <Metric label="当前持仓" value={number(Math.abs(positionQuantity))} sub={`${positionSide} · 均价 ${money(account.average_price, account.currency)}`} icon={<Activity />} />
         <Metric label="最大回撤" value={percent(account.max_drawdown)} sub={`${account.round_trips} 次完整交易`} tone="bad" icon={<TrendingDown />} />
-        <Metric label="夏普率" value={number(account.sharpe_ratio, 2)} sub="15m 年化 · rf 0%" tone={account.sharpe_ratio === null ? '' : account.sharpe_ratio >= 0 ? 'good' : 'bad'} icon={<Gauge />} />
+        <Metric label="夏普率" value={number(account.sharpe_ratio, 2)} sub={`${runtime.paper_model === 'portfolio' ? '日线' : '15m'} 年化 · rf 0%`} tone={account.sharpe_ratio === null ? '' : account.sharpe_ratio >= 0 ? 'good' : 'bad'} icon={<Gauge />} />
         <Metric label="轮次胜率" value={account.win_rate === null ? '--' : rate(account.win_rate)} sub={`${account.winning_trades} 赢 / ${account.round_trips} 轮`} tone={account.win_rate === null ? '' : account.win_rate >= 0.5 ? 'good' : 'bad'} icon={<Target />} />
       </section>
 
@@ -831,7 +835,7 @@ function Monitor({
 
         <div className="panel strategy-panel">
           <div className="panel-head">
-            <div><span>STRATEGY STATE</span><h3>ATR 实时状态</h3></div>
+            <div><span>STRATEGY STATE</span><h3>{runtime.paper_model === 'portfolio' ? '月历组合状态' : 'ATR 实时状态'}</h3></div>
             <div className="strategy-head-actions">
               {allowStrategyParameters && (
                 <button
@@ -870,6 +874,20 @@ function Monitor({
               <div><dt>模拟滑点</dt><dd>{number(runtime.slippage_bps, 2)} bps</dd></div>
             </dl>
           )}
+          {runtime.paper_model === 'portfolio' ? (
+            <dl className="strategy-values">
+              <div><dt>策略版本</dt><dd>{runtime.strategy_config.algorithm_version}</dd></div>
+              <div><dt>信号周期</dt><dd>UTC 日线收盘</dd></div>
+              <div><dt>成交时点</dt><dd>下一 UTC 日开盘</dd></div>
+              <div><dt>组合权重</dt><dd>状态 50% / 趋势 50%</dd></div>
+              <div><dt>趋势袖套</dt><dd>月度固定 Top 3</dd></div>
+              <div><dt>外层杠杆</dt><dd>4.0x（研究模型）</dd></div>
+              <div><dt>月度锁</dt><dd>-20% / +18%</dd></div>
+              <div><dt>压力账本</dt><dd>并行持久化</dd></div>
+              <div><dt>指标缺失</dt><dd>状态敞口 1.0x</dd></div>
+              <div><dt>前向起点</dt><dd>2026-08-16 UTC</dd></div>
+            </dl>
+          ) : (
           <dl className="strategy-values">
             <div><dt>实时 ATR</dt><dd>{number(strategy.atr, 4)}</dd></div>
             <div><dt>ATR 止损线</dt><dd>{money(strategy.trailing_stop, account.currency)}</dd></div>
@@ -884,6 +902,7 @@ function Monitor({
             <div><dt>本 K 线动作锁</dt><dd>{strategy.action_this_bar ? 'LOCKED' : 'OPEN'}</dd></div>
             <div><dt>反向确认</dt><dd>{strategy.reversal_direction ? `等待 ${strategy.reversal_direction}` : 'NONE'}</dd></div>
           </dl>
+          )}
           {runtime.paper_model === 'futures' && (
             <dl className="strategy-values futures-values">
               <div><dt>标记价格</dt><dd>{money(account.mark_price, account.currency)}</dd></div>
@@ -900,6 +919,7 @@ function Monitor({
 
       <OfficialKlinePanel
         validation={account.runtime.kline_state.validation}
+        intervalMinutes={account.runtime.strategy_config.bar_minutes}
         bars={bars}
         fills={accountFills}
         paperModel={account.runtime.paper_model}
@@ -1286,6 +1306,7 @@ function buildKlineChart(bars: OhlcvBar[]): KlinePoint[] {
 
 const OfficialKlinePanel = memo(function OfficialKlinePanel({
   validation,
+  intervalMinutes,
   bars,
   fills,
   paperModel,
@@ -1294,13 +1315,15 @@ const OfficialKlinePanel = memo(function OfficialKlinePanel({
   hasOlder,
 }: {
   validation: string
+  intervalMinutes: number
   bars: OhlcvBar[]
   fills: Fill[]
-  paperModel: 'spot' | 'futures'
+  paperModel: 'spot' | 'futures' | 'portfolio'
   loadOlder: () => Promise<void>
   loadingOlder: boolean
   hasOlder: boolean
 }) {
+  const intervalLabel = intervalMinutes === 1440 ? '日线' : `${intervalMinutes} 分钟`
   const klineChart = useMemo(() => buildKlineChart(bars), [bars])
   const tradeMarkers = useMemo(
     () => buildTradeMarkers(fills, paperModel),
@@ -1328,7 +1351,7 @@ const OfficialKlinePanel = memo(function OfficialKlinePanel({
   return (
     <section className="panel kline-panel" data-testid="official-kline-panel">
       <div className="panel-head price-head">
-        <div><span>BINANCE OFFICIAL 15M OHLCV</span><h3>官方 15 分钟 K线</h3></div>
+        <div><span>BINANCE OFFICIAL OHLCV</span><h3>官方 {intervalLabel} K线</h3></div>
         <div className="chart-summary">
           <div className="chart-controls" aria-label="K线时间窗口">
             <button type="button" onClick={() => pan(-1)} title="向左滚动K线" aria-label="向左滚动K线"><ChevronLeft size={15} /></button>
@@ -1348,7 +1371,7 @@ const OfficialKlinePanel = memo(function OfficialKlinePanel({
       <div className="kline-chart-wrap">
         {visibleBars.length > 0 ? (
           <KlineSvg bars={visibleBars} trades={visibleTradeMarkers} />
-        ) : <div className="empty-chart">等待官方 15m K线</div>}
+        ) : <div className="empty-chart">等待官方 {intervalLabel} K线</div>}
       </div>
     </section>
   )
@@ -1423,7 +1446,7 @@ const KlineSvg = memo(function KlineSvg({ bars, trades }: { bars: KlinePoint[]; 
   )
 })
 
-function buildTradeMarkers(fills: Fill[], paperModel: 'spot' | 'futures'): TradePoint[] {
+function buildTradeMarkers(fills: Fill[], paperModel: 'spot' | 'futures' | 'portfolio'): TradePoint[] {
   const ordered = [...fills].sort((left, right) => (
     left.timestamp_ms - right.timestamp_ms
     || (left.position_effect === 'CLOSE' ? -1 : right.position_effect === 'CLOSE' ? 1 : 0)

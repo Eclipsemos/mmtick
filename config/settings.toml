@@ -24,6 +24,18 @@ minimum_notional = 5.0
 [history]
 warmup_bars = 200
 
+[portfolio_paper]
+enabled = true
+id = "btc_eth_calendar_router"
+symbol = "BTCETH"
+display_symbol = "BTC/ETH CALENDAR ROUTER"
+name = "BTC/ETH Expanding Calendar Router v1"
+venue = "Binance USD-M Futures"
+currency = "USDT"
+strategy_path = "strategies/paper/btc_eth_expanding_calendar_router_v1.json"
+primary_market_id = "btc_perp"
+poll_seconds = 900
+
 [live_futures]
 enabled = true
 instrument_id = "soxl_perp"
@@ -109,3 +121,32 @@ slippage_bps = 2.0
 minimum_notional = 5.0
 profit_activation_atr = 2.0
 profit_trailing_atr = 0.5
+paper_enabled = false
+
+[[instruments]]
+id = "btc_perp"
+symbol = "BTCUSDT"
+display_symbol = "BTC/USDT PERP DATA"
+name = "Bitcoin USD-M Perpetual Market Data"
+asset_type = "crypto_perpetual"
+venue = "Binance USD-M Futures"
+currency = "USDT"
+feed = "binance_futures"
+quantity_step = 0.001
+reference_symbol = "BTC"
+paper_model = "futures"
+paper_enabled = false
+
+[[instruments]]
+id = "eth_perp"
+symbol = "ETHUSDT"
+display_symbol = "ETH/USDT PERP DATA"
+name = "Ethereum USD-M Perpetual Market Data"
+asset_type = "crypto_perpetual"
+venue = "Binance USD-M Futures"
+currency = "USDT"
+feed = "binance_futures"
+quantity_step = 0.001
+reference_symbol = "ETH"
+paper_model = "futures"
+paper_enabled = false

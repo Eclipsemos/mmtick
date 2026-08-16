@@ -10,6 +10,7 @@ from dataclasses import asdict, dataclass, field
 from decimal import Decimal
 from typing import Any
 
+from mastermind_tick.calendar_router import RouterRuntime
 from mastermind_tick.config import InstrumentSettings, Settings, instrument_strategy
 from mastermind_tick.feeds import MarketFeed, build_feed
 from mastermind_tick.models import Bar, Tick
@@ -59,6 +60,7 @@ class PaperEngine:
         self._stopping = False
         self._instrument_by_id = {item.id: item for item in settings.instruments}
         self._tick_listeners: dict[str, list[Callable[[Tick], Awaitable[None]]]] = {}
+        self.portfolio_runtime: RouterRuntime | None = None
 
     def add_tick_listener(
         self,
@@ -84,6 +86,8 @@ class PaperEngine:
         self._stopping = False
         feeds: dict[str, MarketFeed] = {}
         for instrument in self.settings.instruments:
+            if not instrument.paper_enabled:
+                continue
             self.store.ensure_account(instrument, self.settings.initial_cash, self.started_at_ms)
             market_instrument = self._market_instrument(instrument)
             if instrument.market_id not in feeds:
@@ -118,9 +122,7 @@ class PaperEngine:
             saved_state = self.store.strategy_state(instrument.id)
             strategy.restore_runtime(saved_state)
             if runtime.profit_protection is not None and saved_state is not None:
-                runtime.profit_protection.restore_runtime(
-                    saved_state.get("profit_protection")
-                )
+                runtime.profit_protection.restore_runtime(saved_state.get("profit_protection"))
             try:
                 await self._warmup_runtime(runtime)
             except Exception as exc:
@@ -133,9 +135,12 @@ class PaperEngine:
                     "WARMUP_FAILED",
                     runtime.status_message,
                 )
-        for market_id, runtime in self.runtimes.items():
-            if market_id != runtime.instrument.market_id:
+        started_markets: set[str] = set()
+        for runtime in self.runtimes.values():
+            market_id = runtime.instrument.market_id
+            if market_id in started_markets:
                 continue
+            started_markets.add(market_id)
             runtime.task = asyncio.create_task(
                 self._run_instrument(runtime), name=f"feed-{market_id}"
             )
@@ -146,6 +151,19 @@ class PaperEngine:
                 self._run_kline_reconciliation(runtime),
                 name=f"kline-reconciliation-{market_id}",
             )
+        if self.settings.portfolio_paper.enabled:
+            self.portfolio_runtime = RouterRuntime(
+                self.settings.portfolio_paper,
+                self.store,
+                Decimal(str(self.settings.initial_cash)),
+            )
+            try:
+                await self.portfolio_runtime.start()
+            except Exception as exc:
+                self.portfolio_runtime.status = "DEGRADED"
+                self.portfolio_runtime.status_message = (
+                    f"Warm-up failed: {type(exc).__name__}: {exc}"
+                )
 
     async def stop(self) -> None:
         self._stopping = True
@@ -167,6 +185,8 @@ class PaperEngine:
         for runtime in self.runtimes.values():
             runtime.status = "STOPPED"
             runtime.status_message = "Service stopped"
+        if self.portfolio_runtime is not None:
+            await self.portfolio_runtime.stop()
 
     async def pause(self) -> None:
         self.trading_enabled = False
@@ -217,9 +237,7 @@ class PaperEngine:
                         if item.strategy_ready:
                             continue
                         item.status = "DEGRADED"
-                        item.status_message = (
-                            f"Warm-up retry failed: {type(exc).__name__}: {exc}"
-                        )
+                        item.status_message = f"Warm-up retry failed: {type(exc).__name__}: {exc}"
                         self.store.add_event(
                             item.instrument.id,
                             _now_ms(),
@@ -344,9 +362,7 @@ class PaperEngine:
     ) -> bool:
         bar_ms = runtime.strategy.bar_ms
         current_ms = now_ms if now_ms is not None else _now_ms()
-        latest_closed_start_ms = (
-            (current_ms - KLINE_CLOSE_GRACE_MS) // bar_ms * bar_ms - bar_ms
-        )
+        latest_closed_start_ms = (current_ms - KLINE_CLOSE_GRACE_MS) // bar_ms * bar_ms - bar_ms
         if runtime.last_official_bar_start_ms is None:
             return False
         first_missing_start_ms = runtime.last_official_bar_start_ms + bar_ms
@@ -647,9 +663,7 @@ class PaperEngine:
                     "leverage": runtime.instrument.leverage,
                     "margin_mode": runtime.instrument.margin_mode,
                     "position_fraction": _position_fraction(runtime.instrument, self.settings),
-                    "target_exposure": _target_exposure(
-                        runtime.instrument, self.settings
-                    ),
+                    "target_exposure": _target_exposure(runtime.instrument, self.settings),
                     "fee_bps": (
                         runtime.instrument.fee_bps
                         if runtime.instrument.fee_bps is not None
@@ -715,6 +729,8 @@ class PaperEngine:
                     ),
                 }
             )
+        if self.portfolio_runtime is not None:
+            values.append(self.portfolio_runtime.view())
         return {
             "service": self.settings.app_name,
             "environment": self.settings.environment,

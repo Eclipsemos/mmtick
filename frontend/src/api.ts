@@ -82,17 +82,17 @@ export const api = {
     const offset = -new Date().getTimezoneOffset()
     return getJson<ReturnSummary>(`/api/accounts/${accountId}/returns?timezone_offset_minutes=${offset}`)
   },
-  fills: (accountId = 'soxl_perp') => getJson<Fill[]>(`/api/fills?account_id=${accountId}&limit=200`),
-  orders: (accountId = 'soxl_perp') => getJson<Order[]>(`/api/orders?account_id=${accountId}&limit=200`),
-  events: (accountId = 'soxl_perp') => getJson<EventItem[]>(`/api/events?account_id=${accountId}&limit=200`),
+  fills: (accountId = 'soxl_perp_long') => getJson<Fill[]>(`/api/fills?account_id=${accountId}&limit=200`),
+  orders: (accountId = 'soxl_perp_long') => getJson<Order[]>(`/api/orders?account_id=${accountId}&limit=200`),
+  events: (accountId = 'soxl_perp_long') => getJson<EventItem[]>(`/api/events?account_id=${accountId}&limit=200`),
   funding: (accountId: string) =>
     getJson<FundingPayment[]>(`/api/funding?account_id=${accountId}&limit=1000`),
   warehouse: () => getJson<WarehouseSummary>('/api/warehouse'),
   aggTrades: (instrumentId = 'soxl_perp') =>
     getJson<AggTrade[]>(`/api/market/agg-trades?instrument_id=${instrumentId}&limit=100`),
-  ohlcv: (instrumentId = 'soxl_perp', beforeMs?: number) => {
+  ohlcv: (instrumentId = 'soxl_perp', beforeMs?: number, intervalMinutes = 15) => {
     const cursor = beforeMs === undefined ? '' : `&before_ms=${beforeMs}`
-    return getJson<OhlcvBar[]>(`/api/market/ohlcv?instrument_id=${instrumentId}&limit=200${cursor}`)
+    return getJson<OhlcvBar[]>(`/api/market/ohlcv?instrument_id=${instrumentId}&interval_minutes=${intervalMinutes}&limit=200${cursor}`)
   },
   control: async (action: 'pause' | 'resume') => {
     return postJson<{ ok: boolean; trading_enabled: boolean }>('/api/control', { action })

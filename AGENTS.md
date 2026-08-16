@@ -2,8 +2,9 @@
 
 ## Project Structure & Module Organization
 
-Python application code lives in `src/mastermind_tick/`. Strategy and replay logic are in
-`strategy.py` and `backtest.py`; paper execution is in `engine.py`; Binance live execution is
+Python application code lives in `src/mastermind_tick/`. Frozen definitions live under
+`strategies/live/`, `strategies/paper/`, `strategies/components/`, and `strategies/archive/`.
+Strategy and replay logic are in `strategy.py` and `backtest.py`; paper execution is in `engine.py`; Binance live execution is
 isolated in `live_futures.py`, `live_spot.py`, and `live_store.py`. Runtime settings belong in
 `config/settings.toml`. Python tests mirror these modules under `tests/test_*.py`.
 

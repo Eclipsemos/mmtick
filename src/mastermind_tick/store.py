@@ -179,6 +179,21 @@ CREATE TABLE IF NOT EXISTS reconstructed_signals (
     created_at_ms INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS portfolio_daily_ledger (
+    account_id TEXT NOT NULL REFERENCES accounts(id),
+    ledger TEXT NOT NULL,
+    day TEXT NOT NULL,
+    timestamp_ms INTEGER NOT NULL,
+    equity TEXT NOT NULL,
+    daily_return TEXT NOT NULL,
+    month_start_equity TEXT NOT NULL,
+    month_locked INTEGER NOT NULL DEFAULT 0,
+    state_json TEXT NOT NULL,
+    data_version TEXT NOT NULL,
+    created_at_ms INTEGER NOT NULL,
+    PRIMARY KEY (account_id, ledger, day)
+);
+
 CREATE TABLE IF NOT EXISTS ohlcv_bars (
     instrument_id TEXT NOT NULL,
     symbol TEXT NOT NULL,
@@ -211,6 +226,8 @@ CREATE INDEX IF NOT EXISTS idx_reconstructed_signals_account_time
     ON reconstructed_signals(account_id, timestamp_ms DESC);
 CREATE INDEX IF NOT EXISTS idx_ohlcv_instrument_time
     ON ohlcv_bars(instrument_id, interval_minutes, start_ms DESC);
+CREATE INDEX IF NOT EXISTS idx_portfolio_ledger_account_time
+    ON portfolio_daily_ledger(account_id, timestamp_ms);
 """
 
 WAREHOUSE_TABLES = (
@@ -225,6 +242,7 @@ WAREHOUSE_TABLES = (
     "ohlcv_bars",
     "agg_trades",
     "reconstructed_signals",
+    "portfolio_daily_ledger",
 )
 
 
@@ -261,8 +279,7 @@ class PaperStore:
                 )
 
         account_columns = {
-            row["name"]
-            for row in connection.execute("PRAGMA table_info(accounts)").fetchall()
+            row["name"] for row in connection.execute("PRAGMA table_info(accounts)").fetchall()
         }
         account_migrations = {
             "total_funding": "TEXT NOT NULL DEFAULT '0'",
@@ -296,8 +313,7 @@ class PaperStore:
             )
 
         agg_trade_columns = {
-            row["name"]
-            for row in connection.execute("PRAGMA table_info(agg_trades)").fetchall()
+            row["name"] for row in connection.execute("PRAGMA table_info(agg_trades)").fetchall()
         }
         for name in ("open_price", "high_price", "low_price"):
             if name not in agg_trade_columns:
@@ -377,6 +393,141 @@ class PaperStore:
                     instrument.id,
                 ),
             )
+
+    def ensure_portfolio_account(
+        self,
+        account_id: str,
+        symbol: str,
+        display_symbol: str,
+        venue: str,
+        currency: str,
+        initial_cash: float,
+        now_ms: int,
+    ) -> None:
+        with self.connection() as connection:
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO accounts (
+                    id, symbol, display_symbol, venue, currency, initial_cash, cash,
+                    quantity, average_price, realized_pnl, total_fees, total_funding,
+                    paper_model, leverage, margin_mode, position_fraction,
+                    created_at_ms, updated_at_ms
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, '0', '0', '0', '0', '0',
+                          'portfolio', 4, 'modeled_shared', '1', ?, ?)
+                """,
+                (
+                    account_id,
+                    symbol,
+                    display_symbol,
+                    venue,
+                    currency,
+                    str(initial_cash),
+                    str(initial_cash),
+                    now_ms,
+                    now_ms,
+                ),
+            )
+
+    def save_portfolio_day(
+        self,
+        account_id: str,
+        ledger: str,
+        day: str,
+        timestamp_ms: int,
+        equity: Decimal,
+        daily_return: Decimal,
+        month_start_equity: Decimal,
+        month_locked: bool,
+        state: dict[str, Any],
+        data_version: str,
+    ) -> bool:
+        now_ms = int(time.time() * 1000)
+        with self.connection() as connection:
+            inserted = connection.execute(
+                """
+                INSERT OR IGNORE INTO portfolio_daily_ledger (
+                    account_id, ledger, day, timestamp_ms, equity, daily_return,
+                    month_start_equity, month_locked, state_json, data_version, created_at_ms
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    account_id,
+                    ledger,
+                    day,
+                    timestamp_ms,
+                    str(equity),
+                    str(daily_return),
+                    str(month_start_equity),
+                    int(month_locked),
+                    json.dumps(state, ensure_ascii=False, sort_keys=True),
+                    data_version,
+                    now_ms,
+                ),
+            ).rowcount
+            if not inserted:
+                return False
+            if ledger == "base":
+                initial_row = connection.execute(
+                    "SELECT initial_cash FROM accounts WHERE id = ?", (account_id,)
+                ).fetchone()
+                if initial_row is None:
+                    raise LookupError(f"unknown account: {account_id}")
+                realized = equity - Decimal(initial_row["initial_cash"])
+                connection.execute(
+                    """
+                    UPDATE accounts
+                    SET cash = ?, realized_pnl = ?, updated_at_ms = ?
+                    WHERE id = ?
+                    """,
+                    (str(equity), str(realized), timestamp_ms, account_id),
+                )
+                connection.execute(
+                    """
+                    INSERT INTO equity_snapshots (
+                        account_id, timestamp_ms, price, cash, quantity, market_value,
+                        equity, unrealized_pnl, realized_pnl, initial_margin,
+                        available_balance, total_funding, source
+                    ) VALUES (?, ?, '1', ?, '0', '0', ?, '0', ?, '0', ?, '0', ?)
+                    """,
+                    (
+                        account_id,
+                        timestamp_ms,
+                        str(equity),
+                        str(equity),
+                        str(realized),
+                        str(equity),
+                        data_version,
+                    ),
+                )
+            return True
+
+    def portfolio_ledger(self, account_id: str, ledger: str) -> list[dict[str, Any]]:
+        with self.connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT * FROM portfolio_daily_ledger
+                WHERE account_id = ? AND ledger = ? ORDER BY timestamp_ms
+                """,
+                (account_id, ledger),
+            ).fetchall()
+        return [{**dict(row), "state": json.loads(row["state_json"])} for row in rows]
+
+    def delete_paper_account(self, account_id: str) -> None:
+        """Delete only account-scoped paper records; shared market data is untouched."""
+        with self.connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            for table in (
+                "portfolio_daily_ledger",
+                "reconstructed_signals",
+                "funding_payments",
+                "strategy_states",
+                "events",
+                "equity_snapshots",
+                "fills",
+                "orders",
+            ):
+                connection.execute(f"DELETE FROM {table} WHERE account_id = ?", (account_id,))
+            connection.execute("DELETE FROM accounts WHERE id = ?", (account_id,))
 
     def account(self, account_id: str) -> dict[str, Any]:
         with self.connection() as connection:
@@ -756,9 +907,7 @@ class PaperStore:
                     )
             elif side is Side.BUY:
                 budget = cash * Decimal(str(position_fraction))
-                fill_quantity = _floor_step(
-                    budget / (fill_price * (Decimal("1") + fee_rate)), step
-                )
+                fill_quantity = _floor_step(budget / (fill_price * (Decimal("1") + fee_rate)), step)
                 notional = fill_price * fill_quantity
                 fee = notional * fee_rate
                 if (
@@ -813,9 +962,7 @@ class PaperStore:
                     }
                 )
 
-            fill_quantity = sum(
-                (Decimal(str(leg["quantity"])) for leg in fill_legs), Decimal("0")
-            )
+            fill_quantity = sum((Decimal(str(leg["quantity"])) for leg in fill_legs), Decimal("0"))
             notional = sum((Decimal(str(leg["notional"])) for leg in fill_legs), Decimal("0"))
             fee = sum((Decimal(str(leg["fee"])) for leg in fill_legs), Decimal("0"))
             connection.execute(
@@ -998,9 +1145,7 @@ class PaperStore:
     ) -> bool:
         with self.connection() as connection:
             return bool(
-                self._record_funding_rate(
-                    connection, instrument_id, symbol, funding, source
-                )
+                self._record_funding_rate(connection, instrument_id, symbol, funding, source)
             )
 
     @staticmethod
@@ -1095,9 +1240,7 @@ class PaperStore:
         total_funding = Decimal(account["total_funding"])
         is_futures = account["paper_model"] == "futures"
         mark_price = tick.mark_price or tick.price
-        market_value = (
-            abs(quantity) * mark_price if is_futures else quantity * tick.price
-        )
+        market_value = abs(quantity) * mark_price if is_futures else quantity * tick.price
         unrealized = quantity * (mark_price - average_price) if quantity else Decimal("0")
         if is_futures:
             equity = cash + unrealized
@@ -1167,11 +1310,7 @@ class PaperStore:
         before_ms: int | None = None,
     ) -> list[dict[str, Any]]:
         before_clause = "AND timestamp_ms < ?" if before_ms is not None else ""
-        params = (
-            (account_id, before_ms, limit)
-            if before_ms is not None
-            else (account_id, limit)
-        )
+        params = (account_id, before_ms, limit) if before_ms is not None else (account_id, limit)
         with self.connection() as connection:
             rows = connection.execute(
                 f"""
@@ -1279,9 +1418,7 @@ class PaperStore:
 
             tables = []
             for table in WAREHOUSE_TABLES:
-                row_count = int(
-                    connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
-                )
+                row_count = int(connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])
                 index_names = [
                     row["name"]
                     for row in connection.execute(f"PRAGMA index_list({table})").fetchall()

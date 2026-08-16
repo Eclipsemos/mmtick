@@ -1,7 +1,7 @@
 # mastermind:tick
 
-`mastermind:tick` 是一个以 Binance 公共行情驱动的 SOXL 短周期交易系统，包含两个隔离的
-paper 账户、一条独立的 Binance USDⓈ-M Futures 实盘链路、Tick 级回放工具和 React
+`mastermind:tick` 是一个以 Binance 公共行情驱动的量化交易系统，包含 SOXL ATR paper、
+BTC/ETH 组合策略 paper、一条独立的 Binance USDⓈ-M Futures 实盘链路、Tick 级回放工具和 React
 监控台。系统持续保存行情、K 线、策略状态、订单、成交、资金费、现金流和账户绩效。
 
 > **实盘提示**：仓库当前配置已启用 `SOXLUSDT` 实盘运行时和真实订单开关。只有凭证、启动
@@ -13,12 +13,12 @@ paper 账户、一条独立的 Binance USDⓈ-M Futures 实盘链路、Tick 级�
 | 账户 ID | 产品 | 方向 | 初始资金/来源 | 目标敞口 |
 |---|---|---|---|---:|
 | `soxl_perp_long` | `SOXL/USDT PERP LONG ONLY` paper | 仅做多 | 100,000 USDT | 1.25x |
-| `soxl_perp` | 同一 Futures 行情的独立 paper 账户 | 多空 | 100,000 USDT | 1.25x |
+| `btc_eth_calendar_router` | BTC/ETH 扩展月历路由 paper | 组合多空 | 100,000 USDT | 4x 外层模型 |
 | `soxl_perp_live` | Binance `SOXLUSDT` USD-M Futures | 仅做多 | Binance 实际余额 | 1.25x |
 
 Paper 账户写入 `data/paper.db`，实盘账户写入 `data/live_futures.db`；真实余额、订单与成交
-不会混入模拟账本。SOXLB paper 行情采集和仓库写入已经停用，既有历史行保留用于审计，
-不会继续更新或作为可配置账户公开。
+不会混入模拟账本。旧 `soxl_perp` 多空模拟账本已经删除，但该 ID 保留为 SOXL LONG ONLY
+与实盘共用的行情源；它不会再作为模拟账户运行或展示。
 
 实盘和 long-only paper 使用 `2x isolated` 和 62.5% 仓位预算：
 
@@ -52,7 +52,9 @@ K 线周期                 15 分钟
 多仓时，下穿 ATR 跟踪线会发送 `reduce_only` 平仓。平仓后保持空仓，等待下一次有效上穿，
 不开空、不反手、
 不执行延续重入。`soxl_perp_long` 使用与实盘相同的 ATR(32) × 3.0、62.5% 仓位策略；
-`soxl_perp` 继续使用全局 ATR(21) × 4.0，并保留多空反向和 2.0/0.5 ATR 利润保护，用于独立比较。
+BTC/ETH paper 使用冻结的月历路由：状态袖套占 50%，每月固定三个 MACD 趋势袖套各占
+1/6，组合应用 4x 外层研究杠杆与 -20%/+18% UTC 月度锁。基础与压力成本账本并行保存，
+只从 2026-08-16 UTC 起记录前向收益，不允许回写。
 
 该 ATR(32) × 3.0 策略的历史胜率为 `42.28%`，依赖少数大赢家，不属于高胜率目标策略。
 `2x × 70% = 1.40x` 因完整样本回撤 `-29.42%`、新增尾段亏损 `-2.76%` 且回放未模拟强平而
@@ -61,14 +63,16 @@ K 线周期                 15 分钟
 Paper 账户首次启动时会执行一次趋势对齐。实盘首次启动不会按当前趋势追单，只等待新的有效
 穿越；兼容策略状态会持久化，普通服务重启不会重复执行启动入场。
 
-完整实盘策略和风险预算研究见 [STRATEGY.md](STRATEGY.md)。
+完整实盘策略和风险预算研究见
+[strategies/live/soxl_atr32x3_long_v1.md](strategies/live/soxl_atr32x3_long_v1.md)。
 
 ## 行情、成交与记账
 
 - Futures 使用 `SOXLUSDT` Trade 流并按 250 ms 聚合，保留底层 Trade ID 范围。
 - 系统使用官方 15 分钟 Futures K 线预热和定稿；收盘后通过 REST `/klines` 再校验。
-- `soxl_perp`、`soxl_perp_long` 和实盘策略复用同一份 Futures 市场数据，但策略状态和账本
-  相互独立。
+- `soxl_perp_long` 和实盘策略复用 `soxl_perp` Futures 市场数据；共享行情不等于共享账本。
+- BTC/ETH 路由只处理完整 UTC 日线和 4h K 线，收盘产生信号、下一根日线开盘成交，并将
+  各袖套目标、成本、基础/压力收益和月度锁写入独立日账本。
 - Paper 信号在下一笔持久化 Tick 按固定手续费与滑点成交；实盘只采用 Binance 返回的真实
   订单和成交结果。
 - Paper Futures 使用 5/2 bps 手续费/滑点。实盘使用真实费用，开仓盘口偏离上限为 30 bps。
@@ -176,6 +180,7 @@ GET  /api/overview
 POST /api/control                 {"action":"pause" | "resume"}
 GET  /api/accounts/{id}/equity
 GET  /api/accounts/{id}/returns
+GET  /api/accounts/{id}/portfolio-ledger?ledger=base|stress
 GET  /api/orders | /api/fills | /api/events | /api/funding
 GET  /api/warehouse
 GET  /api/market/ohlcv | /api/market/agg-trades
@@ -220,17 +225,17 @@ PYTHONPATH=src .venv/bin/python -m mastermind_tick.profit_backtest
 Paper 账户重建默认先生成候选数据库，不直接替换生产派生账本：
 
 ```bash
-.venv/bin/mmtick-rebuild --account-id soxl_perp \
-  --candidate data/rebuild-soxl-perp.db
+.venv/bin/mmtick-rebuild --account-id soxl_perp_long \
+  --candidate data/rebuild-soxl-perp-long.db
 ```
 
 若账户需要从策略正式切换时间重新以初始资金计算绩效，可增加 UTC epoch 毫秒截点；截点前行情
 仍保留并用于 ATR 预热，但不会生成该账户的订单、成交、快照或收益：
 
 ```bash
-.venv/bin/mmtick-rebuild --account-id soxl_perp \
+.venv/bin/mmtick-rebuild --account-id soxl_perp_long \
   --start-ms 1785945639000 \
-  --candidate data/rebuild-soxl-perp-since-cutover.db
+  --candidate data/rebuild-soxl-perp-long-since-cutover.db
 ```
 
 `--apply` 会创建可恢复备份后替换所选账户，属于生产数据变更；执行前应停止相关写入并检查候选

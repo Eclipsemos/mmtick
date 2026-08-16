@@ -15,11 +15,15 @@ test('paper console renders operational views and switches to the protected live
   const paperAccounts = page.locator('.account-switch button')
   await expect(paperAccounts).toHaveCount(2)
   await expect(paperAccounts.nth(0)).toHaveText('SOXL/USDT PERP LONG ONLY')
-  await expect(paperAccounts.nth(1)).toHaveText('SOXL/USDT PERP')
+  await expect(paperAccounts.nth(1)).toHaveText('BTC/ETH CALENDAR ROUTER')
   await expect(page.getByText('2x isolated')).toHaveCount(0)
   await expect(page.getByText('当前资金费')).toBeVisible()
-  await page.getByRole('button', { name: 'SOXL/USDT PERP', exact: true }).click()
-  await expect(page.getByText('LONG / SHORT')).toBeVisible()
+  await page.getByRole('button', { name: 'BTC/ETH CALENDAR ROUTER', exact: true }).click()
+  await expect(page.getByText('PORTFOLIO', { exact: true })).toBeVisible()
+  await expect(page.getByText('月历组合状态')).toBeVisible()
+  await expect(page.getByText('压力账本')).toBeVisible()
+  await page.getByRole('button', { name: 'SOXL/USDT PERP LONG ONLY', exact: true }).click()
+  await expect(page.getByText('LONG ONLY', { exact: true })).toBeVisible()
   await expect(page.getByText('账户净值')).toBeVisible()
   await expect(page.getByText('夏普率')).toBeVisible()
   await expect(page.getByText('轮次胜率')).toBeVisible()
@@ -90,7 +94,7 @@ test('paper console renders operational views and switches to the protected live
   await page.getByRole('button', { name: '隐藏策略参数' }).click()
   await page.getByRole('button', { name: 'PAPER', exact: true }).click()
   await expect(page.getByRole('heading', { name: '模拟交易' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'SOXL/USDT PERP', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'BTC/ETH CALENDAR ROUTER', exact: true })).toBeVisible()
 
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
@@ -151,7 +155,7 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
   let ohlcvHistoryRequests = 0
   page.on('pageerror', (error) => pageErrors.push(error.message))
   const now = Date.now()
-  await page.route('**/api/accounts/soxl_perp/equity*', async (route) => {
+  await page.route('**/api/accounts/soxl_perp_long/equity*', async (route) => {
     if (new URL(route.request().url()).searchParams.has('before_ms')) equityHistoryRequests += 1
     await route.fulfill({
       contentType: 'application/json',
@@ -168,12 +172,12 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
     await route.fulfill({
       contentType: 'application/json',
       body: JSON.stringify([
-        { id: 'sell-loss', account_id: 'soxl_perp', side: 'SELL', timestamp_ms: now - 10_000, price: '99', quantity: '10', notional: '990', fee: '0.99', reason: 'test', source: 'test' },
-        { id: 'buy-loss', account_id: 'soxl_perp', side: 'BUY', timestamp_ms: now - 20_000, price: '108', quantity: '10', notional: '1080', fee: '1.08', reason: 'test', source: 'test' },
-        { id: 'sell-profit', account_id: 'soxl_perp', side: 'SELL', timestamp_ms: now - 30_000, price: '110', quantity: '10', notional: '1100', fee: '1.1', reason: 'test', source: 'test' },
-        { id: 'buy-profit', account_id: 'soxl_perp', side: 'BUY', timestamp_ms: now - 40_000, price: '100', quantity: '10', notional: '1000', fee: '1', reason: 'test', source: 'test' },
-        { id: 'buy-close-short', account_id: 'soxl_perp', side: 'BUY', timestamp_ms: now - 45_000, price: '100', quantity: '10', notional: '1000', fee: '1', reason: 'test', source: 'test', position_effect: 'CLOSE', position_before: '-10', position_after: '0', realized_pnl: '99' },
-        { id: 'sell-open-short', account_id: 'soxl_perp', side: 'SELL', timestamp_ms: now - 50_000, price: '110', quantity: '10', notional: '1100', fee: '1', reason: 'test', source: 'test', position_effect: 'OPEN', position_before: '0', position_after: '-10', realized_pnl: '-1' },
+        { id: 'sell-loss', account_id: 'soxl_perp_long', side: 'SELL', timestamp_ms: now - 10_000, price: '99', quantity: '10', notional: '990', fee: '0.99', reason: 'test', source: 'test' },
+        { id: 'buy-loss', account_id: 'soxl_perp_long', side: 'BUY', timestamp_ms: now - 20_000, price: '108', quantity: '10', notional: '1080', fee: '1.08', reason: 'test', source: 'test' },
+        { id: 'sell-profit', account_id: 'soxl_perp_long', side: 'SELL', timestamp_ms: now - 30_000, price: '110', quantity: '10', notional: '1100', fee: '1.1', reason: 'test', source: 'test' },
+        { id: 'buy-profit', account_id: 'soxl_perp_long', side: 'BUY', timestamp_ms: now - 40_000, price: '100', quantity: '10', notional: '1000', fee: '1', reason: 'test', source: 'test' },
+        { id: 'buy-close-short', account_id: 'soxl_perp_long', side: 'BUY', timestamp_ms: now - 45_000, price: '100', quantity: '10', notional: '1000', fee: '1', reason: 'test', source: 'test', position_effect: 'CLOSE', position_before: '-10', position_after: '0', realized_pnl: '99' },
+        { id: 'sell-open-short', account_id: 'soxl_perp_long', side: 'SELL', timestamp_ms: now - 50_000, price: '110', quantity: '10', notional: '1100', fee: '1', reason: 'test', source: 'test', position_effect: 'OPEN', position_before: '0', position_after: '-10', realized_pnl: '-1' },
       ]),
     })
   })
@@ -202,7 +206,7 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
   })
 
   await page.goto('/')
-  await page.getByRole('button', { name: 'SOXL/USDT PERP', exact: true }).click()
+  await page.getByRole('button', { name: 'SOXL/USDT PERP LONG ONLY', exact: true }).click()
   await page.waitForTimeout(100)
 
   expect(pageErrors).toEqual([])

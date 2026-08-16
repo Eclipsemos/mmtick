@@ -55,6 +55,7 @@ class InstrumentSettings:
     reversal_confirmation_atr: float | None = None
     profit_activation_atr: float = 0.0
     profit_trailing_atr: float = 0.0
+    paper_enabled: bool = True
 
     @property
     def market_id(self) -> str:
@@ -133,6 +134,20 @@ class LiveFuturesSettings:
 
 
 @dataclass(frozen=True)
+class PortfolioPaperSettings:
+    enabled: bool = False
+    id: str = "btc_eth_calendar_router"
+    symbol: str = "BTCETH"
+    display_symbol: str = "BTC/ETH CALENDAR ROUTER"
+    name: str = "BTC/ETH Expanding Calendar Router v1"
+    venue: str = "Binance USD-M Futures"
+    currency: str = "USDT"
+    strategy_path: Path = Path("strategies/paper/btc_eth_expanding_calendar_router_v1.json")
+    primary_market_id: str = "btc_perp"
+    poll_seconds: int = 900
+
+
+@dataclass(frozen=True)
 class Settings:
     project_root: Path
     app_name: str
@@ -147,6 +162,7 @@ class Settings:
     instruments: tuple[InstrumentSettings, ...]
     live_spot: LiveSpotSettings = LiveSpotSettings()
     live_futures: LiveFuturesSettings = LiveFuturesSettings()
+    portfolio_paper: PortfolioPaperSettings = PortfolioPaperSettings()
 
 
 def instrument_strategy(settings: Settings, instrument: InstrumentSettings) -> StrategySettings:
@@ -221,6 +237,14 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         credentials_path=futures_credentials_path,
         operator_token_path=futures_token_path,
         **futures_raw,
+    )
+    portfolio_raw = dict(raw.get("portfolio_paper", {}))
+    portfolio_strategy_value = portfolio_raw.pop(
+        "strategy_path", "strategies/paper/btc_eth_expanding_calendar_router_v1.json"
+    )
+    portfolio_paper = PortfolioPaperSettings(
+        strategy_path=project_root / portfolio_strategy_value,
+        **portfolio_raw,
     )
 
     if strategy.bar_minutes <= 0 or 60 % strategy.bar_minutes != 0:
@@ -344,6 +368,15 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         raise ValueError("live_futures frequency limits are invalid")
     if live_futures.order_timeout_seconds < 1 or live_futures.recv_window_ms < 1000:
         raise ValueError("live_futures timing limits are invalid")
+    if portfolio_paper.enabled:
+        if portfolio_paper.id in instrument_by_id:
+            raise ValueError("portfolio_paper id must not duplicate an instrument id")
+        if portfolio_paper.primary_market_id not in instrument_by_id:
+            raise ValueError("portfolio_paper primary_market_id is unknown")
+        if portfolio_paper.poll_seconds < 60:
+            raise ValueError("portfolio_paper poll_seconds must be at least 60")
+        if not portfolio_paper.strategy_path.is_file():
+            raise ValueError(f"portfolio strategy file is missing: {portfolio_paper.strategy_path}")
 
     database_path = project_root / app["database_path"]
     frontend_dist = project_root / app["frontend_dist"]
@@ -361,4 +394,5 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
         instruments=instruments,
         live_spot=live_spot,
         live_futures=live_futures,
+        portfolio_paper=portfolio_paper,
     )

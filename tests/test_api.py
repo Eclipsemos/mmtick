@@ -24,6 +24,8 @@ def test_health_and_empty_overview(tmp_path) -> None:
     app = create_app(settings, start_engine=False)
     now_ms = 1_700_000_000_000
     for instrument in settings.instruments:
+        if not instrument.paper_enabled:
+            continue
         app.state.store.ensure_account(instrument, settings.initial_cash, now_ms)
 
     with TestClient(app) as client:
@@ -37,12 +39,7 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert overview.status_code == 200
     assert [item["id"] for item in overview.json()["accounts"]] == [
         "soxl_perp_long",
-        "soxl_perp",
     ]
-    assert {item["id"] for item in overview.json()["accounts"]} == {
-        "soxl_perp",
-        "soxl_perp_long",
-    }
     assert overview.json()["instruments"] == []
     assert overview.json()["environment"] == "paper"
     assert overview.json()["accounts"][0]["sharpe_ratio"] is None
@@ -56,7 +53,7 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert live_readiness.json()["order_submission_ready"] is False
     assert live_readiness.json()["credentials_present"] is False
 
-    funding = client.get("/api/funding?account_id=soxl_perp")
+    funding = client.get("/api/funding?account_id=soxl_perp_long")
     assert funding.status_code == 200
     assert funding.json() == []
 
@@ -70,6 +67,7 @@ def test_active_strategy_uses_recommended_atr_parameters() -> None:
     assert settings.strategy.atr_period == 21
     assert settings.strategy.atr_multiplier == 4.0
     perp = next(item for item in settings.instruments if item.id == "soxl_perp")
+    assert not perp.paper_enabled
     assert perp.leverage == 2
     assert perp.position_fraction == 0.625
     assert perp.leverage * perp.position_fraction == 1.25
@@ -86,7 +84,13 @@ def test_active_strategy_uses_recommended_atr_parameters() -> None:
     perp_strategy = instrument_strategy(settings, perp)
     assert perp_strategy.atr_period == 21
     assert perp_strategy.atr_multiplier == 4.0
-    assert {item.id for item in settings.instruments} == {"soxl_perp", "soxl_perp_long"}
+    assert {item.id for item in settings.instruments} == {
+        "soxl_perp",
+        "soxl_perp_long",
+        "btc_perp",
+        "eth_perp",
+    }
+    assert settings.portfolio_paper.enabled
     assert settings.live_spot.enabled is False
     assert settings.live_futures.strategy_name == "soxl_long_atr32x3_v1"
     assert settings.live_futures.allow_short is False
@@ -97,6 +101,44 @@ def test_active_strategy_uses_recommended_atr_parameters() -> None:
     assert settings.live_futures.continuation_reentry_atr == 0
 
 
+def test_portfolio_ledger_exposes_base_and_stress_books(tmp_path) -> None:
+    settings = replace(
+        load_settings("config/settings.toml"),
+        database_path=tmp_path / "paper.db",
+        frontend_dist=tmp_path / "missing-frontend",
+    )
+    app = create_app(settings, start_engine=False)
+    portfolio = settings.portfolio_paper
+    app.state.store.ensure_portfolio_account(
+        portfolio.id,
+        portfolio.symbol,
+        portfolio.display_symbol,
+        portfolio.venue,
+        portfolio.currency,
+        settings.initial_cash,
+        1,
+    )
+    app.state.store.save_portfolio_day(
+        portfolio.id,
+        "stress",
+        "2026-08-16",
+        2,
+        Decimal("99000"),
+        Decimal("-0.01"),
+        Decimal("100000"),
+        False,
+        {"targets": {}},
+        "test-v1",
+    )
+
+    with TestClient(app) as client:
+        response = client.get(f"/api/accounts/{portfolio.id}/portfolio-ledger?ledger=stress")
+
+    assert response.status_code == 200
+    assert response.json()[0]["ledger"] == "stress"
+    assert response.json()[0]["state"] == {"targets": {}}
+
+
 def test_chart_endpoints_page_backwards_with_time_cursor(tmp_path) -> None:
     settings = replace(
         load_settings("config/settings.toml"),
@@ -104,7 +146,8 @@ def test_chart_endpoints_page_backwards_with_time_cursor(tmp_path) -> None:
         frontend_dist=tmp_path / "missing-frontend",
     )
     app = create_app(settings, start_engine=False)
-    instrument = next(item for item in settings.instruments if item.id == "soxl_perp")
+    instrument = next(item for item in settings.instruments if item.id == "soxl_perp_long")
+    market = next(item for item in settings.instruments if item.id == "soxl_perp")
     app.state.store.ensure_account(instrument, 100_000, 1)
     for timestamp_ms in range(1, 26):
         app.state.store.snapshot(
@@ -118,7 +161,7 @@ def test_chart_endpoints_page_backwards_with_time_cursor(tmp_path) -> None:
             ),
         )
     app.state.store.upsert_history_bars(
-        instrument,
+        market,
         15,
         [
             Bar(
@@ -137,9 +180,7 @@ def test_chart_endpoints_page_backwards_with_time_cursor(tmp_path) -> None:
     )
 
     with TestClient(app) as client:
-        equity = client.get(
-            f"/api/accounts/{instrument.id}/equity?limit=20&before_ms=23"
-        )
+        equity = client.get(f"/api/accounts/{instrument.id}/equity?limit=20&before_ms=23")
         ohlcv = client.get(
             f"/api/market/ohlcv?instrument_id={instrument.id}&limit=2&before_ms=1800000"
         )
@@ -157,7 +198,7 @@ def test_reconstructed_signals_endpoint_is_separate_from_fills(tmp_path) -> None
         frontend_dist=tmp_path / "missing-frontend",
     )
     app = create_app(settings, start_engine=False)
-    instrument = next(item for item in settings.instruments if item.id == "soxl_perp")
+    instrument = next(item for item in settings.instruments if item.id == "soxl_perp_long")
     app.state.store.ensure_account(instrument, settings.initial_cash, 1)
     with app.state.store.connection() as connection:
         connection.execute(
@@ -201,7 +242,7 @@ def test_return_summary_uses_period_boundary_equity(tmp_path) -> None:
         frontend_dist=tmp_path / "missing-frontend",
     )
     app = create_app(settings, start_engine=False)
-    instrument = next(item for item in settings.instruments if item.id == "soxl_perp")
+    instrument = next(item for item in settings.instruments if item.id == "soxl_perp_long")
     day_ms = 86_400_000
     created_at_ms = 1_767_225_600_000  # 2026-01-01 00:00:00 UTC
     app.state.store.ensure_account(instrument, 100_000, created_at_ms)
@@ -223,9 +264,7 @@ def test_return_summary_uses_period_boundary_equity(tmp_path) -> None:
     )
 
     with TestClient(app) as client:
-        response = client.get(
-            f"/api/accounts/{instrument.id}/returns?timezone_offset_minutes=0"
-        )
+        response = client.get(f"/api/accounts/{instrument.id}/returns?timezone_offset_minutes=0")
         tokyo_response = client.get(
             f"/api/accounts/{instrument.id}/returns?timezone_offset_minutes=540"
         )

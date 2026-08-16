@@ -14,25 +14,35 @@ from mastermind_tick.store import PaperStore
 
 def build_overview(engine: PaperEngine, store: PaperStore) -> dict[str, Any]:
     runtime_status = engine.status()
-    runtime_by_id = {item["id"]: item for item in runtime_status["instruments"]}
-    active_ids = set(runtime_by_id) or {item.id for item in engine.settings.instruments}
     stored_accounts = {account["id"]: account for account in store.accounts()}
     accounts = []
-    for instrument in engine.settings.instruments:
-        account_id = instrument.id
+    runtimes = runtime_status["instruments"]
+    if not runtimes:
+        runtimes = [
+            {
+                "id": instrument.id,
+                "market_data_id": instrument.market_id,
+                "paper_model": instrument.paper_model,
+            }
+            for instrument in engine.settings.instruments
+            if instrument.paper_enabled
+        ]
+    for runtime in runtimes:
+        account_id = runtime["id"]
         account = stored_accounts.get(account_id)
-        if account is None or account_id not in active_ids:
+        if account is None:
             continue
         points = store.equity(account_id, 100_000)
         latest = points[-1] if points else None
         initial = Decimal(account["initial_cash"])
-        runtime = runtime_by_id.get(account_id, {})
         valuation = _live_account_valuation(account, latest, runtime)
         equity = Decimal(valuation["equity"])
         total_pnl = equity - initial
         total_return = total_pnl / initial if initial else Decimal("0")
         max_drawdown = _max_drawdown(points)
-        sharpe_ratio = _sharpe_ratio(points, engine.settings.strategy.bar_minutes)
+        sharpe_ratio = _sharpe_ratio(
+            points, int(runtime.get("strategy_config", {}).get("bar_minutes", 15))
+        )
         fills = store.fills(account_id, 100_000)
         funding_payments = store.funding_payments(account_id, 100_000)
         trade_stats = _trade_stats(fills, funding_payments)
@@ -110,9 +120,7 @@ def _live_account_valuation(
             "funding_rate": latest["funding_rate"] if latest else None,
             "initial_margin": latest["initial_margin"] if latest else "0",
             "available_balance": (
-                latest["available_balance"]
-                if is_futures and latest
-                else str(cash)
+                latest["available_balance"] if is_futures and latest else str(cash)
             ),
         }
 
@@ -122,9 +130,7 @@ def _live_account_valuation(
     market_updated_at_ms = market_state.get("updated_at_ms")
     mark_is_fresh = (
         market_updated_at_ms is not None
-        and 0
-        <= timestamp_ms - int(market_updated_at_ms)
-        <= FUTURES_MARK_PRICE_MAX_AGE_MS
+        and 0 <= timestamp_ms - int(market_updated_at_ms) <= FUTURES_MARK_PRICE_MAX_AGE_MS
     )
     mark_price = (
         Decimal(str(tick["mark_price"]))
@@ -185,10 +191,7 @@ def build_return_summary(
 
     daily_ranges = [(value, value + timedelta(days=1)) for value in daily_dates]
     weekly_ranges = [(value, value + timedelta(days=7)) for value in weekly_dates]
-    monthly_ranges = [
-        (value, _shift_month(value, 1))
-        for value in monthly_dates
-    ]
+    monthly_ranges = [(value, _shift_month(value, 1)) for value in monthly_dates]
     all_ranges = [*daily_ranges, *weekly_ranges, *monthly_ranges]
     boundaries = {
         _date_start_ms(value, local_timezone)
@@ -242,9 +245,7 @@ def build_return_summary(
     total_return = current_equity / initial - Decimal("1") if initial else Decimal("0")
     first_daily_start_ms = _date_start_ms(daily_dates[0], local_timezone)
     first_daily_point = closing_points.get(first_daily_start_ms)
-    thirty_day_start_equity = (
-        Decimal(first_daily_point["equity"]) if first_daily_point else initial
-    )
+    thirty_day_start_equity = Decimal(first_daily_point["equity"]) if first_daily_point else initial
     return_30d = (
         float(current_equity / thirty_day_start_equity - Decimal("1"))
         if thirty_day_start_equity
@@ -253,8 +254,7 @@ def build_return_summary(
     annualized_return = None
     if elapsed_days >= 1 and initial > 0 and current_equity > 0:
         annualized_return = float(
-            (current_equity / initial)
-            ** (Decimal("365.2425") / Decimal(str(elapsed_days)))
+            (current_equity / initial) ** (Decimal("365.2425") / Decimal(str(elapsed_days)))
             - Decimal("1")
         )
 

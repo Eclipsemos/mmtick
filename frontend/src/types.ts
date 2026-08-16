@@ -40,8 +40,8 @@ export type DecisionView = {
   reversal_eligible_bar_ms: number | null
   fresh_up_cross: boolean
   bar_end_ms: number | null
-  signal_confirmation: 'TICK'
-  fill_timing: 'NEXT_TICK'
+  signal_confirmation: 'TICK' | 'DAILY_CLOSE'
+  fill_timing: 'NEXT_TICK' | 'NEXT_DAILY_OPEN'
   last_signal: {
     side: 'BUY' | 'SELL'
     status: string
@@ -58,7 +58,8 @@ export type Runtime = {
   venue: string
   asset_type: string
   reference_symbol: string
-  paper_model: 'spot' | 'futures'
+  paper_model: 'spot' | 'futures' | 'portfolio'
+  strategy_family?: string
   market_data_id: string
   allow_short: boolean
   leverage: number
@@ -81,8 +82,8 @@ export type Runtime = {
     one_action_per_bar: boolean
     startup_alignment: boolean
     futures_reversal_mode: 'close_then_confirm'
-    signal_confirmation: 'tick'
-    fill_timing: 'next_tick' | 'binance_actual'
+    signal_confirmation: 'tick' | 'daily_close'
+    fill_timing: 'next_tick' | 'next_daily_open' | 'binance_actual'
   }
   feed: string
   market_state: {

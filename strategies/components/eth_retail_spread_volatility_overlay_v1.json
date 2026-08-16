@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "eth-retail-spread-volatility-overlay-v1",
+  "status": "provisional_forward_candidate",
+  "approved_for_live_trading": false,
+  "evidence_lock_date": "2026-08-14",
+  "parameters": {
+    "baseline": "frozen_four_factor_anchor",
+    "baseline_internal_leverage": 4.0,
+    "state_symbol": "ETHUSDT",
+    "state_interval_minutes": 240,
+    "state_normalization_window_bars": 540,
+    "state_threshold_zscore": -1.25,
+    "high_state_exposure": 2.0,
+    "normal_state_exposure": 0.8,
+    "unavailable_state_exposure": 1.0,
+    "volatility_lookback_days": 20,
+    "target_daily_return_rms": 0.03,
+    "minimum_volatility_exposure": 0.6,
+    "maximum_volatility_exposure": 1.1
+  }
+}

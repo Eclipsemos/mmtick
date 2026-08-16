@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "id": "btc-eth-expanding-calendar-router-v1",
+  "name": "BTC/ETH Expanding Calendar Router v1",
+  "strategy_family": "fixed_forward_calendar_router",
+  "status": "frozen_forward_paper_candidate",
+  "approved_for_paper_observation": true,
+  "approved_for_live_trading": false,
+  "evidence_lock_date": "2026-08-15",
+  "forward_evidence_start_date": "2026-08-16",
+  "first_complete_forward_month": "2026-09",
+  "source_commit": "cc5bb464ea08018984efdebda19a6148169cfd67",
+  "source_report": "reports/experiments/expanding_calendar_router/2026-08-15/expanding-calendar-router-20260815.json",
+  "instruments": {
+    "btc_perp": "BTCUSDT USD-M perpetual",
+    "eth_perp": "ETHUSDT USD-M perpetual"
+  },
+  "parameters": {
+    "calendar_timezone": "UTC",
+    "bar_interval_minutes": 1440,
+    "mapping_mode": "fixed_2026_mapping_no_refit",
+    "mapping_training_years": [2023, 2024, 2025],
+    "mapping_score": "mean_base_and_stress_same_calendar_month_return",
+    "trend_direction_filter": "long_only",
+    "trend_top_k": 3,
+    "state_weight": 0.5,
+    "trend_weight": 0.5,
+    "trend_sleeve_weight_each": 0.1666666666666667,
+    "outer_leverage": 4.0,
+    "monthly_loss_lock": 0.2,
+    "monthly_profit_lock": 0.18,
+    "monthly_lock_evaluation": "after_each_complete_utc_day",
+    "monthly_lock_reset": "first_utc_day_of_each_month",
+    "state_sleeve": {
+      "id": "eth-retail-spread-volatility-overlay-v1",
+      "baseline": "frozen_four_factor_anchor",
+      "baseline_internal_leverage": 4.0,
+      "anchor_allocations": {
+        "lead_lag": 0.4,
+        "event-eth_perp-to-eth_perp-continuation-60d-threshold-2p5-hold-12x4h-none-long_only": 0.15,
+        "event-btc_perp-to-btc_perp-continuation-15d-threshold-2-hold-4x4h-none-long_short": 0.3,
+        "event-eth_perp-to-btc_perp-continuation-60d-threshold-1p5-hold-12x4h-underreaction-long_short": 0.15
+      },
+      "state_symbol": "ETHUSDT",
+      "state_feature": "log(top_position_ratio/global_account_ratio)_zscore",
+      "state_interval_minutes": 240,
+      "state_normalization_window_bars": 540,
+      "state_timing": "last_complete_prior_utc_day_snapshot",
+      "high_state_condition": "zscore_lte_minus_1.25",
+      "high_state_exposure": 2.0,
+      "normal_state_exposure": 0.8,
+      "unavailable_state_exposure": 1.0,
+      "volatility_lookback_days": 20,
+      "target_daily_return_rms": 0.03,
+      "minimum_volatility_exposure": 0.6,
+      "maximum_volatility_exposure": 1.1,
+      "volatility_rebalance_frequency": "daily"
+    },
+    "trend_candidate_universe": {
+      "assets": ["btc_perp", "eth_perp"],
+      "fast_slow_periods": [[5, 15], [8, 24], [10, 30], [12, 36], [16, 48]],
+      "signal_periods": [5, 9, 14],
+      "confirmation_bars": [1, 2, 3],
+      "direction": "long_only",
+      "eligible_candidate_count": 90
+    },
+    "fixed_month_mapping": {
+      "01": [
+        "btc_perp-macd-1440m-8-24-5-long_only-confirm1",
+        "btc_perp-macd-1440m-5-15-9-long_only-confirm1",
+        "btc_perp-macd-1440m-8-24-5-long_only-confirm2"
+      ],
+      "02": [
+        "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+        "btc_perp-macd-1440m-10-30-14-long_only-confirm2",
+        "btc_perp-macd-1440m-10-30-14-long_only-confirm1"
+      ],
+      "03": [
+        "btc_perp-macd-1440m-12-36-14-long_only-confirm1",
+        "eth_perp-macd-1440m-5-15-9-long_only-confirm2",
+        "btc_perp-macd-1440m-16-48-9-long_only-confirm1"
+      ],
+      "04": [
+        "btc_perp-macd-1440m-12-36-5-long_only-confirm3",
+        "btc_perp-macd-1440m-10-30-5-long_only-confirm3",
+        "btc_perp-macd-1440m-8-24-9-long_only-confirm3"
+      ],
+      "05": [
+        "eth_perp-macd-1440m-12-36-14-long_only-confirm3",
+        "eth_perp-macd-1440m-10-30-9-long_only-confirm2",
+        "eth_perp-macd-1440m-12-36-5-long_only-confirm2"
+      ],
+      "06": [
+        "btc_perp-macd-1440m-5-15-5-long_only-confirm1",
+        "btc_perp-macd-1440m-16-48-14-long_only-confirm1",
+        "btc_perp-macd-1440m-5-15-9-long_only-confirm3"
+      ],
+      "07": [
+        "eth_perp-macd-1440m-5-15-9-long_only-confirm2",
+        "eth_perp-macd-1440m-8-24-9-long_only-confirm3",
+        "eth_perp-macd-1440m-10-30-5-long_only-confirm3"
+      ],
+      "08": [
+        "eth_perp-macd-1440m-12-36-5-long_only-confirm3",
+        "btc_perp-macd-1440m-5-15-9-long_only-confirm3",
+        "eth_perp-macd-1440m-10-30-9-long_only-confirm3"
+      ],
+      "09": [
+        "btc_perp-macd-1440m-5-15-14-long_only-confirm2",
+        "btc_perp-macd-1440m-12-36-5-long_only-confirm1",
+        "btc_perp-macd-1440m-8-24-14-long_only-confirm1"
+      ],
+      "10": [
+        "btc_perp-macd-1440m-5-15-5-long_only-confirm1",
+        "btc_perp-macd-1440m-5-15-5-long_only-confirm2",
+        "btc_perp-macd-1440m-5-15-5-long_only-confirm3"
+      ],
+      "11": [
+        "btc_perp-macd-1440m-16-48-14-long_only-confirm1",
+        "btc_perp-macd-1440m-16-48-14-long_only-confirm3",
+        "btc_perp-macd-1440m-16-48-14-long_only-confirm2"
+      ],
+      "12": [
+        "eth_perp-macd-1440m-16-48-14-long_only-confirm3",
+        "eth_perp-macd-1440m-16-48-14-long_only-confirm1",
+        "eth_perp-macd-1440m-16-48-14-long_only-confirm2"
+      ]
+    }
+  },
+  "execution": {
+    "signal_data": "official_complete_utc_bars_only",
+    "macd_signal_time": "daily_bar_close",
+    "macd_fill_time": "next_daily_bar_open",
+    "mapping_switch_time": "first_tradable_open_of_new_utc_month",
+    "unselected_candidates": "continue_shadow_state_without_capital",
+    "funding_included": true,
+    "paper_accounting": "independent_sleeves_aggregated_at_portfolio_equity",
+    "maximum_modeled_notional_multiple": 19.6,
+    "intraday_liquidation_modeled": false
+  },
+  "costs": {
+    "base_component_fee_bps_per_fill": 5.0,
+    "base_component_slippage_bps_per_fill": 2.0,
+    "base_route_and_exposure_turnover_bps": 7.0,
+    "stress_component_fee_bps_per_fill": 10.0,
+    "stress_component_slippage_bps_per_fill": 5.0,
+    "stress_route_and_exposure_turnover_bps": 15.0,
+    "historical_funding_included": true,
+    "borrowing_cost_included": false,
+    "market_impact_included": false
+  },
+  "evidence": {
+    "development_years": [2023, 2024, 2025],
+    "development_complete_months": 36,
+    "development_months_at_least_15pct_base": 22,
+    "development_months_at_least_15pct_stress": 22,
+    "confirmation_period": "2026-01-01/2026-08-10",
+    "confirmation_complete_months": 7,
+    "confirmation_months_at_least_15pct_base": 6,
+    "confirmation_months_at_least_15pct_stress": 6,
+    "confirmation_jan_jul_compound_return_base": 1.752636055681490972101946468,
+    "confirmation_jan_jul_compound_return_stress": 1.951343375262784018872481167,
+    "confirmation_max_daily_close_drawdown_base_including_partial_august": -0.31684593360080154,
+    "confirmation_max_daily_close_drawdown_stress_including_partial_august": -0.30827108789899305,
+    "failed_complete_confirmation_month": "2026-05",
+    "confirmation_used_for_numeric_selection": false,
+    "confirmation_is_fresh_holdout": false
+  },
+  "freeze_policy": {
+    "parameter_changes_allowed": false,
+    "mapping_changes_allowed": false,
+    "cost_model_changes_allowed": false,
+    "retroactive_forward_relabeling_allowed": false,
+    "changes_require_new_strategy_version": true
+  },
+  "forward_review": {
+    "exclude_partial_august_2026": true,
+    "minimum_complete_months": 4,
+    "minimum_calendar_days": 180,
+    "minimum_target_month_rate_base_and_stress": 0.5,
+    "maximum_daily_close_drawdown": -0.35,
+    "require_intraday_shared_margin_liquidation_replay_for_live_review": true
+  }
+}

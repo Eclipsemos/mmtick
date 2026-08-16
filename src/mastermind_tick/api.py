@@ -95,9 +95,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
             return RedirectResponse(str(request.url.replace(scheme="https")), status_code=308)
         response = await call_next(request)
         if forwarded_proto == "https":
-            response.headers.setdefault(
-                "Strict-Transport-Security", "max-age=31536000"
-            )
+            response.headers.setdefault("Strict-Transport-Security", "max-age=31536000")
         return response
 
     @app.get("/api/health")
@@ -180,9 +178,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         before_ms: Annotated[int | None, Query(gt=0)] = None,
     ) -> list[dict]:
         live_access.require(request)
-        return live_futures_equity(
-            live_store, resolved.live_futures.account_id, limit, before_ms
-        )
+        return live_futures_equity(live_store, resolved.live_futures.account_id, limit, before_ms)
 
     @app.get("/api/live/returns")
     def live_account_returns(
@@ -258,9 +254,19 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         _require_account(resolved, store, account_id)
         return build_return_summary(store, account_id, timezone_offset_minutes)
 
+    @app.get("/api/accounts/{account_id}/portfolio-ledger")
+    def portfolio_ledger(
+        account_id: str,
+        ledger: Annotated[str, Query(pattern="^(base|stress)$")] = "base",
+    ) -> list[dict]:
+        _require_account(resolved, store, account_id)
+        if not resolved.portfolio_paper.enabled or account_id != resolved.portfolio_paper.id:
+            raise HTTPException(status_code=404, detail=f"not a portfolio account: {account_id}")
+        return store.portfolio_ledger(account_id, ledger)
+
     @app.get("/api/fills")
     def fills(
-        account_id: str = "soxl_perp",
+        account_id: str = "soxl_perp_long",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     ) -> list[dict]:
         _require_account(resolved, store, account_id)
@@ -268,7 +274,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
 
     @app.get("/api/orders")
     def orders(
-        account_id: str = "soxl_perp",
+        account_id: str = "soxl_perp_long",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     ) -> list[dict]:
         _require_account(resolved, store, account_id)
@@ -276,7 +282,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
 
     @app.get("/api/reconstructed-signals")
     def reconstructed_signals(
-        account_id: str = "soxl_perp",
+        account_id: str = "soxl_perp_long",
         limit: Annotated[int, Query(ge=1, le=1000)] = 1000,
     ) -> list[dict]:
         _require_account(resolved, store, account_id)
@@ -284,7 +290,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
 
     @app.get("/api/events")
     def events(
-        account_id: str = "soxl_perp",
+        account_id: str = "soxl_perp_long",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     ) -> list[dict]:
         _require_account(resolved, store, account_id)
@@ -292,7 +298,7 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
 
     @app.get("/api/funding")
     def funding(
-        account_id: str = "soxl_perp",
+        account_id: str = "soxl_perp_long",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     ) -> list[dict]:
         _require_account(resolved, store, account_id)
@@ -318,17 +324,20 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
         instrument_id: str = "soxl_perp",
         limit: Annotated[int, Query(ge=1, le=1000)] = 100,
         before_ms: Annotated[int | None, Query(gt=0)] = None,
+        interval_minutes: Annotated[int, Query()] = 15,
     ) -> list[dict]:
+        if interval_minutes not in {15, 240, 1440}:
+            raise HTTPException(status_code=422, detail="unsupported OHLCV interval")
         instrument = _require_instrument(resolved, instrument_id)
         return store.ohlcv_bars(
             instrument.market_id,
-            resolved.strategy.bar_minutes,
+            interval_minutes,
             limit,
             before_ms,
         )
 
     @app.get("/api/fills.csv")
-    def export_fills(account_id: str = "soxl_perp") -> Response:
+    def export_fills(account_id: str = "soxl_perp_long") -> Response:
         _require_account(resolved, store, account_id)
         rows = store.fills(account_id, 100_000)
         return _fills_csv(rows, "mmtick-fills.csv")
@@ -358,7 +367,10 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
 
 
 def _require_account(settings: Settings, store: PaperStore, account_id: str) -> None:
-    if account_id not in {instrument.id for instrument in settings.instruments}:
+    configured = {instrument.id for instrument in settings.instruments if instrument.paper_enabled}
+    if settings.portfolio_paper.enabled:
+        configured.add(settings.portfolio_paper.id)
+    if account_id not in configured:
         raise HTTPException(status_code=404, detail=f"unknown account: {account_id}")
     try:
         store.account(account_id)
