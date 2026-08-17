@@ -751,6 +751,29 @@ def test_operator_can_persistently_stop_and_resume_live_strategy(tmp_path, monke
     assert store.events(settings.live_futures.account_id)[0]["code"] == "STRATEGY_RESUMED"
 
 
+def test_operator_resume_reconciles_and_keeps_strategy_stopped_when_gate_is_blocked(
+    tmp_path, monkeypatch
+) -> None:
+    settings = futures_settings(tmp_path, allow_orders=True)
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
+    store.set_metadata("trading_paused", "true", 1_700_000_000_000)
+    trader = LiveFuturesTrader(
+        settings,
+        store,
+        client=FakeFuturesClient(leverage=3),  # type: ignore[arg-type]
+    )
+    asyncio.run(trader.public_preflight())
+
+    with pytest.raises(LiveOperationError, match="LEVERAGE_MISMATCH") as error:
+        asyncio.run(trader.resume_strategy())
+
+    assert error.value.code == "LIVE_RESUME_BLOCKED"
+    assert trader.persisted_paused
+    assert not trader.order_submission_ready
+
+
 def test_operator_flatten_closes_fresh_long_position_while_strategy_is_stopped(
     tmp_path,
 ) -> None:

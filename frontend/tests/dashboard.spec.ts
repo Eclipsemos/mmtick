@@ -80,7 +80,7 @@ test('paper console renders operational views and switches to the protected live
   await expect(page.getByRole('button', { name: 'SOXL/USDT PERP LIVE', exact: true })).toHaveCount(1, { timeout: 15_000 })
   await expect(page.locator('.account-switch button')).toHaveCount(1)
   await expect(page.getByRole('button', { name: '平仓', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: '停止策略', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^(启动|停止)策略$/ })).toBeVisible()
   await expect(page.getByRole('button', { name: '锁定' })).toBeVisible()
   await expect(page.getByText('Binance 实际成交')).toBeVisible()
   await expect(page.getByText('LONG ONLY', { exact: true })).toBeVisible()
@@ -149,6 +149,50 @@ test('live market close requires a second explicit confirmation', async ({ page 
   await page.getByRole('dialog', { name: '确认平仓' }).getByRole('button', { name: '确认平仓' }).click()
   await expect.poll(() => flattenCalls).toBe(1)
   await expect(page.getByRole('status').filter({ hasText: '平仓已成交' })).toBeVisible()
+  await page.unrouteAll({ behavior: 'ignoreErrors' })
+})
+
+test('starting the live strategy requires confirmation and sends an explicit resume token', async ({ page }) => {
+  let resumeCalls = 0
+  await page.route('**/api/live/readiness', async (route) => {
+    const response = await route.fetch()
+    const body = await response.json()
+    body.persisted_paused = true
+    body.order_submission_ready = false
+    body.strategy_resume_ready = true
+    body.status = 'OBSERVE_ONLY'
+    await route.fulfill({ response, json: body })
+  })
+  await page.route('**/api/live/control', async (route) => {
+    resumeCalls += 1
+    expect(route.request().postDataJSON()).toEqual({
+      action: 'resume',
+      confirm: 'RESUME_SOXLUSDT',
+    })
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        strategy_paused: false,
+        order_submission_ready: true,
+      }),
+    })
+  })
+
+  await page.goto('/')
+  await page.getByRole('button', { name: 'LIVE', exact: true }).click()
+  const start = page.getByRole('button', { name: '启动策略', exact: true })
+  await expect(start).toBeVisible({ timeout: 10_000 })
+  await start.click()
+  const dialog = page.getByRole('dialog', { name: '确认启动实盘策略' })
+  await expect(dialog.getByText('允许策略提交真实订单')).toBeVisible()
+  await dialog.getByRole('button', { name: '取消' }).click()
+  expect(resumeCalls).toBe(0)
+
+  await start.click()
+  await page.getByRole('dialog', { name: '确认启动实盘策略' }).getByRole('button', { name: '确认启动' }).click()
+  await expect.poll(() => resumeCalls).toBe(1)
+  await expect(page.getByRole('status').filter({ hasText: '等待新的有效 ATR 入场信号' })).toBeVisible()
   await page.unrouteAll({ behavior: 'ignoreErrors' })
 })
 

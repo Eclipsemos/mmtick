@@ -192,6 +192,7 @@ export type LiveReadiness = {
   activation_confirmed: boolean
   test_order_passed?: boolean
   order_submission_ready: boolean
+  strategy_resume_ready?: boolean
   persisted_paused: boolean
   reconciliation_ok: boolean
   last_reconciled_at_ms: number | null

@@ -226,6 +226,8 @@ function App() {
   const [switchingMode, setSwitchingMode] = useState(false)
   const [flattenOpen, setFlattenOpen] = useState(false)
   const [flattenError, setFlattenError] = useState('')
+  const [resumeOpen, setResumeOpen] = useState(false)
+  const [resumeError, setResumeError] = useState('')
   const [liveActionMessage, setLiveActionMessage] = useState('')
   const accountId = mode === 'live' ? 'soxl_perp_live' : paperAccountId
   const overview = useQuery({
@@ -323,12 +325,27 @@ function App() {
     void client.invalidateQueries({ queryKey: ['equity', 'live'] })
   }, [client])
   const liveStrategyControl = useMutation({
-    mutationFn: api.stopLiveStrategy,
-    onSuccess: () => {
-      setLiveActionMessage('策略已停止，重启服务后仍保持停止。')
+    mutationFn: api.controlLiveStrategy,
+    onSuccess: (result) => {
+      setResumeOpen(false)
+      setResumeError('')
+      setLiveActionMessage(
+        result.strategy_paused
+          ? '策略已停止，重启服务后仍保持停止。'
+          : '策略已启动，等待新的有效 ATR 入场信号。',
+      )
       refreshLiveAccount()
     },
-    onError: () => setLiveActionMessage('策略控制失败，请检查 LIVE 会话和服务状态。'),
+    onError: (error, action) => {
+      const detail = error instanceof ApiError && error.detail && typeof error.detail === 'object'
+        ? (error.detail as { message?: string }).message
+        : undefined
+      if (action === 'resume') {
+        setResumeError(detail ?? '启动失败；请检查 Binance 对账和 LIVE 门禁状态。')
+      } else {
+        setLiveActionMessage('策略控制失败，请检查 LIVE 会话和服务状态。')
+      }
+    },
   })
   const liveFlatten = useMutation({
     mutationFn: api.liveFlatten,
@@ -521,13 +538,20 @@ function App() {
                 </button>
                 <button
                   type="button"
-                  className="control danger"
-                  disabled={Boolean(liveReadiness.data?.persisted_paused) || liveStrategyControl.isPending}
-                  onClick={() => liveStrategyControl.mutate()}
-                  title={liveReadiness.data?.persisted_paused ? '策略已经持久停止' : '持久停止策略信号执行'}
+                  className={liveReadiness.data?.persisted_paused ? 'control resume' : 'control danger'}
+                  disabled={liveStrategyControl.isPending}
+                  onClick={() => {
+                    if (liveReadiness.data?.persisted_paused) {
+                      setResumeError('')
+                      setResumeOpen(true)
+                    } else {
+                      liveStrategyControl.mutate('stop')
+                    }
+                  }}
+                  title={liveReadiness.data?.persisted_paused ? '重新启用实盘策略订单' : '持久停止策略信号执行'}
                 >
-                  <CirclePause size={16} />
-                  {liveReadiness.data?.persisted_paused ? '策略已停止' : '停止策略'}
+                  {liveReadiness.data?.persisted_paused ? <CirclePlay size={16} /> : <CirclePause size={16} />}
+                  {liveReadiness.data?.persisted_paused ? '启动策略' : '停止策略'}
                 </button>
               </div>
             )}
@@ -601,6 +625,48 @@ function App() {
           onConfirm={() => liveFlatten.mutate()}
         />
       )}
+      {resumeOpen && (
+        <LiveResumeDialog
+          error={resumeError}
+          pending={liveStrategyControl.isPending}
+          onCancel={() => { if (!liveStrategyControl.isPending) { setResumeOpen(false); setResumeError('') } }}
+          onConfirm={() => liveStrategyControl.mutate('resume')}
+        />
+      )}
+    </div>
+  )
+}
+
+function LiveResumeDialog({
+  error,
+  pending,
+  onCancel,
+  onConfirm,
+}: {
+  error: string
+  pending: boolean
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  return (
+    <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && !pending && onCancel()}>
+      <div className="unlock-dialog flatten-dialog" role="dialog" aria-modal="true" aria-labelledby="live-resume-title">
+        <div className="unlock-dialog-head">
+          <div><span>ENABLE ORDERS / REAL ACCOUNT</span><h2 id="live-resume-title">确认启动实盘策略</h2></div>
+          <button type="button" disabled={pending} onClick={onCancel} title="关闭" aria-label="关闭"><CircleX size={19} /></button>
+        </div>
+        <form onSubmit={(event) => { event.preventDefault(); onConfirm() }}>
+          <div className="flatten-dialog-copy">
+            启动后将重新核验 Binance 账户、仓位、挂单和交易门禁，并允许策略提交真实订单。
+            当前趋势不会被追入；策略等待恢复后的新有效 ATR 信号。
+          </div>
+          {error && <p role="alert">{error}</p>}
+          <div className="unlock-dialog-actions">
+            <button type="button" disabled={pending} onClick={onCancel}>取消</button>
+            <button className="primary" type="submit" disabled={pending}>{pending ? '核验并启动中' : '确认启动'}</button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }

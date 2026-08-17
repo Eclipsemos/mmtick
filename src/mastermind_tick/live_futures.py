@@ -134,7 +134,7 @@ class LiveFuturesTrader:
         return self.store.metadata("futures_test_order_passed") == "true"
 
     @property
-    def order_submission_ready(self) -> bool:
+    def strategy_resume_ready(self) -> bool:
         return (
             self.config.enabled
             and self.config.allow_order_submission
@@ -148,9 +148,12 @@ class LiveFuturesTrader:
             and self.ip_restricted
             and self.reconciliation_ok
             and self.test_order_passed
-            and not self.persisted_paused
             and not self.block_reasons
         )
+
+    @property
+    def order_submission_ready(self) -> bool:
+        return self.strategy_resume_ready and not self.persisted_paused
 
     async def start(self, engine: PaperEngine) -> None:
         self._engine = engine
@@ -226,22 +229,42 @@ class LiveFuturesTrader:
     async def set_strategy_paused(self, paused: bool) -> dict[str, Any]:
         """Persistently stop or resume strategy-driven order submission."""
         async with self._lock:
-            now_ms = _now_ms()
-            self.store.set_metadata("trading_paused", "true" if paused else "false", now_ms)
-            self._event(
-                "WARN" if paused else "INFO",
-                "STRATEGY_STOPPED" if paused else "STRATEGY_RESUMED",
-                "Live Futures strategy stopped by operator"
-                if paused
-                else "Live Futures strategy resumed by operator",
-                timestamp_ms=now_ms,
-            )
-            self._refresh_status()
-            return {
-                "ok": True,
-                "strategy_paused": self.persisted_paused,
-                "order_submission_ready": self.order_submission_ready,
-            }
+            return self._persist_strategy_paused(paused, _now_ms())
+
+    async def resume_strategy(self) -> dict[str, Any]:
+        """Refresh signed account gates, then persistently arm strategy execution."""
+        try:
+            await self.reconcile()
+        except Exception as exc:
+            raise LiveOperationError(
+                "LIVE_RESUME_RECONCILIATION_FAILED",
+                f"Fresh Binance reconciliation failed: {type(exc).__name__}: {exc}",
+            ) from exc
+        async with self._lock:
+            if not self.strategy_resume_ready:
+                reasons = ", ".join(sorted(self.block_reasons)) or "execution gates are not ready"
+                raise LiveOperationError(
+                    "LIVE_RESUME_BLOCKED",
+                    f"LIVE strategy cannot resume: {reasons}",
+                )
+            return self._persist_strategy_paused(False, _now_ms())
+
+    def _persist_strategy_paused(self, paused: bool, timestamp_ms: int) -> dict[str, Any]:
+        self.store.set_metadata("trading_paused", "true" if paused else "false", timestamp_ms)
+        self._event(
+            "WARN" if paused else "INFO",
+            "STRATEGY_STOPPED" if paused else "STRATEGY_RESUMED",
+            "Live Futures strategy stopped by operator"
+            if paused
+            else "Live Futures strategy resumed by operator",
+            timestamp_ms=timestamp_ms,
+        )
+        self._refresh_status()
+        return {
+            "ok": True,
+            "strategy_paused": self.persisted_paused,
+            "order_submission_ready": self.order_submission_ready,
+        }
 
     async def manual_flatten(self) -> dict[str, Any]:
         """Close every SOXL leg found by a fresh signed position query."""
@@ -1090,6 +1113,7 @@ class LiveFuturesTrader:
             "activation_confirmed": self.activation_confirmed,
             "test_order_passed": self.test_order_passed,
             "order_submission_ready": self.order_submission_ready,
+            "strategy_resume_ready": self.strategy_resume_ready,
             "persisted_paused": self.persisted_paused,
             "reconciliation_ok": self.reconciliation_ok,
             "last_reconciled_at_ms": self.last_reconciled_at_ms,

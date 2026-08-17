@@ -144,6 +144,7 @@ def test_live_operator_actions_require_session_and_explicit_flatten_confirmation
     token = "c" * 48
     app = _live_app(tmp_path, token)
     flatten_calls = 0
+    resume_calls = 0
 
     async def fake_flatten() -> dict:
         nonlocal flatten_calls
@@ -156,6 +157,17 @@ def test_live_operator_actions_require_session_and_explicit_flatten_confirmation
         }
 
     monkeypatch.setattr(app.state.live_trader, "manual_flatten", fake_flatten)
+
+    async def fake_resume() -> dict:
+        nonlocal resume_calls
+        resume_calls += 1
+        return {
+            "ok": True,
+            "strategy_paused": False,
+            "order_submission_ready": True,
+        }
+
+    monkeypatch.setattr(app.state.live_trader, "resume_strategy", fake_resume)
     with TestClient(app, client=("203.0.113.10", 4321)) as client:
         unauthorized_control = client.post("/api/live/control", json={"action": "stop"})
         unauthorized_flatten = client.post(
@@ -167,6 +179,10 @@ def test_live_operator_actions_require_session_and_explicit_flatten_confirmation
         )
         invalid_resume = client.post("/api/live/control", json={"action": "resume"})
         stopped = client.post("/api/live/control", json={"action": "stop"})
+        resumed = client.post(
+            "/api/live/control",
+            json={"action": "resume", "confirm": "RESUME_SOXLUSDT"},
+        )
         flattened = client.post(
             "/api/live/flatten", json={"confirm": "FLATTEN_SOXLUSDT"}
         )
@@ -177,6 +193,8 @@ def test_live_operator_actions_require_session_and_explicit_flatten_confirmation
     assert invalid_resume.status_code == 422
     assert stopped.json()["strategy_paused"] is True
     assert app.state.live_store.metadata("trading_paused") == "true"
+    assert resumed.json()["strategy_paused"] is False
+    assert resume_calls == 1
     assert flattened.status_code == 200
     assert flattened.json()["orders"][0]["status"] == "FILLED"
     assert flatten_calls == 1

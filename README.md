@@ -159,8 +159,8 @@ Cookie 和 HSTS。
 ## 操作控制
 
 - Paper Dashboard 支持暂停与恢复模拟成交，不停止行情和指标更新。
-- LIVE 的“停止策略”会持久阻止后续策略订单，重启不会自动恢复；当前公开 API 不提供远程
-  恢复操作。
+- LIVE 的“停止策略”会持久阻止后续策略订单，重启不会自动恢复；已认证的操作员可在 Dashboard
+  二次确认后重新启动。启动会先刷新 Binance 对账并验证全部交易门禁，失败时保持停止。
 - LIVE 的“平仓”要求二次确认，会重新读取 Binance 实际仓位并只发送减仓市价单；存在人工
   挂单或本地未决订单时拒绝执行。人工平仓不会自动停止策略。
 - 实盘 ATR 止损是服务收到实时 Tick 后提交的市价减仓，不是预挂在 Binance 的原生止损单。
@@ -191,6 +191,7 @@ POST /api/live/unlock | /api/live/unlock-local | /api/live/logout
 GET  /api/live/overview | /api/live/equity | /api/live/returns
 GET  /api/live/orders | /api/live/fills | /api/live/funding | /api/live/events
 POST /api/live/control            {"action":"stop"}
+POST /api/live/control            {"action":"resume","confirm":"RESUME_SOXLUSDT"}
 POST /api/live/flatten            {"confirm":"FLATTEN_SOXLUSDT"}
 ```
 

@@ -57,10 +57,12 @@ export const api = {
   liveFills: () => getJson<Fill[]>('/api/live/fills?limit=200'),
   liveOrders: () => getJson<Order[]>('/api/live/orders?limit=200'),
   liveFunding: () => getJson<FundingPayment[]>('/api/live/funding?limit=1000'),
-  stopLiveStrategy: () =>
+  controlLiveStrategy: (action: 'stop' | 'resume') =>
     postJson<{ ok: boolean; strategy_paused: boolean; order_submission_ready: boolean }>(
       '/api/live/control',
-      { action: 'stop' },
+      action === 'resume'
+        ? { action, confirm: 'RESUME_SOXLUSDT' }
+        : { action },
     ),
   liveFlatten: () => postJson<{
     ok: boolean

@@ -38,7 +38,8 @@ class ControlRequest(BaseModel):
 
 
 class LiveControlRequest(BaseModel):
-    action: Literal["stop"]
+    action: Literal["stop", "resume"]
+    confirm: Literal["RESUME_SOXLUSDT"] | None = None
 
 
 class LiveUnlockRequest(BaseModel):
@@ -153,7 +154,20 @@ def create_app(settings: Settings | None = None, *, start_engine: bool = True) -
     @app.post("/api/live/control")
     async def live_control(payload: LiveControlRequest, request: Request) -> dict:
         live_access.require(request)
-        return await live_trader.set_strategy_paused(True)
+        if payload.action == "stop":
+            return await live_trader.set_strategy_paused(True)
+        if payload.confirm != "RESUME_SOXLUSDT":
+            raise HTTPException(
+                status_code=422,
+                detail="Resuming LIVE requires explicit RESUME_SOXLUSDT confirmation",
+            )
+        try:
+            return await live_trader.resume_strategy()
+        except LiveOperationError as exc:
+            raise HTTPException(
+                status_code=409,
+                detail={"code": exc.code, "message": exc.message},
+            ) from exc
 
     @app.post("/api/live/flatten")
     async def live_flatten(payload: LiveFlattenRequest, request: Request) -> dict:
