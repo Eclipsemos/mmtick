@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import hmac
 import time
@@ -76,6 +77,8 @@ class BinanceFuturesClient:
         self._api_secret = api_secret
         self.recv_window_ms = recv_window_ms
         self.time_offset_ms = 0
+        self._time_sync_generation = 0
+        self._time_sync_lock = asyncio.Lock()
         self._owns_client = client is None
         self._client = client or httpx.AsyncClient(timeout=20, trust_env=True)
 
@@ -93,6 +96,7 @@ class BinanceFuturesClient:
         payload = await self._request("GET", "/fapi/v1/time", {"nonce": before})
         after = int(time.time() * 1000)
         self.time_offset_ms = int(payload["serverTime"]) - (before + after) // 2
+        self._time_sync_generation += 1
         return self.time_offset_ms
 
     async def symbol_rules(self, symbol: str) -> FuturesSymbolRules:
@@ -211,6 +215,28 @@ class BinanceFuturesClient:
     ) -> Any:
         if not self.has_credentials:
             raise RuntimeError("Binance Futures API credentials are not configured")
+        generation = self._time_sync_generation
+        try:
+            return await self._signed_request_once(method, path, params, base_url=base_url)
+        except BinanceFuturesAPIError as exc:
+            if exc.code != -1021:
+                raise
+        # Binance rejects stale timestamps before evaluating the operation. Re-sync once and
+        # retry with a fresh signature; the generation gate prevents a concurrent reconciliation
+        # batch from issuing one time request per failed endpoint.
+        async with self._time_sync_lock:
+            if self._time_sync_generation == generation:
+                await self.sync_time()
+        return await self._signed_request_once(method, path, params, base_url=base_url)
+
+    async def _signed_request_once(
+        self,
+        method: str,
+        path: str,
+        params: dict[str, Any] | None = None,
+        *,
+        base_url: str | None = None,
+    ) -> Any:
         signed = dict(params or {})
         signed["recvWindow"] = self.recv_window_ms
         signed["timestamp"] = int(time.time() * 1000) + self.time_offset_ms

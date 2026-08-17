@@ -30,6 +30,41 @@ def test_time_sync_uses_cache_busting_nonce(monkeypatch) -> None:
     asyncio.run(http.aclose())
 
 
+def test_signed_request_resyncs_and_retries_once_after_timestamp_rejection(monkeypatch) -> None:
+    account_calls = 0
+    time_calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal account_calls, time_calls
+        if request.url.path == "/fapi/v1/time":
+            time_calls += 1
+            return httpx.Response(200, json={"serverTime": 1_700_000_000_125})
+        account_calls += 1
+        if account_calls == 1:
+            return httpx.Response(
+                400,
+                json={"code": -1021, "msg": "Timestamp outside recvWindow"},
+            )
+        query = parse_qs(request.url.query.decode())
+        assert query["timestamp"] == ["1700000000125"]
+        return httpx.Response(200, json={"canTrade": True})
+
+    monkeypatch.setattr(
+        "mastermind_tick.binance_futures.time.time", lambda: 1_700_000_000.0
+    )
+    http = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    client = BinanceFuturesClient(
+        "https://fapi.binance.test", "api-key", "secret", client=http
+    )
+
+    result = asyncio.run(client.account())
+
+    assert result == {"canTrade": True}
+    assert account_calls == 2
+    assert time_calls == 1
+    asyncio.run(http.aclose())
+
+
 def test_tradfi_contract_uses_signed_stock_contract_endpoint(monkeypatch) -> None:
     captured: dict[str, object] = {}
 

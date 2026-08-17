@@ -203,7 +203,6 @@ class LiveFuturesTrader:
                 f"Signed Binance Futures preflight failed: {type(exc).__name__}: {exc}"
             )
             self._event("ERROR", "SIGNED_PREFLIGHT_FAILED", self.status_message)
-            return
         self._reconcile_task = asyncio.create_task(
             self._run_reconciliation(), name="soxl-perp-live-reconciliation"
         )
