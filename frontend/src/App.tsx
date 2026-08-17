@@ -605,7 +605,7 @@ function App() {
       </main>
       <footer>
         <span>mastermind:tick v0.1</span>
-        <span>{mode === 'live' ? 'Binance USD-M Futures 实盘账户 · 当前只读观察' : '本地模拟撮合 · 非真实账户'}</span>
+        <span>{mode === 'live' ? 'Binance USD-M Futures 实盘账户 · 受保护操作' : '本地模拟撮合 · 非真实账户'}</span>
       </footer>
       {unlockOpen && (
         <LiveUnlockDialog
