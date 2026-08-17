@@ -448,15 +448,24 @@ class LiveStore:
             )
             return cursor.rowcount == 1
 
-    def fills(self, account_id: str, limit: int = 200) -> list[dict[str, Any]]:
+    def fills(self, account_id: str, limit: int | None = 200) -> list[dict[str, Any]]:
         with self.connection() as connection:
-            rows = connection.execute(
-                """
-                SELECT * FROM live_fills WHERE account_id = ?
-                ORDER BY timestamp_ms DESC, trade_id DESC LIMIT ?
-                """,
-                (account_id, limit),
-            ).fetchall()
+            if limit is None:
+                rows = connection.execute(
+                    """
+                    SELECT * FROM live_fills WHERE account_id = ?
+                    ORDER BY timestamp_ms DESC, trade_id DESC
+                    """,
+                    (account_id,),
+                ).fetchall()
+            else:
+                rows = connection.execute(
+                    """
+                    SELECT * FROM live_fills WHERE account_id = ?
+                    ORDER BY timestamp_ms DESC, trade_id DESC LIMIT ?
+                    """,
+                    (account_id, limit),
+                ).fetchall()
         return [_row(row, json_fields=("raw_json",)) for row in rows]
 
     def fills_for_order(self, account_id: str, client_order_id: str) -> list[dict[str, Any]]:

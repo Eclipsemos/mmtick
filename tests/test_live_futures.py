@@ -267,6 +267,68 @@ def test_futures_reporting_aggregates_partial_fills_into_round_trip(tmp_path) ->
     }
 
 
+def test_futures_reporting_rebuilds_full_history_before_order_pagination(tmp_path) -> None:
+    settings = futures_settings(tmp_path)
+    account_id = settings.live_futures.account_id
+    store = LiveStore(settings.live_futures.database_path)
+    trade_id = 0
+
+    def add_fill(order_id: int, timestamp_ms: int, side: str, quantity: str) -> None:
+        nonlocal trade_id
+        trade_id += 1
+        price = "100" if side == "BUY" else "101"
+        store.upsert_fill(
+            account_id=account_id,
+            symbol="SOXLUSDT",
+            side=side,
+            client_order_id=f"order-{order_id}",
+            payload={
+                "id": trade_id,
+                "orderId": order_id,
+                "time": timestamp_ms,
+                "side": side,
+                "positionSide": "LONG",
+                "price": price,
+                "qty": quantity,
+                "quoteQty": str(Decimal(price) * Decimal(quantity)),
+                "commission": "0",
+                "commissionAsset": "USDT",
+                "realizedPnl": "1" if side == "SELL" else "0",
+            },
+        )
+
+    # Five partial BUY fills are exactly the rows the old raw-fill LIMIT 200 discarded.
+    for _index in range(5):
+        add_fill(1, 1_000, "BUY", "0.2")
+    add_fill(2, 2_000, "SELL", "1")
+    order_id = 3
+    timestamp_ms = 3_000
+    for _index in range(99):
+        add_fill(order_id, timestamp_ms, "BUY", "1")
+        add_fill(order_id + 1, timestamp_ms + 1, "SELL", "1")
+        order_id += 2
+        timestamp_ms += 2
+    add_fill(order_id, timestamp_ms, "BUY", "1")
+
+    fills = live_futures_fills(store, account_id, 200)
+    ordered = sorted(fills, key=lambda fill: fill["timestamp_ms"])
+
+    assert store.fill_count(account_id) == 205
+    assert len(fills) == 200
+    assert ordered[0]["side"] == "SELL"
+    assert ordered[0]["position_effect"] == "CLOSE"
+    assert all(
+        fill["position_effect"] == ("OPEN" if fill["side"] == "BUY" else "CLOSE")
+        for fill in ordered
+    )
+    assert _trade_stats(fills) == {
+        "round_trips": 99,
+        "winning_trades": 99,
+        "losing_trades": 0,
+        "win_rate": 1.0,
+    }
+
+
 def test_futures_readonly_reconciliation_persists_actual_account(tmp_path) -> None:
     settings = futures_settings(tmp_path)
     store = LiveStore(settings.live_futures.database_path)

@@ -272,8 +272,12 @@ def live_futures_equity(
 
 
 def live_futures_fills(store: LiveStore, account_id: str, limit: int = 200) -> list[dict[str, Any]]:
+    if limit < 1:
+        return []
     rows = sorted(
-        store.fills(account_id, limit),
+        # Position effects require the account's complete fill history. Applying the API limit
+        # here can discard an opening order and turn its later LONG close into a fake SHORT open.
+        store.fills(account_id, None),
         key=lambda row: (
             int(row["timestamp_ms"]),
             int(row["order_id"]),
@@ -316,12 +320,14 @@ def live_futures_fills(store: LiveStore, account_id: str, limit: int = 200) -> l
         before = position
         if position_side == "LONG":
             delta = quantity if side == "BUY" else -quantity
+            effect = "OPEN" if side == "BUY" else "CLOSE"
         elif position_side == "SHORT":
             delta = -quantity if side == "SELL" else quantity
+            effect = "OPEN" if side == "SELL" else "CLOSE"
         else:
             delta = quantity if side == "BUY" else -quantity
+            effect = "OPEN" if abs(position + delta) > abs(before) else "CLOSE"
         position += delta
-        effect = "OPEN" if abs(position) > abs(before) else "CLOSE"
         fee = Decimal(row["fee"])
         realized = Decimal(row["realized_pnl"]) - fee
         notional = Decimal(row["notional"])
@@ -344,7 +350,7 @@ def live_futures_fills(store: LiveStore, account_id: str, limit: int = 200) -> l
                 "realized_pnl": str(realized),
             }
         )
-    return list(reversed(result))
+    return list(reversed(result[-limit:]))
 
 
 def live_futures_orders(
