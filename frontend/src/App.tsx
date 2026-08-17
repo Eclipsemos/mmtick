@@ -45,6 +45,13 @@ import {
   YAxis,
 } from 'recharts'
 import { api, ApiError } from './api'
+import {
+  getDailySnapshot,
+  millisecondsUntilNextUtcDay,
+  readDailySnapshot,
+  readLatestDailySnapshot,
+  utcSnapshotDay,
+} from './dailySnapshot'
 import type {
   Account,
   AggTrade,
@@ -215,6 +222,28 @@ function useTimePaginatedSeries<T>(
 const equityTimestamp = (point: EquityPoint) => point.timestamp_ms
 const ohlcvTimestamp = (bar: OhlcvBar) => bar.start_ms
 
+function useUtcSnapshotDay() {
+  const [utcDay, setUtcDay] = useState(() => utcSnapshotDay())
+
+  useEffect(() => {
+    let timer = 0
+    const scheduleNextDay = () => {
+      timer = window.setTimeout(() => {
+        setUtcDay(utcSnapshotDay())
+        scheduleNextDay()
+      }, millisecondsUntilNextUtcDay() + 50)
+    }
+    scheduleNextDay()
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  return utcDay
+}
+
+function returnsSnapshotScope(accountId: string) {
+  return `returns:${accountId}:tz${-new Date().getTimezoneOffset()}`
+}
+
 function App() {
   const client = useQueryClient()
   const [view, setView] = useState<View>('monitor')
@@ -229,6 +258,7 @@ function App() {
   const [resumeOpen, setResumeOpen] = useState(false)
   const [resumeError, setResumeError] = useState('')
   const [liveActionMessage, setLiveActionMessage] = useState('')
+  const utcDay = useUtcSnapshotDay()
   const accountId = mode === 'live' ? 'soxl_perp_live' : paperAccountId
   const overview = useQuery({
     queryKey: ['overview', mode],
@@ -277,16 +307,30 @@ function App() {
     refetchInterval: 5000,
   })
   const returns = useQuery({
-    queryKey: ['returns', mode, accountId],
-    queryFn: () => mode === 'live' ? api.liveReturns(accountId) : api.returns(accountId),
+    queryKey: ['returns', mode, accountId, utcDay],
+    queryFn: () => mode === 'live'
+      ? api.liveReturns(accountId)
+      : getDailySnapshot(
+          returnsSnapshotScope(accountId),
+          utcDay,
+          () => api.returns(accountId),
+        ),
+    initialData: mode === 'paper'
+      ? () => readDailySnapshot<ReturnSummary>(returnsSnapshotScope(accountId), utcDay)
+      : undefined,
+    placeholderData: mode === 'paper'
+      ? () => readLatestDailySnapshot<ReturnSummary>(returnsSnapshotScope(accountId))
+      : undefined,
     enabled: view === 'returns',
-    refetchInterval: 60_000,
+    staleTime: Infinity,
   })
   const warehouse = useQuery({
-    queryKey: ['warehouse', mode],
-    queryFn: api.warehouse,
+    queryKey: ['warehouse', utcDay],
+    queryFn: () => getDailySnapshot('warehouse', utcDay, api.warehouse),
+    initialData: () => readDailySnapshot<WarehouseSummary>('warehouse', utcDay),
+    placeholderData: () => readLatestDailySnapshot<WarehouseSummary>('warehouse'),
     enabled: view === 'warehouse',
-    refetchInterval: 5000,
+    staleTime: Infinity,
   })
   const aggTrades = useQuery({
     queryKey: ['agg-trades', mode, marketInstrumentId],

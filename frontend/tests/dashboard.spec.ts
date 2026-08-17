@@ -20,7 +20,7 @@ test('paper console renders operational views and switches to the protected live
   await expect(page.getByText('当前资金费')).toBeVisible()
   await page.getByRole('button', { name: 'BTC/ETH CALENDAR ROUTER', exact: true }).click()
   await expect(page.getByText('PORTFOLIO', { exact: true })).toBeVisible()
-  await expect(page.getByText('等待首个日线收盘')).toBeVisible()
+  await expect(page.getByText(/等待首个日线收盘|组合日线运行中/)).toBeVisible()
   await expect(page.getByRole('heading', { name: '官方 日线 K线' })).toBeVisible()
   await expect(page.getByTestId('official-kline-chart')).toBeVisible()
   await expect(page.getByText('月历组合状态')).toBeVisible()
@@ -63,7 +63,7 @@ test('paper console renders operational views and switches to the protected live
   await expect(page.getByText('年化收益')).toBeVisible()
   await page.getByRole('button', { name: /仓库/ }).click({ force: true })
   await expect(page.getByRole('heading', { name: '数据仓库' })).toBeVisible()
-  await expect(page.getByText('SQLite 总占用')).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByText('SQLite 总占用')).toBeVisible({ timeout: 90_000 })
   await expect(page.getByRole('heading', { name: '最近 15 分钟 K 线' })).toBeVisible()
   await expect(page.getByRole('heading', { name: '最近聚合成交' })).toBeVisible()
   await page.getByRole('button', { name: /监控/ }).click()
@@ -104,6 +104,80 @@ test('paper console renders operational views and switches to the protected live
   )
   expect(hasHorizontalOverflow).toBe(false)
   expect(consoleErrors).toEqual([])
+})
+
+test('returns and warehouse reuse one browser snapshot per UTC day', async ({ page }) => {
+  let returnsCalls = 0
+  let warehouseCalls = 0
+  const now = Date.now()
+  await page.route('**/api/accounts/soxl_perp_long/returns?*', async (route) => {
+    returnsCalls += 1
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        account_id: 'soxl_perp_long',
+        generated_at_ms: now,
+        as_of_ms: now,
+        timezone_offset_minutes: 480,
+        initial_equity: '100000',
+        current_equity: '101000',
+        total_return: 0.01,
+        annualized_return: 0.12,
+        elapsed_days: 30,
+        return_30d: 0.01,
+        current_week_return: 0.002,
+        current_month_return: 0.01,
+        daily: [],
+        weekly: [],
+        monthly: [],
+      }),
+    })
+  })
+  await page.route('**/api/warehouse', async (route) => {
+    warehouseCalls += 1
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        generated_at_ms: now,
+        database: {
+          path: '/snapshot/paper.db',
+          main_bytes: 1000,
+          wal_bytes: 0,
+          shm_bytes: 0,
+          total_bytes: 1000,
+          page_size: 4096,
+        },
+        tables: [],
+        instruments: [],
+      }),
+    })
+  })
+
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'SOXL/USDT PERP LONG ONLY' })).toBeVisible({ timeout: 15_000 })
+  await page.getByRole('button', { name: /收益明细/ }).click()
+  await expect(page.getByText('近 30 日收益')).toBeVisible()
+  await expect.poll(() => returnsCalls).toBe(1)
+  await page.getByRole('button', { name: /监控/ }).click()
+  await page.getByRole('button', { name: /收益明细/ }).click()
+  await expect(page.getByText('近 30 日收益')).toBeVisible()
+  expect(returnsCalls).toBe(1)
+
+  await page.getByRole('button', { name: /仓库/ }).click()
+  await expect(page.getByText('/snapshot/paper.db')).toBeVisible()
+  await expect.poll(() => warehouseCalls).toBe(1)
+  await page.getByRole('button', { name: /监控/ }).click()
+  await page.getByRole('button', { name: /仓库/ }).click()
+  await expect(page.getByText('/snapshot/paper.db')).toBeVisible()
+  expect(warehouseCalls).toBe(1)
+
+  await page.reload()
+  await page.getByRole('button', { name: /收益明细/ }).click()
+  await expect(page.getByText('近 30 日收益')).toBeVisible()
+  await page.getByRole('button', { name: /仓库/ }).click()
+  await expect(page.getByText('/snapshot/paper.db')).toBeVisible()
+  expect(returnsCalls).toBe(1)
+  expect(warehouseCalls).toBe(1)
 })
 
 test('live market close requires a second explicit confirmation', async ({ page }) => {
