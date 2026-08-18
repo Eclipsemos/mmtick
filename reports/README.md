@@ -1,5 +1,9 @@
 # Research Reports
 
+Start with the categorized [experiment catalog](experiments/README.md). Historical SOXL evidence,
+generated backtests, and superseded artifacts remain separated under `soxl_perp_full_history/`,
+`backtests/`, and `archive/` respectively.
+
 This directory contains reproducible research artifacts for the research-only branch. It is not
 an operational log and must not contain account databases, credentials, live orders, or generated
 market data.
@@ -62,6 +66,12 @@ market data.
   latest multimodal version with Binance open-interest, taker-flow, and crowding inputs. Neither
   the OHLCV-only nor multimodal model produced a development-risk-eligible component; both remain
   rejected and disconnected from execution.
+- `experiments/factor_stability/2026-08-18/`: strict single-factor, multi-horizon yearly
+  walk-forward IC tests across causal trend/volatility regimes. A 24h reversal effect passed the
+  2022-2025 development gates for BTC and ETH, but its cost-adjusted IC collapsed to `0.0037` and
+  `0.0086` in reused 2026 confirmation. Transformer combination remains blocked pending genuinely
+  new forward data. The frozen post-lock monitor is under `experiments/factor_stability/forward/`;
+  it performs no parameter search and requires 30 complete UTC days before interim review.
 - `experiments/btc_order_flow/`: causal BTC aggregate-trade order-flow searches with reported and
   tick-rule direction sources evaluated independently.
 - `experiments/cross_asset_factor/`: causal BTC/ETH common-regime, rotation, relative-value, and

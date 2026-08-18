@@ -11,6 +11,7 @@
 | SOXL ATR32x3 仅做多 | 当前完整历史研究基线 | 冻结研究基线 | [current_research_baseline.md](current_research_baseline.md) |
 | SOXL True Range 波差 v1 | 冻结前向研究候选 | 证据不足，未批准 | [candidates/soxl_volatility_spread_true_range_v1.md](candidates/soxl_volatility_spread_true_range_v1.md) |
 | BTC 日线 EMA(10,50) 多空 v1 | 冻结前向研究候选 | 暂不拒绝，未批准交易 | [candidates/btc_daily_ema_10_50_long_short_v1.md](candidates/btc_daily_ema_10_50_long_short_v1.md) |
+| BTC/ETH 4h 反转因子 v1 | 冻结 IC 前向监控 | 收集证据，禁止组合与交易 | [candidates/btc_eth_4h_reversal_factor_forward_v1.md](candidates/btc_eth_4h_reversal_factor_forward_v1.md) |
 | ETH 拥挤度状态 + 波动率目标 v1 | 冻结前向研究候选 | 4/8 月达到 +15%，未批准交易 | [candidates/eth_retail_spread_volatility_overlay_v1.md](candidates/eth_retail_spread_volatility_overlay_v1.md) |
 | `soxl_perp_long` | `origin/main` long-only paper | 主分支部署快照 | [origin_main/soxl_perp_long.md](origin_main/soxl_perp_long.md) |
 | `soxl_perp` | `origin/main` long/short paper 对照 | 主分支部署快照 | [origin_main/soxl_perp.md](origin_main/soxl_perp.md) |

@@ -24,5 +24,5 @@ and daily-close drawdown does not model liquidation at up to approximately 8.8x 
 `market-state-volatility-20260815-153825-882277` for final evidence.
 
 ```bash
-.venv/bin/python scripts/mine_market_state_volatility_overlay.py
+.venv/bin/python scripts/research/mine_market_state_volatility_overlay.py
 ```

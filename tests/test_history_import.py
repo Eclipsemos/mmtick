@@ -9,7 +9,7 @@ from mastermind_tick.store import PaperStore
 
 
 def _history_import_module():
-    path = Path(__file__).parents[1] / "scripts" / "import_soxl_history.py"
+    path = Path(__file__).parents[1] / "scripts" / "maintenance" / "import_history.py"
     spec = importlib.util.spec_from_file_location("mmtick_history_import", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

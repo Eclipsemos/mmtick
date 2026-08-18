@@ -43,5 +43,5 @@
 更新完历史数据后，使用下列命令重复生成确定性的前向报告：
 
 ```bash
-.venv/bin/python scripts/evaluate_soxl_volatility_spread_forward.py
+.venv/bin/python scripts/research/evaluate_soxl_volatility_spread_forward.py
 ```

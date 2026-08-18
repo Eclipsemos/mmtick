@@ -10,6 +10,6 @@ Best strict coverage: `5/7`; base-and-stress 7/7 configurations: `0`.
 Reproduce from the repository root:
 
 ```bash
-.venv/bin/python scripts/mine_order_flow_complement.py \
+.venv/bin/python scripts/research/mine_order_flow_complement.py \
   --report-id order-flow-complement-20260815
 ```

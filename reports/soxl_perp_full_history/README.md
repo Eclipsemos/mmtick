@@ -3,7 +3,8 @@
 This tree contains research based on Binance SOXLUSDT listing-to-date data. The current frozen
 baseline is long-only 15-minute `ATR(32) x 3`, trend efficiency `8 / 0.25`, fixed 15-minute action
 lock, no profit protection, no continuation re-entry, and 1.25x target exposure. See
-[`../../STRATEGY.md`](../../STRATEGY.md) for the complete definition.
+[`../../strategies/current_research_baseline.md`](../../strategies/current_research_baseline.md)
+for the complete definition.
 
 ## Current Decision Trail
 

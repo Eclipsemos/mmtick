@@ -10,6 +10,6 @@ Best strict coverage: `4/7`; base-and-stress 7/7 configurations: `0`.
 Reproduce from the repository root:
 
 ```bash
-.venv/bin/python scripts/mine_defensive_factor_portfolio.py \
+.venv/bin/python scripts/research/mine_defensive_factor_portfolio.py \
   --report-id defensive-factor-portfolio-20260815
 ```

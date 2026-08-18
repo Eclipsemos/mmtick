@@ -7,7 +7,7 @@ from mastermind_tick.bar_research import ResearchBar
 
 
 def _momentum_module():
-    path = Path(__file__).parents[1] / "scripts" / "mine_momentum_calendar_router.py"
+    path = Path(__file__).parents[1] / "scripts" / "research" / "mine_momentum_calendar_router.py"
     spec = importlib.util.spec_from_file_location("momentum_calendar_router", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

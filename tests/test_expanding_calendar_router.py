@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 
 def _expanding_module():
-    path = Path(__file__).parents[1] / "scripts" / "mine_expanding_calendar_router.py"
+    path = Path(__file__).parents[1] / "scripts" / "research" / "mine_expanding_calendar_router.py"
     spec = importlib.util.spec_from_file_location("expanding_calendar_router", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

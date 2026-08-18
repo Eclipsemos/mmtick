@@ -143,6 +143,96 @@ def ratio_mean_reversion_targets(
     return tuple(targets)
 
 
+def short_horizon_ratio_targets(
+    bars: list[PairBar],
+    window: int,
+    entry_z: float,
+    exit_z: float,
+    maximum_hold_bars: int,
+) -> tuple[int | None, ...]:
+    """Fade a causal log-ratio z-score with a mandatory time exit."""
+    if window < 2 or entry_z <= exit_z or exit_z < 0 or maximum_hold_bars < 1:
+        raise ValueError("invalid short-horizon pair parameters")
+    ratios = [math.log(float(bar.left.close / bar.right.close)) for bar in bars]
+    cumulative = [0.0]
+    cumulative_squared = [0.0]
+    for ratio in ratios:
+        cumulative.append(cumulative[-1] + ratio)
+        cumulative_squared.append(cumulative_squared[-1] + ratio * ratio)
+    target = 0
+    held_bars = 0
+    targets: list[int | None] = []
+    for index, ratio in enumerate(ratios):
+        if index < window:
+            targets.append(None)
+            continue
+        total = cumulative[index] - cumulative[index - window]
+        total_squared = cumulative_squared[index] - cumulative_squared[index - window]
+        mean = total / window
+        variance = max(0.0, total_squared / window - mean * mean)
+        deviation = math.sqrt(variance)
+        z_score = (ratio - mean) / deviation if deviation else 0.0
+        if target:
+            held_bars += 1
+            if abs(z_score) <= exit_z or held_bars >= maximum_hold_bars:
+                target = 0
+                held_bars = 0
+        if target == 0:
+            if z_score <= -entry_z:
+                target = 1
+            elif z_score >= entry_z:
+                target = -1
+        targets.append(target)
+    return tuple(targets)
+
+
+def relative_shock_targets(
+    bars: list[PairBar],
+    window: int,
+    entry_z: float,
+    maximum_hold_bars: int,
+    mode: str,
+) -> tuple[int | None, ...]:
+    """Trade a standardized one-bar BTC/ETH relative-return shock."""
+    if window < 2 or entry_z <= 0 or maximum_hold_bars < 1:
+        raise ValueError("invalid relative-shock parameters")
+    if mode not in {"continuation", "reversion"}:
+        raise ValueError("relative-shock mode must be continuation or reversion")
+    ratios = [math.log(float(bar.left.close / bar.right.close)) for bar in bars]
+    shocks = [
+        0.0,
+        *(current - previous for previous, current in zip(ratios, ratios[1:], strict=False)),
+    ]
+    cumulative = [0.0]
+    cumulative_squared = [0.0]
+    for shock in shocks:
+        cumulative.append(cumulative[-1] + shock)
+        cumulative_squared.append(cumulative_squared[-1] + shock * shock)
+    target = 0
+    held_bars = 0
+    targets: list[int | None] = []
+    for index, shock in enumerate(shocks):
+        if index < window + 1:
+            targets.append(None)
+            continue
+        if target:
+            held_bars += 1
+            if held_bars >= maximum_hold_bars:
+                target = 0
+                held_bars = 0
+        if target == 0:
+            total = cumulative[index] - cumulative[index - window]
+            total_squared = cumulative_squared[index] - cumulative_squared[index - window]
+            mean = total / window
+            variance = max(0.0, total_squared / window - mean * mean)
+            deviation = math.sqrt(variance)
+            z_score = (shock - mean) / deviation if deviation else 0.0
+            direction = 1 if z_score >= entry_z else -1 if z_score <= -entry_z else 0
+            target = direction if mode == "continuation" else -direction
+        targets.append(target)
+    return tuple(targets)
+
+
 def evaluate_pair_targets(
     bars: list[PairBar],
     targets: tuple[int | None, ...],

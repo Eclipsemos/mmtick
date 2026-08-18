@@ -10,6 +10,6 @@ Best strict coverage: `7/7`; base-and-stress 7/7 configurations: `5`.
 Reproduce from the repository root:
 
 ```bash
-.venv/bin/python scripts/mine_volatility_guarded_trend.py \
+.venv/bin/python scripts/research/mine_volatility_guarded_trend.py \
   --report-id volatility-guarded-trend-20260815
 ```

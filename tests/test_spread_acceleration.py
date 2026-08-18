@@ -6,7 +6,9 @@ from mastermind_tick.volatility_spread import SpreadFeatures, SpreadParameters
 
 
 def _module():
-    path = Path(__file__).parents[1] / "scripts" / "explore_soxl_spread_acceleration.py"
+    path = (
+        Path(__file__).parents[1] / "scripts" / "research" / "explore_soxl_spread_acceleration.py"
+    )
     sys.path.insert(0, str(path.parent))
     spec = importlib.util.spec_from_file_location("mmtick_spread_acceleration", path)
     assert spec and spec.loader

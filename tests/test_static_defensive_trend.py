@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 def _static_module():
-    path = Path(__file__).parents[1] / "scripts" / "mine_static_defensive_trend.py"
+    path = Path(__file__).parents[1] / "scripts" / "research" / "mine_static_defensive_trend.py"
     spec = importlib.util.spec_from_file_location("static_defensive_trend", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

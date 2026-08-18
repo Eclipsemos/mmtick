@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 
 def _audit_module():
-    path = Path(__file__).parents[1] / "scripts" / "audit_btc_atr_stability.py"
+    path = Path(__file__).parents[1] / "scripts" / "research" / "audit_btc_atr_stability.py"
     spec = importlib.util.spec_from_file_location("btc_atr_stability", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

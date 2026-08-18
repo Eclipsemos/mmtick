@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "id": "btc-eth-4h-reversal-factor-forward-v1",
+  "strategy_family": "single_factor_ic_monitor",
+  "status": "forward_observation_only",
+  "approved_for_trading": false,
+  "evidence_lock_date": "2026-08-11",
+  "forward_evidence_start_date": "2026-08-12",
+  "source_report": "reports/experiments/factor_stability/2026-08-18/factor-stability-20260818-022127-286734.json",
+  "parameter_hash": "04c313e63e0d6383bb09f7144e4b97e444038c3f0a956363cb13aa252cc264eb",
+  "parameters": {
+    "bar_interval_minutes": 240,
+    "factors": [
+      {
+        "factor": "own_ret_6",
+        "horizon_bars": 1,
+        "orientation": -1,
+        "source_asset": "btc_perp",
+        "target_asset": "btc_perp"
+      },
+      {
+        "factor": "other_ret_6",
+        "horizon_bars": 1,
+        "orientation": -1,
+        "source_asset": "btc_perp",
+        "target_asset": "eth_perp"
+      }
+    ]
+  },
+  "costs": {
+    "fee_bps_per_fill": 5.0,
+    "slippage_bps_per_fill": 2.0,
+    "funding_included": true
+  },
+  "development_reference": {
+    "btc_perp": {
+      "cost_adjusted_ic": 0.0510664702782346
+    },
+    "eth_perp": {
+      "cost_adjusted_ic": 0.04423674014715355
+    }
+  },
+  "forward_gates": {
+    "minimum_complete_days_for_review": 30,
+    "minimum_non_overlapping_samples_for_review": 150,
+    "minimum_cost_adjusted_ic": 0.02,
+    "minimum_development_ic_retention": 0.5
+  }
+}

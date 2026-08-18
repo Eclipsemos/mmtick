@@ -30,6 +30,6 @@ daily-close drawdown does not model intraday liquidation, and no borrowing cost 
 earlier 141824 report is retained but invalid because it used same-day metric information.
 
 ```bash
-.venv/bin/python scripts/update_futures_metrics.py --start 2021-01-01
-.venv/bin/python scripts/mine_market_state_overlay.py
+.venv/bin/python scripts/maintenance/update_futures_metrics.py --start 2021-01-01
+.venv/bin/python scripts/research/mine_market_state_overlay.py
 ```

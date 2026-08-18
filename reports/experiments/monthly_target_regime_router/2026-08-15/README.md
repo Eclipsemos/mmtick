@@ -19,6 +19,6 @@ rejects this direction as a solution to the strict every-month +15% requirement.
 Reproduce from the repository root:
 
 ```bash
-.venv/bin/python scripts/mine_monthly_target_regime_router.py \
+.venv/bin/python scripts/research/mine_monthly_target_regime_router.py \
   --report-id monthly-target-regime-router-20260815
 ```

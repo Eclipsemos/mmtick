@@ -7,7 +7,7 @@ from mastermind_tick.factor_portfolio import PortfolioResult, monthly_returns
 
 
 def _recovery_module():
-    path = Path(__file__).parents[1] / "scripts" / "mine_drawdown_recovery_trend.py"
+    path = Path(__file__).parents[1] / "scripts" / "research" / "mine_drawdown_recovery_trend.py"
     spec = importlib.util.spec_from_file_location("drawdown_recovery_trend", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

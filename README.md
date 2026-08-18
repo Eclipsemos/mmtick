@@ -22,7 +22,7 @@ live 账户，也不会被交易引擎启动。
 
 各品种历史原始压缩包分别保存在被 Git 忽略的 `data/history_soxl/`、`data/history_btc/` 与
 `data/history_eth/`，导入后的 Tick、K 线和资金费率按 `instrument_id` 隔离写入
-`data/paper.db`。运行 `scripts/import_soxl_history.py` 做增量更新时，原始归档也会写入对应
+`data/paper.db`。运行 `scripts/maintenance/import_history.py` 做增量更新时，原始归档也会写入对应
 目录，不再使用临时目录。
 
 回测台内置三套品种预设：SOXL 使用已有研究候选网格；BTC 与 ETH 使用相同的中性研究基线
@@ -56,6 +56,7 @@ K 线周期                 15 分钟
 ```
 
 完整研究基线和主分支部署策略快照见 [strategies/](strategies/README.md)。
+维护、研究和报告脚本的职责与入口见 [scripts/README.md](scripts/README.md)。
 
 ### 基础信号与退出
 

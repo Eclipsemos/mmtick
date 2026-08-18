@@ -5,7 +5,9 @@ from pathlib import Path
 
 
 def _walkforward_module():
-    path = Path(__file__).parents[1] / "scripts" / "mine_walkforward_volatility_guard.py"
+    path = (
+        Path(__file__).parents[1] / "scripts" / "research" / "mine_walkforward_volatility_guard.py"
+    )
     spec = importlib.util.spec_from_file_location("walkforward_volatility_guard", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def _order_flow_complement_module():
-    path = Path(__file__).parents[1] / "scripts" / "mine_order_flow_complement.py"
+    path = Path(__file__).parents[1] / "scripts" / "research" / "mine_order_flow_complement.py"
     spec = importlib.util.spec_from_file_location("order_flow_complement", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "id": "btc-eth-4h-reversal-factor-forward-v1-monitor",
+  "generated_at": "2026-08-18T02:48:47.247586+00:00",
+  "candidate_id": "btc-eth-4h-reversal-factor-forward-v1",
+  "candidate_status": "forward_observation_only",
+  "approved_for_trading": false,
+  "parameter_hash": "04c313e63e0d6383bb09f7144e4b97e444038c3f0a956363cb13aa252cc264eb",
+  "parameter_search_performed": false,
+  "evidence_lock_date": "2026-08-11",
+  "forward_evidence_start_date": "2026-08-12",
+  "source_report": "reports/experiments/factor_stability/2026-08-18/factor-stability-20260818-022127-286734.json",
+  "data_through": "2026-08-17T23:59:59.999000+00:00",
+  "complete_forward_days": 5,
+  "status": "collecting_forward_evidence",
+  "factors": {
+    "btc_perp": {
+      "factor": "own_ret_6",
+      "source_asset": "btc_perp",
+      "target_asset": "btc_perp",
+      "orientation": -1,
+      "horizon_bars": 1,
+      "complete_days": 5,
+      "first_day": "2026-08-12",
+      "last_day": "2026-08-16",
+      "samples": 30,
+      "raw_ic": 0.1563959955506118,
+      "cost_adjusted_ic": 0.18308741394618572,
+      "development_cost_adjusted_ic": 0.0510664702782346,
+      "development_ic_retention": 3.5852764631790244,
+      "daily": [
+        {
+          "date": "2026-08-12",
+          "samples": 6,
+          "raw_ic": -0.02857142857142853,
+          "cost_adjusted_ic": 0.15179418517972906
+        },
+        {
+          "date": "2026-08-13",
+          "samples": 6,
+          "raw_ic": 0.6000000000000001,
+          "cost_adjusted_ic": 0.819688599970537
+        },
+        {
+          "date": "2026-08-14",
+          "samples": 6,
+          "raw_ic": 0.42857142857142866,
+          "cost_adjusted_ic": 0.6761234037828133
+        },
+        {
+          "date": "2026-08-15",
+          "samples": 6,
+          "raw_ic": 0.48571428571428577,
+          "cost_adjusted_ic": null
+        },
+        {
+          "date": "2026-08-16",
+          "samples": 6,
+          "raw_ic": 0.6,
+          "cost_adjusted_ic": 0.5768179036829704
+        }
+      ],
+      "regimes": {
+        "bear_low_vol": {
+          "samples": 1,
+          "cost_adjusted_ic": null
+        },
+        "sideways_low_vol": {
+          "samples": 29,
+          "cost_adjusted_ic": 0.19054223432555098
+        }
+      },
+      "gates": {
+        "minimum_complete_days": false,
+        "minimum_samples": false,
+        "sample_ready": false,
+        "minimum_cost_adjusted_ic": null,
+        "minimum_development_ic_retention": null
+      }
+    },
+    "eth_perp": {
+      "factor": "other_ret_6",
+      "source_asset": "btc_perp",
+      "target_asset": "eth_perp",
+      "orientation": -1,
+      "horizon_bars": 1,
+      "complete_days": 5,
+      "first_day": "2026-08-12",
+      "last_day": "2026-08-16",
+      "samples": 30,
+      "raw_ic": 0.24449388209121242,
+      "cost_adjusted_ic": 0.1870263467874768,
+      "development_cost_adjusted_ic": 0.04423674014715355,
+      "development_ic_retention": 4.227851016266874,
+      "daily": [
+        {
+          "date": "2026-08-12",
+          "samples": 6,
+          "raw_ic": 0.2571428571428572,
+          "cost_adjusted_ic": 0.2571428571428572
+        },
+        {
+          "date": "2026-08-13",
+          "samples": 6,
+          "raw_ic": 0.8285714285714285,
+          "cost_adjusted_ic": 0.753702346348183
+        },
+        {
+          "date": "2026-08-14",
+          "samples": 6,
+          "raw_ic": 1.0,
+          "cost_adjusted_ic": 0.9411239481143202
+        },
+        {
+          "date": "2026-08-15",
+          "samples": 6,
+          "raw_ic": -0.0857142857142857,
+          "cost_adjusted_ic": -0.13093073414159542
+        },
+        {
+          "date": "2026-08-16",
+          "samples": 6,
+          "raw_ic": 0.6,
+          "cost_adjusted_ic": 0.5768179036829704
+        }
+      ],
+      "regimes": {
+        "bull_low_vol": {
+          "samples": 8,
+          "cost_adjusted_ic": 0.5476190476190476
+        },
+        "sideways_low_vol": {
+          "samples": 22,
+          "cost_adjusted_ic": 0.14760449787342064
+        }
+      },
+      "gates": {
+        "minimum_complete_days": false,
+        "minimum_samples": false,
+        "sample_ready": false,
+        "minimum_cost_adjusted_ic": null,
+        "minimum_development_ic_retention": null
+      }
+    }
+  },
+  "transformer_combination_allowed": false,
+  "message": "Continue collecting data without changing factors, orientation, or gates."
+}

@@ -433,7 +433,7 @@ class ResearchLab:
                 return
             command = [
                 sys.executable,
-                str(self.settings.project_root / "scripts" / "import_soxl_history.py"),
+                str(self.settings.project_root / "scripts" / "maintenance" / "import_history.py"),
                 "--database",
                 str(self.settings.database_path),
                 "--instrument-id",
@@ -636,7 +636,12 @@ class ResearchLab:
         )
         command = [
             str(python),
-            str(self.settings.project_root / "scripts" / "train_deep_factor_v2.py"),
+            str(
+                self.settings.project_root
+                / "scripts"
+                / "research"
+                / "train_deep_factor_v2.py"
+            ),
             "--database",
             str(self.settings.database_path),
             "--output-root",

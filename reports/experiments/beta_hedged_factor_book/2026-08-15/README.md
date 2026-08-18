@@ -19,7 +19,7 @@ Decision: `rejected_after_confirmation`. Approved for trading: `false`.
 ## Reproduce
 
 ```bash
-.venv/bin/python scripts/mine_beta_hedged_factor_book.py
+.venv/bin/python scripts/research/mine_beta_hedged_factor_book.py
 ```
 
 The timestamped JSON artifact contains the complete daily/monthly metrics and selection metadata;

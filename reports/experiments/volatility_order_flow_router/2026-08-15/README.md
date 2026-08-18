@@ -10,6 +10,6 @@ Best strict coverage: `5/7`; base-and-stress 7/7 configurations: `0`.
 Reproduce from the repository root:
 
 ```bash
-.venv/bin/python scripts/mine_volatility_order_flow_router.py \
+.venv/bin/python scripts/research/mine_volatility_order_flow_router.py \
   --report-id volatility-order-flow-router-20260815
 ```

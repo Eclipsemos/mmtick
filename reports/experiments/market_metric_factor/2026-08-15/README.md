@@ -36,8 +36,8 @@ neighborhood checks do not change the rejection or make 2026 a fresh holdout.
 ## Reproduce
 
 ```bash
-.venv/bin/python scripts/update_futures_metrics.py --start 2021-01-01
-.venv/bin/python scripts/mine_market_metric_factors.py
+.venv/bin/python scripts/maintenance/update_futures_metrics.py --start 2021-01-01
+.venv/bin/python scripts/research/mine_market_metric_factors.py
 ```
 
 Raw archives are stored under `data/futures_metrics/` and excluded from Git. The timestamped JSON

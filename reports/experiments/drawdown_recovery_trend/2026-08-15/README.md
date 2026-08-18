@@ -10,6 +10,6 @@ Best strict coverage: `5/7`; base-and-stress 7/7 configurations: `0`.
 Reproduce from the repository root:
 
 ```bash
-.venv/bin/python scripts/mine_drawdown_recovery_trend.py \
+.venv/bin/python scripts/research/mine_drawdown_recovery_trend.py \
   --report-id drawdown-recovery-trend-20260815
 ```

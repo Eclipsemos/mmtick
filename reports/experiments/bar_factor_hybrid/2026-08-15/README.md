@@ -13,5 +13,5 @@ Decision: `rejected_after_confirmation`. Approved for trading: `false`. See
 `bar-factor-hybrid-20260815-140904-249259` for the final evidence.
 
 ```bash
-.venv/bin/python scripts/mine_bar_factor_hybrid.py
+.venv/bin/python scripts/research/mine_bar_factor_hybrid.py
 ```

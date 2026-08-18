@@ -7,7 +7,7 @@ import pytest
 
 
 def _forward_module():
-    path = Path(__file__).parents[1] / "scripts" / "evaluate_btc_ema_forward.py"
+    path = Path(__file__).parents[1] / "scripts" / "research" / "evaluate_btc_ema_forward.py"
     spec = importlib.util.spec_from_file_location("btc_ema_forward", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

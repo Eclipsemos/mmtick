@@ -10,6 +10,6 @@ Best strict coverage: `6/7`; base-and-stress 7/7 configurations: `0`.
 Reproduce from the repository root:
 
 ```bash
-.venv/bin/python scripts/mine_static_defensive_trend.py \
+.venv/bin/python scripts/research/mine_static_defensive_trend.py \
   --report-id static-defensive-trend-20260815
 ```

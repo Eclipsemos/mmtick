@@ -5,7 +5,9 @@ from pathlib import Path
 
 
 def _router_module():
-    path = Path(__file__).parents[1] / "scripts" / "mine_volatility_order_flow_router.py"
+    path = (
+        Path(__file__).parents[1] / "scripts" / "research" / "mine_volatility_order_flow_router.py"
+    )
     spec = importlib.util.spec_from_file_location("volatility_order_flow_router", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

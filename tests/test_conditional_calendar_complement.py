@@ -6,7 +6,12 @@ from types import SimpleNamespace
 
 
 def _conditional_module():
-    path = Path(__file__).parents[1] / "scripts" / "mine_conditional_calendar_complement.py"
+    path = (
+        Path(__file__).parents[1]
+        / "scripts"
+        / "research"
+        / "mine_conditional_calendar_complement.py"
+    )
     spec = importlib.util.spec_from_file_location("conditional_calendar_complement", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
@@ -57,9 +62,7 @@ def test_complement_selection_does_not_use_unlisted_confirmation_month() -> None
         },
     }
 
-    selected = CONDITIONAL._select_complements(
-        rows, monthly, ("2025-01",), "mean", "long_short", 1
-    )
+    selected = CONDITIONAL._select_complements(rows, monthly, ("2025-01",), "mean", "long_short", 1)
 
     assert selected == ("stable",)
 

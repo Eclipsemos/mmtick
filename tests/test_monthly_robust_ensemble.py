@@ -7,7 +7,7 @@ import pytest
 
 
 def _ensemble_module():
-    path = Path(__file__).parents[1] / "scripts" / "mine_monthly_robust_ensemble.py"
+    path = Path(__file__).parents[1] / "scripts" / "research" / "mine_monthly_robust_ensemble.py"
     spec = importlib.util.spec_from_file_location("monthly_robust_ensemble", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

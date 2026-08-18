@@ -10,6 +10,6 @@ Best strict coverage: `4/7`; base-and-stress 7/7 configurations: `0`.
 Reproduce from the repository root:
 
 ```bash
-.venv/bin/python scripts/mine_fast_trend_complement.py \
+.venv/bin/python scripts/research/mine_fast_trend_complement.py \
   --report-id fast-trend-complement-20260815
 ```

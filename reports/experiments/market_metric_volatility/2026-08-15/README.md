@@ -13,5 +13,5 @@ Decision: `rejected_after_confirmation`. Approved for trading: `false`. See
 `market-metric-volatility-20260815-140418-118059` for the final evidence.
 
 ```bash
-.venv/bin/python scripts/mine_market_metric_volatility_overlay.py
+.venv/bin/python scripts/research/mine_market_metric_volatility_overlay.py
 ```

@@ -41,7 +41,7 @@
 可复现命令：
 
 ```bash
-PYTHONPATH=src python3 scripts/reassess_soxl_fit.py \
+PYTHONPATH=src python3 scripts/research/reassess_soxl_fit.py \
   --output reports/soxl_perp_full_history/reassessment/2026-08-08/full_fit.json
 ```
 

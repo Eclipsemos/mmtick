@@ -42,5 +42,5 @@ least 365 new complete UTC days and eight completed forward trades. A forward dr
 Run the deterministic monitor after updating complete daily data:
 
 ```bash
-.venv/bin/python scripts/evaluate_btc_ema_forward.py
+.venv/bin/python scripts/research/evaluate_btc_ema_forward.py
 ```

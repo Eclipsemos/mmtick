@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 def _provider_module():
-    path = Path(__file__).parents[1] / "scripts" / "mine_provider_calendar_router.py"
+    path = Path(__file__).parents[1] / "scripts" / "research" / "mine_provider_calendar_router.py"
     spec = importlib.util.spec_from_file_location("provider_calendar_router", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
