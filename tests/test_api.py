@@ -130,13 +130,32 @@ def test_portfolio_ledger_exposes_base_and_stress_books(tmp_path) -> None:
         {"targets": {}},
         "test-v1",
     )
+    app.state.store.save_portfolio_day(
+        portfolio.id,
+        "stress",
+        "2026-08-17",
+        3,
+        Decimal("99500"),
+        Decimal("0.005050505"),
+        Decimal("100000"),
+        False,
+        {"targets": {"btc": "1"}},
+        "test-v1",
+    )
 
     with TestClient(app) as client:
         response = client.get(f"/api/accounts/{portfolio.id}/portfolio-ledger?ledger=stress")
+        latest = client.get(
+            f"/api/accounts/{portfolio.id}/portfolio-ledger?ledger=stress&limit=1"
+        )
 
     assert response.status_code == 200
     assert response.json()[0]["ledger"] == "stress"
     assert response.json()[0]["state"] == {"targets": {}}
+    assert [row["day"] for row in response.json()] == ["2026-08-16", "2026-08-17"]
+    assert latest.status_code == 200
+    assert latest.json()[0]["day"] == "2026-08-17"
+    assert latest.json()[0]["state"] == {"targets": {"btc": "1"}}
 
 
 def test_portfolio_sleeve_event_endpoint_exposes_audit_records(tmp_path) -> None:
@@ -179,7 +198,7 @@ def test_portfolio_sleeve_event_endpoint_exposes_audit_records(tmp_path) -> None
     with TestClient(app) as client:
         response = client.get(
             f"/api/accounts/{portfolio.id}/portfolio-sleeve-events",
-            params={"ledger": "base", "day": "2026-08-16"},
+            params={"ledger": "base", "day": "2026-08-16", "limit": 1},
         )
 
     assert response.status_code == 200

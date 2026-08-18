@@ -267,6 +267,114 @@ export type ReturnSummary = {
   monthly: ReturnPeriod[]
 }
 
+export type PortfolioSleeveComponent = {
+  instrument_id: 'btc_perp' | 'eth_perp'
+  cash: string
+  quantity: string
+  equity: string
+  target: string
+  return: string
+  fee_amount: string
+  slippage_amount: string
+  funding_amount: string
+  allocation?: string
+  allocated_equity?: string
+}
+
+export type PortfolioLedgerState = {
+  day: string
+  timestamp_ms: number
+  raw_return: string
+  state_return: string
+  state_anchor_return: string
+  state_targets: { btc: string; eth: string }
+  state_metric_exposure: string
+  state_volatility_exposure: string
+  state_combined_exposure: string
+  outer_exposure: string
+  month_return: string
+  metrics: {
+    state: 'high' | 'normal' | 'unavailable'
+    zscore: string | null
+    exposure: string
+  }
+  costs: {
+    component_fee: string
+    component_slippage: string
+    state_route: string
+    calendar_route: string
+    outer_route: string
+  }
+  funding_return: string
+  sleeves: {
+    state: {
+      return: string
+      anchor_equity: string
+      borrow_reserve: string
+      signal_exposure: string
+      volatility_exposure: string
+      combined_exposure: string
+      components: Record<string, PortfolioSleeveComponent>
+    }
+    trend: {
+      selected: string[]
+      route_turnover: string
+      route_cost: string
+      components: Record<string, PortfolioSleeveComponent>
+    }
+  }
+}
+
+export type PortfolioLedgerDay = {
+  account_id: string
+  ledger: 'base' | 'stress'
+  day: string
+  timestamp_ms: number
+  equity: string
+  daily_return: string
+  month_start_equity: string
+  month_locked: number
+  data_version: string
+  created_at_ms: number
+  state: PortfolioLedgerState
+}
+
+export type PortfolioSleeveEventPayload = {
+  timestamp_ms: number
+  sleeve_id: string
+  instrument_id: string | null
+  event_type: string
+  side?: 'BUY' | 'SELL'
+  position_effect?: 'OPEN' | 'CLOSE'
+  quantity?: string
+  market_price?: string
+  fill_price?: string
+  fee?: string
+  slippage?: string
+  target?: string
+  target_before?: string | null
+  target_after?: string
+  amount?: string
+  rate?: string
+  turnover?: string
+  route_cost?: string
+  anchor_allocation?: string
+}
+
+export type PortfolioSleeveEvent = {
+  account_id: string
+  ledger: 'base' | 'stress'
+  day: string
+  event_index: number
+  timestamp_ms: number
+  sleeve_id: string
+  instrument_id: string | null
+  event_type: string
+  data_version: string
+  created_at_ms: number
+  payload: PortfolioSleeveEventPayload
+}
+
 export type Fill = {
   id: string
   account_id: string

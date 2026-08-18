@@ -557,19 +557,39 @@ class PaperStore:
                 )
             return True
 
-    def portfolio_ledger(self, account_id: str, ledger: str) -> list[dict[str, Any]]:
+    def portfolio_ledger(
+        self, account_id: str, ledger: str, limit: int | None = None
+    ) -> list[dict[str, Any]]:
         with self.connection() as connection:
-            rows = connection.execute(
-                """
-                SELECT * FROM portfolio_daily_ledger
-                WHERE account_id = ? AND ledger = ? ORDER BY timestamp_ms
-                """,
-                (account_id, ledger),
-            ).fetchall()
+            if limit is None:
+                rows = connection.execute(
+                    """
+                    SELECT * FROM portfolio_daily_ledger
+                    WHERE account_id = ? AND ledger = ? ORDER BY timestamp_ms
+                    """,
+                    (account_id, ledger),
+                ).fetchall()
+            else:
+                rows = list(
+                    reversed(
+                        connection.execute(
+                            """
+                            SELECT * FROM portfolio_daily_ledger
+                            WHERE account_id = ? AND ledger = ?
+                            ORDER BY timestamp_ms DESC LIMIT ?
+                            """,
+                            (account_id, ledger, limit),
+                        ).fetchall()
+                    )
+                )
         return [{**dict(row), "state": json.loads(row["state_json"])} for row in rows]
 
     def portfolio_sleeve_events(
-        self, account_id: str, ledger: str, day: str | None = None
+        self,
+        account_id: str,
+        ledger: str,
+        day: str | None = None,
+        limit: int | None = None,
     ) -> list[dict[str, Any]]:
         clauses = ["account_id = ?", "ledger = ?"]
         params: list[Any] = [account_id, ledger]
@@ -577,14 +597,28 @@ class PaperStore:
             clauses.append("day = ?")
             params.append(day)
         with self.connection() as connection:
-            rows = connection.execute(
-                f"""
-                SELECT * FROM portfolio_sleeve_events
-                WHERE {" AND ".join(clauses)}
-                ORDER BY timestamp_ms, event_index
-                """,
-                params,
-            ).fetchall()
+            if limit is None:
+                rows = connection.execute(
+                    f"""
+                    SELECT * FROM portfolio_sleeve_events
+                    WHERE {" AND ".join(clauses)}
+                    ORDER BY timestamp_ms, event_index
+                    """,
+                    params,
+                ).fetchall()
+            else:
+                rows = list(
+                    reversed(
+                        connection.execute(
+                            f"""
+                            SELECT * FROM portfolio_sleeve_events
+                            WHERE {" AND ".join(clauses)}
+                            ORDER BY timestamp_ms DESC, event_index DESC LIMIT ?
+                            """,
+                            (*params, limit),
+                        ).fetchall()
+                    )
+                )
         return [{**dict(row), "payload": json.loads(row["payload_json"])} for row in rows]
 
     def upsert_futures_metric_bars(

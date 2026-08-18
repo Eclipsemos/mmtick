@@ -60,6 +60,9 @@ import type {
   FundingPayment,
   OhlcvBar,
   Order,
+  PortfolioLedgerDay,
+  PortfolioSleeveComponent,
+  PortfolioSleeveEvent,
   ReturnPeriod,
   ReturnSummary,
   WarehouseSummary,
@@ -271,6 +274,8 @@ function App() {
     ? 'soxl_perp'
     : selectedOverviewAccount?.runtime.market_data_id ?? accountId
   const marketIntervalMinutes = selectedOverviewAccount?.runtime.strategy_config.bar_minutes ?? 15
+  const isPortfolioAccount = mode === 'paper'
+    && selectedOverviewAccount?.runtime.paper_model === 'portfolio'
   const liveReadiness = useQuery({
     queryKey: ['live-readiness'],
     queryFn: api.liveReadiness,
@@ -305,6 +310,14 @@ function App() {
     queryKey: ['orders', mode, accountId],
     queryFn: () => mode === 'live' ? api.liveOrders() : api.orders(accountId),
     refetchInterval: 5000,
+    enabled: view === 'orders' && !isPortfolioAccount,
+  })
+  const portfolioSleeveEvents = useQuery({
+    queryKey: ['portfolio-sleeve-events', accountId, 'base'],
+    queryFn: () => api.portfolioSleeveEvents(accountId),
+    enabled: view === 'orders' && isPortfolioAccount,
+    refetchInterval: 60_000,
+    staleTime: 30_000,
   })
   const returns = useQuery({
     queryKey: ['returns', mode, accountId, utcDay],
@@ -342,6 +355,15 @@ function App() {
     queryFn: () => api.ohlcv(marketInstrumentId, undefined, marketIntervalMinutes),
     enabled: marketSelectionReady,
     refetchInterval: 5000,
+  })
+  const portfolioLedger = useQuery({
+    queryKey: ['portfolio-ledger', accountId, 'base'],
+    queryFn: () => api.portfolioLedger(accountId),
+    enabled: mode === 'paper'
+      && view === 'monitor'
+      && selectedOverviewAccount?.runtime.paper_model === 'portfolio',
+    refetchInterval: 60_000,
+    staleTime: 30_000,
   })
   const equityHistory = useTimePaginatedSeries(
     `${mode}:${accountId}`,
@@ -627,6 +649,8 @@ function App() {
             fills={fills.data ?? []}
             funding={funding.data ?? []}
             bars={ohlcvHistory.rows}
+            portfolioLedger={portfolioLedger.data ?? []}
+            portfolioLedgerLoading={portfolioLedger.isLoading}
             loadOlderEquity={equityHistory.loadOlder}
             loadingOlderEquity={equityHistory.isLoadingOlder}
             hasOlderEquity={equityHistory.hasMore}
@@ -635,7 +659,11 @@ function App() {
             hasOlderOhlcv={ohlcvHistory.hasMore}
           />
         ) : view === 'orders' ? (
-          <Orders rows={orders.data ?? []} />
+          isPortfolioAccount ? (
+            <PortfolioOrders events={portfolioSleeveEvents.data ?? []} loading={portfolioSleeveEvents.isLoading} />
+          ) : (
+            <Orders rows={orders.data ?? []} />
+          )
         ) : view === 'returns' ? (
           <Returns account={account} summary={returns.data} loading={returns.isLoading} />
         ) : (
@@ -858,6 +886,8 @@ function Monitor({
   fills,
   funding,
   bars,
+  portfolioLedger,
+  portfolioLedgerLoading,
   loadOlderEquity,
   loadingOlderEquity,
   hasOlderEquity,
@@ -872,6 +902,8 @@ function Monitor({
   fills: Fill[]
   funding: FundingPayment[]
   bars: OhlcvBar[]
+  portfolioLedger: PortfolioLedgerDay[]
+  portfolioLedgerLoading: boolean
   loadOlderEquity: () => Promise<void>
   loadingOlderEquity: boolean
   hasOlderEquity: boolean
@@ -910,6 +942,10 @@ function Monitor({
   const displayPriceAt = runtime.paper_model === 'portfolio'
     ? latestMarketBar?.end_ms ?? null
     : account.last_snapshot_ms
+  const latestPortfolioDay = portfolioLedger[portfolioLedger.length - 1]
+  const portfolioTargets = latestPortfolioDay
+    ? aggregatePortfolioTargets(latestPortfolioDay)
+    : null
 
   return (
     <>
@@ -937,13 +973,22 @@ function Monitor({
       <section className="metrics-grid">
         <Metric label="账户净值" value={money(account.equity, account.currency)} sub={`初始 ${money(account.initial_cash, account.currency)}${netCashFlow ? ` · 净入金 ${money(netCashFlow, account.currency)}` : ''}`} icon={<WalletCards />} />
         <Metric label="累计收益" value={percent(account.total_return)} sub={money(account.total_pnl, account.currency)} tone={positive ? 'good' : 'bad'} icon={positive ? <TrendingUp /> : <TrendingDown />} />
-        <Metric label="当前持仓" value={number(Math.abs(positionQuantity))} sub={`${positionSide} · 均价 ${money(account.average_price, account.currency)}`} icon={<Activity />} />
+        <Metric
+          label="当前持仓"
+          value={portfolioTargets ? `BTC ${signedExposure(portfolioTargets.btc)}` : number(Math.abs(positionQuantity))}
+          sub={portfolioTargets ? `ETH ${signedExposure(portfolioTargets.eth)} · 日终模型目标` : `${positionSide} · 均价 ${money(account.average_price, account.currency)}`}
+          icon={<Activity />}
+        />
         <Metric label="最大回撤" value={percent(account.max_drawdown)} sub={`${account.round_trips} 次完整交易`} tone="bad" icon={<TrendingDown />} />
         <Metric label="夏普率" value={number(account.sharpe_ratio, 2)} sub={`${runtime.paper_model === 'portfolio' ? '日线' : '15m'} 年化 · rf 0%`} tone={account.sharpe_ratio === null ? '' : account.sharpe_ratio >= 0 ? 'good' : 'bad'} icon={<Gauge />} />
         <Metric label="轮次胜率" value={account.win_rate === null ? '--' : rate(account.win_rate)} sub={`${account.winning_trades} 赢 / ${account.round_trips} 轮`} tone={account.win_rate === null ? '' : account.win_rate >= 0.5 ? 'good' : 'bad'} icon={<Target />} />
       </section>
 
       <DecisionStatus runtime={runtime} />
+
+      {runtime.paper_model === 'portfolio' && (
+        <PortfolioAttribution ledger={portfolioLedger} loading={portfolioLedgerLoading} />
+      )}
 
       <section className="workspace-grid">
         {runtime.paper_model === 'portfolio' ? (
@@ -1803,6 +1848,213 @@ function Metric({ label, value, sub, tone = '', icon }: { label: string; value: 
   return <div className={`metric ${tone}`}><div className="metric-top"><span>{label}</span>{icon}</div><strong>{value}</strong><small>{sub}</small></div>
 }
 
+const portfolioSleeveLabels: Record<string, string> = {
+  lead_lag: 'BTC/ETH 15日冲击 Lead-Lag',
+  'event-eth_perp-to-eth_perp-continuation-60d-threshold-2p5-hold-12x4h-none-long_only': 'ETH→ETH 60日延续',
+  'event-btc_perp-to-btc_perp-continuation-15d-threshold-2-hold-4x4h-none-long_short': 'BTC→BTC 15日延续',
+  'event-eth_perp-to-btc_perp-continuation-60d-threshold-1p5-hold-12x4h-underreaction-long_short': 'ETH→BTC 60日低反应',
+}
+
+function portfolioSleeveLabel(id: string) {
+  if (portfolioSleeveLabels[id]) return portfolioSleeveLabels[id]
+  const match = id.match(/^(btc|eth)_perp-macd-1440m-(\d+)-(\d+)-(\d+)-long_only-confirm(\d+)$/)
+  if (!match) return id
+  return `${match[1].toUpperCase()} MACD(${match[2]},${match[3]},${match[4]}) · 确认${match[5]}日`
+}
+
+function precisePercent(value: number, digits = 3) {
+  return `${value >= 0 ? '+' : ''}${(value * 100).toFixed(digits)}%`
+}
+
+function signedExposure(value: number) {
+  return `${value >= 0 ? '+' : ''}${value.toFixed(2)}x`
+}
+
+function aggregatePortfolioTargets(day: PortfolioLedgerDay) {
+  const outerExposure = Number(day.state.outer_exposure)
+  const btcState = Number(day.state.state_targets.btc) * 0.5 * outerExposure
+  const ethState = Number(day.state.state_targets.eth) * 0.5 * outerExposure
+  return Object.values(day.state.sleeves.trend.components).reduce(
+    (targets, component) => {
+      const contribution = Number(component.target) * outerExposure / 6
+      if (component.instrument_id === 'btc_perp') targets.btc += contribution
+      else targets.eth += contribution
+      return targets
+    },
+    { btc: btcState, eth: ethState },
+  )
+}
+
+function stateSleeveContribution(component: PortfolioSleeveComponent, day: PortfolioLedgerDay) {
+  const componentReturn = Number(component.return)
+  const anchorReturn = Number(day.state.state_anchor_return)
+  const currentAllocation = Number(component.allocated_equity ?? 0)
+  const currentAnchor = Number(day.state.sleeves.state.anchor_equity)
+  if (![componentReturn, anchorReturn, currentAllocation, currentAnchor].every(Number.isFinite)
+      || currentAnchor === 0 || componentReturn === -1 || anchorReturn === -1) return 0
+  const previousAllocation = currentAllocation / (1 + componentReturn)
+  const previousAnchor = currentAnchor / (1 + anchorReturn)
+  return previousAllocation * componentReturn / previousAnchor
+    * Number(day.state.state_combined_exposure)
+    * 0.5
+    * Number(day.state.outer_exposure)
+}
+
+function trendSleeveContribution(component: PortfolioSleeveComponent, day: PortfolioLedgerDay) {
+  return Number(component.return) / 6 * Number(day.state.outer_exposure)
+}
+
+function portfolioPosition(component: PortfolioSleeveComponent) {
+  const target = Number(component.target)
+  const asset = component.instrument_id === 'btc_perp' ? 'BTC' : 'ETH'
+  if (target > 0) return `${asset} 多头`
+  if (target < 0) return `${asset} 空头`
+  return `${asset} 空仓`
+}
+
+function utcCloseLabel(timestamp: number) {
+  return new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'UTC',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(timestamp).replace('24:00', '00:00')
+}
+
+function utcTimestamp(timestamp: number) {
+  return new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'UTC',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(timestamp)
+}
+
+function portfolioSleeveWeight(event: PortfolioSleeveEvent) {
+  const anchorAllocation = Number(event.payload.anchor_allocation)
+  if (Number.isFinite(anchorAllocation)) return anchorAllocation * 0.5
+  if (/^(btc|eth)_perp-macd-/.test(event.sleeve_id)) return 1 / 6
+  return null
+}
+
+function useUtcCloseCountdown() {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+  const date = new Date(now)
+  const nextClose = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1)
+  const remainingSeconds = Math.max(0, Math.ceil((nextClose - now) / 1000))
+  const hours = Math.floor(remainingSeconds / 3600)
+  const minutes = Math.floor((remainingSeconds % 3600) / 60)
+  const seconds = remainingSeconds % 60
+  return {
+    nextClose,
+    countdown: [hours, minutes, seconds].map((value) => String(value).padStart(2, '0')).join(':'),
+  }
+}
+
+function PortfolioAttribution({ ledger, loading }: { ledger: PortfolioLedgerDay[]; loading: boolean }) {
+  const { nextClose, countdown } = useUtcCloseCountdown()
+  const day = ledger[ledger.length - 1]
+  if (!day) {
+    return (
+      <section className="panel portfolio-attribution-panel" aria-label="组合持仓与收益归因">
+        <div className="portfolio-empty"><Activity size={18} />{loading ? '正在读取组合袖套账本' : '等待首个完整 UTC 日账本'}</div>
+      </section>
+    )
+  }
+
+  const outerExposure = Number(day.state.outer_exposure)
+  const stateContribution = Number(day.state.state_return) * 0.5 * outerExposure
+  const trendContribution = Object.values(day.state.sleeves.trend.components)
+    .reduce((total, component) => total + trendSleeveContribution(component, day), 0)
+  const innerCosts = Number(day.state.costs.component_fee)
+    + Number(day.state.costs.component_slippage)
+    + Number(day.state.costs.state_route)
+    + Number(day.state.costs.calendar_route)
+  const modeledCostDrag = -innerCosts * outerExposure - Number(day.state.costs.outer_route)
+  const fundingContribution = Number(day.state.funding_return) * outerExposure
+  const targets = aggregatePortfolioTargets(day)
+  const rows = [
+    ...Object.entries(day.state.sleeves.state.components).map(([id, component]) => ({
+      id,
+      group: '状态因子',
+      internalAllocation: Number(component.allocation ?? 0),
+      portfolioWeight: Number(component.allocation ?? 0) * 0.5,
+      component,
+      contribution: stateSleeveContribution(component, day),
+    })),
+    ...Object.entries(day.state.sleeves.trend.components).map(([id, component]) => ({
+      id,
+      group: '月历趋势',
+      internalAllocation: null,
+      portfolioWeight: 1 / 6,
+      component,
+      contribution: trendSleeveContribution(component, day),
+    })),
+  ]
+
+  return (
+    <section className="panel portfolio-attribution-panel" aria-label="组合持仓与收益归因">
+      <div className="portfolio-attribution-head">
+        <div>
+          <span>PORTFOLIO ATTRIBUTION / {day.day} UTC</span>
+          <h3>组合持仓与收益归因</h3>
+        </div>
+        <div className="utc-close-countdown" aria-label="下一个 UTC 收盘倒计时">
+          <Clock3 size={16} />
+          <div><span>下一个 UTC 收盘</span><strong>{countdown}</strong><small>{utcCloseLabel(nextClose)} UTC</small></div>
+        </div>
+      </div>
+
+      <div className="portfolio-attribution-summary">
+        <div><span>组合日收益</span><strong className={Number(day.daily_return) >= 0 ? 'good-text' : 'bad-text'}>{precisePercent(Number(day.daily_return))}</strong><small>已应用 {number(outerExposure, 1)}x 外层敞口</small></div>
+        <div><span>状态袖套贡献</span><strong className={stateContribution >= 0 ? 'good-text' : 'bad-text'}>{precisePercent(stateContribution)}</strong><small>组合权重 50%</small></div>
+        <div><span>趋势袖套贡献</span><strong className={trendContribution >= 0 ? 'good-text' : 'bad-text'}>{precisePercent(trendContribution)}</strong><small>3 个袖套各 1/6</small></div>
+        <div><span>成本拖累</span><strong className="bad-text">{precisePercent(modeledCostDrag)}</strong><small>已包含在袖套收益中</small></div>
+        <div><span>资金费贡献</span><strong className={fundingContribution >= 0 ? 'good-text' : 'bad-text'}>{precisePercent(fundingContribution)}</strong><small>已包含在袖套收益中</small></div>
+        <div><span>组合建模目标</span><strong>BTC {signedExposure(targets.btc)}</strong><small>ETH {signedExposure(targets.eth)}</small></div>
+      </div>
+
+      <div className="portfolio-context-strip">
+        <span>市场状态 <strong>{day.state.metrics.state.toUpperCase()}</strong></span>
+        <span>z-score <strong>{number(day.state.metrics.zscore, 3)}</strong></span>
+        <span>状态敞口 <strong>{number(day.state.state_metric_exposure, 2)}x</strong></span>
+        <span>波动率敞口 <strong>{number(day.state.state_volatility_exposure, 2)}x</strong></span>
+        <span>月度锁 <strong>{day.month_locked ? 'LOCKED' : 'OPEN'}</strong></span>
+      </div>
+
+      <div className="portfolio-sleeve-table-wrap">
+        <table className="portfolio-sleeve-table">
+          <thead><tr><th>袖套</th><th>组合基准权重</th><th>日终模型持仓</th><th>目标</th><th>数量</th><th>袖套日收益</th><th>账户贡献</th><th>袖套成本</th></tr></thead>
+          <tbody>
+            {rows.map(({ id, group, internalAllocation, portfolioWeight, component, contribution }) => (
+              <tr key={id}>
+                <td><span>{group}{internalAllocation === null ? '' : ` · 状态内 ${(internalAllocation * 100).toFixed(0)}%`}</span><strong>{portfolioSleeveLabel(id)}</strong></td>
+                <td><strong className="portfolio-weight">{(portfolioWeight * 100).toFixed(2)}%</strong></td>
+                <td><span className={`position-pill ${Number(component.target) > 0 ? 'long' : Number(component.target) < 0 ? 'short' : 'flat'}`}>{portfolioPosition(component)}</span></td>
+                <td>{signedExposure(Number(component.target))}</td>
+                <td>{number(Math.abs(Number(component.quantity)), 4)}</td>
+                <td className={Number(component.return) >= 0 ? 'good-text' : 'bad-text'}>{precisePercent(Number(component.return))}</td>
+                <td className={contribution >= 0 ? 'good-text' : 'bad-text'}>{precisePercent(contribution)}</td>
+                <td><small>费 {money(component.fee_amount, 'USDT')} · 滑 {money(component.slippage_amount, 'USDT')} · 资金 {money(component.funding_amount, 'USDT')}</small></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="portfolio-ledger-note">显示最近一个已完成 UTC 日的不可变账本；持仓和收益不是盘中估值，将在下一次 UTC 收盘处理完成后更新。</p>
+    </section>
+  )
+}
+
 const decisionText = {
   PAUSED: ['策略已暂停', '行情和 ATR 继续更新，但不会发出交易信号'],
   WARMING_UP: ['ATR 预热中', '历史 K 线不足，暂时不能判断穿越'],
@@ -1990,6 +2242,88 @@ function Warehouse({
 
 function WarehouseStat({ label, value, sub }: { label: string; value: string; sub: string }) {
   return <div className="warehouse-stat"><span>{label}</span><strong>{value}</strong><small>{sub}</small></div>
+}
+
+const portfolioEventLabels: Record<string, string> = {
+  FUNDING: '资金费结算',
+  OUTER_EXPOSURE_REBALANCE: '外层敞口调整',
+  STATE_EXPOSURE_REBALANCE: '状态敞口调整',
+  CALENDAR_ROUTE_REBALANCE: '月历路由换仓',
+}
+
+function portfolioEventDetail(event: PortfolioSleeveEvent) {
+  const payload = event.payload
+  if (event.event_type === 'FUNDING') {
+    return `数量 ${number(payload.quantity ?? null, 4)} · 费率 ${precisePercent(Number(payload.rate ?? 0), 4)} · 金额 ${money(payload.amount ?? null, 'USDT')}`
+  }
+  if (event.event_type.includes('REBALANCE')) {
+    return `换手 ${number(payload.turnover ?? null, 4)} · 路由成本 ${precisePercent(-Number(payload.route_cost ?? 0), 4)}`
+  }
+  return `目标 ${number(payload.target_before ?? null, 2)} → ${number(payload.target_after ?? null, 2)}`
+}
+
+function PortfolioOrders({ events, loading }: { events: PortfolioSleeveEvent[]; loading: boolean }) {
+  const fills = [...events]
+    .filter((event) => event.event_type === 'COMPONENT_FILL')
+    .reverse()
+  const accountingEvents = [...events]
+    .filter((event) => event.event_type !== 'COMPONENT_FILL')
+    .reverse()
+
+  if (loading && !events.length) {
+    return <div className="loading"><ListOrdered size={20} />正在读取基础袖套账本</div>
+  }
+
+  return (
+    <>
+      <section className="panel full-table portfolio-order-ledger" aria-label="袖套成交订单">
+        <div className="panel-head">
+          <div><span>BASE LEDGER / MODEL FILLS</span><h3>袖套成交订单</h3></div>
+          <span>{fills.length} fills · 不含压力账本</span>
+        </div>
+        {!fills.length ? <div className="empty-table">暂无袖套成交</div> : (
+          <div className="table-scroll"><table><thead><tr><th>成交时间（UTC）</th><th>袖套</th><th>组合基准权重</th><th>品种</th><th>方向</th><th>仓位动作</th><th>数量</th><th>市场价</th><th>成交价</th><th>手续费</th><th>滑点</th></tr></thead><tbody>
+            {fills.map((event) => {
+              const weight = portfolioSleeveWeight(event)
+              const payload = event.payload
+              return <tr key={`${event.day}-${event.event_index}`}>
+                <td>{utcTimestamp(event.timestamp_ms)}</td>
+                <td className="portfolio-order-sleeve"><span>{event.day}</span><strong>{portfolioSleeveLabel(event.sleeve_id)}</strong></td>
+                <td><strong className="portfolio-weight">{weight === null ? '--' : `${(weight * 100).toFixed(2)}%`}</strong></td>
+                <td>{event.instrument_id === 'btc_perp' ? 'BTCUSDT' : event.instrument_id === 'eth_perp' ? 'ETHUSDT' : '--'}</td>
+                <td><span className={`side ${(payload.side ?? '').toLowerCase()}`}>{payload.side ?? '--'}</span></td>
+                <td>{payload.position_effect === 'OPEN' ? '开仓' : payload.position_effect === 'CLOSE' ? '平仓' : '--'}</td>
+                <td>{number(payload.quantity ?? null, 4)}</td>
+                <td>{money(payload.market_price ?? null, 'USDT')}</td>
+                <td>{money(payload.fill_price ?? null, 'USDT')}</td>
+                <td>{money(payload.fee ?? null, 'USDT')}</td>
+                <td>{money(payload.slippage ?? null, 'USDT')}</td>
+              </tr>
+            })}
+          </tbody></table></div>
+        )}
+        <p className="portfolio-ledger-note">组合模拟器在下一 UTC 日开盘直接生成确定性模型成交，因此没有传统的 PENDING 订单阶段；这里展示基础成本账本的 COMPONENT_FILL。</p>
+      </section>
+
+      <section className="panel full-table portfolio-event-ledger" aria-label="组合账本事件">
+        <div className="panel-head">
+          <div><span>BASE LEDGER / AUDIT EVENTS</span><h3>资金费与敞口事件</h3></div>
+          <span>{accountingEvents.length} events</span>
+        </div>
+        {!accountingEvents.length ? <div className="empty-table">暂无其他组合事件</div> : (
+          <div className="table-scroll"><table><thead><tr><th>时间（UTC）</th><th>事件</th><th>袖套</th><th>品种</th><th>明细</th></tr></thead><tbody>
+            {accountingEvents.map((event) => <tr key={`${event.day}-${event.event_index}`}>
+              <td>{utcTimestamp(event.timestamp_ms)}</td>
+              <td>{portfolioEventLabels[event.event_type] ?? event.event_type}</td>
+              <td>{portfolioSleeveLabel(event.sleeve_id)}</td>
+              <td>{event.instrument_id === 'btc_perp' ? 'BTCUSDT' : event.instrument_id === 'eth_perp' ? 'ETHUSDT' : 'PORTFOLIO'}</td>
+              <td>{portfolioEventDetail(event)}</td>
+            </tr>)}
+          </tbody></table></div>
+        )}
+      </section>
+    </>
+  )
 }
 
 function Orders({ rows }: { rows: Order[] }) {

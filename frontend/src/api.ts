@@ -1,4 +1,4 @@
-import type { AggTrade, EquityPoint, EventItem, Fill, FundingPayment, LiveReadiness, LiveSession, OhlcvBar, Order, Overview, ReturnSummary, WarehouseSummary } from './types'
+import type { AggTrade, EquityPoint, EventItem, Fill, FundingPayment, LiveReadiness, LiveSession, OhlcvBar, Order, Overview, PortfolioLedgerDay, PortfolioSleeveEvent, ReturnSummary, WarehouseSummary } from './types'
 
 export class ApiError extends Error {
   status: number
@@ -84,6 +84,10 @@ export const api = {
     const offset = -new Date().getTimezoneOffset()
     return getJson<ReturnSummary>(`/api/accounts/${accountId}/returns?timezone_offset_minutes=${offset}`)
   },
+  portfolioLedger: (accountId: string, ledger: 'base' | 'stress' = 'base') =>
+    getJson<PortfolioLedgerDay[]>(`/api/accounts/${accountId}/portfolio-ledger?ledger=${ledger}&limit=1`),
+  portfolioSleeveEvents: (accountId: string, ledger: 'base' | 'stress' = 'base') =>
+    getJson<PortfolioSleeveEvent[]>(`/api/accounts/${accountId}/portfolio-sleeve-events?ledger=${ledger}&limit=200`),
   fills: (accountId = 'soxl_perp_long') => getJson<Fill[]>(`/api/fills?account_id=${accountId}&limit=200`),
   orders: (accountId = 'soxl_perp_long') => getJson<Order[]>(`/api/orders?account_id=${accountId}&limit=200`),
   events: (accountId = 'soxl_perp_long') => getJson<EventItem[]>(`/api/events?account_id=${accountId}&limit=200`),
