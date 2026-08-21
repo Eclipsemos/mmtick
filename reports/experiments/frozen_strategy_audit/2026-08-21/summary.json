@@ -1,0 +1,28 @@
+{
+  "strategy": "btc-eth-expanding-calendar-router-v1",
+  "audit_date": "2026-08-21",
+  "lock_timing": {
+    "trigger_check": "after_complete_utc_day_close",
+    "trigger_day_included": true,
+    "effective_flat_time": "next_complete_utc_daily_bar_open",
+    "exit_turnover_cost_day": "effective_flat_day",
+    "reset": "first_complete_utc_daily_bar_of_new_month"
+  },
+  "lock_timing_bug_found": false,
+  "specification_gap": true,
+  "continuous_replay_boundary_mismatch": true,
+  "continuous_2026_january": {
+    "base": 0.17816334960756206,
+    "stress": 0.27277406726617094
+  },
+  "segmented_2026_january": {
+    "base": 0.2041351429109006,
+    "stress": 0.2690089822290725
+  },
+  "data": {
+    "btc_15m_bars": 231840,
+    "eth_15m_bars": 231840,
+    "funding_per_symbol": 7212,
+    "metrics_archives": 3764
+  }
+}
