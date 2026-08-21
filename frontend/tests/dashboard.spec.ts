@@ -295,16 +295,29 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
   let ohlcvHistoryRequests = 0
   page.on('pageerror', (error) => pageErrors.push(error.message))
   const now = Date.now()
+  const historicalEquity = Array.from({ length: 2_000 }, (_, index) => ({
+    timestamp_ms: now - (2_006 - index) * 10_000,
+    price: String(95 + (index % 80) * 0.05),
+    equity: '100000',
+    cash: '100000',
+    quantity: '0',
+    unrealized_pnl: '0',
+    atr: '2',
+    trailing_stop: String(93 + (index % 80) * 0.05),
+    relation: 'above',
+  }))
   await page.route('**/api/accounts/soxl_perp_long/equity*', async (route) => {
     if (new URL(route.request().url()).searchParams.has('before_ms')) equityHistoryRequests += 1
     await route.fulfill({
       contentType: 'application/json',
       body: JSON.stringify([
+        ...historicalEquity,
         { timestamp_ms: now - 50_000, price: '100', equity: '100000', cash: '100000', quantity: '0', unrealized_pnl: '0', atr: '2', trailing_stop: '102', relation: 'below' },
         { timestamp_ms: now - 40_000, price: '100', equity: '99900', cash: '0', quantity: '10', unrealized_pnl: '-100', atr: '2.1', trailing_stop: '98', relation: 'above' },
         { timestamp_ms: now - 30_000, price: '110', equity: '100097.9', cash: '100097.9', quantity: '0', unrealized_pnl: '0', atr: '2.3', trailing_stop: '107.7', relation: 'above' },
         { timestamp_ms: now - 20_000, price: '108', equity: '99996', cash: '0', quantity: '10', unrealized_pnl: '-101.9', atr: '2.2', trailing_stop: '105.8', relation: 'above' },
         { timestamp_ms: now - 10_000, price: '99', equity: '100005.83', cash: '100005.83', quantity: '0', unrealized_pnl: '0', atr: '2.4', trailing_stop: '101.4', relation: 'below' },
+        { timestamp_ms: now, price: '105', equity: '100005.83', cash: '100005.83', quantity: '0', unrealized_pnl: '0', atr: '2.2', trailing_stop: '102.8', relation: 'above' },
       ]),
     })
   })
@@ -369,13 +382,29 @@ test('price chart renders clean ATR lines and semantic trade markers', async ({ 
   const atrLine = page.locator('.recharts-line-curve[stroke="#d39a18"]')
   await expect(atrLine).toBeVisible()
   await expect(atrLine).not.toHaveAttribute('stroke-dasharray')
-  await page.getByTestId('trade-marker-short').hover({ force: true })
+  await page.getByTestId('trade-marker-close').last().locator('svg').hover({ force: true })
   await expect(page.locator('.price-tooltip')).toContainText('交易动作')
-  await expect(page.locator('.price-tooltip')).toContainText('SHORT')
+  await expect(page.locator('.price-tooltip')).toContainText('CLOSE')
   await expect(page.locator('.price-tooltip')).toContainText('市场价格')
   await expect(page.locator('.price-tooltip')).toContainText('ATR 止损线')
   await expect(page.locator('.price-tooltip')).not.toContainText('NaN')
   await expect(page.locator('.price-tooltip')).toContainText('可视区间涨跌')
+  const priceChart = page.locator('.price-panel .recharts-wrapper')
+  const priceChartBox = await priceChart.boundingBox()
+  expect(priceChartBox).not.toBeNull()
+  await page.mouse.move(
+    priceChartBox!.x + priceChartBox!.width * 0.3,
+    priceChartBox!.y + priceChartBox!.height / 2,
+  )
+  const earlierTooltipTime = await page.locator('.price-tooltip time').textContent()
+  expect(earlierTooltipTime).not.toBeNull()
+  await page.mouse.move(
+    priceChartBox!.x + priceChartBox!.width * 0.7,
+    priceChartBox!.y + priceChartBox!.height / 2,
+  )
+  await expect.poll(() => page.locator('.price-tooltip time').textContent()).not.toBe(earlierTooltipTime)
+  await expect(page.locator('.price-tooltip')).toContainText('市场价格')
+  await expect(page.locator('.price-tooltip')).not.toContainText('CLOSE')
   await page.getByRole('button', { name: '放大价格图' }).click()
   await page.getByRole('button', { name: '向右滚动价格图' }).click()
   await page.getByRole('button', { name: '显示全部价格数据' }).click()

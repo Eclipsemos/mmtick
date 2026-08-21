@@ -38,8 +38,8 @@ import {
   ComposedChart,
   Line,
   LineChart,
+  ReferenceDot,
   ResponsiveContainer,
-  Scatter,
   Tooltip,
   XAxis,
   YAxis,
@@ -1298,7 +1298,23 @@ const PriceChartCanvas = memo(function PriceChartCanvas({
             <Tooltip content={<PriceTooltip currency={currency} pricePoints={points} tradePoints={tradeMarkers} hoveredTrade={hoveredTradeMarker} referencePrice={visibleStart?.price ?? null} />} />
             <Line dataKey="price" name="价格" type="monotone" stroke={CHART_COLORS.price} strokeWidth={2} dot={false} isAnimationActive={false} />
             <Line dataKey="trailingStop" name="ATR 止损线" type="stepAfter" stroke={CHART_COLORS.atr} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
-            <Scatter data={visibleTradeMarkers} dataKey="price" name="成交" shape={(props: unknown) => <TradeMarker {...(props as TradeMarkerProps)} onHover={setHoveredTradeMarker} />} isAnimationActive={false} />
+            {visibleTradeMarkers.map((point) => (
+              <ReferenceDot
+                key={point.id}
+                x={point.timestamp}
+                y={point.price}
+                r={10}
+                zIndex={0}
+                shape={(props) => (
+                  <TradeMarker
+                    cx={props.cx}
+                    cy={props.cy}
+                    payload={point}
+                    onHover={setHoveredTradeMarker}
+                  />
+                )}
+              />
+            ))}
             <Brush dataKey="timestamp" startIndex={range.startIndex} endIndex={range.endIndex} height={25} travellerWidth={9} stroke={CHART_COLORS.brushStroke} fill={CHART_COLORS.brush} tickFormatter={(value) => time(Number(value))} onChange={onBrushChange} />
           </ComposedChart>
         </ResponsiveContainer>
@@ -1800,14 +1816,13 @@ function PriceTooltip({
 }) {
   const values = (payload ?? []).flatMap((item) => item.payload ? [item.payload] : [])
   const payloadPrice = values.find(isPricePoint)
-  const payloadTrade = values.find(isTradePoint)
-  const timestamp = Number(hoveredTrade?.timestamp ?? payloadTrade?.timestamp ?? label ?? payloadPrice?.timestamp)
+  const timestamp = Number(label ?? payloadPrice?.timestamp)
   if (!active || !Number.isFinite(timestamp)) return null
 
-  const point = payloadPrice
-    ?? pricePoints.find((item) => item.timestamp === timestamp)
+  const point = pricePoints.find((item) => item.timestamp === timestamp)
     ?? nearestPricePoint(pricePoints, timestamp)
-  const trade = hoveredTrade ?? payloadTrade ?? tradePoints.find((item) => item.timestamp === timestamp)
+    ?? payloadPrice
+  const trade = hoveredTrade ?? nearestTradeForPricePoint(tradePoints, pricePoints, timestamp)
   if (!point && !trade) return null
   const change = point && referencePrice ? point.price / referencePrice - 1 : null
 
@@ -1839,12 +1854,27 @@ function nearestPricePoint(points: PricePoint[], timestamp: number) {
   ), undefined)
 }
 
-function isPricePoint(value: PricePoint | TradePoint): value is PricePoint {
-  return 'trailingStop' in value
+function nearestTradeForPricePoint(
+  trades: TradePoint[],
+  points: PricePoint[],
+  timestamp: number,
+) {
+  const pointIndex = points.findIndex((point) => point.timestamp === timestamp)
+  if (pointIndex < 0) return undefined
+  const previous = points[pointIndex - 1]
+  const next = points[pointIndex + 1]
+  const lowerBound = previous ? (previous.timestamp + timestamp) / 2 : Number.NEGATIVE_INFINITY
+  const upperBound = next ? (timestamp + next.timestamp) / 2 : Number.POSITIVE_INFINITY
+  return trades.reduce<TradePoint | undefined>((nearest, trade) => {
+    if (trade.timestamp < lowerBound || trade.timestamp > upperBound) return nearest
+    return !nearest || Math.abs(trade.timestamp - timestamp) < Math.abs(nearest.timestamp - timestamp)
+      ? trade
+      : nearest
+  }, undefined)
 }
 
-function isTradePoint(value: PricePoint | TradePoint): value is TradePoint {
-  return 'side' in value
+function isPricePoint(value: PricePoint | TradePoint): value is PricePoint {
+  return 'trailingStop' in value
 }
 
 function Metric({ label, value, sub, tone = '', icon }: { label: string; value: string; sub: string; tone?: string; icon: React.ReactNode }) {
