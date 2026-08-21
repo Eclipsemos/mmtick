@@ -621,6 +621,62 @@ class PaperStore:
                 )
         return [{**dict(row), "payload": json.loads(row["payload_json"])} for row in rows]
 
+    def save_portfolio_runtime_event(
+        self,
+        account_id: str,
+        ledger: str,
+        day: str,
+        event_index: int,
+        event: dict[str, Any],
+        data_version: str,
+    ) -> bool:
+        """Persist an idempotent event known before its UTC day ledger can close."""
+        now_ms = int(time.time() * 1000)
+        with self.connection() as connection:
+            return bool(
+                connection.execute(
+                    """
+                    INSERT OR IGNORE INTO portfolio_sleeve_events (
+                        account_id, ledger, day, event_index, timestamp_ms, sleeve_id,
+                        instrument_id, event_type, payload_json, data_version, created_at_ms
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        account_id,
+                        ledger,
+                        day,
+                        event_index,
+                        int(event["timestamp_ms"]),
+                        str(event["sleeve_id"]),
+                        event.get("instrument_id"),
+                        str(event["event_type"]),
+                        json.dumps(event, ensure_ascii=False, sort_keys=True),
+                        data_version,
+                        now_ms,
+                    ),
+                ).rowcount
+            )
+
+    def portfolio_sleeve_event_exists(
+        self,
+        account_id: str,
+        ledger: str,
+        timestamp_ms: int,
+        sleeve_id: str,
+        event_type: str,
+    ) -> bool:
+        with self.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT 1 FROM portfolio_sleeve_events
+                WHERE account_id = ? AND ledger = ? AND timestamp_ms = ?
+                  AND sleeve_id = ? AND event_type = ?
+                LIMIT 1
+                """,
+                (account_id, ledger, timestamp_ms, sleeve_id, event_type),
+            ).fetchone()
+        return row is not None
+
     def upsert_futures_metric_bars(
         self, symbol: str, interval_minutes: int, bars: list[FuturesMetricBar]
     ) -> int:

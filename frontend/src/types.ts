@@ -92,6 +92,12 @@ export type Runtime = {
     funding_rate?: string | null
     next_funding_time_ms?: number | null
     updated_at_ms?: number | null
+    effective_outer_exposure?: string
+    ledger_outer_exposure?: string
+    month_locked?: boolean
+    month_lock_reason?: string | null
+    effective_since_ms?: number | null
+    shadow_sleeves_active?: boolean
   }
   kline_state: {
     source: string
@@ -359,6 +365,9 @@ export type PortfolioSleeveEventPayload = {
   turnover?: string
   route_cost?: string
   anchor_allocation?: string
+  reason?: string
+  effective_immediately?: boolean
+  shadow_sleeves_unchanged?: boolean
 }
 
 export type PortfolioSleeveEvent = {

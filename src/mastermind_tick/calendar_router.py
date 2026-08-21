@@ -33,7 +33,7 @@ from mastermind_tick.store import PaperStore
 DAY_MS = 86_400_000
 FOUR_HOUR_MS = 14_400_000
 DATA_VERSION = "binance-public-full-warmup-v4"
-IMPLEMENTATION_VERSION = "calendar-router-forward-v4"
+IMPLEMENTATION_VERSION = "calendar-router-forward-v5"
 METRIC_ARCHIVE_BASE = "https://data.binance.vision/data/futures/um/daily/metrics"
 METRIC_REST_BASE = "https://fapi.binance.com/futures/data"
 FORWARD_START_MS = int(datetime(2026, 8, 16, tzinfo=UTC).timestamp() * 1000)
@@ -45,6 +45,7 @@ DAILY_WARMUP_BARS = 64
 FOUR_HOUR_HISTORY_START_MS = REPLAY_START_MS - METRIC_WINDOW * FOUR_HOUR_MS
 DAILY_HISTORY_START_MS = 0
 DAILY_WARMUP_START_MS = REPLAY_START_MS - DAILY_WARMUP_BARS * DAY_MS
+RUNTIME_OUTER_EVENT_INDEX = -100
 
 
 @dataclass
@@ -166,6 +167,20 @@ class RouterRuntime:
             equity = Decimal(prior["equity"]) if prior else self.initial_cash
             month_start = Decimal(prior["month_start_equity"]) if prior else equity
             locked = bool(prior["month_locked"]) if prior else False
+            lock_effective_at_ms = (
+                int(
+                    prior["state"].get(
+                        "month_lock_effective_at_ms", int(prior["timestamp_ms"]) + 1
+                    )
+                )
+                if prior and locked
+                else None
+            )
+            lock_reason = (
+                prior["state"].get("month_lock_reason", "UTC_MONTHLY_LOCK")
+                if prior and locked
+                else None
+            )
             previous_month = prior["day"][:7] if prior else None
             previous_outer = (
                 Decimal(prior["state"].get("outer_exposure", "0")) if prior else Decimal("0")
@@ -178,7 +193,10 @@ class RouterRuntime:
                 if month != previous_month:
                     month_start = equity
                     locked = False
+                    lock_effective_at_ms = None
+                    lock_reason = None
                     previous_month = month
+                locked_before_close = locked
                 outer_exposure = Decimal("0") if locked else Decimal("4")
                 raw_return = Decimal("0") if locked else _portfolio_return(state)
                 outer_turnover_cost = (
@@ -189,6 +207,13 @@ class RouterRuntime:
                 month_return = equity / month_start - Decimal("1") if month_start else Decimal("-1")
                 if month_return <= Decimal("-0.20") or month_return >= Decimal("0.18"):
                     locked = True
+                    if not locked_before_close:
+                        lock_effective_at_ms = int(state["timestamp_ms"]) + 1
+                        lock_reason = (
+                            "UTC_MONTHLY_PROFIT_LOCK"
+                            if month_return >= Decimal("0.18")
+                            else "UTC_MONTHLY_LOSS_LOCK"
+                        )
                 state_payload = {
                     **state,
                     "ledger": name,
@@ -198,6 +223,8 @@ class RouterRuntime:
                     "outer_turnover_cost": str(outer_turnover_cost),
                     "month_return": str(month_return),
                     "month_locked": locked,
+                    "month_lock_effective_at_ms": lock_effective_at_ms,
+                    "month_lock_reason": lock_reason,
                     "implementation_version": IMPLEMENTATION_VERSION,
                     "metrics_state": state["metrics"]["state"],
                     "metrics_exposure": state["metrics"]["exposure"],
@@ -208,10 +235,18 @@ class RouterRuntime:
                     "outer_route": str(outer_turnover_cost),
                 }
                 events = list(state["audit_events"])
-                if outer_exposure != previous_outer:
+                rebalance_timestamp_ms = state["timestamp_ms"] - DAY_MS + 1
+                existing_outer_event = self.store.portfolio_sleeve_event_exists(
+                    self.settings.id,
+                    name,
+                    rebalance_timestamp_ms,
+                    "outer_exposure",
+                    "OUTER_EXPOSURE_REBALANCE",
+                )
+                if outer_exposure != previous_outer and not existing_outer_event:
                     events.append(
                         {
-                            "timestamp_ms": state["timestamp_ms"] - DAY_MS + 1,
+                            "timestamp_ms": rebalance_timestamp_ms,
                             "sleeve_id": "outer_exposure",
                             "instrument_id": None,
                             "event_type": "OUTER_EXPOSURE_REBALANCE",
@@ -235,6 +270,7 @@ class RouterRuntime:
                     events,
                 )
                 previous_outer = outer_exposure
+            self._reconcile_effective_outer_exposure(name, costs[2], now_ms)
         self.last_update_ms = now_ms
         rows = self.store.portfolio_ledger(self.settings.id, "base")
         self.last_day = rows[-1]["day"] if rows else None
@@ -245,11 +281,51 @@ class RouterRuntime:
             else "Warm-up complete; waiting for first complete forward UTC day"
         )
 
+    def _reconcile_effective_outer_exposure(
+        self, ledger: str, route_cost_bps: Decimal, now_ms: int
+    ) -> None:
+        latest = self.store.portfolio_ledger(self.settings.id, ledger, 1)
+        if not latest:
+            return
+        effective = _effective_outer_state(latest[-1], now_ms)
+        before = Decimal(effective["ledger_outer_exposure"])
+        after = Decimal(effective["effective_outer_exposure"])
+        timestamp_ms = int(effective["effective_since_ms"])
+        if before == after or timestamp_ms > now_ms:
+            return
+        turnover = abs(after - before)
+        event = {
+            "timestamp_ms": timestamp_ms,
+            "sleeve_id": "outer_exposure",
+            "instrument_id": None,
+            "event_type": "OUTER_EXPOSURE_REBALANCE",
+            "target_before": str(before),
+            "target_after": str(after),
+            "turnover": str(turnover),
+            "route_cost": str(turnover * route_cost_bps / Decimal("10000")),
+            "reason": effective["reason"],
+            "effective_immediately": True,
+            "shadow_sleeves_unchanged": True,
+            "implementation_version": IMPLEMENTATION_VERSION,
+        }
+        day = datetime.fromtimestamp(timestamp_ms / 1000, UTC).date().isoformat()
+        self.store.save_portfolio_runtime_event(
+            self.settings.id,
+            ledger,
+            day,
+            RUNTIME_OUTER_EVENT_INDEX,
+            event,
+            DATA_VERSION,
+        )
+
     def view(self) -> dict[str, Any]:
         latest = self.store.portfolio_ledger(self.settings.id, "base")
         state = latest[-1]["state"] if latest else {}
         has_forward_day = bool(latest)
-        month_locked = bool(state.get("month_locked"))
+        effective = _effective_outer_state(latest[-1], int(time.time() * 1000)) if latest else {}
+        month_locked = bool(effective.get("month_locked"))
+        effective_outer_exposure = Decimal(effective.get("effective_outer_exposure", "0"))
+        lock_reason = effective.get("reason")
         decision_state = (
             "PAUSED"
             if month_locked
@@ -290,7 +366,15 @@ class RouterRuntime:
                 "fill_timing": "next_daily_open",
             },
             "feed": "binance_futures_daily_rest",
-            "market_state": state.get("metrics", {}),
+            "market_state": {
+                **state.get("metrics", {}),
+                "effective_outer_exposure": str(effective_outer_exposure),
+                "ledger_outer_exposure": effective.get("ledger_outer_exposure", "0"),
+                "month_locked": month_locked,
+                "month_lock_reason": lock_reason if month_locked else None,
+                "effective_since_ms": effective.get("effective_since_ms"),
+                "shadow_sleeves_active": has_forward_day,
+            },
             "kline_state": {
                 "source": DATA_VERSION,
                 "validation": self.input_validation,
@@ -328,10 +412,10 @@ class RouterRuntime:
             },
             "decision": {
                 "state": decision_state,
-                "reason": "UTC monthly lock" if month_locked else self.status_message,
-                "next_trigger": "NEXT_UTC_DAILY_CLOSE",
+                "reason": lock_reason if month_locked else self.status_message,
+                "next_trigger": "NEXT_UTC_MONTH_OPEN" if month_locked else "NEXT_UTC_DAILY_CLOSE",
                 "trading_enabled": self.status == "LIVE",
-                "has_position": has_forward_day and not month_locked,
+                "has_position": has_forward_day and effective_outer_exposure != 0,
                 "position_side": "FLAT",
                 "allow_short": True,
                 "has_pending_order": False,
@@ -975,6 +1059,49 @@ def _daily_states(
             }
         )
     return result
+
+
+def _effective_outer_state(latest: dict[str, Any], now_ms: int) -> dict[str, Any]:
+    """Resolve current deployable exposure without rewriting the closed daily ledger."""
+    state = latest["state"]
+    ledger_outer = Decimal(state.get("outer_exposure", "0"))
+    latest_month = str(latest["day"])[:7]
+    now = datetime.fromtimestamp(now_ms / 1000, UTC)
+    current_month = now.strftime("%Y-%m")
+    recorded_lock = bool(latest.get("month_locked") or state.get("month_locked"))
+    month_return = Decimal(state.get("month_return", "0"))
+
+    if recorded_lock and current_month == latest_month:
+        reason = state.get("month_lock_reason") or (
+            "UTC_MONTHLY_PROFIT_LOCK"
+            if month_return >= Decimal("0.18")
+            else "UTC_MONTHLY_LOSS_LOCK"
+        )
+        effective_since_ms = int(
+            state.get("month_lock_effective_at_ms") or int(latest["timestamp_ms"]) + 1
+        )
+        effective_outer = Decimal("0")
+        month_locked = True
+    elif recorded_lock and current_month > latest_month:
+        reason = "UTC_MONTH_RESET"
+        effective_since_ms = int(
+            datetime(now.year, now.month, 1, tzinfo=UTC).timestamp() * 1000
+        )
+        effective_outer = Decimal("4")
+        month_locked = False
+    else:
+        reason = "ACTIVE"
+        effective_since_ms = int(latest["timestamp_ms"]) - DAY_MS + 1
+        effective_outer = ledger_outer
+        month_locked = False
+
+    return {
+        "ledger_outer_exposure": str(ledger_outer),
+        "effective_outer_exposure": str(effective_outer),
+        "effective_since_ms": effective_since_ms,
+        "month_locked": month_locked,
+        "reason": reason,
+    }
 
 
 def _portfolio_return(state: dict[str, Any]) -> Decimal:

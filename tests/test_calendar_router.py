@@ -13,6 +13,7 @@ from mastermind_tick.calendar_router import (
     RouterRuntime,
     _all_macd_candidates,
     _causal_volatility_exposure,
+    _effective_outer_state,
     _funding_by_bar,
     _klines_from,
     _mapping,
@@ -69,6 +70,89 @@ def test_empty_forward_ledger_waits_for_first_daily_close(tmp_path) -> None:
     assert view["decision"]["state"] == "WAITING_FOR_DAILY_CLOSE"
     assert view["decision"]["has_position"] is False
     assert view["decision"]["next_trigger"] == "NEXT_UTC_DAILY_CLOSE"
+
+
+def test_month_lock_immediately_zeros_effective_outer_exposure() -> None:
+    day_end_ms = int(datetime(2026, 8, 21, tzinfo=UTC).timestamp() * 1000) - 1
+    latest = {
+        "day": "2026-08-20",
+        "timestamp_ms": day_end_ms,
+        "month_locked": 1,
+        "state": {
+            "outer_exposure": "4",
+            "month_locked": True,
+            "month_return": "0.269",
+        },
+    }
+
+    locked = _effective_outer_state(latest, day_end_ms + 1)
+    reset = _effective_outer_state(
+        latest, int(datetime(2026, 9, 1, tzinfo=UTC).timestamp() * 1000)
+    )
+
+    assert locked == {
+        "ledger_outer_exposure": "4",
+        "effective_outer_exposure": "0",
+        "effective_since_ms": day_end_ms + 1,
+        "month_locked": True,
+        "reason": "UTC_MONTHLY_PROFIT_LOCK",
+    }
+    assert reset["effective_outer_exposure"] == "4"
+    assert reset["month_locked"] is False
+    assert reset["reason"] == "UTC_MONTH_RESET"
+
+
+def test_locked_runtime_reports_flat_outer_portfolio(monkeypatch, tmp_path) -> None:
+    settings = load_settings("config/settings.toml")
+    store = PaperStore(tmp_path / "paper.db")
+    portfolio = settings.portfolio_paper
+    store.ensure_portfolio_account(
+        portfolio.id,
+        portfolio.symbol,
+        portfolio.display_symbol,
+        portfolio.venue,
+        portfolio.currency,
+        settings.initial_cash,
+        1,
+    )
+    day_end_ms = int(datetime(2026, 8, 21, tzinfo=UTC).timestamp() * 1000) - 1
+    store.save_portfolio_day(
+        portfolio.id,
+        "base",
+        "2026-08-20",
+        day_end_ms,
+        Decimal("126000"),
+        Decimal("0.2"),
+        Decimal("100000"),
+        True,
+        {
+            "outer_exposure": "4",
+            "month_locked": True,
+            "month_return": "0.26",
+            "metrics": {},
+        },
+        "test",
+    )
+    monkeypatch.setattr(
+        "mastermind_tick.calendar_router.time.time", lambda: (day_end_ms + 1) / 1000
+    )
+    runtime = RouterRuntime(portfolio, store, Decimal("100000"), status="LIVE")
+
+    view = runtime.view()
+    runtime._reconcile_effective_outer_exposure("base", Decimal("7"), day_end_ms + 1)
+    events = store.portfolio_sleeve_events(portfolio.id, "base")
+
+    assert view["decision"]["state"] == "PAUSED"
+    assert view["decision"]["has_position"] is False
+    assert view["decision"]["reason"] == "UTC_MONTHLY_PROFIT_LOCK"
+    assert view["decision"]["next_trigger"] == "NEXT_UTC_MONTH_OPEN"
+    assert view["market_state"]["effective_outer_exposure"] == "0"
+    assert view["market_state"]["ledger_outer_exposure"] == "4"
+    assert events[0]["day"] == "2026-08-21"
+    assert events[0]["event_index"] == -100
+    assert events[0]["payload"]["target_before"] == "4"
+    assert events[0]["payload"]["target_after"] == "0"
+    assert events[0]["payload"]["route_cost"] == "0.0028"
 
 
 def test_portfolio_return_does_not_charge_already_costed_turnover_twice() -> None:
@@ -309,6 +393,43 @@ def test_portfolio_day_persists_normalized_sleeve_audit_events(tmp_path) -> None
     )
 
     assert inserted is True
+    assert store.portfolio_sleeve_events(portfolio.id, "base")[0]["payload"] == event
+
+
+def test_runtime_outer_rebalance_is_persisted_idempotently(tmp_path) -> None:
+    settings = load_settings("config/settings.toml")
+    store = PaperStore(tmp_path / "paper.db")
+    portfolio = settings.portfolio_paper
+    store.ensure_portfolio_account(
+        portfolio.id,
+        portfolio.symbol,
+        portfolio.display_symbol,
+        portfolio.venue,
+        portfolio.currency,
+        settings.initial_cash,
+        1,
+    )
+    event = {
+        "timestamp_ms": 2,
+        "sleeve_id": "outer_exposure",
+        "instrument_id": None,
+        "event_type": "OUTER_EXPOSURE_REBALANCE",
+        "target_before": "4",
+        "target_after": "0",
+    }
+
+    first = store.save_portfolio_runtime_event(
+        portfolio.id, "base", "2026-08-21", -100, event, "test"
+    )
+    duplicate = store.save_portfolio_runtime_event(
+        portfolio.id, "base", "2026-08-21", -100, event, "test"
+    )
+
+    assert first is True
+    assert duplicate is False
+    assert store.portfolio_sleeve_event_exists(
+        portfolio.id, "base", 2, "outer_exposure", "OUTER_EXPOSURE_REBALANCE"
+    )
     assert store.portfolio_sleeve_events(portfolio.id, "base")[0]["payload"] == event
 
 

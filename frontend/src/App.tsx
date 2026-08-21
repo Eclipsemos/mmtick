@@ -944,7 +944,10 @@ function Monitor({
     : account.last_snapshot_ms
   const latestPortfolioDay = portfolioLedger[portfolioLedger.length - 1]
   const portfolioTargets = latestPortfolioDay
-    ? aggregatePortfolioTargets(latestPortfolioDay)
+    ? aggregatePortfolioTargets(
+        latestPortfolioDay,
+        Number(runtime.market_state.effective_outer_exposure ?? latestPortfolioDay.state.outer_exposure),
+      )
     : null
 
   return (
@@ -987,7 +990,7 @@ function Monitor({
       <DecisionStatus runtime={runtime} />
 
       {runtime.paper_model === 'portfolio' && (
-        <PortfolioAttribution ledger={portfolioLedger} loading={portfolioLedgerLoading} />
+        <PortfolioAttribution runtime={runtime} ledger={portfolioLedger} loading={portfolioLedgerLoading} />
       )}
 
       <section className="workspace-grid">
@@ -1870,8 +1873,10 @@ function signedExposure(value: number) {
   return `${value >= 0 ? '+' : ''}${value.toFixed(2)}x`
 }
 
-function aggregatePortfolioTargets(day: PortfolioLedgerDay) {
-  const outerExposure = Number(day.state.outer_exposure)
+function aggregatePortfolioTargets(
+  day: PortfolioLedgerDay,
+  outerExposure = Number(day.state.outer_exposure),
+) {
   const btcState = Number(day.state.state_targets.btc) * 0.5 * outerExposure
   const ethState = Number(day.state.state_targets.eth) * 0.5 * outerExposure
   return Object.values(day.state.sleeves.trend.components).reduce(
@@ -1904,11 +1909,12 @@ function trendSleeveContribution(component: PortfolioSleeveComponent, day: Portf
   return Number(component.return) / 6 * Number(day.state.outer_exposure)
 }
 
-function portfolioPosition(component: PortfolioSleeveComponent) {
+function portfolioPosition(component: PortfolioSleeveComponent, shadowOnly = false) {
   const target = Number(component.target)
   const asset = component.instrument_id === 'btc_perp' ? 'BTC' : 'ETH'
-  if (target > 0) return `${asset} 多头`
-  if (target < 0) return `${asset} 空头`
+  const shadow = shadowOnly ? '影子' : ''
+  if (target > 0) return `${asset} ${shadow}多头`
+  if (target < 0) return `${asset} ${shadow}空头`
   return `${asset} 空仓`
 }
 
@@ -1960,7 +1966,15 @@ function useUtcCloseCountdown() {
   }
 }
 
-function PortfolioAttribution({ ledger, loading }: { ledger: PortfolioLedgerDay[]; loading: boolean }) {
+function PortfolioAttribution({
+  runtime,
+  ledger,
+  loading,
+}: {
+  runtime: Account['runtime']
+  ledger: PortfolioLedgerDay[]
+  loading: boolean
+}) {
   const { nextClose, countdown } = useUtcCloseCountdown()
   const day = ledger[ledger.length - 1]
   if (!day) {
@@ -1971,17 +1985,21 @@ function PortfolioAttribution({ ledger, loading }: { ledger: PortfolioLedgerDay[
     )
   }
 
-  const outerExposure = Number(day.state.outer_exposure)
-  const stateContribution = Number(day.state.state_return) * 0.5 * outerExposure
+  const ledgerOuterExposure = Number(day.state.outer_exposure)
+  const effectiveOuterExposure = Number(
+    runtime.market_state.effective_outer_exposure ?? ledgerOuterExposure,
+  )
+  const shadowOnly = effectiveOuterExposure === 0
+  const stateContribution = Number(day.state.state_return) * 0.5 * ledgerOuterExposure
   const trendContribution = Object.values(day.state.sleeves.trend.components)
     .reduce((total, component) => total + trendSleeveContribution(component, day), 0)
   const innerCosts = Number(day.state.costs.component_fee)
     + Number(day.state.costs.component_slippage)
     + Number(day.state.costs.state_route)
     + Number(day.state.costs.calendar_route)
-  const modeledCostDrag = -innerCosts * outerExposure - Number(day.state.costs.outer_route)
-  const fundingContribution = Number(day.state.funding_return) * outerExposure
-  const targets = aggregatePortfolioTargets(day)
+  const modeledCostDrag = -innerCosts * ledgerOuterExposure - Number(day.state.costs.outer_route)
+  const fundingContribution = Number(day.state.funding_return) * ledgerOuterExposure
+  const targets = aggregatePortfolioTargets(day, effectiveOuterExposure)
   const rows = [
     ...Object.entries(day.state.sleeves.state.components).map(([id, component]) => ({
       id,
@@ -2015,7 +2033,7 @@ function PortfolioAttribution({ ledger, loading }: { ledger: PortfolioLedgerDay[
       </div>
 
       <div className="portfolio-attribution-summary">
-        <div><span>组合日收益</span><strong className={Number(day.daily_return) >= 0 ? 'good-text' : 'bad-text'}>{precisePercent(Number(day.daily_return))}</strong><small>已应用 {number(outerExposure, 1)}x 外层敞口</small></div>
+        <div><span>组合日收益</span><strong className={Number(day.daily_return) >= 0 ? 'good-text' : 'bad-text'}>{precisePercent(Number(day.daily_return))}</strong><small>{day.day} 应用 {number(ledgerOuterExposure, 1)}x</small></div>
         <div><span>状态袖套贡献</span><strong className={stateContribution >= 0 ? 'good-text' : 'bad-text'}>{precisePercent(stateContribution)}</strong><small>组合权重 50%</small></div>
         <div><span>趋势袖套贡献</span><strong className={trendContribution >= 0 ? 'good-text' : 'bad-text'}>{precisePercent(trendContribution)}</strong><small>3 个袖套各 1/6</small></div>
         <div><span>成本拖累</span><strong className="bad-text">{precisePercent(modeledCostDrag)}</strong><small>已包含在袖套收益中</small></div>
@@ -2028,18 +2046,20 @@ function PortfolioAttribution({ ledger, loading }: { ledger: PortfolioLedgerDay[
         <span>z-score <strong>{number(day.state.metrics.zscore, 3)}</strong></span>
         <span>状态敞口 <strong>{number(day.state.state_metric_exposure, 2)}x</strong></span>
         <span>波动率敞口 <strong>{number(day.state.state_volatility_exposure, 2)}x</strong></span>
-        <span>月度锁 <strong>{day.month_locked ? 'LOCKED' : 'OPEN'}</strong></span>
+        <span>月度锁 <strong>{runtime.market_state.month_locked ? 'LOCKED' : 'OPEN'}</strong></span>
+        <span>当前有效外层 <strong>{number(effectiveOuterExposure, 1)}x</strong></span>
+        {runtime.market_state.month_locked && <span>内部袖套 <strong>SHADOW ONLY</strong></span>}
       </div>
 
       <div className="portfolio-sleeve-table-wrap">
         <table className="portfolio-sleeve-table">
-          <thead><tr><th>袖套</th><th>组合基准权重</th><th>日终模型持仓</th><th>目标</th><th>数量</th><th>袖套日收益</th><th>账户贡献</th><th>袖套成本</th></tr></thead>
+          <thead><tr><th>袖套</th><th>组合基准权重</th><th>袖套影子持仓</th><th>目标</th><th>数量</th><th>袖套日收益</th><th>账户贡献</th><th>袖套成本</th></tr></thead>
           <tbody>
             {rows.map(({ id, group, internalAllocation, portfolioWeight, component, contribution }) => (
               <tr key={id}>
                 <td><span>{group}{internalAllocation === null ? '' : ` · 状态内 ${(internalAllocation * 100).toFixed(0)}%`}</span><strong>{portfolioSleeveLabel(id)}</strong></td>
                 <td><strong className="portfolio-weight">{(portfolioWeight * 100).toFixed(2)}%</strong></td>
-                <td><span className={`position-pill ${Number(component.target) > 0 ? 'long' : Number(component.target) < 0 ? 'short' : 'flat'}`}>{portfolioPosition(component)}</span></td>
+                <td><span className={`position-pill ${Number(component.target) > 0 ? 'long' : Number(component.target) < 0 ? 'short' : 'flat'}`}>{portfolioPosition(component, shadowOnly)}</span></td>
                 <td>{signedExposure(Number(component.target))}</td>
                 <td>{number(Math.abs(Number(component.quantity)), 4)}</td>
                 <td className={Number(component.return) >= 0 ? 'good-text' : 'bad-text'}>{precisePercent(Number(component.return))}</td>
@@ -2050,7 +2070,7 @@ function PortfolioAttribution({ ledger, loading }: { ledger: PortfolioLedgerDay[
           </tbody>
         </table>
       </div>
-      <p className="portfolio-ledger-note">显示最近一个已完成 UTC 日的不可变账本；持仓和收益不是盘中估值，将在下一次 UTC 收盘处理完成后更新。</p>
+      <p className="portfolio-ledger-note">收益归因来自最近一个已完成 UTC 日的不可变账本。袖套数量用于连续影子信号计算；组合当前风险只由“当前有效外层”决定，月度锁定时为 0x。</p>
     </section>
   )
 }
@@ -2084,6 +2104,7 @@ const triggerText: Record<string, string> = {
   PRICE_CROSS_ABOVE: '价格实时向上穿越 ATR 线',
   PRICE_BELOW_THEN_CROSS_ABOVE: '价格先回到 ATR 线下方，再重新上穿',
   NEXT_UTC_DAILY_CLOSE: '等待下一根完整 UTC 日线收盘',
+  NEXT_UTC_MONTH_OPEN: '下一 UTC 自然月开盘自动恢复外层敞口',
 }
 
 const crossReasonText: Record<string, string> = {
@@ -2103,10 +2124,16 @@ function DecisionStatus({ runtime }: { runtime: Account['runtime'] }) {
   const decision = runtime.decision
   const strategy = runtime.strategy
   const isPortfolio = runtime.paper_model === 'portfolio'
-  const copy = decisionText[decision.state] ?? [
-    '状态同步中',
-    '前后端策略状态版本暂时不一致，等待服务刷新',
-  ]
+  const portfolioLockReason = runtime.market_state.month_lock_reason
+  const copy = isPortfolio && decision.state === 'PAUSED' && runtime.market_state.month_locked
+    ? [
+        portfolioLockReason === 'UTC_MONTHLY_LOSS_LOCK' ? '月度亏损锁定' : '月度利润锁定',
+        '组合有效外层敞口已归零；内部袖套仅作为影子账本继续更新，不承担组合收益风险',
+      ]
+    : decisionText[decision.state] ?? [
+        '状态同步中',
+        '前后端策略状态版本暂时不一致，等待服务刷新',
+      ]
   const tone = decision.state === 'ARMED_FOR_BUY'
     || decision.state === 'ARMED_FOR_LONG'
     || decision.state === 'ARMED_FOR_SHORT'
@@ -2251,13 +2278,24 @@ const portfolioEventLabels: Record<string, string> = {
   CALENDAR_ROUTE_REBALANCE: '月历路由换仓',
 }
 
+function portfolioEventLabel(event: PortfolioSleeveEvent) {
+  if (event.event_type === 'OUTER_EXPOSURE_REBALANCE') {
+    if (Number(event.payload.target_after) === 0) return '外层组合平仓'
+    if (Number(event.payload.target_before) === 0) return '外层组合恢复'
+  }
+  return portfolioEventLabels[event.event_type] ?? event.event_type
+}
+
 function portfolioEventDetail(event: PortfolioSleeveEvent) {
   const payload = event.payload
   if (event.event_type === 'FUNDING') {
     return `数量 ${number(payload.quantity ?? null, 4)} · 费率 ${precisePercent(Number(payload.rate ?? 0), 4)} · 金额 ${money(payload.amount ?? null, 'USDT')}`
   }
   if (event.event_type.includes('REBALANCE')) {
-    return `换手 ${number(payload.turnover ?? null, 4)} · 路由成本 ${precisePercent(-Number(payload.route_cost ?? 0), 4)}`
+    const targets = payload.target_before !== undefined || payload.target_after !== undefined
+      ? `敞口 ${number(payload.target_before ?? null, 2)}x → ${number(payload.target_after ?? null, 2)}x · `
+      : ''
+    return `${targets}换手 ${number(payload.turnover ?? null, 4)} · 路由成本 ${precisePercent(-Number(payload.route_cost ?? 0), 4)}`
   }
   return `目标 ${number(payload.target_before ?? null, 2)} → ${number(payload.target_after ?? null, 2)}`
 }
@@ -2314,7 +2352,7 @@ function PortfolioOrders({ events, loading }: { events: PortfolioSleeveEvent[]; 
           <div className="table-scroll"><table><thead><tr><th>时间（UTC）</th><th>事件</th><th>袖套</th><th>品种</th><th>明细</th></tr></thead><tbody>
             {accountingEvents.map((event) => <tr key={`${event.day}-${event.event_index}`}>
               <td>{utcTimestamp(event.timestamp_ms)}</td>
-              <td>{portfolioEventLabels[event.event_type] ?? event.event_type}</td>
+              <td>{portfolioEventLabel(event)}</td>
               <td>{portfolioSleeveLabel(event.sleeve_id)}</td>
               <td>{event.instrument_id === 'btc_perp' ? 'BTCUSDT' : event.instrument_id === 'eth_perp' ? 'ETHUSDT' : 'PORTFOLIO'}</td>
               <td>{portfolioEventDetail(event)}</td>

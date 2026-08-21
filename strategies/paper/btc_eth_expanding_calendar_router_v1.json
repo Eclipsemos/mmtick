@@ -12,8 +12,8 @@
   "source_commit": "cc5bb464ea08018984efdebda19a6148169cfd67",
   "source_report": "reports/experiments/expanding_calendar_router/2026-08-15/expanding-calendar-router-20260815.json",
   "implementation": {
-    "version": "calendar-router-forward-v4",
-    "activated_before_first_forward_record": true,
+    "version": "calendar-router-forward-v5",
+    "activated_before_first_forward_record": false,
     "warmup_gate": "continuous_history_before_replay_start",
     "four_hour_history_start": "2025-10-03T00:00:00Z",
     "daily_history_start": "exchange_inception",
@@ -22,7 +22,8 @@
     "calendar_switch_cost": "route_turnover_only",
     "market_metrics": "immutable_archive_plus_first_seen_rest_4h",
     "funding_accounting": "event_time_target_exposure",
-    "audit_ledger": "portfolio_sleeve_events"
+    "audit_ledger": "portfolio_sleeve_events",
+    "monthly_lock_execution": "immediate_next_utc_open_outer_rebalance_shadow_sleeves_continue"
   },
   "instruments": {
     "btc_perp": "BTCUSDT USD-M perpetual",
