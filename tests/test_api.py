@@ -39,6 +39,7 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert overview.status_code == 200
     assert [item["id"] for item in overview.json()["accounts"]] == [
         "soxl_perp_long",
+        "soxl_perp_long_session_reentry",
     ]
     assert overview.json()["instruments"] == []
     assert overview.json()["environment"] == "paper"
@@ -81,12 +82,21 @@ def test_active_strategy_uses_recommended_atr_parameters() -> None:
     assert long_strategy.atr_multiplier == 3.0
     assert long_strategy.position_fraction == 0.625
     assert long_strategy.reversal_confirmation_atr == 0.0
+    session_reentry = next(
+        item for item in settings.instruments if item.id == "soxl_perp_long_session_reentry"
+    )
+    assert session_reentry.market_id == perp.id
+    assert not session_reentry.short_enabled
+    assert session_reentry.session_reentry_threshold_atr == 0.5
+    assert session_reentry.session_reentry_window_bars == 2
+    assert session_reentry.session_reentry_scope == "0816_2130"
     perp_strategy = instrument_strategy(settings, perp)
     assert perp_strategy.atr_period == 21
     assert perp_strategy.atr_multiplier == 4.0
     assert {item.id for item in settings.instruments} == {
         "soxl_perp",
         "soxl_perp_long",
+        "soxl_perp_long_session_reentry",
         "btc_perp",
         "eth_perp",
     }
@@ -145,9 +155,7 @@ def test_portfolio_ledger_exposes_base_and_stress_books(tmp_path) -> None:
 
     with TestClient(app) as client:
         response = client.get(f"/api/accounts/{portfolio.id}/portfolio-ledger?ledger=stress")
-        latest = client.get(
-            f"/api/accounts/{portfolio.id}/portfolio-ledger?ledger=stress&limit=1"
-        )
+        latest = client.get(f"/api/accounts/{portfolio.id}/portfolio-ledger?ledger=stress&limit=1")
 
     assert response.status_code == 200
     assert response.json()[0]["ledger"] == "stress"

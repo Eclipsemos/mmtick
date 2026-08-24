@@ -18,6 +18,7 @@ from mastermind_tick.store import PaperStore
 from mastermind_tick.strategy import (
     ATRProfitProtection,
     ATRTickStrategy,
+    SessionRecoveryReentry,
     StrategyView,
     atr_profit_protection_signal,
 )
@@ -32,6 +33,7 @@ class InstrumentRuntime:
     feed: MarketFeed
     strategy: ATRTickStrategy
     profit_protection: ATRProfitProtection | None = None
+    session_reentry: SessionRecoveryReentry | None = None
     status: str = "STARTING"
     status_message: str = "Loading warm-up history"
     last_tick: Tick | None = None
@@ -110,6 +112,7 @@ class PaperEngine:
                 feed=feed,
                 strategy=strategy,
                 profit_protection=_paper_profit_protection(instrument),
+                session_reentry=_paper_session_reentry(instrument),
                 strategy_ready=False,
             )
             account = self.store.account(instrument.id)
@@ -123,6 +126,8 @@ class PaperEngine:
             strategy.restore_runtime(saved_state)
             if runtime.profit_protection is not None and saved_state is not None:
                 runtime.profit_protection.restore_runtime(saved_state.get("profit_protection"))
+            if runtime.session_reentry is not None and saved_state is not None:
+                runtime.session_reentry.restore_runtime(saved_state.get("session_reentry"))
             try:
                 await self._warmup_runtime(runtime)
             except Exception as exc:
@@ -470,12 +475,25 @@ class PaperEngine:
                         tick.timestamp_ms,
                         filled=fill.get("status") == "FILLED",
                     )
+                    if runtime.session_reentry is not None:
+                        runtime.session_reentry.on_fill(
+                            filled=fill.get("status") == "FILLED",
+                            reduce_only=bool(fill.get("reduce_only")),
+                            fill_price=(
+                                Decimal(str(fill["price"]))
+                                if fill.get("price") is not None
+                                else None
+                            ),
+                            timestamp_ms=tick.timestamp_ms,
+                            bar_ms=runtime.strategy.bar_ms,
+                        )
             account = self.store.account(account_id)
             position_quantity = Decimal(account["quantity"])
             has_position = position_quantity != 0
             is_short = position_quantity < 0
             allow_short = runtime.instrument.short_enabled
             has_pending = self.store.has_pending_order(account_id)
+            previous_stop = runtime.strategy.trailing_stop
             signal = runtime.strategy.on_tick(
                 tick,
                 has_position=has_position,
@@ -484,6 +502,18 @@ class PaperEngine:
                 is_short=is_short,
                 emit_signals=self.trading_enabled,
             )
+            if signal is None and runtime.session_reentry is not None:
+                signal = runtime.session_reentry.signal(
+                    tick,
+                    atr=runtime.strategy.last_atr,
+                    trend_efficiency=runtime.strategy.last_trend_efficiency,
+                    minimum_trend_efficiency=runtime.strategy.minimum_trend_efficiency,
+                    action_locked=runtime.strategy.action_this_bar,
+                    has_position=has_position,
+                    has_pending_order=has_pending,
+                    emit_signals=self.trading_enabled,
+                    bar_ms=runtime.strategy.bar_ms,
+                )
             if signal is None:
                 signal = atr_profit_protection_signal(
                     runtime.profit_protection,
@@ -495,6 +525,11 @@ class PaperEngine:
                     emit_signals=self.trading_enabled,
                 )
             if signal:
+                if runtime.session_reentry is not None:
+                    if signal.reason == "price_crossed_below_atr_stop" and signal.reduce_only:
+                        runtime.session_reentry.capture_exit(tick.timestamp_ms, previous_stop)
+                    elif signal.reduce_only:
+                        runtime.session_reentry.pending_exit_stop = None
                 self.store.submit_order(account_id, signal, tick.timestamp_ms)
             snapshot_due = (
                 tick.timestamp_ms - runtime.last_snapshot_ms
@@ -760,10 +795,22 @@ def _paper_profit_protection(instrument: InstrumentSettings) -> ATRProfitProtect
     )
 
 
+def _paper_session_reentry(instrument: InstrumentSettings) -> SessionRecoveryReentry | None:
+    if instrument.session_reentry_scope is None:
+        return None
+    return SessionRecoveryReentry(
+        instrument.session_reentry_threshold_atr,
+        instrument.session_reentry_window_bars,
+        instrument.session_reentry_scope,
+    )
+
+
 def _runtime_state(runtime: InstrumentRuntime) -> dict[str, Any]:
     state = runtime.strategy.runtime_state()
     if runtime.profit_protection is not None:
         state["profit_protection"] = runtime.profit_protection.runtime_state()
+    if runtime.session_reentry is not None:
+        state["session_reentry"] = runtime.session_reentry.runtime_state()
     return state
 
 
@@ -780,6 +827,15 @@ def _runtime_strategy_view(runtime: InstrumentRuntime) -> dict[str, Any]:
                 str(protection.favorable_extreme)
                 if protection and protection.favorable_extreme is not None
                 else None
+            ),
+            "session_reentry_armed": bool(
+                runtime.session_reentry and runtime.session_reentry.anchor is not None
+            ),
+            "session_reentry_first_bar_ms": (
+                runtime.session_reentry.first_bar_ms if runtime.session_reentry else None
+            ),
+            "session_reentry_last_bar_ms": (
+                runtime.session_reentry.last_bar_ms if runtime.session_reentry else None
             ),
         }
     )

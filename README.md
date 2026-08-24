@@ -13,6 +13,7 @@ BTC/ETH 组合策略 paper、一条独立的 Binance USDⓈ-M Futures 实盘链�
 | 账户 ID | 产品 | 方向 | 初始资金/来源 | 目标敞口 |
 |---|---|---|---|---:|
 | `soxl_perp_long` | `SOXL/USDT PERP LONG ONLY` paper | 仅做多 | 100,000 USDT | 1.25x |
+| `soxl_perp_long_session_reentry` | `SOXL/USDT PERP LONG ONLY + SESSION REENTRY` paper | 仅做多 | 100,000 USDT | 1.25x |
 | `btc_eth_calendar_router` | BTC/ETH 扩展月历路由 paper | 组合多空 | 100,000 USDT | 4x 外层模型 |
 | `soxl_perp_live` | Binance `SOXLUSDT` USD-M Futures | 仅做多 | Binance 实际余额 | 1.25x |
 
@@ -51,7 +52,12 @@ K 线周期                 15 分钟
 实盘和 `soxl_perp_long` 在价格从 ATR 跟踪线下方穿到上方且趋势效率过滤通过时开多；持有
 多仓时，下穿 ATR 跟踪线会发送 `reduce_only` 平仓。平仓后保持空仓，等待下一次有效上穿，
 不开空、不反手、
-不执行延续重入。`soxl_perp_long` 使用与实盘相同的 ATR(32) × 3.0、62.5% 仓位策略；
+不执行延续重入。`soxl_perp_long` 使用与实盘相同的 ATR(32) × 3.0、62.5% 仓位策略。
+独立的 `soxl_perp_long_session_reentry` 从同一策略起点建账，只在北京时间周日/周一 08:00、
+周二至周四 16:00 或每日 21:30 的 ±30 分钟 ATR 退出后观察恢复重入；它不会改变实盘。
+完整规则见
+[strategies/paper/soxl_atr32x3_session_reentry_v1.md](strategies/paper/soxl_atr32x3_session_reentry_v1.md)。
+
 BTC/ETH paper 使用冻结的月历路由：状态袖套占 50%，每月固定三个 MACD 趋势袖套各占
 1/6，组合应用 4x 外层研究杠杆与 -20%/+18% UTC 月度锁。基础与压力成本账本并行保存，
 只从 2026-08-16 UTC 起记录前向收益，不允许回写。
@@ -70,7 +76,8 @@ Paper 账户首次启动时会执行一次趋势对齐。实盘首次启动不�
 
 - Futures 使用 `SOXLUSDT` Trade 流并按 250 ms 聚合，保留底层 Trade ID 范围。
 - 系统使用官方 15 分钟 Futures K 线预热和定稿；收盘后通过 REST `/klines` 再校验。
-- `soxl_perp_long` 和实盘策略复用 `soxl_perp` Futures 市场数据；共享行情不等于共享账本。
+- 两个 SOXL long-only paper 和实盘策略复用 `soxl_perp` Futures 市场数据；共享行情不等于
+  共享账本。
 - BTC/ETH 路由只处理完整 UTC 日线和 4h K 线，收盘产生信号、下一根日线开盘成交，并将
   各袖套目标、成本、基础/压力收益和月度锁写入独立日账本。
 - Paper 信号在下一笔持久化 Tick 按固定手续费与滑点成交；实盘只采用 Binance 返回的真实

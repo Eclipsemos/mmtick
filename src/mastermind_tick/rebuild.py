@@ -21,7 +21,11 @@ from mastermind_tick.config import (
 )
 from mastermind_tick.models import Tick
 from mastermind_tick.store import PaperStore
-from mastermind_tick.strategy import ATRProfitProtection, atr_profit_protection_signal
+from mastermind_tick.strategy import (
+    ATRProfitProtection,
+    SessionRecoveryReentry,
+    atr_profit_protection_signal,
+)
 
 DERIVED_TABLES = (
     "fills",
@@ -84,8 +88,7 @@ def rebuild_candidate(
     selected = _selected_instruments(settings, account_ids)
     selected_strategy = instrument_strategy(settings, selected[0])
     results = [
-        _rebuild_account(settings, store, instrument, start_ms=start_ms)
-        for instrument in selected
+        _rebuild_account(settings, store, instrument, start_ms=start_ms) for instrument in selected
     ]
     after_market = _market_counts(candidate_path)
     if after_market != before_market:
@@ -103,6 +106,9 @@ def rebuild_candidate(
             "reversal_confirmation_atr": selected_strategy.reversal_confirmation_atr,
             "profit_activation_atr": selected[0].profit_activation_atr,
             "profit_trailing_atr": selected[0].profit_trailing_atr,
+            "session_reentry_threshold_atr": selected[0].session_reentry_threshold_atr,
+            "session_reentry_window_bars": selected[0].session_reentry_window_bars,
+            "session_reentry_scope": selected[0].session_reentry_scope,
         },
         "market_counts": after_market,
         "requested_start_ms": start_ms,
@@ -154,6 +160,7 @@ def _rebuild_account(
     )
     strategy.bootstrap(warmup)
     profit_protection = _paper_profit_protection(instrument)
+    session_reentry = _paper_session_reentry(instrument)
     position_fraction = strategy_settings.position_fraction
     funding_index = 0
     last_snapshot_ms = 0
@@ -188,15 +195,9 @@ def _rebuild_account(
                     bool(row["buyer_is_maker"]) if row["buyer_is_maker"] is not None else None
                 ),
                 event_time_ms=row["event_time_ms"],
-                open_price=(
-                    Decimal(row["open_price"]) if row["open_price"] is not None else None
-                ),
-                high_price=(
-                    Decimal(row["high_price"]) if row["high_price"] is not None else None
-                ),
-                low_price=(
-                    Decimal(row["low_price"]) if row["low_price"] is not None else None
-                ),
+                open_price=(Decimal(row["open_price"]) if row["open_price"] is not None else None),
+                high_price=(Decimal(row["high_price"]) if row["high_price"] is not None else None),
+                low_price=(Decimal(row["low_price"]) if row["low_price"] is not None else None),
                 notional=Decimal(row["notional"]),
             )
             funding_applied = False
@@ -226,10 +227,23 @@ def _rebuild_account(
                         tick.timestamp_ms,
                         filled=fill.get("status") == "FILLED",
                     )
+                    if session_reentry is not None:
+                        session_reentry.on_fill(
+                            filled=fill.get("status") == "FILLED",
+                            reduce_only=bool(fill.get("reduce_only")),
+                            fill_price=(
+                                Decimal(str(fill["price"]))
+                                if fill.get("price") is not None
+                                else None
+                            ),
+                            timestamp_ms=tick.timestamp_ms,
+                            bar_ms=strategy.bar_ms,
+                        )
                 has_pending = False
                 account = store.account(instrument.id)
                 position_quantity = Decimal(account["quantity"])
                 average_price = Decimal(account["average_price"])
+            previous_stop = strategy.trailing_stop
             signal = strategy.on_tick(
                 tick,
                 has_position=position_quantity != 0,
@@ -237,6 +251,17 @@ def _rebuild_account(
                 allow_short=instrument.short_enabled,
                 is_short=position_quantity < 0,
             )
+            if signal is None and session_reentry is not None:
+                signal = session_reentry.signal(
+                    tick,
+                    atr=strategy.last_atr,
+                    trend_efficiency=strategy.last_trend_efficiency,
+                    minimum_trend_efficiency=strategy.minimum_trend_efficiency,
+                    action_locked=strategy.action_this_bar,
+                    has_position=position_quantity != 0,
+                    has_pending_order=has_pending,
+                    bar_ms=strategy.bar_ms,
+                )
             if signal is None:
                 signal = atr_profit_protection_signal(
                     profit_protection,
@@ -248,6 +273,11 @@ def _rebuild_account(
                     emit_signals=True,
                 )
             if signal is not None:
+                if session_reentry is not None:
+                    if signal.reason == "price_crossed_below_atr_stop" and signal.reduce_only:
+                        session_reentry.capture_exit(tick.timestamp_ms, previous_stop)
+                    elif signal.reduce_only:
+                        session_reentry.pending_exit_stop = None
                 store.submit_order(instrument.id, signal, tick.timestamp_ms)
                 has_pending = True
 
@@ -258,7 +288,7 @@ def _rebuild_account(
                 store.snapshot(
                     instrument.id,
                     tick,
-                    _strategy_view(strategy, profit_protection),
+                    _strategy_view(strategy, profit_protection, session_reentry),
                 )
                 last_snapshot_ms = tick.timestamp_ms
             last_tick = tick
@@ -267,14 +297,14 @@ def _rebuild_account(
         raise RuntimeError(f"replay unexpectedly produced no ticks for {instrument.id}")
     store.save_strategy_state(
         instrument.id,
-        _strategy_state(strategy, profit_protection),
+        _strategy_state(strategy, profit_protection, session_reentry),
         last_tick.timestamp_ms,
     )
     account = store.account(instrument.id)
     final_snapshot = store.snapshot(
         instrument.id,
         last_tick,
-        _strategy_view(strategy, profit_protection),
+        _strategy_view(strategy, profit_protection, session_reentry),
     )
     initial_cash = Decimal(account["initial_cash"])
     final_equity = Decimal(str(final_snapshot["equity"]))
@@ -339,9 +369,7 @@ def apply_candidate(
                     connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
                 )
                 candidate_count = int(
-                    connection.execute(
-                        f"SELECT COUNT(*) FROM candidate.{table}"
-                    ).fetchone()[0]
+                    connection.execute(f"SELECT COUNT(*) FROM candidate.{table}").fetchone()[0]
                 )
                 if production_count < candidate_count:
                     raise RuntimeError(
@@ -482,8 +510,11 @@ def _replay_account_tail(
         saved_state = store.strategy_state(instrument.id)
         strategy.restore_runtime(saved_state)
         profit_protection = _paper_profit_protection(instrument)
+        session_reentry = _paper_session_reentry(instrument)
         if profit_protection is not None and saved_state is not None:
             profit_protection.restore_runtime(saved_state.get("profit_protection"))
+        if session_reentry is not None and saved_state is not None:
+            session_reentry.restore_runtime(saved_state.get("session_reentry"))
         position_fraction = strategy_settings.position_fraction
         account = store.account(instrument.id)
         position_quantity = Decimal(account["quantity"])
@@ -526,10 +557,23 @@ def _replay_account_tail(
                         tick.timestamp_ms,
                         filled=fill.get("status") == "FILLED",
                     )
+                    if session_reentry is not None:
+                        session_reentry.on_fill(
+                            filled=fill.get("status") == "FILLED",
+                            reduce_only=bool(fill.get("reduce_only")),
+                            fill_price=(
+                                Decimal(str(fill["price"]))
+                                if fill.get("price") is not None
+                                else None
+                            ),
+                            timestamp_ms=tick.timestamp_ms,
+                            bar_ms=strategy.bar_ms,
+                        )
                 has_pending = False
                 account = store.account(instrument.id)
                 position_quantity = Decimal(account["quantity"])
                 average_price = Decimal(account["average_price"])
+            previous_stop = strategy.trailing_stop
             signal = strategy.on_tick(
                 tick,
                 has_position=position_quantity != 0,
@@ -537,6 +581,17 @@ def _replay_account_tail(
                 allow_short=instrument.short_enabled,
                 is_short=position_quantity < 0,
             )
+            if signal is None and session_reentry is not None:
+                signal = session_reentry.signal(
+                    tick,
+                    atr=strategy.last_atr,
+                    trend_efficiency=strategy.last_trend_efficiency,
+                    minimum_trend_efficiency=strategy.minimum_trend_efficiency,
+                    action_locked=strategy.action_this_bar,
+                    has_position=position_quantity != 0,
+                    has_pending_order=has_pending,
+                    bar_ms=strategy.bar_ms,
+                )
             if signal is None:
                 signal = atr_profit_protection_signal(
                     profit_protection,
@@ -548,6 +603,11 @@ def _replay_account_tail(
                     emit_signals=True,
                 )
             if signal is not None:
+                if session_reentry is not None:
+                    if signal.reason == "price_crossed_below_atr_stop" and signal.reduce_only:
+                        session_reentry.capture_exit(tick.timestamp_ms, previous_stop)
+                    elif signal.reduce_only:
+                        session_reentry.pending_exit_stop = None
                 store.submit_order(instrument.id, signal, tick.timestamp_ms)
                 has_pending = True
             snapshot_due = (
@@ -557,7 +617,7 @@ def _replay_account_tail(
                 store.snapshot(
                     instrument.id,
                     tick,
-                    _strategy_view(strategy, profit_protection),
+                    _strategy_view(strategy, profit_protection, session_reentry),
                 )
                 last_snapshot_ms = tick.timestamp_ms
             last_tick = tick
@@ -565,13 +625,13 @@ def _replay_account_tail(
     if last_tick is not None:
         store.save_strategy_state(
             instrument.id,
-            _strategy_state(strategy, profit_protection),
+            _strategy_state(strategy, profit_protection, session_reentry),
             last_tick.timestamp_ms,
         )
         store.snapshot(
             instrument.id,
             last_tick,
-            _strategy_view(strategy, profit_protection),
+            _strategy_view(strategy, profit_protection, session_reentry),
         )
     return tick_count
 
@@ -581,8 +641,7 @@ def _market_rows_missing_or_changed(
     table: str,
 ) -> int:
     columns = [
-        str(row["name"])
-        for row in connection.execute(f"PRAGMA candidate.table_info({table})")
+        str(row["name"]) for row in connection.execute(f"PRAGMA candidate.table_info({table})")
     ]
     if table == "ohlcv_bars":
         columns = ["instrument_id", "interval_minutes", "start_ms"]
@@ -629,9 +688,7 @@ def _tick_from_row(row: sqlite3.Row) -> Tick:
         aggregate_trade_id=row["aggregate_trade_id"],
         first_trade_id=row["first_trade_id"],
         last_trade_id=row["last_trade_id"],
-        buyer_is_maker=(
-            bool(row["buyer_is_maker"]) if row["buyer_is_maker"] is not None else None
-        ),
+        buyer_is_maker=(bool(row["buyer_is_maker"]) if row["buyer_is_maker"] is not None else None),
         event_time_ms=row["event_time_ms"],
         open_price=Decimal(row["open_price"]) if row["open_price"] is not None else None,
         high_price=Decimal(row["high_price"]) if row["high_price"] is not None else None,
@@ -653,30 +710,41 @@ def _paper_profit_protection(instrument: InstrumentSettings) -> ATRProfitProtect
     )
 
 
+def _paper_session_reentry(instrument: InstrumentSettings) -> SessionRecoveryReentry | None:
+    if instrument.session_reentry_scope is None:
+        return None
+    return SessionRecoveryReentry(
+        instrument.session_reentry_threshold_atr,
+        instrument.session_reentry_window_bars,
+        instrument.session_reentry_scope,
+    )
+
+
 def _strategy_state(
     strategy: ReplayATRTickStrategy,
     profit_protection: ATRProfitProtection | None,
+    session_reentry: SessionRecoveryReentry | None = None,
 ) -> dict[str, Any]:
     state = strategy.runtime_state()
     if profit_protection is not None:
         state["profit_protection"] = profit_protection.runtime_state()
+    if session_reentry is not None:
+        state["session_reentry"] = session_reentry.runtime_state()
     return state
 
 
 def _strategy_view(
     strategy: ReplayATRTickStrategy,
     profit_protection: ATRProfitProtection | None = None,
+    session_reentry: SessionRecoveryReentry | None = None,
 ) -> dict[str, Any]:
     view = asdict(strategy.view())
     result = {
-        key: str(value) if isinstance(value, Decimal) else value
-        for key, value in view.items()
+        key: str(value) if isinstance(value, Decimal) else value for key, value in view.items()
     }
     result.update(
         {
-            "profit_protection_active": bool(
-                profit_protection and profit_protection.active
-            ),
+            "profit_protection_active": bool(profit_protection and profit_protection.active),
             "profit_stop": (
                 str(profit_protection.stop)
                 if profit_protection and profit_protection.stop is not None
@@ -686,6 +754,13 @@ def _strategy_view(
                 str(profit_protection.favorable_extreme)
                 if profit_protection and profit_protection.favorable_extreme is not None
                 else None
+            ),
+            "session_reentry_armed": bool(session_reentry and session_reentry.anchor is not None),
+            "session_reentry_first_bar_ms": (
+                session_reentry.first_bar_ms if session_reentry else None
+            ),
+            "session_reentry_last_bar_ms": (
+                session_reentry.last_bar_ms if session_reentry else None
             ),
         }
     )

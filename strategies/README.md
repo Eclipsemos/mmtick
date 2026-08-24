@@ -7,5 +7,7 @@ All strategy definitions live under this directory:
 - `components/`: reusable frozen sleeves referenced by complete strategies.
 - `archive/`: superseded definitions retained for audit history.
 
-Runtime configuration must reference the machine-readable file in this tree. Research reports
-belong in `reports/`; executable code belongs in `src/mastermind_tick/` or `scripts/`.
+JSON-defined runtimes must reference their machine-readable file in this tree. Parameterized ATR
+runtimes remain configured in `config/settings.toml`, with frozen operational rules documented
+here. Research reports belong in `reports/`; executable code belongs in `src/mastermind_tick/` or
+`scripts/`.

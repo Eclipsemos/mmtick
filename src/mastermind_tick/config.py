@@ -55,6 +55,9 @@ class InstrumentSettings:
     reversal_confirmation_atr: float | None = None
     profit_activation_atr: float = 0.0
     profit_trailing_atr: float = 0.0
+    session_reentry_threshold_atr: float = 0.0
+    session_reentry_window_bars: int = 0
+    session_reentry_scope: str | None = None
     paper_enabled: bool = True
 
     @property
@@ -311,6 +314,25 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
             raise ValueError(f"profit protection ATR cannot be negative for {instrument.id}")
         if (instrument.profit_activation_atr > 0) != (instrument.profit_trailing_atr > 0):
             raise ValueError(f"profit protection ATR must be enabled as a pair for {instrument.id}")
+        session_reentry_enabled = instrument.session_reentry_scope is not None
+        if session_reentry_enabled != (instrument.session_reentry_window_bars > 0):
+            raise ValueError(
+                f"session re-entry scope and window must be enabled together for {instrument.id}"
+            )
+        if instrument.session_reentry_threshold_atr < 0:
+            raise ValueError(f"session re-entry ATR cannot be negative for {instrument.id}")
+        if session_reentry_enabled and instrument.session_reentry_scope not in {
+            "sun_mon_0800",
+            "tue_thu_1600",
+            "0816",
+            "0816_2130",
+            "2130",
+        }:
+            raise ValueError(f"invalid session re-entry scope for {instrument.id}")
+        if session_reentry_enabled and (
+            instrument.paper_model != "futures" or instrument.short_enabled
+        ):
+            raise ValueError(f"session re-entry requires long-only futures for {instrument.id}")
     if live_spot.enabled:
         live_instrument = instrument_by_id.get(live_spot.instrument_id)
         if live_instrument is None:

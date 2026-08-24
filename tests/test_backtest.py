@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from decimal import Decimal
 
 import pytest
@@ -377,3 +378,65 @@ def test_continuation_reentry_is_symmetric_for_short_position() -> None:
     assert candidate.pending_signal is not None
     assert candidate.pending_signal.side is Side.SELL
     assert candidate.pending_signal.reason == "confirmed_short_continuation"
+
+
+def test_session_reentry_scope_uses_beijing_session_boundaries() -> None:
+    candidate = opened_candidate(
+        ReplayParameters(
+            2,
+            4,
+            session_reentry_threshold_atr=0.25,
+            session_reentry_window_bars=2,
+            session_reentry_scope="0816",
+        )
+    )
+
+    sunday_0800_bjt = int(datetime(2026, 8, 9, 0, 0, tzinfo=UTC).timestamp() * 1000)
+    tuesday_1600_bjt = int(datetime(2026, 8, 11, 8, 0, tzinfo=UTC).timestamp() * 1000)
+    regular_open = int(datetime(2026, 8, 11, 13, 30, tzinfo=UTC).timestamp() * 1000)
+
+    assert candidate._is_session_reentry_exit(sunday_0800_bjt)
+    assert candidate._is_session_reentry_exit(tuesday_1600_bjt)
+    assert not candidate._is_session_reentry_exit(regular_open)
+
+
+def test_session_reentry_uses_frozen_stop_from_next_bar() -> None:
+    candidate = opened_candidate(
+        ReplayParameters(
+            2,
+            4,
+            session_reentry_threshold_atr=0.25,
+            session_reentry_window_bars=2,
+            session_reentry_scope="0816",
+        )
+    )
+    exit_fill_ms = int(datetime(2026, 8, 9, 0, 5, tzinfo=UTC).timestamp() * 1000)
+    exit_bar_ms = exit_fill_ms // BAR_MS * BAR_MS
+    assert candidate.session_reentry is not None
+    candidate.session_reentry.pending_exit_stop = Decimal("99")
+    candidate.pending_signal = StrategySignal(
+        side=Side.SELL,
+        reason="price_crossed_below_atr_stop",
+        signal_price=Decimal("98"),
+        trailing_stop=Decimal("103"),
+        atr=Decimal("1"),
+        bar_start_ms=exit_bar_ms,
+        tick_id="exit-signal",
+        reduce_only=True,
+    )
+
+    candidate.process_tick(tick("exit-fill", exit_fill_ms, 98), [])
+
+    assert not candidate.broker.has_position
+    assert candidate.session_reentry.anchor == Decimal("98")
+    assert candidate.session_reentry.frozen_stop == Decimal("99")
+    candidate.strategy.trailing_stop = Decimal("110")
+    candidate.process_tick(tick("same-bar", exit_bar_ms + BAR_MS - 1, 105), [])
+    assert candidate.pending_signal is None
+
+    candidate.process_tick(tick("recovered", exit_bar_ms + BAR_MS, 105), [])
+
+    assert candidate.pending_signal is not None
+    assert candidate.pending_signal.reason == "session_recovery_reentry"
+    assert candidate.pending_signal.side is Side.BUY
+    assert candidate.session_reentry_signals == 1

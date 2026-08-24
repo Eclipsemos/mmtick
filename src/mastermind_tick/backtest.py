@@ -17,6 +17,7 @@ from mastermind_tick.models import Bar, FundingRate, Side, StrategySignal, Tick
 from mastermind_tick.strategy import (
     ATRProfitProtection,
     ATRTickStrategy,
+    SessionRecoveryReentry,
     true_range,
     wilder_atr,
 )
@@ -34,6 +35,9 @@ class ReplayParameters:
     profit_activation_atr: float | None = None
     profit_trailing_atr: float | None = None
     continuation_reentry_atr: float | None = None
+    session_reentry_threshold_atr: float | None = None
+    session_reentry_window_bars: int = 0
+    session_reentry_scope: str | None = None
 
 
 @dataclass
@@ -94,6 +98,7 @@ class ReplayResult:
     profit_exit_signals: int
     continuation_reentry_signals: int
     ending_position: str
+    session_reentry_signals: int = 0
 
 
 class ReplayATRTickStrategy(ATRTickStrategy):
@@ -329,6 +334,7 @@ class ReplayCandidate:
     continuation_direction: str | None = None
     continuation_anchor: Decimal | None = None
     continuation_eligible_bar_ms: int | None = None
+    session_reentry: SessionRecoveryReentry | None = None
 
     def __post_init__(self) -> None:
         if (
@@ -336,6 +342,12 @@ class ReplayCandidate:
             and self.parameters.continuation_reentry_atr < 0
         ):
             raise ValueError("continuation re-entry ATR must be non-negative")
+        if self.parameters.session_reentry_threshold_atr is not None:
+            self.session_reentry = SessionRecoveryReentry(
+                self.parameters.session_reentry_threshold_atr,
+                self.parameters.session_reentry_window_bars,
+                str(self.parameters.session_reentry_scope),
+            )
         activation = self.parameters.profit_activation_atr
         trailing = self.parameters.profit_trailing_atr
         if activation is not None and trailing is not None:
@@ -374,6 +386,21 @@ class ReplayCandidate:
             )
             self.strategy.on_fill(tick.timestamp_ms, filled=filled)
             self.pending_signal = None
+            if self.session_reentry is not None:
+                fill_price = None
+                if filled:
+                    fill_price = (
+                        self.broker.trades[-1].exit_price
+                        if position_before != 0 and not self.broker.has_position
+                        else self.broker.average_price
+                    )
+                self.session_reentry.on_fill(
+                    filled=filled,
+                    reduce_only=pending_signal.reduce_only,
+                    fill_price=fill_price,
+                    timestamp_ms=tick.timestamp_ms,
+                    bar_ms=self.strategy.bar_ms,
+                )
             if filled:
                 if position_before == 0 and self.broker.has_position:
                     self._clear_continuation_state()
@@ -396,6 +423,7 @@ class ReplayCandidate:
                         self.continuation_eligible_bar_ms = fill_bar_start + self.strategy.bar_ms
                     self._clear_profit_state()
 
+        previous_stop = self.strategy.trailing_stop
         signal = self.strategy.on_tick(
             tick,
             has_position=self.broker.has_position,
@@ -404,13 +432,37 @@ class ReplayCandidate:
             is_short=self.broker.is_short,
         )
         if signal is None:
+            signal = self._session_reentry_signal(tick)
+        if signal is None:
             signal = self._continuation_reentry_signal(tick)
         if signal is None:
             signal = self._profit_exit_signal(tick)
         if signal is not None:
+            if self.session_reentry is not None:
+                if signal.reason == "price_crossed_below_atr_stop" and signal.reduce_only:
+                    self.session_reentry.capture_exit(tick.timestamp_ms, previous_stop)
+                elif signal.reduce_only:
+                    self.session_reentry.pending_exit_stop = None
             self.pending_signal = signal
             self.signals += 1
         self.broker.mark(tick.price)
+
+    def _session_reentry_signal(self, tick: Tick) -> StrategySignal | None:
+        if self.session_reentry is None:
+            return None
+        return self.session_reentry.signal(
+            tick,
+            atr=self.strategy.last_atr,
+            trend_efficiency=self.strategy.last_trend_efficiency,
+            minimum_trend_efficiency=self.strategy.minimum_trend_efficiency,
+            action_locked=self.strategy.action_this_bar,
+            has_position=self.broker.has_position,
+            has_pending_order=self.pending_signal is not None,
+            bar_ms=self.strategy.bar_ms,
+        )
+
+    def _is_session_reentry_exit(self, timestamp_ms: int) -> bool:
+        return bool(self.session_reentry and self.session_reentry.qualifies_exit(timestamp_ms))
 
     def _continuation_reentry_signal(self, tick: Tick) -> StrategySignal | None:
         threshold = self.parameters.continuation_reentry_atr
@@ -520,6 +572,10 @@ class ReplayCandidate:
         self.continuation_direction = None
         self.continuation_anchor = None
         self.continuation_eligible_bar_ms = None
+
+    @property
+    def session_reentry_signals(self) -> int:
+        return self.session_reentry.signal_count if self.session_reentry else 0
 
 
 def run_parameter_grid(
@@ -737,6 +793,7 @@ def _candidate_result(
         profit_exit_signals=candidate.profit_exit_signals,
         continuation_reentry_signals=candidate.continuation_reentry_signals,
         ending_position=ending_position,
+        session_reentry_signals=candidate.session_reentry_signals,
     )
 
 

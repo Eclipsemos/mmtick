@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -29,6 +30,176 @@ def wilder_atr(bars: list[Bar], period: int) -> Decimal | None:
     for value in ranges[period:]:
         atr = (atr * Decimal(period - 1) + value) / Decimal(period)
     return atr
+
+
+class SessionRecoveryReentry:
+    """Long-only recovery re-entry after an ATR exit near configured session switches."""
+
+    STATE_VERSION = 1
+    SUPPORTED_SCOPES = {
+        "sun_mon_0800",
+        "tue_thu_1600",
+        "0816",
+        "0816_2130",
+        "2130",
+    }
+
+    def __init__(self, threshold_atr: float, window_bars: int, scope: str):
+        if threshold_atr < 0:
+            raise ValueError("session re-entry ATR must be non-negative")
+        if window_bars < 1:
+            raise ValueError("session re-entry window must contain at least one bar")
+        if scope not in self.SUPPORTED_SCOPES:
+            raise ValueError("unsupported session re-entry scope")
+        self.threshold_atr = Decimal(str(threshold_atr))
+        self.window_bars = window_bars
+        self.scope = scope
+        self.pending_exit_stop: Decimal | None = None
+        self.anchor: Decimal | None = None
+        self.frozen_stop: Decimal | None = None
+        self.first_bar_ms: int | None = None
+        self.last_bar_ms: int | None = None
+        self.signal_count = 0
+
+    def clear(self) -> None:
+        self.pending_exit_stop = None
+        self.anchor = None
+        self.frozen_stop = None
+        self.first_bar_ms = None
+        self.last_bar_ms = None
+
+    def capture_exit(self, timestamp_ms: int, previous_stop: Decimal | None) -> None:
+        self.pending_exit_stop = (
+            previous_stop
+            if previous_stop is not None and self.qualifies_exit(timestamp_ms)
+            else None
+        )
+
+    def on_fill(
+        self,
+        *,
+        filled: bool,
+        reduce_only: bool,
+        fill_price: Decimal | None,
+        timestamp_ms: int,
+        bar_ms: int,
+    ) -> None:
+        if not filled:
+            self.pending_exit_stop = None
+            return
+        if not reduce_only:
+            self.clear()
+            return
+        if self.pending_exit_stop is None or fill_price is None:
+            return
+        fill_bar_start = timestamp_ms // bar_ms * bar_ms
+        self.anchor = fill_price
+        self.frozen_stop = self.pending_exit_stop
+        self.first_bar_ms = fill_bar_start + bar_ms
+        self.last_bar_ms = self.first_bar_ms + (self.window_bars - 1) * bar_ms
+        self.pending_exit_stop = None
+
+    def signal(
+        self,
+        tick: Tick,
+        *,
+        atr: Decimal | None,
+        trend_efficiency: Decimal | None,
+        minimum_trend_efficiency: Decimal,
+        action_locked: bool,
+        has_position: bool,
+        has_pending_order: bool,
+        emit_signals: bool = True,
+        bar_ms: int,
+    ) -> StrategySignal | None:
+        if (
+            has_position
+            or has_pending_order
+            or not emit_signals
+            or self.anchor is None
+            or self.frozen_stop is None
+            or self.first_bar_ms is None
+            or self.last_bar_ms is None
+        ):
+            return None
+        bar_start = tick.timestamp_ms // bar_ms * bar_ms
+        if bar_start < self.first_bar_ms:
+            return None
+        if bar_start > self.last_bar_ms:
+            self.clear()
+            return None
+        if (
+            atr is None
+            or trend_efficiency is None
+            or trend_efficiency < minimum_trend_efficiency
+            or action_locked
+        ):
+            return None
+        trigger = max(self.frozen_stop, self.anchor + atr * self.threshold_atr)
+        if tick.price < trigger:
+            return None
+        self.signal_count += 1
+        self.clear()
+        return StrategySignal(
+            side=Side.BUY,
+            reason="session_recovery_reentry",
+            signal_price=tick.price,
+            trailing_stop=trigger,
+            atr=atr,
+            bar_start_ms=bar_start,
+            tick_id=tick.event_id,
+            reduce_only=False,
+        )
+
+    def qualifies_exit(self, timestamp_ms: int) -> bool:
+        local = datetime.fromtimestamp(timestamp_ms / 1000, UTC) + timedelta(hours=8)
+        minute = local.hour * 60 + local.minute + local.second / 60
+
+        def near(anchor: int) -> bool:
+            distance = abs(minute - anchor)
+            return min(distance, 1440 - distance) <= 30
+
+        at_0800 = local.weekday() in {6, 0} and near(8 * 60)
+        at_1600 = local.weekday() in {1, 2, 3} and near(16 * 60)
+        at_2130 = near(21 * 60 + 30)
+        return {
+            "sun_mon_0800": at_0800,
+            "tue_thu_1600": at_1600,
+            "0816": at_0800 or at_1600,
+            "0816_2130": at_0800 or at_1600 or at_2130,
+            "2130": at_2130,
+        }[self.scope]
+
+    def runtime_state(self) -> dict[str, Any]:
+        return {
+            "version": self.STATE_VERSION,
+            "threshold_atr": str(self.threshold_atr),
+            "window_bars": self.window_bars,
+            "scope": self.scope,
+            "pending_exit_stop": _string_or_none(self.pending_exit_stop),
+            "anchor": _string_or_none(self.anchor),
+            "frozen_stop": _string_or_none(self.frozen_stop),
+            "first_bar_ms": self.first_bar_ms,
+            "last_bar_ms": self.last_bar_ms,
+            "signal_count": self.signal_count,
+        }
+
+    def restore_runtime(self, state: dict[str, Any] | None) -> None:
+        if not state:
+            return
+        if (
+            int(state.get("version", 0)) != self.STATE_VERSION
+            or Decimal(str(state.get("threshold_atr"))) != self.threshold_atr
+            or int(state.get("window_bars", 0)) != self.window_bars
+            or state.get("scope") != self.scope
+        ):
+            return
+        self.pending_exit_stop = _decimal_or_none(state.get("pending_exit_stop"))
+        self.anchor = _decimal_or_none(state.get("anchor"))
+        self.frozen_stop = _decimal_or_none(state.get("frozen_stop"))
+        self.first_bar_ms = _int_or_none(state.get("first_bar_ms"))
+        self.last_bar_ms = _int_or_none(state.get("last_bar_ms"))
+        self.signal_count = int(state.get("signal_count", 0))
 
 
 class ATRProfitProtection:
@@ -783,6 +954,10 @@ def _decimal_or_none(value: Any) -> Decimal | None:
 
 def _string_or_none(value: Decimal | None) -> str | None:
     return None if value is None else str(value)
+
+
+def _int_or_none(value: Any) -> int | None:
+    return None if value is None else int(value)
 
 
 def _common_block_reason(

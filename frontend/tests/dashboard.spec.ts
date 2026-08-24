@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 test('paper console renders operational views and switches to the protected live account', async ({ page }) => {
+  test.setTimeout(150_000)
   const consoleErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text())
@@ -10,12 +11,18 @@ test('paper console renders operational views and switches to the protected live
   await expect(page.getByRole('heading', { name: '模拟交易' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'PAPER' })).toHaveClass(/active/)
   await expect(page.getByRole('region', { name: 'SOXL 合约实盘就绪状态' })).toHaveCount(0)
-  await expect(page.getByRole('heading', { name: 'SOXL/USDT PERP LONG ONLY' })).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('heading', { name: 'SOXL/USDT PERP LONG ONLY' })).toBeVisible({ timeout: 30_000 })
   await expect(page.getByText('LONG ONLY', { exact: true })).toBeVisible()
   const paperAccounts = page.locator('.account-switch button')
-  await expect(paperAccounts).toHaveCount(2)
+  await expect(paperAccounts).toHaveCount(3)
   await expect(paperAccounts.nth(0)).toHaveText('SOXL/USDT PERP LONG ONLY')
-  await expect(paperAccounts.nth(1)).toHaveText('BTC/ETH CALENDAR ROUTER')
+  await expect(paperAccounts.nth(1)).toHaveText('SOXL/USDT PERP LONG ONLY + SESSION REENTRY')
+  await expect(paperAccounts.nth(2)).toHaveText('BTC/ETH CALENDAR ROUTER')
+  await page.getByRole('button', { name: 'SOXL/USDT PERP LONG ONLY + SESSION REENTRY' }).click()
+  await expect(
+    page.getByRole('heading', { name: 'SOXL/USDT PERP LONG ONLY + SESSION REENTRY' }),
+  ).toBeVisible()
+  await expect(page.getByText('LONG ONLY', { exact: true })).toBeVisible()
   await expect(page.getByText('2x isolated')).toHaveCount(0)
   await expect(page.getByText('当前资金费')).toBeVisible()
   await page.getByRole('button', { name: 'BTC/ETH CALENDAR ROUTER', exact: true }).click()
@@ -126,6 +133,7 @@ test('paper console renders operational views and switches to the protected live
 })
 
 test('returns and warehouse reuse one browser snapshot per UTC day', async ({ page }) => {
+  test.setTimeout(90_000)
   let returnsCalls = 0
   let warehouseCalls = 0
   const now = Date.now()
@@ -191,6 +199,7 @@ test('returns and warehouse reuse one browser snapshot per UTC day', async ({ pa
   expect(warehouseCalls).toBe(1)
 
   await page.reload()
+  await expect(page.getByRole('heading', { name: 'SOXL/USDT PERP LONG ONLY' })).toBeVisible({ timeout: 30_000 })
   await page.getByRole('button', { name: /收益明细/ }).click()
   await expect(page.getByText('近 30 日收益')).toBeVisible()
   await page.getByRole('button', { name: /仓库/ }).click()

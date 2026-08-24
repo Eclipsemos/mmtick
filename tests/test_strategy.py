@@ -1,9 +1,15 @@
+from datetime import UTC, datetime
 from decimal import Decimal
 
 import pytest
 
 from mastermind_tick.models import Bar, Side, Tick
-from mastermind_tick.strategy import ATRProfitProtection, ATRTickStrategy, wilder_atr
+from mastermind_tick.strategy import (
+    ATRProfitProtection,
+    ATRTickStrategy,
+    SessionRecoveryReentry,
+    wilder_atr,
+)
 
 BAR_MS = 900_000
 
@@ -70,6 +76,49 @@ def tick(event_id: str, timestamp_ms: int, price: float) -> Tick:
         quantity=Decimal("1"),
         source="test",
     )
+
+
+def test_session_reentry_waits_for_next_bar_and_restores_state() -> None:
+    rule = SessionRecoveryReentry(0.5, 2, "0816_2130")
+    exit_ms = int(datetime(2026, 8, 11, 8, 5, tzinfo=UTC).timestamp() * 1000)
+    exit_bar_ms = exit_ms // BAR_MS * BAR_MS
+
+    rule.capture_exit(exit_ms, Decimal("99"))
+    rule.on_fill(
+        filled=True,
+        reduce_only=True,
+        fill_price=Decimal("98"),
+        timestamp_ms=exit_ms,
+        bar_ms=BAR_MS,
+    )
+    restored = SessionRecoveryReentry(0.5, 2, "0816_2130")
+    restored.restore_runtime(rule.runtime_state())
+
+    assert restored.signal(
+        tick("same-bar", exit_bar_ms + BAR_MS - 1, 100),
+        atr=Decimal("2"),
+        trend_efficiency=Decimal("0.3"),
+        minimum_trend_efficiency=Decimal("0.25"),
+        action_locked=False,
+        has_position=False,
+        has_pending_order=False,
+        bar_ms=BAR_MS,
+    ) is None
+    signal = restored.signal(
+        tick("recovered", exit_bar_ms + BAR_MS, 100),
+        atr=Decimal("2"),
+        trend_efficiency=Decimal("0.3"),
+        minimum_trend_efficiency=Decimal("0.25"),
+        action_locked=False,
+        has_position=False,
+        has_pending_order=False,
+        bar_ms=BAR_MS,
+    )
+
+    assert signal is not None
+    assert signal.reason == "session_recovery_reentry"
+    assert signal.trailing_stop == Decimal("99")
+    assert restored.signal_count == 1
 
 
 def warmed_strategy() -> ATRTickStrategy:
