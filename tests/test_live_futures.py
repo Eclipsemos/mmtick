@@ -4,7 +4,11 @@ from decimal import Decimal
 
 import pytest
 
-from mastermind_tick.binance_futures import BinanceFuturesAPIError, FuturesSymbolRules
+from mastermind_tick.binance_futures import (
+    BinanceFuturesAPIError,
+    BinanceFuturesRateLimitError,
+    FuturesSymbolRules,
+)
 from mastermind_tick.config import load_settings
 from mastermind_tick.live_futures import LiveFuturesTrader, LiveOperationError
 from mastermind_tick.live_futures_reporting import live_futures_fills
@@ -1229,3 +1233,538 @@ def test_observe_only_cross_is_persisted_as_shadow_event(tmp_path) -> None:
     assert event["code"] == "SHADOW_CROSS"
     assert event["timestamp_ms"] == tick.timestamp_ms
     assert event["details_json"]["direction"] == "UP"
+
+
+def test_reconciliation_scopes_open_orders_and_throttles_static_account_gates(
+    tmp_path,
+) -> None:
+    class CountingClient(FakeFuturesClient):
+        def __init__(self):
+            super().__init__()
+            self.open_order_symbols: list[str | None] = []
+            self.restriction_calls = 0
+            self.position_mode_calls = 0
+            self.multi_asset_calls = 0
+
+        async def open_orders(self, symbol: str | None = None) -> list[dict]:
+            self.open_order_symbols.append(symbol)
+            return []
+
+        async def api_restrictions(self) -> dict:
+            self.restriction_calls += 1
+            return await super().api_restrictions()
+
+        async def position_mode(self) -> dict:
+            self.position_mode_calls += 1
+            return await super().position_mode()
+
+        async def multi_assets_mode(self) -> dict:
+            self.multi_asset_calls += 1
+            return await super().multi_assets_mode()
+
+    settings = futures_settings(tmp_path)
+    client = CountingClient()
+    trader = LiveFuturesTrader(
+        settings,
+        LiveStore(settings.live_futures.database_path),
+        client=client,  # type: ignore[arg-type]
+    )
+
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+    asyncio.run(trader.reconcile())
+
+    assert client.open_order_symbols == ["SOXLUSDT", "SOXLUSDT"]
+    assert client.restriction_calls == 1
+    assert client.position_mode_calls == 1
+    assert client.multi_asset_calls == 1
+
+
+def test_reduce_only_exit_is_persisted_during_reconciliation_failure_then_executed_once(
+    tmp_path, monkeypatch
+) -> None:
+    class ExitStrategy:
+        bar_ms = 900_000
+        last_cross_at_ms = None
+        last_cross = None
+        last_cross_result = None
+        last_cross_reason = None
+
+        def __init__(self):
+            self.submissions = 0
+            self.fills = 0
+
+        def on_tick(self, tick, *, emit_signals, lock_on_signal, **_kwargs):
+            assert lock_on_signal is False
+            if not emit_signals:
+                return None
+            return StrategySignal(
+                side=Side.SELL,
+                reason="price_crossed_below_atr_stop",
+                signal_price=tick.price,
+                trailing_stop=Decimal("121"),
+                atr=Decimal("2"),
+                bar_start_ms=tick.timestamp_ms // self.bar_ms * self.bar_ms,
+                tick_id=tick.event_id,
+                signal_at_ms=tick.timestamp_ms,
+                reduce_only=True,
+            )
+
+        def on_submit(self, _signal):
+            self.submissions += 1
+
+        def on_fill(self, _timestamp_ms, *, filled):
+            self.fills += int(filled)
+
+        def runtime_state(self):
+            return {}
+
+        def view(self):
+            class View:
+                trailing_stop = Decimal("121")
+                trend_filter_passed = True
+                atr = Decimal("2")
+                relation = "below"
+
+            return View()
+
+    settings = futures_settings(tmp_path, allow_orders=True, allow_short=False)
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
+    client = FakeFuturesClient(long_quantity="1.23")
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
+    store.set_metadata("managed_position", "true", 1_700_000_000_000)
+    trader = LiveFuturesTrader(settings, store, client=client)  # type: ignore[arg-type]
+    strategy = ExitStrategy()
+    trader.strategy = strategy  # type: ignore[assignment]
+    trader.profit_protection = None
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+    trader._mark_reconciliation_failed("RECONCILIATION_FAILED")
+    tick = Tick("exit-cross", 1_700_000_000_000, Decimal("119"), Decimal("1"), "test")
+
+    asyncio.run(trader.process_tick(tick))
+
+    intent = store.active_execution_intent(settings.live_futures.account_id)
+    assert intent is not None
+    assert intent["status"] == "PENDING"
+    assert intent["reduce_only"] == 1
+    assert client.market_order_calls == []
+    assert strategy.submissions == 0
+
+    asyncio.run(trader.reconcile())
+    asyncio.run(
+        trader.process_tick(replace(tick, event_id="duplicate", timestamp_ms=tick.timestamp_ms + 1))
+    )
+
+    assert len(client.market_order_calls) == 1
+    assert client.market_order_calls[0]["side"] == "SELL"
+    assert client.market_order_calls[0]["quantity"] == Decimal("1.23")
+    assert store.active_execution_intent(settings.live_futures.account_id) is None
+    assert store.execution_intents(settings.live_futures.account_id)[0]["status"] == "COMPLETED"
+    assert strategy.submissions == 1
+    assert strategy.fills == 1
+
+
+def test_reduce_only_exit_does_not_request_book_ticker(tmp_path, monkeypatch) -> None:
+    class CountingBookClient(FakeFuturesClient):
+        def __init__(self):
+            super().__init__(long_quantity="0.01")
+            self.book_calls = 0
+
+        async def book_ticker(self, symbol: str) -> dict:
+            self.book_calls += 1
+            return await super().book_ticker(symbol)
+
+    settings = futures_settings(tmp_path, allow_orders=True, allow_short=False)
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
+    client = CountingBookClient()
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", 1_700_000_000_000)
+    store.set_metadata("managed_position", "true", 1_700_000_000_000)
+    trader = LiveFuturesTrader(settings, store, client=client)  # type: ignore[arg-type]
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+    before = client.book_calls
+    tick = Tick("tiny-exit", 1_700_000_000_000, Decimal("120"), Decimal("1"), "test")
+    signal = StrategySignal(
+        side=Side.SELL,
+        reason="price_crossed_below_atr_stop",
+        signal_price=tick.price,
+        trailing_stop=Decimal("121"),
+        atr=Decimal("2"),
+        bar_start_ms=tick.timestamp_ms // 900_000 * 900_000,
+        tick_id=tick.event_id,
+        reduce_only=True,
+    )
+
+    asyncio.run(trader._submit_signal(signal, tick))
+
+    assert client.book_calls == before
+    assert client.market_order_calls[0]["quantity"] == Decimal("0.01")
+
+
+def test_entry_slippage_intent_retries_without_consuming_lock(tmp_path, monkeypatch) -> None:
+    class EntryStrategy:
+        bar_ms = 900_000
+        last_cross_at_ms = None
+        last_cross = None
+        last_cross_result = None
+        last_cross_reason = None
+
+        def __init__(self):
+            self.emitted = False
+            self.submissions = 0
+
+        def on_tick(self, tick, *, emit_signals, lock_on_signal, **_kwargs):
+            assert lock_on_signal is False
+            if self.emitted or not emit_signals:
+                return None
+            self.emitted = True
+            return StrategySignal(
+                side=Side.BUY,
+                reason="price_crossed_above_atr_stop",
+                signal_price=tick.price,
+                trailing_stop=Decimal("115"),
+                atr=Decimal("2"),
+                bar_start_ms=tick.timestamp_ms // self.bar_ms * self.bar_ms,
+                tick_id=tick.event_id,
+                signal_at_ms=tick.timestamp_ms,
+            )
+
+        def on_submit(self, _signal):
+            self.submissions += 1
+
+        def on_fill(self, *_args, **_kwargs):
+            return None
+
+        def runtime_state(self):
+            return {}
+
+        def view(self):
+            class View:
+                trailing_stop = Decimal("115")
+                trend_filter_passed = True
+                atr = Decimal("2")
+                relation = "above"
+
+            return View()
+
+    class SlippageClient(FakeFuturesClient):
+        adverse = True
+
+        async def book_ticker(self, symbol: str) -> dict:
+            if self.adverse:
+                return {"symbol": symbol, "bidPrice": "119.9", "askPrice": "130"}
+            return await super().book_ticker(symbol)
+
+    clock = 1_700_000_000_000
+    monkeypatch.setattr("mastermind_tick.live_futures._now_ms", lambda: clock)
+    settings = futures_settings(tmp_path, allow_orders=True, allow_short=False)
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
+    client = SlippageClient()
+    client.adverse = False
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", clock)
+    trader = LiveFuturesTrader(settings, store, client=client)  # type: ignore[arg-type]
+    strategy = EntryStrategy()
+    trader.strategy = strategy  # type: ignore[assignment]
+    trader.profit_protection = None
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+    client.adverse = True
+    tick = Tick("entry-cross", clock, Decimal("120"), Decimal("1"), "test")
+
+    asyncio.run(trader.process_tick(tick))
+
+    intent = store.active_execution_intent(settings.live_futures.account_id)
+    assert intent is not None
+    assert intent["status"] == "PENDING"
+    assert intent["last_error"] == "SLIPPAGE_LIMIT"
+    assert client.market_order_calls == []
+    assert strategy.submissions == 0
+
+    clock += settings.live_futures.reconcile_seconds * 1000 + 1
+    client.adverse = False
+    asyncio.run(
+        trader.process_tick(
+            replace(tick, event_id="entry-retry", timestamp_ms=tick.timestamp_ms + 1)
+        )
+    )
+
+    assert len(client.market_order_calls) == 1
+    assert strategy.submissions == 1
+    assert store.execution_intents(settings.live_futures.account_id)[0]["status"] == "COMPLETED"
+
+
+def test_rate_limited_reduce_only_intent_waits_for_reconciliation_before_retry(
+    tmp_path, monkeypatch
+) -> None:
+    class RateLimitedClient(FakeFuturesClient):
+        def __init__(self):
+            super().__init__(long_quantity="1.23")
+            self.cooldown = 0.0
+            self.submission_attempts = 0
+
+        @property
+        def rate_limit_cooldown_seconds(self) -> float:
+            return self.cooldown
+
+        def rate_limit_status(self) -> dict:
+            return {"cooldown_seconds": self.cooldown, "used_weight": {}}
+
+        async def market_order(self, **kwargs) -> dict:
+            self.submission_attempts += 1
+            if self.submission_attempts == 1:
+                self.market_order_calls.append(kwargs)
+                self.cooldown = 30.0
+                raise BinanceFuturesRateLimitError(429, -1003, "too many requests", 30)
+            return await super().market_order(**kwargs)
+
+    clock = 1_700_000_000_000
+    monkeypatch.setattr("mastermind_tick.live_futures._now_ms", lambda: clock)
+    settings = futures_settings(tmp_path, allow_orders=True, allow_short=False)
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
+    client = RateLimitedClient()
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", clock)
+    store.set_metadata("managed_position", "true", clock)
+    trader = LiveFuturesTrader(settings, store, client=client)  # type: ignore[arg-type]
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+    tick = Tick("rate-limited-exit", clock, Decimal("119"), Decimal("1"), "test")
+    signal = StrategySignal(
+        side=Side.SELL,
+        reason="price_crossed_below_atr_stop",
+        signal_price=tick.price,
+        trailing_stop=Decimal("121"),
+        atr=Decimal("2"),
+        bar_start_ms=tick.timestamp_ms // 900_000 * 900_000,
+        tick_id=tick.event_id,
+        signal_at_ms=tick.timestamp_ms,
+        reduce_only=True,
+    )
+    trader._create_execution_intent(signal, tick)
+
+    asyncio.run(trader._attempt_active_intent(tick))
+
+    intent = store.active_execution_intent(settings.live_futures.account_id)
+    assert intent is not None
+    assert intent["status"] == "PENDING"
+    assert intent["last_error"] == "RATE_LIMIT_BACKOFF:30"
+    assert trader.reconciliation_ok is False
+    assert "RATE_LIMIT_BACKOFF" in trader.block_reasons
+    assert client.submission_attempts == 1
+
+    asyncio.run(trader.process_tick(replace(tick, event_id="during-cooldown")))
+    assert client.submission_attempts == 1
+
+    clock += 31_000
+    client.cooldown = 0.0
+    asyncio.run(trader.reconcile())
+
+    assert client.submission_attempts == 2
+    assert len(client.market_order_calls) == 2
+    assert store.active_execution_intent(settings.live_futures.account_id) is None
+    assert store.execution_intents(settings.live_futures.account_id)[0]["status"] == "COMPLETED"
+
+
+def test_restart_recovers_persisted_reduce_only_intent(tmp_path, monkeypatch) -> None:
+    clock = 1_700_000_000_000
+    monkeypatch.setattr("mastermind_tick.live_futures._now_ms", lambda: clock)
+    settings = futures_settings(tmp_path, allow_orders=True, allow_short=False)
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", clock)
+    store.set_metadata("managed_position", "true", clock)
+    store.create_execution_intent(
+        intent_id="intent-restart-exit",
+        account_id=settings.live_futures.account_id,
+        symbol="SOXLUSDT",
+        side="SELL",
+        reduce_only=True,
+        reason="price_crossed_below_atr_stop",
+        strategy_name=settings.live_futures.strategy_name,
+        signal_price="119",
+        trailing_stop="121",
+        atr="2",
+        bar_start_ms=clock // 900_000 * 900_000,
+        signal_at_ms=clock,
+        expires_at_ms=None,
+        created_at_ms=clock,
+    )
+    client = FakeFuturesClient(long_quantity="1.23")
+    restarted = LiveFuturesTrader(settings, store, client=client)  # type: ignore[arg-type]
+
+    asyncio.run(restarted.public_preflight())
+    asyncio.run(restarted.reconcile())
+
+    assert len(client.market_order_calls) == 1
+    assert client.market_order_calls[0]["side"] == "SELL"
+    assert store.active_execution_intent(settings.live_futures.account_id) is None
+    assert store.execution_intent("intent-restart-exit")["status"] == "COMPLETED"
+
+
+def test_unknown_order_response_is_reconciled_without_duplicate_submission(
+    tmp_path, monkeypatch
+) -> None:
+    class UnknownResponseClient(FakeFuturesClient):
+        async def market_order(self, **kwargs) -> dict:
+            self.market_order_calls.append(kwargs)
+            raise TimeoutError("connection closed after POST")
+
+    clock = 1_700_000_000_000
+    monkeypatch.setattr("mastermind_tick.live_futures._now_ms", lambda: clock)
+    settings = futures_settings(tmp_path, allow_orders=True, allow_short=False)
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
+    client = UnknownResponseClient(long_quantity="1.23")
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", clock)
+    store.set_metadata("managed_position", "true", clock)
+    trader = LiveFuturesTrader(settings, store, client=client)  # type: ignore[arg-type]
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+    tick = Tick("unknown-exit", clock, Decimal("119"), Decimal("1"), "test")
+    signal = StrategySignal(
+        side=Side.SELL,
+        reason="price_crossed_below_atr_stop",
+        signal_price=tick.price,
+        trailing_stop=Decimal("121"),
+        atr=Decimal("2"),
+        bar_start_ms=tick.timestamp_ms // 900_000 * 900_000,
+        tick_id=tick.event_id,
+        signal_at_ms=tick.timestamp_ms,
+        reduce_only=True,
+    )
+    trader._create_execution_intent(signal, tick)
+
+    asyncio.run(trader._attempt_active_intent(tick))
+    asyncio.run(trader.process_tick(replace(tick, event_id="duplicate-after-timeout")))
+
+    assert len(client.market_order_calls) == 1
+    assert store.pending_orders(settings.live_futures.account_id)[0]["status"] == "SUBMITTING"
+    assert store.active_execution_intent(settings.live_futures.account_id)["status"] == "SUBMITTING"
+
+    clock += settings.live_futures.order_timeout_seconds * 1000 + 1
+    asyncio.run(trader.reconcile())
+
+    assert len(client.market_order_calls) == 1
+    assert store.pending_orders(settings.live_futures.account_id) == []
+    assert store.execution_intents(settings.live_futures.account_id)[0]["status"] == "COMPLETED"
+
+
+def test_partial_reduce_only_fill_reconciles_remaining_position_before_retry(
+    tmp_path, monkeypatch
+) -> None:
+    class PartialFillClient(FakeFuturesClient):
+        def __init__(self):
+            super().__init__(long_quantity="1.23")
+            self.submission_count = 0
+
+        async def market_order(self, **kwargs) -> dict:
+            self.submission_count += 1
+            self.market_order_calls.append(kwargs)
+            if self.submission_count == 1:
+                return {
+                    "symbol": kwargs["symbol"],
+                    "orderId": 71,
+                    "clientOrderId": kwargs["client_order_id"],
+                    "status": "NEW",
+                    "executedQty": "0",
+                    "cumQuote": "0",
+                }
+            return {
+                "symbol": kwargs["symbol"],
+                "orderId": 72,
+                "clientOrderId": kwargs["client_order_id"],
+                "status": "FILLED",
+                "executedQty": str(kwargs["quantity"]),
+                "cumQuote": str(kwargs["quantity"] * Decimal("120")),
+            }
+
+        async def query_order(self, symbol: str, *, client_order_id: str) -> dict:
+            return {
+                "symbol": symbol,
+                "orderId": 71,
+                "clientOrderId": client_order_id,
+                "status": "PARTIALLY_FILLED",
+                "executedQty": "0.50",
+                "cumQuote": "60",
+            }
+
+        async def cancel_order(self, symbol: str, client_order_id: str) -> dict:
+            return {
+                "symbol": symbol,
+                "orderId": 71,
+                "clientOrderId": client_order_id,
+                "status": "CANCELED",
+                "executedQty": "0.50",
+                "cumQuote": "60",
+            }
+
+        async def user_trades(self, symbol: str, *, order_id: int | None = None) -> list[dict]:
+            if order_id is None:
+                return []
+            quantity = "0.50" if order_id == 71 else "0.73"
+            return [
+                {
+                    "symbol": symbol,
+                    "id": order_id,
+                    "orderId": order_id,
+                    "time": 1_700_000_001_000 + order_id,
+                    "side": "SELL",
+                    "positionSide": "LONG",
+                    "price": "120",
+                    "qty": quantity,
+                    "quoteQty": str(Decimal(quantity) * Decimal("120")),
+                    "commission": "0.05",
+                    "commissionAsset": "USDT",
+                    "realizedPnl": "0",
+                }
+            ]
+
+    clock = 1_700_000_000_000
+    monkeypatch.setattr("mastermind_tick.live_futures._now_ms", lambda: clock)
+    settings = futures_settings(tmp_path, allow_orders=True, allow_short=False)
+    monkeypatch.setenv(settings.live_futures.activation_env, settings.live_futures.activation_value)
+    client = PartialFillClient()
+    store = LiveStore(settings.live_futures.database_path)
+    store.set_metadata("futures_test_order_passed", "true", clock)
+    store.set_metadata("managed_position", "true", clock)
+    trader = LiveFuturesTrader(settings, store, client=client)  # type: ignore[arg-type]
+    asyncio.run(trader.public_preflight())
+    asyncio.run(trader.reconcile())
+    tick = Tick("partial-exit", clock, Decimal("119"), Decimal("1"), "test")
+    signal = StrategySignal(
+        side=Side.SELL,
+        reason="price_crossed_below_atr_stop",
+        signal_price=tick.price,
+        trailing_stop=Decimal("121"),
+        atr=Decimal("2"),
+        bar_start_ms=tick.timestamp_ms // 900_000 * 900_000,
+        tick_id=tick.event_id,
+        signal_at_ms=tick.timestamp_ms,
+        reduce_only=True,
+    )
+    trader._create_execution_intent(signal, tick)
+    asyncio.run(trader._attempt_active_intent(tick))
+
+    clock += settings.live_futures.order_timeout_seconds * 1000 + 1
+    client.long_quantity = "0.73"
+    asyncio.run(trader.reconcile())
+
+    active = store.active_execution_intent(settings.live_futures.account_id)
+    assert active is not None
+    assert active["status"] == "PENDING"
+    assert [call["quantity"] for call in client.market_order_calls] == [Decimal("1.23")]
+
+    clock += settings.live_futures.reconcile_seconds * 1000 + 1
+    asyncio.run(trader.reconcile())
+
+    assert [call["quantity"] for call in client.market_order_calls] == [
+        Decimal("1.23"),
+        Decimal("0.73"),
+    ]
+    assert store.fill_count(settings.live_futures.account_id) == 2
+    assert store.active_execution_intent(settings.live_futures.account_id) is None
+    assert store.execution_intents(settings.live_futures.account_id)[0]["status"] == "COMPLETED"

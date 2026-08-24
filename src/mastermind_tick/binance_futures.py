@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import hmac
+import re
 import time
 from dataclasses import dataclass
 from decimal import ROUND_DOWN, Decimal
@@ -20,6 +21,20 @@ class BinanceFuturesAPIError(RuntimeError):
         self.status_code = status_code
         self.code = code
         self.message = message
+
+
+class BinanceFuturesRateLimitError(BinanceFuturesAPIError):
+    """A shared IP limit or ban is active and requests must stop until retry time."""
+
+    def __init__(
+        self,
+        status_code: int,
+        code: int | None,
+        message: str,
+        retry_after_seconds: float,
+    ):
+        super().__init__(status_code, code, message)
+        self.retry_after_seconds = max(retry_after_seconds, 0.0)
 
 
 @dataclass(frozen=True)
@@ -81,10 +96,22 @@ class BinanceFuturesClient:
         self._time_sync_lock = asyncio.Lock()
         self._owns_client = client is None
         self._client = client or httpx.AsyncClient(timeout=20, trust_env=True)
+        self._rate_limit_until = 0.0
+        self._used_weight_headers: dict[str, int] = {}
 
     @property
     def has_credentials(self) -> bool:
         return bool(self.api_key and self._api_secret)
+
+    @property
+    def rate_limit_cooldown_seconds(self) -> float:
+        return max(self._rate_limit_until - time.monotonic(), 0.0)
+
+    def rate_limit_status(self) -> dict[str, Any]:
+        return {
+            "cooldown_seconds": self.rate_limit_cooldown_seconds,
+            "used_weight": dict(self._used_weight_headers),
+        }
 
     async def close(self) -> None:
         if self._owns_client:
@@ -260,6 +287,14 @@ class BinanceFuturesClient:
         api_key_required: bool = False,
         base_url: str | None = None,
     ) -> Any:
+        cooldown = self.rate_limit_cooldown_seconds
+        if cooldown > 0:
+            raise BinanceFuturesRateLimitError(
+                429,
+                -1003,
+                "Local Binance rate-limit cooldown is active",
+                cooldown,
+            )
         headers = {
             "X-MBX-APIKEY": self.api_key
         } if api_key_required and self.api_key else None
@@ -273,10 +308,51 @@ class BinanceFuturesClient:
             payload = response.json()
         except ValueError:
             payload = {"msg": response.text}
+        self._record_weight_headers(response)
         if response.is_error:
-            raise BinanceFuturesAPIError(
-                response.status_code,
-                payload.get("code") if isinstance(payload, dict) else None,
-                str(payload.get("msg", payload)) if isinstance(payload, dict) else str(payload),
+            code = payload.get("code") if isinstance(payload, dict) else None
+            message = (
+                str(payload.get("msg", payload)) if isinstance(payload, dict) else str(payload)
             )
+            if response.status_code in {418, 429}:
+                retry_after = _retry_after_seconds(response, message)
+                self._rate_limit_until = max(
+                    self._rate_limit_until,
+                    time.monotonic() + retry_after,
+                )
+                raise BinanceFuturesRateLimitError(
+                    response.status_code,
+                    code,
+                    message,
+                    retry_after,
+                )
+            raise BinanceFuturesAPIError(response.status_code, code, message)
         return payload
+
+    def _record_weight_headers(self, response: httpx.Response) -> None:
+        for name, value in response.headers.items():
+            normalized = name.lower()
+            if "used-weight" not in normalized:
+                continue
+            try:
+                self._used_weight_headers[normalized] = int(value)
+            except ValueError:
+                continue
+
+
+def _retry_after_seconds(response: httpx.Response, message: str) -> float:
+    """Return a conservative cooldown from Retry-After or Binance's ban timestamp."""
+    candidates: list[float] = []
+    retry_after = response.headers.get("Retry-After")
+    if retry_after is not None:
+        try:
+            candidates.append(float(retry_after))
+        except ValueError:
+            pass
+    match = re.search(r"banned until\s+(\d{10,16})", message, flags=re.IGNORECASE)
+    if match:
+        ban_timestamp = int(match.group(1))
+        ban_seconds = ban_timestamp / 1000 if ban_timestamp > 10_000_000_000 else ban_timestamp
+        candidates.append(ban_seconds - time.time() + 1.0)
+    default = 120.0 if response.status_code == 418 else 30.0
+    return max([default, *candidates, 1.0])

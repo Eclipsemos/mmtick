@@ -37,6 +37,31 @@ CREATE TABLE IF NOT EXISTS live_orders (
 CREATE INDEX IF NOT EXISTS idx_live_orders_status
 ON live_orders(account_id, status, updated_at_ms);
 
+CREATE TABLE IF NOT EXISTS live_execution_intents (
+    intent_id TEXT PRIMARY KEY,
+    account_id TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    side TEXT NOT NULL,
+    reduce_only INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    strategy_name TEXT NOT NULL,
+    signal_price TEXT NOT NULL,
+    trailing_stop TEXT NOT NULL,
+    atr TEXT NOT NULL,
+    bar_start_ms INTEGER NOT NULL,
+    signal_at_ms INTEGER NOT NULL,
+    expires_at_ms INTEGER,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    last_error TEXT,
+    client_order_id TEXT,
+    created_at_ms INTEGER NOT NULL,
+    updated_at_ms INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_live_execution_intents_status
+ON live_execution_intents(account_id, status, updated_at_ms);
+
 CREATE TABLE IF NOT EXISTS live_fills (
     trade_id INTEGER NOT NULL,
     order_id INTEGER NOT NULL,
@@ -186,6 +211,8 @@ class LiveStore:
             connection.execute(
                 "ALTER TABLE live_orders ADD COLUMN reduce_only INTEGER NOT NULL DEFAULT 0"
             )
+        if "execution_intent_id" not in existing:
+            connection.execute("ALTER TABLE live_orders ADD COLUMN execution_intent_id TEXT")
 
     @contextmanager
     def connection(self) -> Iterator[sqlite3.Connection]:
@@ -248,16 +275,17 @@ class LiveStore:
         requested_quote_quantity: str | None,
         position_side: str | None = None,
         reduce_only: bool = False,
+        execution_intent_id: str | None = None,
     ) -> bool:
         with self.connection() as connection:
             cursor = connection.execute(
                 """
                 INSERT OR IGNORE INTO live_orders (
                     client_order_id, account_id, symbol, side, position_side,
-                    reduce_only, status, reason,
+                    reduce_only, execution_intent_id, status, reason,
                     signal_price, requested_quantity, requested_quote_quantity,
                     signal_at_ms, updated_at_ms
-                ) VALUES (?, ?, ?, ?, ?, ?, 'CREATED', ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 'CREATED', ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     client_order_id,
@@ -266,6 +294,7 @@ class LiveStore:
                     side,
                     position_side,
                     int(reduce_only),
+                    execution_intent_id,
                     reason,
                     signal_price,
                     requested_quantity,
@@ -275,6 +304,117 @@ class LiveStore:
                 ),
             )
             return cursor.rowcount == 1
+
+    def create_execution_intent(
+        self,
+        *,
+        intent_id: str,
+        account_id: str,
+        symbol: str,
+        side: str,
+        reduce_only: bool,
+        reason: str,
+        strategy_name: str,
+        signal_price: str,
+        trailing_stop: str,
+        atr: str,
+        bar_start_ms: int,
+        signal_at_ms: int,
+        expires_at_ms: int | None,
+        created_at_ms: int,
+    ) -> bool:
+        with self.connection() as connection:
+            cursor = connection.execute(
+                """
+                INSERT OR IGNORE INTO live_execution_intents (
+                    intent_id, account_id, symbol, side, reduce_only, status,
+                    reason, strategy_name, signal_price, trailing_stop, atr,
+                    bar_start_ms, signal_at_ms, expires_at_ms, created_at_ms,
+                    updated_at_ms
+                ) VALUES (?, ?, ?, ?, ?, 'PENDING', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    intent_id,
+                    account_id,
+                    symbol,
+                    side,
+                    int(reduce_only),
+                    reason,
+                    strategy_name,
+                    signal_price,
+                    trailing_stop,
+                    atr,
+                    bar_start_ms,
+                    signal_at_ms,
+                    expires_at_ms,
+                    created_at_ms,
+                    created_at_ms,
+                ),
+            )
+            return cursor.rowcount == 1
+
+    def execution_intent(self, intent_id: str) -> dict[str, Any] | None:
+        with self.connection() as connection:
+            row = connection.execute(
+                "SELECT * FROM live_execution_intents WHERE intent_id = ?",
+                (intent_id,),
+            ).fetchone()
+        return dict(row) if row else None
+
+    def active_execution_intent(self, account_id: str) -> dict[str, Any] | None:
+        with self.connection() as connection:
+            row = connection.execute(
+                """
+                SELECT * FROM live_execution_intents
+                WHERE account_id = ?
+                  AND status IN ('PENDING', 'VALIDATING', 'SUBMITTING', 'ACCEPTED')
+                ORDER BY reduce_only DESC, created_at_ms, intent_id LIMIT 1
+                """,
+                (account_id,),
+            ).fetchone()
+        return dict(row) if row else None
+
+    def update_execution_intent(
+        self,
+        intent_id: str,
+        *,
+        status: str,
+        updated_at_ms: int,
+        attempts: int | None = None,
+        last_error: str | None = None,
+        client_order_id: str | None = None,
+    ) -> None:
+        with self.connection() as connection:
+            connection.execute(
+                """
+                UPDATE live_execution_intents SET
+                    status = ?,
+                    attempts = COALESCE(?, attempts),
+                    last_error = ?,
+                    client_order_id = COALESCE(?, client_order_id),
+                    updated_at_ms = ?
+                WHERE intent_id = ?
+                """,
+                (
+                    status,
+                    attempts,
+                    last_error,
+                    client_order_id,
+                    updated_at_ms,
+                    intent_id,
+                ),
+            )
+
+    def execution_intents(self, account_id: str, limit: int = 100) -> list[dict[str, Any]]:
+        with self.connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT * FROM live_execution_intents WHERE account_id = ?
+                ORDER BY created_at_ms DESC, intent_id DESC LIMIT ?
+                """,
+                (account_id, limit),
+            ).fetchall()
+        return [dict(row) for row in rows]
 
     def update_order(
         self,

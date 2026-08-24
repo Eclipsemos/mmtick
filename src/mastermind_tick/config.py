@@ -131,6 +131,7 @@ class LiveFuturesSettings:
     profit_trailing_atr: float = 0.0
     continuation_reentry_atr: float = 0.0
     reconcile_seconds: int = 5
+    account_gate_sync_seconds: int = 300
     trade_sync_seconds: int = 60
     order_timeout_seconds: int = 30
     recv_window_ms: int = 5000
@@ -385,6 +386,7 @@ def load_settings(path: str | Path = "config/settings.toml") -> Settings:
     if (
         live_futures.max_orders_per_day < 0
         or live_futures.reconcile_seconds < 1
+        or live_futures.account_gate_sync_seconds < live_futures.reconcile_seconds
         or live_futures.trade_sync_seconds < live_futures.reconcile_seconds
     ):
         raise ValueError("live_futures frequency limits are invalid")

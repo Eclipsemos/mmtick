@@ -507,6 +507,7 @@ class ATRTickStrategy:
         allow_short: bool = False,
         is_short: bool = False,
         emit_signals: bool = True,
+        lock_on_signal: bool = True,
     ) -> StrategySignal | None:
         bar_start = tick.timestamp_ms // self.bar_ms * self.bar_ms
         if (
@@ -577,6 +578,7 @@ class ATRTickStrategy:
                 bar_start,
                 emit_signals=emit_signals,
                 has_pending_order=has_pending_order,
+                lock_on_signal=lock_on_signal,
             )
             if reversal_signal is not None:
                 return reversal_signal
@@ -607,6 +609,7 @@ class ATRTickStrategy:
                     "price_crossed_above_atr_stop",
                     reduce_only=reduce_only,
                     reversal_after="LONG" if reduce_only else None,
+                    lock_on_signal=lock_on_signal,
                 )
             self._record_cross("UP", tick.timestamp_ms, "BLOCKED", blocked_reason)
 
@@ -630,6 +633,7 @@ class ATRTickStrategy:
                     "price_crossed_below_atr_stop",
                     reduce_only=reduce_only,
                     reversal_after="SHORT" if allow_short and reduce_only else None,
+                    lock_on_signal=lock_on_signal,
                 )
             self._record_cross("DOWN", tick.timestamp_ms, "BLOCKED", blocked_reason)
 
@@ -641,6 +645,7 @@ class ATRTickStrategy:
             has_pending_order=has_pending_order,
             allow_short=allow_short,
             emit_signals=emit_signals,
+            lock_on_signal=lock_on_signal,
         )
         if startup_signal is not None:
             return startup_signal
@@ -656,6 +661,7 @@ class ATRTickStrategy:
         has_pending_order: bool,
         allow_short: bool,
         emit_signals: bool,
+        lock_on_signal: bool,
     ) -> StrategySignal | None:
         """Align a fresh account once when it starts inside an established trend."""
         if self.startup_alignment_checked or not emit_signals:
@@ -678,7 +684,16 @@ class ATRTickStrategy:
             side,
             "startup_trend_alignment",
             reduce_only=False,
+            lock_on_signal=lock_on_signal,
         )
+
+    def on_submit(self, signal: StrategySignal) -> None:
+        """Consume the action lock only after an execution record reaches SUBMITTING."""
+        self.startup_alignment_checked = True
+        self.action_this_bar = True
+        self.last_action_bar_start_ms = signal.bar_start_ms
+        self.bought_this_bar = signal.side is Side.BUY
+        self.flattened_this_bar = signal.side is Side.SELL
 
     def on_fill(self, timestamp_ms: int, *, filled: bool) -> None:
         """Apply the one-action lock to the actual fill bar and arm delayed reversal."""
@@ -710,6 +725,7 @@ class ATRTickStrategy:
         *,
         emit_signals: bool,
         has_pending_order: bool,
+        lock_on_signal: bool,
     ) -> StrategySignal | None:
         if self.reversal_eligible_bar_ms != bar_start or self.reversal_anchor is None:
             return None
@@ -732,6 +748,7 @@ class ATRTickStrategy:
             side,
             f"confirmed_{direction}_reversal",
             reduce_only=False,
+            lock_on_signal=lock_on_signal,
         )
 
     def continuation_reentry_signal(
@@ -744,6 +761,7 @@ class ATRTickStrategy:
         threshold_atr: Decimal,
         has_pending_order: bool,
         emit_signals: bool = True,
+        lock_on_signal: bool = True,
     ) -> StrategySignal | None:
         """Re-enter the prior direction on the one bar after a completed exit."""
         if direction not in {"LONG", "SHORT"} or threshold_atr < 0:
@@ -775,6 +793,7 @@ class ATRTickStrategy:
             side,
             f"confirmed_{direction.lower()}_continuation",
             reduce_only=False,
+            lock_on_signal=lock_on_signal,
         )
 
     def _emit_signal(
@@ -787,12 +806,14 @@ class ATRTickStrategy:
         *,
         reduce_only: bool,
         reversal_after: str | None = None,
+        lock_on_signal: bool = True,
     ) -> StrategySignal:
         self.startup_alignment_checked = True
-        self.action_this_bar = True
-        self.last_action_bar_start_ms = bar_start
-        self.bought_this_bar = side is Side.BUY
-        self.flattened_this_bar = side is Side.SELL
+        if lock_on_signal:
+            self.action_this_bar = True
+            self.last_action_bar_start_ms = bar_start
+            self.bought_this_bar = side is Side.BUY
+            self.flattened_this_bar = side is Side.SELL
         if reversal_after is not None:
             self.reversal_direction = reversal_after
             self.reversal_anchor = tick.price

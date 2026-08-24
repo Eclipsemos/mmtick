@@ -4,8 +4,12 @@ import hmac
 from urllib.parse import parse_qs
 
 import httpx
+import pytest
 
-from mastermind_tick.binance_futures import BinanceFuturesClient
+from mastermind_tick.binance_futures import (
+    BinanceFuturesClient,
+    BinanceFuturesRateLimitError,
+)
 
 
 def test_time_sync_uses_cache_busting_nonce(monkeypatch) -> None:
@@ -130,4 +134,67 @@ def test_transfer_history_reads_futures_income_transfers(monkeypatch) -> None:
     assert query["incomeType"] == ["TRANSFER"]
     assert query["limit"] == ["1000"]
     assert result[0]["income"] == "1614.00000000"
+    asyncio.run(http.aclose())
+
+
+def test_rate_limit_sets_shared_cooldown_and_blocks_requests_locally(monkeypatch) -> None:
+    request_count = 0
+    monotonic = 100.0
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        nonlocal request_count
+        request_count += 1
+        if request_count == 1:
+            return httpx.Response(
+                429,
+                headers={"Retry-After": "12", "X-MBX-USED-WEIGHT-1M": "2399"},
+                json={"code": -1003, "msg": "Too many requests"},
+            )
+        return httpx.Response(200, json={"symbol": "SOXLUSDT", "bidPrice": "100"})
+
+    monkeypatch.setattr(
+        "mastermind_tick.binance_futures.time.monotonic", lambda: monotonic
+    )
+    http = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    client = BinanceFuturesClient("https://fapi.binance.test", client=http)
+
+    with pytest.raises(BinanceFuturesRateLimitError) as first:
+        asyncio.run(client.book_ticker("SOXLUSDT"))
+    assert first.value.retry_after_seconds == 30
+    assert request_count == 1
+    assert client.rate_limit_status()["used_weight"]["x-mbx-used-weight-1m"] == 2399
+
+    with pytest.raises(BinanceFuturesRateLimitError) as local:
+        asyncio.run(client.book_ticker("SOXLUSDT"))
+    assert local.value.message == "Local Binance rate-limit cooldown is active"
+    assert request_count == 1
+
+    monotonic = 131.0
+    result = asyncio.run(client.book_ticker("SOXLUSDT"))
+    assert result["bidPrice"] == "100"
+    assert request_count == 2
+    asyncio.run(http.aclose())
+
+
+def test_ip_ban_timestamp_extends_418_cooldown(monkeypatch) -> None:
+    monkeypatch.setattr("mastermind_tick.binance_futures.time.time", lambda: 1_700_000_000.0)
+    monkeypatch.setattr("mastermind_tick.binance_futures.time.monotonic", lambda: 50.0)
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            418,
+            json={
+                "code": -1003,
+                "msg": "IP auto-banned until 1700000300000. Please use websocket streams.",
+            },
+        )
+
+    http = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    client = BinanceFuturesClient("https://fapi.binance.test", client=http)
+
+    with pytest.raises(BinanceFuturesRateLimitError) as error:
+        asyncio.run(client.book_ticker("SOXLUSDT"))
+
+    assert error.value.status_code == 418
+    assert error.value.retry_after_seconds == 301
     asyncio.run(http.aclose())

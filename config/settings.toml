@@ -70,6 +70,7 @@ profit_activation_atr = 0.0
 profit_trailing_atr = 0.0
 continuation_reentry_atr = 0.0
 reconcile_seconds = 5
+account_gate_sync_seconds = 300
 trade_sync_seconds = 60
 order_timeout_seconds = 30
 recv_window_ms = 5000

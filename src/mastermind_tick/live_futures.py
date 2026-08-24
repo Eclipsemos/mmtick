@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import math
 import os
 import time
 from dataclasses import asdict
@@ -13,6 +14,7 @@ from typing import Any
 from mastermind_tick.binance_futures import (
     BinanceFuturesAPIError,
     BinanceFuturesClient,
+    BinanceFuturesRateLimitError,
     FuturesSymbolRules,
 )
 from mastermind_tick.config import InstrumentSettings, Settings
@@ -100,6 +102,7 @@ class LiveFuturesTrader:
         self.reconciliation_ok = False
         self.block_reasons: list[str] = []
         self.last_reconciled_at_ms: int | None = None
+        self.last_account_gate_sync_at_ms: int | None = None
         self.last_trade_sync_at_ms: int | None = None
         self.last_tick: Tick | None = None
         self.wallet_balance = Decimal("0")
@@ -114,6 +117,7 @@ class LiveFuturesTrader:
         self.current_margin_mode = "unknown"
         self.current_position_mode = "unknown"
         self.multi_assets_enabled = False
+        self._active_intent: dict[str, Any] | None = None
         self._engine: PaperEngine | None = None
         self._queue: asyncio.Queue[Tick] = asyncio.Queue()
         self._tick_task: asyncio.Task[None] | None = None
@@ -148,6 +152,7 @@ class LiveFuturesTrader:
             and self.ip_restricted
             and self.reconciliation_ok
             and self.test_order_passed
+            and self._client_rate_limit_cooldown() <= 0
             and not self.block_reasons
         )
 
@@ -183,6 +188,7 @@ class LiveFuturesTrader:
         self._restore_continuation_state(saved_state)
         if self.profit_protection is not None and saved_state is not None:
             self.profit_protection.restore_runtime(saved_state.get("profit_protection"))
+        self._active_intent = self.store.active_execution_intent(self.config.account_id)
         # LIVE must never chase the currently observed trend after either a first
         # start or a strategy-parameter migration. It only acts on a fresh cross.
         self.strategy.startup_alignment_checked = True
@@ -250,6 +256,16 @@ class LiveFuturesTrader:
 
     def _persist_strategy_paused(self, paused: bool, timestamp_ms: int) -> dict[str, Any]:
         self.store.set_metadata("trading_paused", "true" if paused else "false", timestamp_ms)
+        if (
+            paused
+            and self._active_intent is not None
+            and self._active_intent["status"]
+            in {
+                "PENDING",
+                "VALIDATING",
+            }
+        ):
+            self._cancel_active_intent("OPERATOR_STOPPED", timestamp_ms)
         self._event(
             "WARN" if paused else "INFO",
             "STRATEGY_STOPPED" if paused else "STRATEGY_RESUMED",
@@ -468,55 +484,70 @@ class LiveFuturesTrader:
                 self._event("ERROR", "TICK_PROCESSING_FAILED", f"{type(exc).__name__}: {exc}")
 
     async def _run_reconciliation(self) -> None:
+        delay = float(self.config.reconcile_seconds)
         while not self._stopping:
-            await asyncio.sleep(self.config.reconcile_seconds)
+            await asyncio.sleep(delay)
             try:
                 await self.reconcile()
             except asyncio.CancelledError:
                 raise
+            except BinanceFuturesRateLimitError as exc:
+                delay = max(
+                    float(self.config.reconcile_seconds),
+                    math.ceil(exc.retry_after_seconds),
+                )
+                self._mark_reconciliation_failed("RATE_LIMIT_BACKOFF")
+                self._event(
+                    "ERROR",
+                    "RATE_LIMIT_BACKOFF",
+                    f"Binance request cooldown active for {delay:.0f} seconds",
+                    details={"retry_after_seconds": delay, "status_code": exc.status_code},
+                )
             except Exception as exc:
-                self.reconciliation_ok = False
-                self._block("RECONCILIATION_FAILED")
-                self._refresh_status()
+                delay = min(max(delay * 2, float(self.config.reconcile_seconds)), 60.0)
+                self._mark_reconciliation_failed("RECONCILIATION_FAILED")
                 self._event("ERROR", "RECONCILIATION_FAILED", f"{type(exc).__name__}: {exc}")
+            else:
+                delay = float(self.config.reconcile_seconds)
 
     async def reconcile(self) -> None:
         if self.rules is None:
             raise RuntimeError("public Futures symbol rules are unavailable")
         async with self._lock:
-            (
-                account,
-                positions,
-                open_orders,
-                restrictions,
-                position_mode,
-                multi_assets_mode,
-            ) = await asyncio.gather(
-                self.client.account(),
-                self.client.position_risk(self.instrument.symbol),
-                self.client.open_orders(),
-                self.client.api_restrictions(),
-                self.client.position_mode(),
-                self.client.multi_assets_mode(),
+            now_ms = _now_ms()
+            refresh_account_gates = (
+                self.last_account_gate_sync_at_ms is None
+                or now_ms - self.last_account_gate_sync_at_ms
+                >= self.config.account_gate_sync_seconds * 1000
             )
+            # Keep the high-frequency safety view small and sequential. In particular,
+            # symbol-scoped openOrders is far cheaper than the account-wide endpoint.
+            account = await self.client.account()
+            positions = await self.client.position_risk(self.instrument.symbol)
+            open_orders = await self.client.open_orders(self.instrument.symbol)
             self.signed_account_verified = True
-            self.api_reading_enabled = bool(restrictions.get("enableReading", False))
             self.futures_trading_permitted = bool(account.get("canTrade", False))
-            self.withdrawals_enabled = bool(restrictions.get("enableWithdrawals", False))
-            self.ip_restricted = bool(restrictions.get("ipRestrict", False))
-            self.current_position_mode = (
-                "hedge" if bool(position_mode.get("dualSidePosition")) else "one_way"
-            )
-            self.multi_assets_enabled = bool(multi_assets_mode.get("multiAssetsMargin"))
-            self._set_gate("READ_PERMISSION_MISSING", not self.api_reading_enabled)
             self._set_gate("FUTURES_TRADING_PERMISSION_MISSING", not self.futures_trading_permitted)
-            self._set_gate("WITHDRAWAL_PERMISSION_ENABLED", self.withdrawals_enabled)
-            self._set_gate("IP_RESTRICTION_DISABLED", not self.ip_restricted)
-            self._set_gate(
-                "POSITION_MODE_MISMATCH",
-                self.current_position_mode != self.config.position_mode,
-            )
-            self._set_gate("MULTI_ASSET_MODE_ENABLED", self.multi_assets_enabled)
+            if refresh_account_gates:
+                restrictions = await self.client.api_restrictions()
+                position_mode = await self.client.position_mode()
+                multi_assets_mode = await self.client.multi_assets_mode()
+                self.api_reading_enabled = bool(restrictions.get("enableReading", False))
+                self.withdrawals_enabled = bool(restrictions.get("enableWithdrawals", False))
+                self.ip_restricted = bool(restrictions.get("ipRestrict", False))
+                self.current_position_mode = (
+                    "hedge" if bool(position_mode.get("dualSidePosition")) else "one_way"
+                )
+                self.multi_assets_enabled = bool(multi_assets_mode.get("multiAssetsMargin"))
+                self._set_gate("READ_PERMISSION_MISSING", not self.api_reading_enabled)
+                self._set_gate("WITHDRAWAL_PERMISSION_ENABLED", self.withdrawals_enabled)
+                self._set_gate("IP_RESTRICTION_DISABLED", not self.ip_restricted)
+                self._set_gate(
+                    "POSITION_MODE_MISMATCH",
+                    self.current_position_mode != self.config.position_mode,
+                )
+                self._set_gate("MULTI_ASSET_MODE_ENABLED", self.multi_assets_enabled)
+                self.last_account_gate_sync_at_ms = now_ms
             self._set_gate("FUTURES_TEST_ORDER_REQUIRED", not self.test_order_passed)
             other_positions = [
                 row
@@ -568,7 +599,6 @@ class LiveFuturesTrader:
                 self.current_margin_mode != self.config.margin_mode,
             )
 
-            now_ms = _now_ms()
             strategy_view = self.strategy.view()
             self.store.save_futures_snapshot(
                 account_id=self.config.account_id,
@@ -624,14 +654,23 @@ class LiveFuturesTrader:
                 self.signed_account_verified and self.api_reading_enabled and not unknown
             )
             self._unblock("RECONCILIATION_FAILED")
+            self._unblock("RATE_LIMIT_BACKOFF")
             self._refresh_status()
+            self._active_intent = self.store.active_execution_intent(self.config.account_id)
+            self._resolve_active_intent_against_position(now_ms)
+            intent_tick = self._intent_tick(now_ms)
+            if (
+                self._active_intent is not None
+                and intent_tick is not None
+                and not self.store.pending_orders(self.config.account_id)
+                and self.order_submission_ready
+            ):
+                await self._attempt_active_intent(intent_tick)
 
     async def _sync_account_history(self, now_ms: int) -> None:
-        trades, income, transfers = await asyncio.gather(
-            self.client.user_trades(self.instrument.symbol),
-            self.client.income_history(self.instrument.symbol),
-            self.client.transfer_history(),
-        )
+        trades = await self.client.user_trades(self.instrument.symbol)
+        income = await self.client.income_history(self.instrument.symbol)
+        transfers = await self.client.transfer_history()
         trades_by_order: dict[int, list[dict[str, Any]]] = {}
         for trade in trades:
             trades_by_order.setdefault(int(trade["orderId"]), []).append(trade)
@@ -716,35 +755,43 @@ class LiveFuturesTrader:
     async def process_tick(self, tick: Tick) -> None:
         async with self._lock:
             self.last_tick = tick
-            pending = bool(self.store.pending_orders(self.config.account_id))
+            pending_orders = bool(self.store.pending_orders(self.config.account_id))
+            self._active_intent = self.store.active_execution_intent(self.config.account_id)
+            self._resolve_active_intent_against_position(tick.timestamp_ms)
+            has_intent = self._active_intent is not None
             execution_ready = self.order_submission_ready
+            capture_intent = self._intent_capture_enabled and not pending_orders and not has_intent
             previous_cross_at_ms = self.strategy.last_cross_at_ms
             signal = self.strategy.on_tick(
                 tick,
                 has_position=self.position_quantity != 0,
-                has_pending_order=pending,
+                has_pending_order=pending_orders or has_intent,
                 allow_short=self.config.allow_short,
                 is_short=self.position_quantity < 0,
-                emit_signals=execution_ready,
+                emit_signals=capture_intent,
+                lock_on_signal=False,
             )
             profit_signal = self._profit_protection_signal(
                 tick,
-                has_pending_order=pending,
-                emit_signals=execution_ready,
+                has_pending_order=pending_orders or has_intent,
+                emit_signals=capture_intent,
             )
             if signal is None:
                 signal = self._continuation_reentry_signal(
                     tick,
-                    has_pending_order=pending,
-                    emit_signals=execution_ready,
+                    has_pending_order=pending_orders or has_intent,
+                    emit_signals=capture_intent,
                 )
             if signal is None:
                 signal = profit_signal
+            if signal is not None:
+                self._create_execution_intent(signal, tick)
+            self._expire_or_cancel_entry_intent(tick)
             self.store.save_strategy_state(
                 self.config.account_id, self._runtime_state(), tick.timestamp_ms
             )
             if (
-                not execution_ready
+                not capture_intent
                 and self.strategy.last_cross_at_ms is not None
                 and self.strategy.last_cross_at_ms != previous_cross_at_ms
             ):
@@ -765,8 +812,8 @@ class LiveFuturesTrader:
                         ),
                     },
                 )
-            if signal is not None:
-                await self._submit_signal(signal, tick)
+            if self._active_intent is not None and not pending_orders and execution_ready:
+                await self._attempt_active_intent(tick)
 
     def _profit_protection_signal(
         self,
@@ -813,7 +860,203 @@ class LiveFuturesTrader:
             threshold_atr=Decimal(str(self.config.continuation_reentry_atr)),
             has_pending_order=has_pending_order,
             emit_signals=emit_signals,
+            lock_on_signal=False,
         )
+
+    @property
+    def _intent_capture_enabled(self) -> bool:
+        return (
+            self.config.enabled
+            and self.config.allow_order_submission
+            and self.activation_confirmed
+            and self.client.has_credentials
+            and self.test_order_passed
+            and not self.persisted_paused
+        )
+
+    def _create_execution_intent(self, signal: StrategySignal, tick: Tick) -> None:
+        if self._active_intent is not None:
+            return
+        signal_at_ms = signal.signal_at_ms or tick.timestamp_ms
+        intent_id = _execution_intent_id(self.config.account_id, self.config.strategy_name, signal)
+        expires_at_ms = (
+            None if signal.reduce_only else signal.bar_start_ms + self.strategy.bar_ms - 1
+        )
+        created = self.store.create_execution_intent(
+            intent_id=intent_id,
+            account_id=self.config.account_id,
+            symbol=self.instrument.symbol,
+            side=signal.side.value,
+            reduce_only=signal.reduce_only,
+            reason=signal.reason,
+            strategy_name=self.config.strategy_name,
+            signal_price=str(signal.signal_price),
+            trailing_stop=str(signal.trailing_stop),
+            atr=str(signal.atr),
+            bar_start_ms=signal.bar_start_ms,
+            signal_at_ms=signal_at_ms,
+            expires_at_ms=expires_at_ms,
+            created_at_ms=tick.timestamp_ms,
+        )
+        intent = self.store.execution_intent(intent_id)
+        self._active_intent = (
+            intent
+            if intent is not None
+            and intent["status"] in {"PENDING", "VALIDATING", "SUBMITTING", "ACCEPTED"}
+            else None
+        )
+        if created:
+            self._event(
+                "WARN" if not self.order_submission_ready else "INFO",
+                "EXECUTION_INTENT_CREATED",
+                "Strategy signal persisted before external execution",
+                timestamp_ms=tick.timestamp_ms,
+                details={
+                    "intent_id": intent_id,
+                    "side": signal.side.value,
+                    "reduce_only": signal.reduce_only,
+                    "reason": signal.reason,
+                    "expires_at_ms": expires_at_ms,
+                    "execution_ready": self.order_submission_ready,
+                },
+            )
+
+    def _intent_signal(self, intent: dict[str, Any]) -> StrategySignal:
+        return StrategySignal(
+            side=Side(str(intent["side"])),
+            reason=str(intent["reason"]),
+            signal_price=Decimal(str(intent["signal_price"])),
+            trailing_stop=Decimal(str(intent["trailing_stop"])),
+            atr=Decimal(str(intent["atr"])),
+            bar_start_ms=int(intent["bar_start_ms"]),
+            tick_id=f"intent:{intent['intent_id']}",
+            signal_at_ms=int(intent["signal_at_ms"]),
+            reduce_only=bool(intent["reduce_only"]),
+        )
+
+    def _intent_tick(self, timestamp_ms: int) -> Tick | None:
+        if self.last_tick is not None:
+            return self.last_tick
+        if self._active_intent is None or not bool(self._active_intent["reduce_only"]):
+            return None
+        price = self.mark_price
+        if price <= 0:
+            price = Decimal(str(self._active_intent["signal_price"]))
+        return Tick(
+            event_id=f"intent-recovery:{self._active_intent['intent_id']}",
+            timestamp_ms=timestamp_ms,
+            price=price,
+            quantity=Decimal("0"),
+            source="live_execution_intent_recovery",
+        )
+
+    def _resolve_active_intent_against_position(self, timestamp_ms: int) -> None:
+        intent = self._active_intent
+        if intent is None:
+            return
+        reduce_only = bool(intent["reduce_only"])
+        if reduce_only and self.position_quantity == 0:
+            self._finish_active_intent("COMPLETED", "POSITION_ALREADY_FLAT", timestamp_ms)
+            return
+        if not reduce_only and self.position_quantity != 0:
+            self._finish_active_intent("CANCELED", "POSITION_CHANGED", timestamp_ms)
+            return
+        if reduce_only:
+            side = str(intent["side"])
+            wrong_side = (self.position_quantity > 0 and side != "SELL") or (
+                self.position_quantity < 0 and side != "BUY"
+            )
+            if wrong_side:
+                self._finish_active_intent("CANCELED", "POSITION_DIRECTION_CHANGED", timestamp_ms)
+
+    def _expire_or_cancel_entry_intent(self, tick: Tick) -> None:
+        intent = self._active_intent
+        if intent is None or bool(intent["reduce_only"]):
+            return
+        expires_at_ms = intent.get("expires_at_ms")
+        if expires_at_ms is not None and tick.timestamp_ms > int(expires_at_ms):
+            self._finish_active_intent("EXPIRED", "SIGNAL_BAR_EXPIRED", tick.timestamp_ms)
+            return
+        view = self.strategy.view()
+        if view.trailing_stop is None:
+            return
+        if str(intent["side"]) == "BUY" and tick.price <= view.trailing_stop:
+            self._finish_active_intent("CANCELED", "ATR_CROSS_INVALIDATED", tick.timestamp_ms)
+        elif str(intent["side"]) == "SELL" and tick.price >= view.trailing_stop:
+            self._finish_active_intent("CANCELED", "ATR_CROSS_INVALIDATED", tick.timestamp_ms)
+        elif not view.trend_filter_passed:
+            self._finish_active_intent("CANCELED", "TREND_FILTER_INVALIDATED", tick.timestamp_ms)
+
+    def _finish_active_intent(self, status: str, reason: str, timestamp_ms: int) -> None:
+        intent = self._active_intent
+        if intent is None:
+            return
+        self.store.update_execution_intent(
+            str(intent["intent_id"]),
+            status=status,
+            updated_at_ms=timestamp_ms,
+            attempts=int(intent["attempts"]),
+            last_error=reason,
+        )
+        self._event(
+            "INFO" if status == "COMPLETED" else "WARN",
+            f"EXECUTION_INTENT_{status}",
+            f"Execution intent {status.lower()}: {reason}",
+            timestamp_ms=timestamp_ms,
+            details={"intent_id": intent["intent_id"], "reason": reason},
+        )
+        self._active_intent = None
+
+    def _cancel_active_intent(self, reason: str, timestamp_ms: int) -> None:
+        self._finish_active_intent("CANCELED", reason, timestamp_ms)
+
+    async def _attempt_active_intent(self, tick: Tick) -> None:
+        intent = self._active_intent
+        if intent is None or intent["status"] not in {"PENDING", "VALIDATING"}:
+            return
+        now_ms = _now_ms()
+        if (
+            int(intent["attempts"]) > 0
+            and now_ms - int(intent["updated_at_ms"]) < self.config.reconcile_seconds * 1000
+        ):
+            return
+        self._expire_or_cancel_entry_intent(tick)
+        intent = self._active_intent
+        if intent is None:
+            return
+        attempt = int(intent["attempts"]) + 1
+        intent_id = str(intent["intent_id"])
+        self.store.update_execution_intent(
+            intent_id,
+            status="VALIDATING",
+            updated_at_ms=now_ms,
+            attempts=attempt,
+            last_error=None,
+        )
+        self._active_intent = self.store.execution_intent(intent_id)
+        result, reason = await self._submit_signal(
+            self._intent_signal(intent),
+            tick,
+            execution_intent_id=intent_id,
+            attempt=attempt,
+        )
+        if result == "RETRY":
+            self.store.update_execution_intent(
+                intent_id,
+                status="PENDING",
+                updated_at_ms=_now_ms(),
+                attempts=attempt,
+                last_error=reason,
+            )
+        elif result == "CANCELED":
+            self.store.update_execution_intent(
+                intent_id,
+                status="CANCELED",
+                updated_at_ms=_now_ms(),
+                attempts=attempt,
+                last_error=reason,
+            )
+        self._active_intent = self.store.active_execution_intent(self.config.account_id)
 
     def _runtime_state(self) -> dict[str, Any]:
         state = self.strategy.runtime_state()
@@ -876,20 +1119,41 @@ class LiveFuturesTrader:
             ),
         }
 
-    async def _submit_signal(self, signal: StrategySignal, tick: Tick) -> None:
+    async def _submit_signal(
+        self,
+        signal: StrategySignal,
+        tick: Tick,
+        *,
+        execution_intent_id: str | None = None,
+        attempt: int = 0,
+    ) -> tuple[str, str | None]:
         if not self.order_submission_ready or self.rules is None:
-            return
-        rejection = await self._risk_rejection(signal, tick)
+            return "RETRY", "EXECUTION_GATE_BLOCKED"
+        try:
+            rejection = await self._risk_rejection(signal, tick)
+        except BinanceFuturesRateLimitError as exc:
+            self._mark_reconciliation_failed("RATE_LIMIT_BACKOFF")
+            return "RETRY", f"RATE_LIMIT_BACKOFF:{math.ceil(exc.retry_after_seconds)}"
+        except Exception as exc:
+            self._event(
+                "ERROR",
+                "ORDER_VALIDATION_FAILED",
+                f"{type(exc).__name__}: {exc}",
+                details={"intent_id": execution_intent_id},
+            )
+            return "RETRY", f"ORDER_VALIDATION_FAILED:{type(exc).__name__}"
         if rejection:
             self._event("WARN", "ORDER_RISK_BLOCKED", rejection)
-            return
+            return (
+                ("RETRY", rejection) if rejection == "SLIPPAGE_LIMIT" else ("CANCELED", rejection)
+            )
         if signal.reduce_only:
             if self.position_quantity > 0:
                 side, position_side = "SELL", "LONG"
             elif self.position_quantity < 0:
                 side, position_side = "BUY", "SHORT"
             else:
-                return
+                return "CANCELED", "POSITION_ALREADY_FLAT"
             quantity = self.rules.floor_quantity(abs(self.position_quantity))
         else:
             side = signal.side.value
@@ -905,13 +1169,22 @@ class LiveFuturesTrader:
                     Decimal(str(self.config.max_order_notional)),
                 )
             quantity = self.rules.floor_quantity(target_notional / tick.price)
-        if (
-            quantity < self.rules.minimum_quantity
-            or quantity * tick.price < self.rules.minimum_notional
+        if quantity <= 0 or (
+            not signal.reduce_only
+            and (
+                quantity < self.rules.minimum_quantity
+                or quantity * tick.price < self.rules.minimum_notional
+            )
         ):
             self._event("WARN", "ORDER_RISK_BLOCKED", "ORDER_BELOW_MINIMUM")
-            return
-        client_order_id = _client_order_id(self.config.account_id, signal, position_side)
+            return "CANCELED", "ORDER_BELOW_MINIMUM"
+        client_order_id = _client_order_id(
+            self.config.account_id,
+            signal,
+            position_side,
+            execution_intent_id=execution_intent_id,
+            attempt=attempt,
+        )
         created = self.store.create_order(
             client_order_id=client_order_id,
             account_id=self.config.account_id,
@@ -924,15 +1197,40 @@ class LiveFuturesTrader:
             signal_at_ms=signal.signal_at_ms or tick.timestamp_ms,
             requested_quantity=str(quantity),
             requested_quote_quantity=None,
+            execution_intent_id=execution_intent_id,
         )
         if not created:
-            return
+            existing = self.store.order(client_order_id)
+            if existing and existing["status"] in {
+                "CREATED",
+                "SUBMITTING",
+                "NEW",
+                "PARTIALLY_FILLED",
+                "FILLED",
+            }:
+                return "SUBMITTED", None
+            return "RETRY", "DUPLICATE_TERMINAL_ATTEMPT"
         now_ms = _now_ms()
         self.store.update_order(
             client_order_id,
             status="SUBMITTING",
             updated_at_ms=now_ms,
             submitted_at_ms=now_ms,
+        )
+        if execution_intent_id is not None:
+            self.store.update_execution_intent(
+                execution_intent_id,
+                status="SUBMITTING",
+                updated_at_ms=now_ms,
+                attempts=attempt,
+                last_error=None,
+                client_order_id=client_order_id,
+            )
+        self.strategy.on_submit(signal)
+        self.store.save_strategy_state(
+            self.config.account_id,
+            self._runtime_state(),
+            now_ms,
         )
         try:
             payload = await self.client.market_order(
@@ -942,10 +1240,28 @@ class LiveFuturesTrader:
                 quantity=quantity,
                 client_order_id=client_order_id,
             )
+        except BinanceFuturesRateLimitError as exc:
+            self.store.update_order(
+                client_order_id,
+                status="REJECTED",
+                updated_at_ms=_now_ms(),
+                payload={"code": exc.code, "msg": exc.message},
+            )
+            self._mark_reconciliation_failed("RATE_LIMIT_BACKOFF")
+            self._event(
+                "ERROR",
+                "ORDER_RATE_LIMITED",
+                "Binance rejected order submission under an active rate limit",
+                details={
+                    "intent_id": execution_intent_id,
+                    "retry_after_seconds": math.ceil(exc.retry_after_seconds),
+                },
+            )
+            return "RETRY", f"RATE_LIMIT_BACKOFF:{math.ceil(exc.retry_after_seconds)}"
         except BinanceFuturesAPIError as exc:
-            if exc.code in AMBIGUOUS_BINANCE_CODES:
+            if exc.code in AMBIGUOUS_BINANCE_CODES or exc.status_code >= 500:
                 self._event("ERROR", "ORDER_RESULT_UNKNOWN", "Order result requires reconciliation")
-                return
+                return "SUBMITTED", "ORDER_RESULT_UNKNOWN"
             self.store.update_order(
                 client_order_id,
                 status="REJECTED",
@@ -954,19 +1270,62 @@ class LiveFuturesTrader:
             )
             self.strategy.on_fill(tick.timestamp_ms, filled=False)
             self._event("ERROR", "ORDER_REJECTED", exc.message)
-            return
+            return (
+                ("RETRY", f"ORDER_REJECTED:{exc.code}")
+                if signal.reduce_only
+                else ("CANCELED", f"ORDER_REJECTED:{exc.code}")
+            )
+        except Exception as exc:
+            # A timeout or disconnect after POST has an unknown execution result. The
+            # deterministic client ID must be reconciled; never submit a second order here.
+            self._event(
+                "ERROR",
+                "ORDER_RESULT_UNKNOWN",
+                f"{type(exc).__name__}: order result requires reconciliation",
+                details={"intent_id": execution_intent_id},
+            )
+            return "SUBMITTED", "ORDER_RESULT_UNKNOWN"
         status = str(payload["status"])
         self.store.update_order(
             client_order_id, status=status, updated_at_ms=_now_ms(), payload=payload
         )
-        await self._ingest_order_trades(client_order_id, int(payload["orderId"]))
+        if execution_intent_id is not None and status not in TERMINAL_ORDER_STATES:
+            self.store.update_execution_intent(
+                execution_intent_id,
+                status="ACCEPTED",
+                updated_at_ms=_now_ms(),
+                attempts=attempt,
+                last_error=None,
+                client_order_id=client_order_id,
+            )
+        try:
+            await self._ingest_order_trades(client_order_id, int(payload["orderId"]))
+        except Exception as exc:
+            self._event(
+                "ERROR",
+                "ORDER_POST_ACCEPT_SYNC_FAILED",
+                f"{type(exc).__name__}: accepted order will be reconciled",
+                details={"client_order_id": client_order_id},
+            )
         if status in TERMINAL_ORDER_STATES:
+            if status == "FILLED":
+                if signal.reduce_only:
+                    self.position_quantity = Decimal("0")
+                    self.entry_price = Decimal("0")
+                    self.unrealized_pnl = Decimal("0")
+                else:
+                    self.position_quantity = quantity if side == "BUY" else -quantity
             self._apply_terminal_strategy_result(client_order_id, _now_ms())
         self._event("INFO", "ORDER_ACCEPTED", f"Binance accepted {side} {position_side}")
+        return "SUBMITTED", None
 
     async def _risk_rejection(self, signal: StrategySignal, tick: Tick) -> str | None:
         if self.persisted_paused:
             return "LIVE_TRADING_PAUSED"
+        # A risk-reducing exit must not depend on a second public book request or
+        # entry-only slippage/daily caps. Use the freshly reconciled full position.
+        if signal.reduce_only:
+            return None
         if not signal.reduce_only and signal.side is Side.SELL and not self.config.allow_short:
             return "SHORT_ENTRY_DISABLED"
         if not signal.reduce_only:
@@ -999,7 +1358,17 @@ class LiveFuturesTrader:
                 self.instrument.symbol, client_order_id=client_order_id
             )
         except BinanceFuturesAPIError as exc:
-            if exc.code == -2013 and order["status"] == "CREATED":
+            if exc.code == -2013 and order["status"] in {"CREATED", "SUBMITTING"}:
+                submitted_at_ms = order.get("submitted_at_ms") or order["signal_at_ms"]
+                if now_ms - int(submitted_at_ms) < self.config.order_timeout_seconds * 1000:
+                    return
+                self.store.update_order(
+                    client_order_id,
+                    status="REJECTED",
+                    updated_at_ms=now_ms,
+                    payload={"code": exc.code, "msg": exc.message},
+                )
+                self._apply_terminal_strategy_result(client_order_id, now_ms)
                 return
             raise
         status = str(payload["status"])
@@ -1050,9 +1419,30 @@ class LiveFuturesTrader:
         )
         self.strategy.on_fill(fill_timestamp_ms, filled=filled)
         self.store.set_metadata(marker, str(order["status"]), timestamp_ms)
+        intent_id = order.get("execution_intent_id")
+        if intent_id:
+            if order["status"] == "FILLED" or (filled and not order["reduce_only"]):
+                intent_status = "COMPLETED"
+                intent_error = None
+            else:
+                intent_status = "PENDING"
+                intent_error = f"ORDER_{order['status']}"
+            intent = self.store.execution_intent(str(intent_id))
+            self.store.update_execution_intent(
+                str(intent_id),
+                status=intent_status,
+                updated_at_ms=timestamp_ms,
+                attempts=int(intent["attempts"]) if intent else None,
+                last_error=intent_error,
+                client_order_id=client_order_id,
+            )
+            self._active_intent = self.store.active_execution_intent(self.config.account_id)
         if filled:
+            managed = not order["reduce_only"] or (
+                order["status"] != "FILLED" and self.position_quantity != 0
+            )
             self.store.set_metadata(
-                "managed_position", "false" if order["reduce_only"] else "true", timestamp_ms
+                "managed_position", "true" if managed else "false", timestamp_ms
             )
             if order["reduce_only"]:
                 if (
@@ -1090,6 +1480,22 @@ class LiveFuturesTrader:
                 self.config.account_id, self._runtime_state(), timestamp_ms
             )
 
+    def _client_rate_limit_cooldown(self) -> float:
+        return float(getattr(self.client, "rate_limit_cooldown_seconds", 0.0))
+
+    def _rate_limit_view(self) -> dict[str, Any]:
+        status = getattr(self.client, "rate_limit_status", None)
+        if callable(status):
+            return status()
+        return {"cooldown_seconds": 0.0, "used_weight": {}}
+
+    def _mark_reconciliation_failed(self, reason: str) -> None:
+        self.reconciliation_ok = False
+        self._block("RECONCILIATION_FAILED")
+        if reason == "RATE_LIMIT_BACKOFF":
+            self._block("RATE_LIMIT_BACKOFF")
+        self._refresh_status()
+
     def readiness(self) -> dict[str, Any]:
         return {
             "account_id": self.config.account_id,
@@ -1116,7 +1522,10 @@ class LiveFuturesTrader:
             "persisted_paused": self.persisted_paused,
             "reconciliation_ok": self.reconciliation_ok,
             "last_reconciled_at_ms": self.last_reconciled_at_ms,
+            "last_account_gate_sync_at_ms": self.last_account_gate_sync_at_ms,
             "last_trade_sync_at_ms": self.last_trade_sync_at_ms,
+            "rate_limit": self._rate_limit_view(),
+            "execution_intent": self._active_intent,
             "synced_trade_count": self.store.fill_count(self.config.account_id),
             "block_reasons": sorted(self.block_reasons),
             "current_leverage": self.current_leverage,
@@ -1189,8 +1598,30 @@ class LiveFuturesTrader:
         )
 
 
-def _client_order_id(account_id: str, signal: StrategySignal, position_side: str) -> str:
-    raw = f"{account_id}:{signal.side.value}:{position_side}:{signal.tick_id}:{signal.bar_start_ms}"
+def _execution_intent_id(
+    account_id: str,
+    strategy_name: str,
+    signal: StrategySignal,
+) -> str:
+    raw = (
+        f"{account_id}:{strategy_name}:{signal.side.value}:{int(signal.reduce_only)}:"
+        f"{signal.reason}:{signal.bar_start_ms}"
+    )
+    return f"intent-{hashlib.sha256(raw.encode()).hexdigest()[:24]}"
+
+
+def _client_order_id(
+    account_id: str,
+    signal: StrategySignal,
+    position_side: str,
+    *,
+    execution_intent_id: str | None = None,
+    attempt: int = 0,
+) -> str:
+    raw = (
+        f"{account_id}:{signal.side.value}:{position_side}:"
+        f"{execution_intent_id or signal.tick_id}:{signal.bar_start_ms}:{attempt}"
+    )
     digest = hashlib.sha256(raw.encode()).hexdigest()[:18]
     return f"mmt-{signal.side.value.lower()}-{digest}"[:36]
 
