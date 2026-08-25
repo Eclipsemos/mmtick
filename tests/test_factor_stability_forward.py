@@ -8,6 +8,7 @@ import pytest
 
 from mastermind_tick.bar_research import ResearchBar
 from mastermind_tick.factor_stability_forward import (
+    _align_common_closed_tail,
     evaluate_frozen_factor_forward,
     load_frozen_factor_monitor,
     render_factor_forward_markdown,
@@ -128,6 +129,26 @@ def test_forward_monitor_is_deterministic_except_generation_time(tmp_path) -> No
     second.pop("generated_at")
 
     assert first == second
+
+
+def test_common_tail_alignment_discards_only_newer_asset_tail() -> None:
+    bars = _market(date(2026, 8, 10), 3)
+    bars["btc_perp"].append(
+        ResearchBar(
+            start_ms=bars["btc_perp"][-1].end_ms + 1,
+            end_ms=bars["btc_perp"][-1].end_ms + 4 * 3_600_000,
+            open=Decimal("100"),
+            high=Decimal("101"),
+            low=Decimal("99"),
+            close=Decimal("100"),
+            volume=Decimal("1000"),
+        )
+    )
+
+    aligned = _align_common_closed_tail(bars)
+
+    assert len(aligned["btc_perp"]) == len(aligned["eth_perp"]) == 18
+    assert aligned["btc_perp"][-1].end_ms == aligned["eth_perp"][-1].end_ms
 
 
 def test_repository_candidate_matches_frozen_hash() -> None:

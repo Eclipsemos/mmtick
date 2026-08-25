@@ -119,8 +119,8 @@ def load_factor_forward_market(
     bars = {
         asset: aggregate_bars(loaded[asset][0], monitor.bar_interval_minutes) for asset in ASSETS
     }
+    bars = _align_common_closed_tail(bars)
     funding = {asset: funding_by_bar(bars[asset], loaded[asset][1]) for asset in ASSETS}
-    _require_aligned(bars)
     return bars, funding
 
 
@@ -369,6 +369,19 @@ def _require_aligned(bars: dict[str, list[ResearchBar]]) -> None:
         for left, right in zip(bars[ASSETS[0]], bars[ASSETS[1]], strict=True)
     ):
         raise ValueError("factor forward BTC and ETH bars are not aligned")
+
+
+def _align_common_closed_tail(bars: dict[str, list[ResearchBar]]) -> dict[str, list[ResearchBar]]:
+    """Drop only bars after the latest common close, then require exact alignment."""
+    if set(bars) != set(ASSETS) or any(not bars[asset] for asset in ASSETS):
+        raise ValueError("factor forward monitor requires BTC and ETH bars")
+    common_end_ms = min(bars[asset][-1].end_ms for asset in ASSETS)
+    aligned = {
+        asset: [bar for bar in bars[asset] if bar.end_ms <= common_end_ms]
+        for asset in ASSETS
+    }
+    _require_aligned(aligned)
+    return aligned
 
 
 def _numpy() -> Any:

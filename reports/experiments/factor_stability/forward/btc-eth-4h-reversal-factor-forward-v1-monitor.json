@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "btc-eth-4h-reversal-factor-forward-v1-monitor",
-  "generated_at": "2026-08-18T02:48:47.247586+00:00",
+  "generated_at": "2026-08-22T09:16:56.892950+00:00",
   "candidate_id": "btc-eth-4h-reversal-factor-forward-v1",
   "candidate_status": "forward_observation_only",
   "approved_for_trading": false,
@@ -10,8 +10,8 @@
   "evidence_lock_date": "2026-08-11",
   "forward_evidence_start_date": "2026-08-12",
   "source_report": "reports/experiments/factor_stability/2026-08-18/factor-stability-20260818-022127-286734.json",
-  "data_through": "2026-08-17T23:59:59.999000+00:00",
-  "complete_forward_days": 5,
+  "data_through": "2026-08-22T07:59:59.999000+00:00",
+  "complete_forward_days": 10,
   "status": "collecting_forward_evidence",
   "factors": {
     "btc_perp": {
@@ -20,14 +20,14 @@
       "target_asset": "btc_perp",
       "orientation": -1,
       "horizon_bars": 1,
-      "complete_days": 5,
+      "complete_days": 10,
       "first_day": "2026-08-12",
-      "last_day": "2026-08-16",
-      "samples": 30,
-      "raw_ic": 0.1563959955506118,
-      "cost_adjusted_ic": 0.18308741394618572,
+      "last_day": "2026-08-21",
+      "samples": 60,
+      "raw_ic": -0.3698805223673242,
+      "cost_adjusted_ic": -0.34278150505581934,
       "development_cost_adjusted_ic": 0.0510664702782346,
-      "development_ic_retention": 3.5852764631790244,
+      "development_ic_retention": -6.712457375420339,
       "daily": [
         {
           "date": "2026-08-12",
@@ -58,6 +58,36 @@
           "samples": 6,
           "raw_ic": 0.6,
           "cost_adjusted_ic": 0.5768179036829704
+        },
+        {
+          "date": "2026-08-17",
+          "samples": 6,
+          "raw_ic": 0.02857142857142856,
+          "cost_adjusted_ic": 0.02857142857142856
+        },
+        {
+          "date": "2026-08-18",
+          "samples": 6,
+          "raw_ic": -0.5428571428571429,
+          "cost_adjusted_ic": -0.6667366910003156
+        },
+        {
+          "date": "2026-08-19",
+          "samples": 6,
+          "raw_ic": 0.3714285714285714,
+          "cost_adjusted_ic": 0.3714285714285714
+        },
+        {
+          "date": "2026-08-20",
+          "samples": 6,
+          "raw_ic": -0.19999999999999998,
+          "cost_adjusted_ic": -0.19999999999999998
+        },
+        {
+          "date": "2026-08-21",
+          "samples": 6,
+          "raw_ic": -0.08571428571428574,
+          "cost_adjusted_ic": -0.08571428571428574
         }
       ],
       "regimes": {
@@ -65,9 +95,13 @@
           "samples": 1,
           "cost_adjusted_ic": null
         },
+        "bull_low_vol": {
+          "samples": 14,
+          "cost_adjusted_ic": -0.09010989010989014
+        },
         "sideways_low_vol": {
-          "samples": 29,
-          "cost_adjusted_ic": 0.19054223432555098
+          "samples": 45,
+          "cost_adjusted_ic": -0.03918119943594238
         }
       },
       "gates": {
@@ -84,14 +118,14 @@
       "target_asset": "eth_perp",
       "orientation": -1,
       "horizon_bars": 1,
-      "complete_days": 5,
+      "complete_days": 10,
       "first_day": "2026-08-12",
-      "last_day": "2026-08-16",
-      "samples": 30,
-      "raw_ic": 0.24449388209121242,
-      "cost_adjusted_ic": 0.1870263467874768,
+      "last_day": "2026-08-21",
+      "samples": 60,
+      "raw_ic": -0.24073353709363712,
+      "cost_adjusted_ic": -0.27710501510306856,
       "development_cost_adjusted_ic": 0.04423674014715355,
-      "development_ic_retention": 4.227851016266874,
+      "development_ic_retention": -6.264137325247713,
       "daily": [
         {
           "date": "2026-08-12",
@@ -122,16 +156,46 @@
           "samples": 6,
           "raw_ic": 0.6,
           "cost_adjusted_ic": 0.5768179036829704
+        },
+        {
+          "date": "2026-08-17",
+          "samples": 6,
+          "raw_ic": 0.3142857142857143,
+          "cost_adjusted_ic": 0.3142857142857143
+        },
+        {
+          "date": "2026-08-18",
+          "samples": 6,
+          "raw_ic": -0.5428571428571429,
+          "cost_adjusted_ic": -0.5428571428571429
+        },
+        {
+          "date": "2026-08-19",
+          "samples": 6,
+          "raw_ic": 0.0857142857142857,
+          "cost_adjusted_ic": 0.0857142857142857
+        },
+        {
+          "date": "2026-08-20",
+          "samples": 6,
+          "raw_ic": -0.5428571428571429,
+          "cost_adjusted_ic": -0.49280538030458126
+        },
+        {
+          "date": "2026-08-21",
+          "samples": 6,
+          "raw_ic": 0.4857142857142857,
+          "cost_adjusted_ic": 0.550782483869826
         }
       ],
       "regimes": {
         "bull_low_vol": {
-          "samples": 8,
-          "cost_adjusted_ic": 0.5476190476190476
+          "samples": 23,
+          "cost_adjusted_ic": -0.2656467844910109
         },
         "sideways_low_vol": {
-          "samples": 22,
-          "cost_adjusted_ic": 0.14760449787342064
+          "samples": 37,
+          "cost_adjusted_ic": -0.07958225489324196
         }
       },
       "gates": {
