@@ -26,6 +26,7 @@ frontend/dist/
 reports/backtests/*.json
 reports/backtests/*.md
 !reports/backtests/README.md
+reports/experiments/individual_crypto_atr/*/checkpoints/
 frontend/artifacts/
 frontend/test-results/
 .env

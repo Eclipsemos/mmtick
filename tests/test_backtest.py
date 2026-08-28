@@ -1,4 +1,5 @@
 import sqlite3
+from dataclasses import replace
 from decimal import Decimal
 
 import pytest
@@ -170,6 +171,27 @@ def test_futures_short_trade_includes_fees_slippage_and_funding() -> None:
     assert trade.net_pnl == expected_gross - trade.fees + funding_amount
     assert broker.quantity == 0
     assert broker.total_fees == trade.fees
+
+
+def test_futures_full_budget_reserves_entry_fee_before_rounding_quantity() -> None:
+    eth = replace(
+        instrument(paper_model="futures"),
+        quantity_step=0.001,
+        leverage=1,
+    )
+    broker = ReplayBroker(
+        eth,
+        Decimal("100000"),
+        Decimal("1"),
+        Decimal("5"),
+        Decimal("2"),
+        Decimal("5"),
+    )
+
+    assert broker.fill(Side.SELL, Decimal("2265.88"), 1)
+    assert broker.quantity < 0
+    required_balance = abs(broker.quantity) * broker.average_price + broker.total_fees
+    assert required_balance <= broker.initial_cash
 
 
 def test_candidate_fills_signal_on_the_next_tick() -> None:

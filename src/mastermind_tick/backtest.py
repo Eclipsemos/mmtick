@@ -250,7 +250,8 @@ class ReplayBroker:
             return False
 
         budget = self.cash * self.position_fraction
-        quantity = _floor_step(budget * self.leverage / fill_price, self.step)
+        required_per_unit = fill_price / self.leverage + fill_price * self.fee_rate
+        quantity = _floor_step(budget / required_per_unit, self.step)
         notional = fill_price * quantity
         fee = notional * self.fee_rate
         required_balance = notional / self.leverage + fee
