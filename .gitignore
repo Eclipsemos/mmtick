@@ -11,6 +11,8 @@ data/backups/
 data/history_soxl/
 data/history_btc/
 data/history_eth/
+data/history_btc_tick/
+data/history_eth_tick/
 data/funding_rates/
 data/mark_price_klines/
 data/order_flow_cache/

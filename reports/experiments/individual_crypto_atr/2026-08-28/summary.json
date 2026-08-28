@@ -1,0 +1,14 @@
+[
+  {
+    "instrument_id": "btc_perp",
+    "symbol": "BTCUSDT",
+    "status": "no_stable_bar_candidate",
+    "passing_families": []
+  },
+  {
+    "instrument_id": "eth_perp",
+    "symbol": "ETHUSDT",
+    "status": "no_stable_bar_candidate",
+    "passing_families": []
+  }
+]
