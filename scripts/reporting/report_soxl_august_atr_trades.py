@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import sqlite3
 from datetime import UTC, datetime
+from dataclasses import replace
 from decimal import Decimal
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -75,6 +76,8 @@ def _build_candidate(
     settings: Settings,
     instrument: InstrumentSettings,
     warmup_bars: list[object],
+    *,
+    live_startup: bool = False,
 ) -> ReplayCandidate:
     strategy = ReplayATRTickStrategy(
         settings.strategy.atr_period,
@@ -85,6 +88,10 @@ def _build_candidate(
         settings.strategy.reversal_confirmation_atr,
     )
     strategy.bootstrap(warmup_bars)
+    # Live futures marks a fresh account as aligned after bootstrap; it does not
+    # chase an already-established trend on the first received tick.
+    if live_startup:
+        strategy.startup_alignment_checked = True
     position_fraction = Decimal(
         str(instrument.position_fraction or settings.strategy.position_fraction)
     )
@@ -161,7 +168,7 @@ def _render_report(
         f"- Direction: long-only; `SOXLUSDT` perpetual futures; {settings.strategy.bar_minutes}-minute Tick ATR execution.",
         f"- ATR: period {settings.strategy.atr_period}, multiplier {settings.strategy.atr_multiplier:g}; trend efficiency: {settings.strategy.trend_efficiency_period} bars / {settings.strategy.minimum_trend_efficiency:g} minimum.",
         f"- Reversal confirmation: {settings.strategy.reversal_confirmation_atr:g} ATR; one action per K line.",
-        "- Profit protection: disabled. Continuation re-entry: disabled.",
+        "- Fixed profit-taker: disabled. Profit protection: disabled. Continuation re-entry: disabled.",
         f"- Sizing: {instrument.leverage}x isolated leverage x {float(instrument.position_fraction or settings.strategy.position_fraction):.1%} equity allocation = {instrument.leverage * float(instrument.position_fraction or settings.strategy.position_fraction):.2f}x target exposure.",
         f"- Costs: {float(instrument.fee_bps or settings.execution.fee_bps):g} bps per fill and {float(instrument.slippage_bps or settings.execution.slippage_bps):g} bps simulated slippage per fill; recorded funding is included.",
         "",
@@ -235,10 +242,29 @@ def main() -> None:
     parser.add_argument("--start", default=DEFAULT_START)
     parser.add_argument("--end", help="Inclusive ISO-8601 end timestamp; defaults to local data cutoff")
     parser.add_argument("--output", default=DEFAULT_OUTPUT)
+    parser.add_argument(
+        "--leverage",
+        type=int,
+        help="research-only leverage override; does not modify configuration",
+    )
+    parser.add_argument(
+        "--position-fraction",
+        type=float,
+        help="research-only equity allocation override; does not modify configuration",
+    )
+    parser.add_argument(
+        "--live-startup",
+        action="store_true",
+        help="match live futures startup by disabling one-time trend-alignment entry",
+    )
     args = parser.parse_args()
 
     settings = load_settings(args.config)
     instrument = next(item for item in settings.instruments if item.id == args.instrument)
+    if args.leverage is not None:
+        instrument = replace(instrument, leverage=args.leverage)
+    if args.position_fraction is not None:
+        instrument = replace(instrument, position_fraction=args.position_fraction)
     start_ms = _timestamp_ms(args.start)
     database_uri = f"file:{settings.database_path}?mode=ro"
     with sqlite3.connect(database_uri, uri=True) as connection:
@@ -258,7 +284,9 @@ def main() -> None:
         if len(warmup_bars) < settings.warmup_bars:
             raise ValueError("insufficient pre-replay warmup bars")
         funding_rates = _load_funding_rates(connection, instrument.market_id, start_ms, end_ms)
-        candidate = _build_candidate(settings, instrument, warmup_bars)
+        candidate = _build_candidate(
+            settings, instrument, warmup_bars, live_startup=args.live_startup
+        )
         tick_count = 0
         raw_trade_count = 0
         last_price: Decimal | None = None

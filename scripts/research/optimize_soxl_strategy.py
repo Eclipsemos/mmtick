@@ -37,11 +37,14 @@ class CandidateSpec:
     trend_period: int = 8
     minimum_efficiency: float = 0.25
     reversal_confirmation_atr: float = 0.25
+    fixed_take_profit_atr: float | None = None
     profit_activation_atr: float | None = None
     profit_trailing_atr: float | None = None
     continuation_reentry_atr: float | None = None
     leverage: int | None = None
     position_fraction: float | None = None
+    maintenance_margin_rate: float | None = None
+    liquidation_fee_rate: float | None = None
 
 
 @dataclass(frozen=True)
@@ -51,6 +54,68 @@ class EvaluationTask:
     period_name: str
     start_ms: int
     end_ms: int
+    live_startup: bool = False
+
+
+class ResearchLiquidationBroker(ReplayBroker):
+    """Approximate isolated-margin liquidation for research comparisons only."""
+
+    def __init__(
+        self,
+        *args,
+        maintenance_margin_rate: Decimal,
+        liquidation_fee_rate: Decimal,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.maintenance_margin_rate = maintenance_margin_rate
+        self.liquidation_fee_rate = liquidation_fee_rate
+        self.isolated_entry_margin = Decimal("0")
+        self.liquidations = 0
+
+    def fill(
+        self,
+        side,
+        market_price: Decimal,
+        timestamp_ms: int,
+        *,
+        reduce_only: bool = False,
+    ) -> bool:
+        had_position = self.has_position
+        filled = super().fill(side, market_price, timestamp_ms, reduce_only=reduce_only)
+        if filled and not had_position and self.has_position:
+            self.isolated_entry_margin = (
+                abs(self.quantity) * self.average_price / self.leverage
+            )
+        elif filled and had_position and not self.has_position:
+            self.isolated_entry_margin = Decimal("0")
+        return filled
+
+    def liquidate_if_needed(self, market_price: Decimal, timestamp_ms: int) -> bool:
+        if not self.has_position or self.open_trade is None:
+            return False
+        unrealized = self.quantity * (market_price - self.average_price)
+        isolated_equity = self.isolated_entry_margin + unrealized + self.open_trade.funding
+        maintenance = abs(self.quantity) * market_price * self.maintenance_margin_rate
+        if isolated_equity > maintenance:
+            return False
+
+        fill_price = market_price * (
+            Decimal("1") + self.slippage_rate
+            if self.is_short
+            else Decimal("1") - self.slippage_rate
+        )
+        close_quantity = abs(self.quantity)
+        liquidation_fee = fill_price * close_quantity * self.liquidation_fee_rate
+        close_realized = self.quantity * (fill_price - self.average_price) - liquidation_fee
+        self.cash += close_realized
+        self.total_fees += liquidation_fee
+        self._complete_trade(fill_price, liquidation_fee, timestamp_ms)
+        self.quantity = Decimal("0")
+        self.average_price = Decimal("0")
+        self.isolated_entry_margin = Decimal("0")
+        self.liquidations += 1
+        return True
 
 
 def evaluate(task: EvaluationTask) -> dict:
@@ -93,15 +158,18 @@ def evaluate(task: EvaluationTask) -> dict:
             task.spec.reversal_confirmation_atr,
         )
         strategy.bootstrap(warmup)
+        if task.live_startup:
+            strategy.startup_alignment_checked = True
         parameters = ReplayParameters(
             task.spec.atr_period,
             task.spec.atr_multiplier,
             variant=task.spec.name,
+            fixed_take_profit_atr=task.spec.fixed_take_profit_atr,
             profit_activation_atr=task.spec.profit_activation_atr,
             profit_trailing_atr=task.spec.profit_trailing_atr,
             continuation_reentry_atr=task.spec.continuation_reentry_atr,
         )
-        broker = ReplayBroker(
+        broker_arguments = (
             instrument,
             Decimal(str(settings.initial_cash)),
             Decimal(str(instrument.position_fraction)),
@@ -109,7 +177,20 @@ def evaluate(task: EvaluationTask) -> dict:
             Decimal(str(instrument.slippage_bps)),
             Decimal(str(instrument.minimum_notional)),
         )
-        candidate = ReplayCandidate(parameters, strategy, broker)
+        if task.spec.maintenance_margin_rate is None:
+            broker = ReplayBroker(*broker_arguments)
+        else:
+            broker = ResearchLiquidationBroker(
+                *broker_arguments,
+                maintenance_margin_rate=Decimal(str(task.spec.maintenance_margin_rate)),
+                liquidation_fee_rate=Decimal(str(task.spec.liquidation_fee_rate or 0)),
+            )
+        candidate = ReplayCandidate(
+            parameters,
+            strategy,
+            broker,
+            direction="long_short" if instrument.allow_short else "long_only",
+        )
         tick_count = 0
         raw_trade_count = 0
         last_price: Decimal | None = None
@@ -125,6 +206,12 @@ def evaluate(task: EvaluationTask) -> dict:
         )
         for row in rows:
             tick = _tick_from_row(row)
+            if isinstance(broker, ResearchLiquidationBroker) and broker.liquidate_if_needed(
+                tick.price, tick.timestamp_ms
+            ):
+                candidate.pending_signal = None
+                candidate._clear_profit_state()
+                candidate.strategy.on_manual_flatten(tick.timestamp_ms)
             candidate.process_tick(tick, funding_rates)
             tick_count += 1
             raw_trade_count += (
@@ -145,10 +232,31 @@ def evaluate(task: EvaluationTask) -> dict:
         len(warmup),
         last_price,
     )
+    losing_trades = [trade for trade in broker.trades if trade.net_pnl < 0]
+    worst_net_pnl = min((trade.net_pnl for trade in losing_trades), default=Decimal("0"))
+    margin_loss_ratios = [
+        -trade.net_pnl
+        / (trade.entry_price * trade.quantity / Decimal(str(instrument.leverage)))
+        for trade in losing_trades
+    ]
     return {
         "period": task.period_name,
         "spec": asdict(task.spec),
         "result": asdict(result),
+        "closed_trade_risk": {
+            "worst_net_pnl": (
+                float(worst_net_pnl)
+            ),
+            "worst_loss_fraction_of_initial_equity": (
+                float(-worst_net_pnl / broker.initial_cash)
+            ),
+            "worst_loss_fraction_of_entry_margin": (
+                float(max(margin_loss_ratios)) if margin_loss_ratios else 0.0
+            ),
+            "losses_exceeding_entry_margin": sum(ratio > 1 for ratio in margin_loss_ratios),
+            "liquidations": getattr(broker, "liquidations", 0),
+            "note": "Closed trades only; intratrade liquidation and maintenance margin are not modeled.",
+        },
     }
 
 
@@ -670,6 +778,47 @@ def refined_atr_grid() -> list[CandidateSpec]:
     return [*both, *long_only]
 
 
+def forward_atr_sensitivity_grid() -> list[CandidateSpec]:
+    """Long-only ATR neighborhood for a fixed, live-equivalent replay."""
+    return [
+        CandidateSpec(
+            name=f"live_long_atr_{period}_{multiplier:g}",
+            instrument_id="soxl_perp_long",
+            atr_period=period,
+            atr_multiplier=multiplier,
+            trend_period=8,
+            minimum_efficiency=0.25,
+            reversal_confirmation_atr=0.25,
+        )
+        for period in (7, 10, 14, 21, 28, 32, 42, 56)
+        for multiplier in (0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 3.5, 4.0)
+    ]
+
+
+def atr_7x2_comparison_grid() -> list[CandidateSpec]:
+    """Compare the proposed ATR(7)x2 with the frozen ATR(32)x3 baseline."""
+    return [
+        CandidateSpec(
+            name="proposed_long_atr_7_2",
+            instrument_id="soxl_perp_long",
+            atr_period=7,
+            atr_multiplier=2.0,
+            trend_period=8,
+            minimum_efficiency=0.25,
+            reversal_confirmation_atr=0.25,
+        ),
+        CandidateSpec(
+            name="frozen_long_atr_32_3",
+            instrument_id="soxl_perp_long",
+            atr_period=32,
+            atr_multiplier=3.0,
+            trend_period=8,
+            minimum_efficiency=0.25,
+            reversal_confirmation_atr=0.25,
+        ),
+    ]
+
+
 def trend_filter_grid() -> list[CandidateSpec]:
     filter_settings = [(8, 0.0)] + [
         (period, threshold)
@@ -852,6 +1001,176 @@ def selected_grid() -> list[CandidateSpec]:
     ]
 
 
+def leveraged_profit_taker_grid() -> list[CandidateSpec]:
+    """Research the proposed isolated-margin allocation and fixed ATR target.
+
+    The replay broker sizes notional as cash * position_fraction * leverage.  The
+    fractions therefore make the account-level exposure explicit while the fixed
+    ATR target is evaluated against the ATR captured at entry.
+    """
+    fractions = (0.01, 0.025, 0.05, 0.075, 0.10)
+    targets: tuple[float | None, ...] = (None, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0)
+    return [
+        CandidateSpec(
+            name=(
+                f"long_atr_32_3_20x_margin_{fraction:g}_no_target"
+                if target is None
+                else f"long_atr_32_3_20x_margin_{fraction:g}_tp_{target:g}atr"
+            ),
+            instrument_id="soxl_perp_long",
+            atr_period=32,
+            atr_multiplier=3.0,
+            trend_period=8,
+            minimum_efficiency=0.25,
+            fixed_take_profit_atr=target,
+            leverage=20,
+            position_fraction=fraction,
+        )
+        for fraction in fractions
+        for target in targets
+    ]
+
+
+def leverage_equivalent_grid() -> list[CandidateSpec]:
+    """Hold approximately 0.5x account notional while varying leverage."""
+    settings = ((5, 0.10), (10, 0.05), (20, 0.025))
+    targets: tuple[float | None, ...] = (None, 1.0, 1.5, 2.0, 3.0)
+    return [
+        CandidateSpec(
+            name=(
+                f"long_atr_32_3_{leverage}x_margin_{fraction:g}_no_target"
+                if target is None
+                else f"long_atr_32_3_{leverage}x_margin_{fraction:g}_tp_{target:g}atr"
+            ),
+            instrument_id="soxl_perp_long",
+            atr_period=32,
+            atr_multiplier=3.0,
+            trend_period=8,
+            minimum_efficiency=0.25,
+            fixed_take_profit_atr=target,
+            leverage=leverage,
+            position_fraction=fraction,
+        )
+        for leverage, fraction in settings
+        for target in targets
+    ]
+
+
+def liquidation_aware_grid() -> list[CandidateSpec]:
+    """Stress the proposed 20x setup with an explicitly approximate liquidation rule."""
+    return [
+        CandidateSpec(
+            name=(
+                "long_atr_32_3_20x_margin_0.025_liquidation_no_target"
+                if target is None
+                else f"long_atr_32_3_20x_margin_0.025_liquidation_tp_{target:g}atr"
+            ),
+            instrument_id="soxl_perp_long",
+            atr_period=32,
+            atr_multiplier=3.0,
+            trend_period=8,
+            minimum_efficiency=0.25,
+            fixed_take_profit_atr=target,
+            leverage=20,
+            position_fraction=0.025,
+            maintenance_margin_rate=0.005,
+            liquidation_fee_rate=0.005,
+        )
+        for target in (None, 1.0, 1.5, 2.0, 3.0)
+    ]
+
+
+def live_outperformance_grid() -> list[CandidateSpec]:
+    """Fine exposure sweep around the live 1.25x baseline and 30% DD boundary."""
+    plans = (
+        ("live_2x_margin_0.625", 2, 0.625),
+        ("20x_margin_0.05", 20, 0.05),
+        ("20x_margin_0.0625", 20, 0.0625),
+        ("20x_margin_0.0675", 20, 0.0675),
+        ("20x_margin_0.07", 20, 0.07),
+        ("20x_margin_0.075", 20, 0.075),
+    )
+    targets: tuple[float | None, ...] = (None, 1.0, 1.5, 2.0, 3.0)
+    return [
+        CandidateSpec(
+            name=(
+                f"long_atr_32_3_{plan}_no_target"
+                if target is None
+                else f"long_atr_32_3_{plan}_tp_{target:g}atr"
+            ),
+            instrument_id="soxl_perp_long",
+            atr_period=32,
+            atr_multiplier=3.0,
+            trend_period=8,
+            minimum_efficiency=0.25,
+            fixed_take_profit_atr=target,
+            leverage=leverage,
+            position_fraction=fraction,
+        )
+        for plan, leverage, fraction in plans
+        for target in targets
+    ]
+
+
+def live_outperformance_liquidation_grid() -> list[CandidateSpec]:
+    """Boundary sweep using the public SOXLUSDT maintenance and liquidation rates."""
+    fractions = (0.05, 0.0625, 0.0675, 0.07, 0.075)
+    targets: tuple[float | None, ...] = (None, 1.5)
+    return [
+        CandidateSpec(
+            name=(
+                f"long_atr_32_3_20x_margin_{fraction:g}_binance_liquidation_no_target"
+                if target is None
+                else f"long_atr_32_3_20x_margin_{fraction:g}_binance_liquidation_tp_{target:g}atr"
+            ),
+            instrument_id="soxl_perp_long",
+            atr_period=32,
+            atr_multiplier=3.0,
+            trend_period=8,
+            minimum_efficiency=0.25,
+            fixed_take_profit_atr=target,
+            leverage=20,
+            position_fraction=fraction,
+            maintenance_margin_rate=0.025,
+            liquidation_fee_rate=0.015,
+        )
+        for fraction in fractions
+        for target in targets
+    ]
+
+
+def lower_leverage_liquidation_grid() -> list[CandidateSpec]:
+    """Test 5x plans around live exposure with the public SOXL risk rates."""
+    plans = (
+        ("5x_margin_0.20", 5, 0.20),
+        ("5x_margin_0.25", 5, 0.25),
+        ("5x_margin_0.27", 5, 0.27),
+        ("5x_margin_0.28", 5, 0.28),
+    )
+    targets: tuple[float | None, ...] = (None, 1.5)
+    return [
+        CandidateSpec(
+            name=(
+                f"long_atr_32_3_{plan}_binance_liquidation_no_target"
+                if target is None
+                else f"long_atr_32_3_{plan}_binance_liquidation_tp_{target:g}atr"
+            ),
+            instrument_id="soxl_perp_long",
+            atr_period=32,
+            atr_multiplier=3.0,
+            trend_period=8,
+            minimum_efficiency=0.25,
+            fixed_take_profit_atr=target,
+            leverage=leverage,
+            position_fraction=fraction,
+            maintenance_margin_rate=0.025,
+            liquidation_fee_rate=0.015,
+        )
+        for plan, leverage, fraction in plans
+        for target in targets
+    ]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config/settings.toml")
@@ -881,6 +1200,14 @@ def main() -> None:
             "continuation-reentry",
             "finalists",
             "selected",
+            "forward-atr-sensitivity",
+            "atr-7x2-comparison",
+            "leveraged-profit-taker",
+            "leverage-equivalent",
+            "liquidation-aware",
+            "live-outperformance",
+            "live-outperformance-liquidation",
+            "lower-leverage-liquidation",
         ),
         default="baseline",
     )
@@ -893,6 +1220,16 @@ def main() -> None:
         "--common-start-bar-minutes",
         type=int,
         help="Use a common replay start after warmup at this bar duration",
+    )
+    parser.add_argument(
+        "--live-startup",
+        action="store_true",
+        help="disable the one-time startup trend-alignment entry, matching live futures",
+    )
+    parser.add_argument(
+        "--end-ms",
+        type=int,
+        help="cap replay end timestamp for an exact comparison window",
     )
     args = parser.parse_args()
     settings = load_settings(args.config)
@@ -910,6 +1247,8 @@ def main() -> None:
                 "SELECT MAX(timestamp_ms) FROM agg_trades WHERE instrument_id = 'soxl_perp'"
             ).fetchone()[0]
         )
+    if args.end_ms is not None:
+        last_tick = min(last_tick, args.end_ms)
     common_start_bar_minutes = (
         args.common_start_bar_minutes or settings.strategy.bar_minutes
     )
@@ -934,6 +1273,10 @@ def main() -> None:
         ),
         "august": (
             int(datetime(2026, 8, 1, tzinfo=UTC).timestamp() * 1000),
+            last_tick,
+        ),
+        "august9_to_now": (
+            int(datetime(2026, 8, 9, tzinfo=UTC).timestamp() * 1000),
             last_tick,
         ),
         "train": (
@@ -976,10 +1319,18 @@ def main() -> None:
         "continuation-reentry": continuation_reentry_grid,
         "finalists": finalist_grid,
         "selected": selected_grid,
+        "forward-atr-sensitivity": forward_atr_sensitivity_grid,
+        "atr-7x2-comparison": atr_7x2_comparison_grid,
+        "leveraged-profit-taker": leveraged_profit_taker_grid,
+        "leverage-equivalent": leverage_equivalent_grid,
+        "liquidation-aware": liquidation_aware_grid,
+        "live-outperformance": live_outperformance_grid,
+        "live-outperformance-liquidation": live_outperformance_liquidation_grid,
+        "lower-leverage-liquidation": lower_leverage_liquidation_grid,
     }
     specs = grid_builders[args.grid]()
     tasks = [
-        EvaluationTask(args.config, spec, period_name, start_ms, end_ms)
+        EvaluationTask(args.config, spec, period_name, start_ms, end_ms, args.live_startup)
         for period_name in requested_splits
         for start_ms, end_ms in (periods[period_name],)
         for spec in specs
@@ -1003,6 +1354,7 @@ def main() -> None:
         "common_start_bar_minutes": common_start_bar_minutes,
         "periods": periods,
         "evaluated_splits": requested_splits,
+        "live_startup": args.live_startup,
         "results": results,
     }
     output = Path(args.output)
