@@ -2,17 +2,20 @@
 
 ## Scope
 
-- Replay period: `2026-08-01 00:00:00 UTC<br>08-01 08:00:00 北京时间` to `2026-08-31 01:26:36 UTC<br>08-31 09:26:36 北京时间`.
-- Market data cutoff: `2026-08-31 01:26:36 UTC<br>08-31 09:26:36 北京时间`; later August data was not present in the local warehouse when this report was generated.
-- Data replayed: 3,494,602 aggregated ticks representing 60,837,230 exchange trades; 200 closed 15-minute bars used only for warmup.
-- Funding observations in replay window: 91.
+- Replay period: `2026-08-01 00:00:00 UTC<br>08-01 08:00:00 北京时间` to `2026-08-31 23:59:59 UTC<br>09-01 07:59:59 北京时间`.
+- Market data cutoff: `2026-08-31 23:59:59 UTC<br>09-01 07:59:59 北京时间`; this covers the complete August calendar month.
+- Data replayed: 3,603,240 aggregated ticks representing 62,561,574 exchange trades; 200 closed 15-minute bars used only for warmup.
+- Funding observations in replay window: 93.
 
 ## Strategy And Assumptions
 
 - Direction: long-only; `SOXLUSDT` perpetual futures; 15-minute Tick ATR execution.
 - ATR: period 32, multiplier 3; trend efficiency: 8 bars / 0.25 minimum.
 - Reversal confirmation: 0.25 ATR; one action per K line.
-- Fixed profit-taker: disabled. Profit protection: disabled. Continuation re-entry: disabled.
+- Gross profit take-profit: disabled.
+- Net profit take-profit: disabled.
+- Dynamic net profit take-profit: disabled.
+- Fixed ATR profit-taker: disabled. Profit protection: disabled. Continuation re-entry: disabled.
 - Sizing: 2x isolated leverage x 62.5% equity allocation = 1.25x target exposure.
 - Costs: 5 bps per fill and 2 bps simulated slippage per fill; recorded funding is included.
 
@@ -20,7 +23,8 @@
 
 | Completed rounds | Wins | Win rate | Realized net PnL | Gross PnL | Fees | Funding | Mark-to-market equity | Period return | Max drawdown |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 44 | 15 | +34.09% | $5,723.73 | $11,959.63 | $6,168.81 | $-67.09 | $105,723.73 | +5.72% | -17.64% |
+| 46 | 16 | +34.78% | $7,614.72 | $14,120.82 | $6,439.01 | $-67.09 | $107,614.72 | +7.61% | -17.64% |
+Profit-taker/ATR exit signals: 0.
 
 The per-round return below is net PnL divided by entry notional, not return on margin. The period return is mark-to-market equity return on the $100,000 initial account.
 
@@ -72,6 +76,8 @@ The per-round return below is net PnL divided by entry notional, not return on m
 | 42 | LONG | 2026-08-30 10:21:43 UTC<br>08-30 18:21:43 北京时间 | 2026-08-30 12:15:03 UTC<br>08-30 20:15:03 北京时间 | 1h 53m 20s | $113.0126 | $112.6575 | 1166.86 | $113.2500 | 2026-08-30 10:54:40 UTC<br>08-30 18:54:40 北京时间 | $277.01 | $145.01 | $-414.39 | $131.66 | $0.00 | $-546.05 | -0.41% |
 | 43 | LONG | 2026-08-30 14:12:49 UTC<br>08-30 22:12:49 北京时间 | 2026-08-30 17:29:00 UTC<br>08-31 01:29:00 北京时间 | 3h 16m 11s | $113.0826 | $112.7674 | 1160.10 | $113.4000 | 2026-08-30 17:00:23 UTC<br>08-31 01:00:23 北京时间 | $368.20 | $236.83 | $-365.63 | $131.00 | $0.00 | $-496.63 | -0.38% |
 | 44 | LONG | 2026-08-31 00:06:55 UTC<br>08-31 08:06:55 北京时间 | 2026-08-31 00:56:48 UTC<br>08-31 08:56:48 北京时间 | 0h 49m 52s | $108.4417 | $109.5181 | 1204.03 | $110.7800 | 2026-08-31 00:32:52 UTC<br>08-31 08:32:52 北京时间 | $2,815.40 | $2,683.43 | $1,296.03 | $131.22 | $0.00 | $1,164.81 | +0.89% |
+| 45 | LONG | 2026-08-31 03:10:05 UTC<br>08-31 11:10:05 北京时间 | 2026-08-31 08:43:56 UTC<br>08-31 16:43:56 北京时间 | 5h 33m 50s | $109.9120 | $113.4073 | 1201.16 | $115.3300 | 2026-08-31 07:01:01 UTC<br>08-31 15:01:01 北京时间 | $6,507.91 | $6,372.64 | $4,198.46 | $134.12 | $0.00 | $4,064.34 | +3.08% |
+| 46 | LONG | 2026-08-31 13:30:08 UTC<br>08-31 21:30:08 北京时间 | 2026-08-31 15:02:45 UTC<br>08-31 23:02:45 北京时间 | 1h 32m 37s | $113.3927 | $111.7077 | 1209.05 | $115.1600 | 2026-08-31 13:31:45 UTC<br>08-31 21:31:45 北京时间 | $2,136.79 | $1,998.62 | $-2,037.27 | $136.08 | $0.00 | $-2,173.35 | -1.59% |
 
 \* Max net profit is an estimate using the maximum favorable price, actual entry fee, recorded funding, and an estimated exit taker fee at that price. It is not a realized fill.
 

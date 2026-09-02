@@ -337,6 +337,7 @@ class ATRTickStrategy:
         allow_long: bool = True,
         is_short: bool = False,
         emit_signals: bool = True,
+        allow_stop_exit_when_action_locked: bool = False,
     ) -> StrategySignal | None:
         bar_start = tick.timestamp_ms // self.bar_ms * self.bar_ms
         if (
@@ -420,10 +421,12 @@ class ATRTickStrategy:
                     return None
 
         if cross_up:
-            blocked_reason = _common_block_reason(
-                emit_signals, has_pending_order, self.action_this_bar
-            )
             reduce_only = allow_short and has_position and is_short
+            blocked_reason = _common_block_reason(
+                emit_signals,
+                has_pending_order,
+                self.action_this_bar and not (allow_stop_exit_when_action_locked and reduce_only),
+            )
             if blocked_reason is None and has_position and not reduce_only:
                 blocked_reason = "ALREADY_LONG"
             if blocked_reason is None and not has_position and not allow_long:
@@ -443,10 +446,12 @@ class ATRTickStrategy:
             self._record_cross("UP", tick.timestamp_ms, "BLOCKED", blocked_reason)
 
         if cross_down:
-            blocked_reason = _common_block_reason(
-                emit_signals, has_pending_order, self.action_this_bar
-            )
             reduce_only = has_position and not is_short
+            blocked_reason = _common_block_reason(
+                emit_signals,
+                has_pending_order,
+                self.action_this_bar and not (allow_stop_exit_when_action_locked and reduce_only),
+            )
             if blocked_reason is None and has_position and is_short:
                 blocked_reason = "ALREADY_SHORT"
             if blocked_reason is None and not has_position and not allow_short:

@@ -1,0 +1,933 @@
+{
+  "experiment": {
+    "id": "btc-eth-4h-reversal-support-resistance-overlay-v1",
+    "target_project": "/home/ldtdev/qt/Detect_support_and_resistance_levels",
+    "data_dir": "/home/ldtdev/qt/Detect_support_and_resistance_levels/data/mmtick_crypto",
+    "database": "/home/ldtdev/qt/mmtick/data/paper.db",
+    "assets": [
+      "btc_perp",
+      "eth_perp"
+    ],
+    "timeframe": "H4",
+    "signal_timing": "closed H4 bar",
+    "fill_timing": "next H4 bar open",
+    "factor": "BTC prior 6-bar return reversed for BTC and ETH",
+    "warmup_bars": 800,
+    "level_width_cap_atr": 1.5,
+    "level_distance_atr": [
+      0.5,
+      5.0
+    ],
+    "normal_cost_bps_round_trip": 14.0,
+    "stress_cost_bps_round_trip": 30.0,
+    "funding_included": true,
+    "liquidation_modeled": false,
+    "python_hash_seed": 0
+  },
+  "data": {
+    "btc_perp": {
+      "bars_15m": 232836,
+      "bars_h4": 14552,
+      "first": "2020-01-01T00:00:00+00:00",
+      "last": "2026-08-22T04:00:00+00:00",
+      "funding_events": 7277
+    },
+    "eth_perp": {
+      "bars_15m": 232836,
+      "bars_h4": 14552,
+      "first": "2020-01-01T00:00:00+00:00",
+      "last": "2026-08-22T04:00:00+00:00",
+      "funding_events": 7277
+    }
+  },
+  "configurations": {
+    "baseline": {
+      "mode": "baseline",
+      "location_cap_atr": 0.0,
+      "room_floor_atr": 0.0
+    },
+    "location_1p0": {
+      "mode": "location",
+      "location_cap_atr": 1.0,
+      "room_floor_atr": 0.0
+    },
+    "location_1p5": {
+      "mode": "location",
+      "location_cap_atr": 1.5,
+      "room_floor_atr": 0.0
+    },
+    "location_2p0": {
+      "mode": "location",
+      "location_cap_atr": 2.0,
+      "room_floor_atr": 0.0
+    },
+    "room_0p75": {
+      "mode": "room",
+      "location_cap_atr": 0.0,
+      "room_floor_atr": 0.75
+    },
+    "room_1p0": {
+      "mode": "room",
+      "location_cap_atr": 0.0,
+      "room_floor_atr": 1.0
+    },
+    "room_1p5": {
+      "mode": "room",
+      "location_cap_atr": 0.0,
+      "room_floor_atr": 1.5
+    },
+    "location_room_1p5_1p0": {
+      "mode": "location_room",
+      "location_cap_atr": 1.5,
+      "room_floor_atr": 1.0
+    },
+    "location_room_2p0_1p0": {
+      "mode": "location_room",
+      "location_cap_atr": 2.0,
+      "room_floor_atr": 1.0
+    }
+  },
+  "results": {
+    "btc_perp": {
+      "baseline": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.8797253425385424,
+            "max_drawdown": -0.9115658469222533,
+            "completed_trades": 1745,
+            "win_rate": 0.6045845272206304,
+            "profit_factor": 0.8419504834638231,
+            "total_fees": 70953.16578379714,
+            "total_funding": 1796.8696260629013,
+            "final_equity": 12027.465746145761
+          },
+          "stress": {
+            "net_return": -0.9921206824521933,
+            "max_drawdown": -0.9936279457703551,
+            "completed_trades": 1745,
+            "win_rate": 0.5146131805157593,
+            "profit_factor": 0.703669585259734,
+            "total_fees": 72564.97718076673,
+            "total_funding": 864.9731785374006,
+            "final_equity": 787.9317547806706
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.5529150134623557,
+            "max_drawdown": -0.5628917596063719,
+            "completed_trades": 254,
+            "win_rate": 0.5669291338582677,
+            "profit_factor": 0.589951204906449,
+            "total_fees": 16689.09761241916,
+            "total_funding": 129.4256289035926,
+            "final_equity": 44708.49865376443
+          },
+          "stress": {
+            "net_return": -0.7026556858305464,
+            "max_drawdown": -0.708701313486441,
+            "completed_trades": 254,
+            "win_rate": 0.49606299212598426,
+            "profit_factor": 0.440259896569726,
+            "total_fees": 27921.7587318558,
+            "total_funding": 89.17399670116644,
+            "final_equity": 29734.43141694537
+          }
+        }
+      },
+      "location_1p0": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.848157628338816,
+            "max_drawdown": -0.8656585235436487,
+            "completed_trades": 1278,
+            "win_rate": 0.47104851330203446,
+            "profit_factor": 0.7278825506551874,
+            "total_fees": 60104.10052423955,
+            "total_funding": 323.4233703159475,
+            "final_equity": 15184.237166118397
+          },
+          "stress": {
+            "net_return": -0.9801184104361891,
+            "max_drawdown": -0.9813291907381074,
+            "completed_trades": 1278,
+            "win_rate": 0.3810641627543036,
+            "profit_factor": 0.5418404212379465,
+            "total_fees": 68025.40441393218,
+            "total_funding": 156.55089470827022,
+            "final_equity": 1988.1589563810953
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.35953631752159965,
+            "max_drawdown": -0.35959236473252887,
+            "completed_trades": 185,
+            "win_rate": 0.44324324324324327,
+            "profit_factor": 0.5510348855872652,
+            "total_fees": 15385.12648638898,
+            "total_funding": 43.43455046901525,
+            "final_equity": 64046.36824784004
+          },
+          "stress": {
+            "net_return": -0.5240097085328882,
+            "max_drawdown": -0.5240097085328882,
+            "completed_trades": 185,
+            "win_rate": 0.35135135135135137,
+            "profit_factor": 0.3657177176179805,
+            "total_fees": 26872.93889005585,
+            "total_funding": 32.746150717030766,
+            "final_equity": 47599.02914671118
+          }
+        }
+      },
+      "location_1p5": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.9081132358086236,
+            "max_drawdown": -0.9302151328392153,
+            "completed_trades": 2131,
+            "win_rate": 0.4946034725480995,
+            "profit_factor": 0.847367819563153,
+            "total_fees": 96298.74509329816,
+            "total_funding": 1755.8028197998046,
+            "final_equity": 9188.676419137646
+          },
+          "stress": {
+            "net_return": -0.9964508087843563,
+            "max_drawdown": -0.996940863029742,
+            "completed_trades": 2131,
+            "win_rate": 0.41623650868137024,
+            "profit_factor": 0.6887489439652614,
+            "total_fees": 84762.7100743815,
+            "total_funding": 619.9339429008628,
+            "final_equity": 354.91912156436786
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.4682757994113459,
+            "max_drawdown": -0.4756340566490293,
+            "completed_trades": 305,
+            "win_rate": 0.5081967213114754,
+            "profit_factor": 0.6707748716627997,
+            "total_fees": 23340.86057505689,
+            "total_funding": 36.69319646230134,
+            "final_equity": 53172.42005886541
+          },
+          "stress": {
+            "net_return": -0.6739768888152107,
+            "max_drawdown": -0.6782339901207391,
+            "completed_trades": 305,
+            "win_rate": 0.4459016393442623,
+            "profit_factor": 0.48266217463514915,
+            "total_fees": 37589.0048504383,
+            "total_funding": 6.692238917233704,
+            "final_equity": 32602.311118478934
+          }
+        }
+      },
+      "location_2p0": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.8719842977778166,
+            "max_drawdown": -0.9254584068257876,
+            "completed_trades": 2147,
+            "win_rate": 0.5300419189566837,
+            "profit_factor": 0.8843531468388002,
+            "total_fees": 110785.33678801362,
+            "total_funding": 2268.180550751964,
+            "final_equity": 12801.570222218344
+          },
+          "stress": {
+            "net_return": -0.9953866646473642,
+            "max_drawdown": -0.9961935914080476,
+            "completed_trades": 2147,
+            "win_rate": 0.4550535631113181,
+            "profit_factor": 0.7526574179414787,
+            "total_fees": 99421.45984195622,
+            "total_funding": 907.4479097197941,
+            "final_equity": 461.33353526357416
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.44112027783885943,
+            "max_drawdown": -0.44885804404582164,
+            "completed_trades": 323,
+            "win_rate": 0.5170278637770898,
+            "profit_factor": 0.6994306449272049,
+            "total_fees": 24201.9679318937,
+            "total_funding": 183.66390424775452,
+            "final_equity": 55887.97221611405
+          },
+          "stress": {
+            "net_return": -0.667011966763801,
+            "max_drawdown": -0.6713583778869281,
+            "completed_trades": 323,
+            "win_rate": 0.44891640866873067,
+            "profit_factor": 0.5027574440500708,
+            "total_fees": 38419.49445124795,
+            "total_funding": 119.93860251784385,
+            "final_equity": 33298.8033236199
+          }
+        }
+      },
+      "room_0p75": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.899356243991073,
+            "max_drawdown": -0.923377114677705,
+            "completed_trades": 2090,
+            "win_rate": 0.5578947368421052,
+            "profit_factor": 0.8547895763116292,
+            "total_fees": 88978.42237211645,
+            "total_funding": 1641.0327215811496,
+            "final_equity": 10064.375600892701
+          },
+          "stress": {
+            "net_return": -0.995904429400944,
+            "max_drawdown": -0.9963509106161582,
+            "completed_trades": 2090,
+            "win_rate": 0.469377990430622,
+            "profit_factor": 0.7091228168815155,
+            "total_fees": 82594.91762707153,
+            "total_funding": 664.7024598221218,
+            "final_equity": 409.55705990559676
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.570599646521347,
+            "max_drawdown": -0.5783042947893487,
+            "completed_trades": 316,
+            "win_rate": 0.5221518987341772,
+            "profit_factor": 0.5860449838823016,
+            "total_fees": 19604.22740204107,
+            "total_funding": 44.86322436636846,
+            "final_equity": 42940.0353478653
+          },
+          "stress": {
+            "net_return": -0.7412693312017313,
+            "max_drawdown": -0.7454601630770772,
+            "completed_trades": 316,
+            "win_rate": 0.4462025316455696,
+            "profit_factor": 0.4182695862421247,
+            "total_fees": 31717.0633763436,
+            "total_funding": 16.14250247047056,
+            "final_equity": 25873.06687982687
+          }
+        }
+      },
+      "room_1p0": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.8943460906490143,
+            "max_drawdown": -0.9399274826489941,
+            "completed_trades": 2346,
+            "win_rate": 0.5277067348678602,
+            "profit_factor": 0.8637968081770487,
+            "total_fees": 98253.94757353034,
+            "total_funding": 1401.2228268289132,
+            "final_equity": 10565.39093509857
+          },
+          "stress": {
+            "net_return": -0.9970850721462727,
+            "max_drawdown": -0.9974122511360576,
+            "completed_trades": 2346,
+            "win_rate": 0.4458653026427962,
+            "profit_factor": 0.7168573856962587,
+            "total_fees": 87666.07514228436,
+            "total_funding": 576.9620122120832,
+            "final_equity": 291.49278537272824
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.583032380074868,
+            "max_drawdown": -0.5834682447182137,
+            "completed_trades": 372,
+            "win_rate": 0.5026881720430108,
+            "profit_factor": 0.629754334710974,
+            "total_fees": 22989.80354356724,
+            "total_funding": 38.158307280442216,
+            "final_equity": 41696.7619925132
+          },
+          "stress": {
+            "net_return": -0.7703193830787848,
+            "max_drawdown": -0.770375975991543,
+            "completed_trades": 372,
+            "win_rate": 0.4435483870967742,
+            "profit_factor": 0.45919530883789544,
+            "total_fees": 36026.1915129802,
+            "total_funding": 12.103610401722738,
+            "final_equity": 22968.061692121522
+          }
+        }
+      },
+      "room_1p5": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.9373732657558621,
+            "max_drawdown": -0.9502911570590028,
+            "completed_trades": 1928,
+            "win_rate": 0.4948132780082988,
+            "profit_factor": 0.7556281624015051,
+            "total_fees": 58469.74121267565,
+            "total_funding": 727.717127863443,
+            "final_equity": 6262.673424413792
+          },
+          "stress": {
+            "net_return": -0.9967250705592614,
+            "max_drawdown": -0.9970371456341082,
+            "completed_trades": 1928,
+            "win_rate": 0.4092323651452282,
+            "profit_factor": 0.595041337480807,
+            "total_fees": 60847.02850472971,
+            "total_funding": 258.7129459985629,
+            "final_equity": 327.49294407385787
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.5739166294149933,
+            "max_drawdown": -0.5743620229359313,
+            "completed_trades": 334,
+            "win_rate": 0.45209580838323354,
+            "profit_factor": 0.5519346547785091,
+            "total_fees": 20262.35680622978,
+            "total_funding": -106.06676950955273,
+            "final_equity": 42608.33705850067
+          },
+          "stress": {
+            "net_return": -0.7506458241664716,
+            "max_drawdown": -0.7507072646106328,
+            "completed_trades": 334,
+            "win_rate": 0.39820359281437123,
+            "profit_factor": 0.3803195070873829,
+            "total_fees": 32529.3276569719,
+            "total_funding": -97.85367437526726,
+            "final_equity": 24935.41758335283
+          }
+        }
+      },
+      "location_room_1p5_1p0": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.7708254232002799,
+            "max_drawdown": -0.8767133702994151,
+            "completed_trades": 1989,
+            "win_rate": 0.4891905480140774,
+            "profit_factor": 0.8925784401416542,
+            "total_fees": 134323.67020037884,
+            "total_funding": 2078.188796198852,
+            "final_equity": 22917.457679972005
+          },
+          "stress": {
+            "net_return": -0.9900576757307243,
+            "max_drawdown": -0.9911617740124875,
+            "completed_trades": 1989,
+            "win_rate": 0.40120663650075417,
+            "profit_factor": 0.7247714604867197,
+            "total_fees": 110701.55747572113,
+            "total_funding": 725.4074908036956,
+            "final_equity": 994.2324269275606
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.4125993938045795,
+            "max_drawdown": -0.4125993938045795,
+            "completed_trades": 296,
+            "win_rate": 0.4864864864864865,
+            "profit_factor": 0.6692996267184487,
+            "total_fees": 22710.464783767,
+            "total_funding": -37.61906029094678,
+            "final_equity": 58740.060619542055
+          },
+          "stress": {
+            "net_return": -0.6345928786077626,
+            "max_drawdown": -0.6345928786077626,
+            "completed_trades": 296,
+            "win_rate": 0.40540540540540543,
+            "profit_factor": 0.46546595874191615,
+            "total_fees": 36839.9234749361,
+            "total_funding": -50.732485540163,
+            "final_equity": 36540.71213922374
+          }
+        }
+      },
+      "location_room_2p0_1p0": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.7785747274128919,
+            "max_drawdown": -0.9096405282892435,
+            "completed_trades": 2277,
+            "win_rate": 0.5010979358805446,
+            "profit_factor": 0.9130506609964766,
+            "total_fees": 158577.6072964265,
+            "total_funding": 2411.898033279302,
+            "final_equity": 22142.527258710812
+          },
+          "stress": {
+            "net_return": -0.9938794269374399,
+            "max_drawdown": -0.9959447305301015,
+            "completed_trades": 2277,
+            "win_rate": 0.42116820377689945,
+            "profit_factor": 0.7710735834630635,
+            "total_fees": 128289.69023910204,
+            "total_funding": 861.4197912080461,
+            "final_equity": 612.0573062560062
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.4762026561050169,
+            "max_drawdown": -0.4762026561050169,
+            "completed_trades": 361,
+            "win_rate": 0.47368421052631576,
+            "profit_factor": 0.6564600824805003,
+            "total_fees": 25598.14835107367,
+            "total_funding": 65.37830707198167,
+            "final_equity": 52379.73438949831
+          },
+          "stress": {
+            "net_return": -0.7063741872296805,
+            "max_drawdown": -0.7063741872296805,
+            "completed_trades": 361,
+            "win_rate": 0.40443213296398894,
+            "profit_factor": 0.4498154674629691,
+            "total_fees": 40029.1250093573,
+            "total_funding": 32.980734389255964,
+            "final_equity": 29362.581277031957
+          }
+        }
+      }
+    },
+    "eth_perp": {
+      "baseline": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.9538569902070765,
+            "max_drawdown": -0.9638961561037821,
+            "completed_trades": 1745,
+            "win_rate": 0.5793696275071634,
+            "profit_factor": 0.8321829859904561,
+            "total_fees": 55516.5288616809,
+            "total_funding": 2056.1995468952473,
+            "final_equity": 4614.300979292352
+          },
+          "stress": {
+            "net_return": -0.9971857803162256,
+            "max_drawdown": -0.9976096445503032,
+            "completed_trades": 1745,
+            "win_rate": 0.520916905444126,
+            "profit_factor": 0.6983496711779105,
+            "total_fees": 54087.22203819994,
+            "total_funding": 939.6700338223876,
+            "final_equity": 281.4219683774426
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.6977987989935506,
+            "max_drawdown": -0.7165970741872068,
+            "completed_trades": 254,
+            "win_rate": 0.5590551181102362,
+            "profit_factor": 0.5493844590951836,
+            "total_fees": 13014.913631981955,
+            "total_funding": 586.9666495808924,
+            "final_equity": 30220.120100644937
+          },
+          "stress": {
+            "net_return": -0.7992251487620694,
+            "max_drawdown": -0.8113128164860887,
+            "completed_trades": 254,
+            "win_rate": 0.5,
+            "profit_factor": 0.4403502975505979,
+            "total_fees": 21985.10640223816,
+            "total_funding": 513.7691824912238,
+            "final_equity": 20077.485123793063
+          }
+        }
+      },
+      "location_1p0": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.9752178817874211,
+            "max_drawdown": -0.9763298688581131,
+            "completed_trades": 1242,
+            "win_rate": 0.4581320450885668,
+            "profit_factor": 0.6066948323047529,
+            "total_fees": 30576.025113763942,
+            "total_funding": 100.28422790183716,
+            "final_equity": 2478.211821257893
+          },
+          "stress": {
+            "net_return": -0.9966117044634832,
+            "max_drawdown": -0.9967180992901276,
+            "completed_trades": 1242,
+            "win_rate": 0.391304347826087,
+            "profit_factor": 0.4839000805418674,
+            "total_fees": 40380.62446302217,
+            "total_funding": 71.20079782384506,
+            "final_equity": 338.82955365167504
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.3123994849617723,
+            "max_drawdown": -0.3255400541026577,
+            "completed_trades": 192,
+            "win_rate": 0.4635416666666667,
+            "profit_factor": 0.6174293655266055,
+            "total_fees": 15148.683162826868,
+            "total_funding": 278.5761993656427,
+            "final_equity": 68760.05150382277
+          },
+          "stress": {
+            "net_return": -0.4947712041038741,
+            "max_drawdown": -0.4994468899555441,
+            "completed_trades": 192,
+            "win_rate": 0.3697916666666667,
+            "profit_factor": 0.41772408507526454,
+            "total_fees": 26316.48000734734,
+            "total_funding": 248.61171787992888,
+            "final_equity": 50522.87958961259
+          }
+        }
+      },
+      "location_1p5": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.9917970174499408,
+            "max_drawdown": -0.9934051301502728,
+            "completed_trades": 2077,
+            "win_rate": 0.5012036591237362,
+            "profit_factor": 0.770567123865729,
+            "total_fees": 47159.635065647264,
+            "total_funding": 1113.6086461191887,
+            "final_equity": 820.2982550059218
+          },
+          "stress": {
+            "net_return": -0.9996900093451293,
+            "max_drawdown": -0.9997298660792412,
+            "completed_trades": 2077,
+            "win_rate": 0.44342802118440056,
+            "profit_factor": 0.6443673959200922,
+            "total_fees": 51700.258704452826,
+            "total_funding": 529.0270352548914,
+            "final_equity": 30.999065487066368
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.5706576142434228,
+            "max_drawdown": -0.5716757106052384,
+            "completed_trades": 300,
+            "win_rate": 0.5033333333333333,
+            "profit_factor": 0.6049775941844832,
+            "total_fees": 18522.377892020853,
+            "total_funding": 376.47490405057556,
+            "final_equity": 42934.23857565772
+          },
+          "stress": {
+            "net_return": -0.7348177622347737,
+            "max_drawdown": -0.7352350928098463,
+            "completed_trades": 300,
+            "win_rate": 0.44333333333333336,
+            "profit_factor": 0.4508588568314826,
+            "total_fees": 30080.63131908429,
+            "total_funding": 324.972163696922,
+            "final_equity": 26518.22377652263
+          }
+        }
+      },
+      "location_2p0": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.9903898799569661,
+            "max_drawdown": -0.992414493048119,
+            "completed_trades": 2124,
+            "win_rate": 0.5296610169491526,
+            "profit_factor": 0.777798231620598,
+            "total_fees": 46621.54168261239,
+            "total_funding": 1170.9928423677725,
+            "final_equity": 961.0120043033844
+          },
+          "stress": {
+            "net_return": -0.9996732536293882,
+            "max_drawdown": -0.9997180046032241,
+            "completed_trades": 2124,
+            "win_rate": 0.4642184557438795,
+            "profit_factor": 0.6462951805076043,
+            "total_fees": 50125.10034160551,
+            "total_funding": 555.2898357266897,
+            "final_equity": 32.67463706117971
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.6000695529328686,
+            "max_drawdown": -0.6010179049862556,
+            "completed_trades": 313,
+            "win_rate": 0.5335463258785943,
+            "profit_factor": 0.661786103618884,
+            "total_fees": 19021.83588845141,
+            "total_funding": 465.0276768885485,
+            "final_equity": 39993.04470671314
+          },
+          "stress": {
+            "net_return": -0.7581899399173009,
+            "max_drawdown": -0.7585704885252434,
+            "completed_trades": 313,
+            "win_rate": 0.4792332268370607,
+            "profit_factor": 0.5231169061339342,
+            "total_fees": 30637.43050455774,
+            "total_funding": 388.57968224764994,
+            "final_equity": 24181.00600826991
+          }
+        }
+      },
+      "room_0p75": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.9733838870038245,
+            "max_drawdown": -0.9793814869565324,
+            "completed_trades": 2129,
+            "win_rate": 0.5439173320807891,
+            "profit_factor": 0.8230836277377641,
+            "total_fees": 59273.55507819022,
+            "total_funding": 1478.289955735765,
+            "final_equity": 2661.611299617547
+          },
+          "stress": {
+            "net_return": -0.9991124762869056,
+            "max_drawdown": -0.9992535912564692,
+            "completed_trades": 2129,
+            "win_rate": 0.48379520901831846,
+            "profit_factor": 0.6742020419207714,
+            "total_fees": 53668.0863975056,
+            "total_funding": 628.6881581150382,
+            "final_equity": 88.75237130943816
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.7246422112440313,
+            "max_drawdown": -0.7413199357217418,
+            "completed_trades": 309,
+            "win_rate": 0.4854368932038835,
+            "profit_factor": 0.5687921956081793,
+            "total_fees": 16248.987708499628,
+            "total_funding": 586.3059254184943,
+            "final_equity": 27535.77887559687
+          },
+          "stress": {
+            "net_return": -0.8324776401413283,
+            "max_drawdown": -0.8424127611794157,
+            "completed_trades": 309,
+            "win_rate": 0.42718446601941745,
+            "profit_factor": 0.4564327312772959,
+            "total_fees": 26684.923490452136,
+            "total_funding": 506.8545597343009,
+            "final_equity": 16752.235985867166
+          }
+        }
+      },
+      "room_1p0": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.9766199377902808,
+            "max_drawdown": -0.9799709805022475,
+            "completed_trades": 2337,
+            "win_rate": 0.5207531022678648,
+            "profit_factor": 0.8094610935838933,
+            "total_fees": 55610.003386512406,
+            "total_funding": 1084.6341663843277,
+            "final_equity": 2338.0062209719235
+          },
+          "stress": {
+            "net_return": -0.9994331887280528,
+            "max_drawdown": -0.999466253840462,
+            "completed_trades": 2337,
+            "win_rate": 0.4638425331621737,
+            "profit_factor": 0.6608888072918668,
+            "total_fees": 52087.59163568097,
+            "total_funding": 479.18494793568885,
+            "final_equity": 56.68112719471883
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.6643297365652886,
+            "max_drawdown": -0.6747039747920952,
+            "completed_trades": 378,
+            "win_rate": 0.47354497354497355,
+            "profit_factor": 0.6404662651644701,
+            "total_fees": 22381.462765837932,
+            "total_funding": 576.9521286090752,
+            "final_equity": 33567.02634347114
+          },
+          "stress": {
+            "net_return": -0.8170602837849756,
+            "max_drawdown": -0.8225783779303136,
+            "completed_trades": 378,
+            "win_rate": 0.4126984126984127,
+            "profit_factor": 0.5002262418858792,
+            "total_fees": 35054.123997699186,
+            "total_funding": 485.84858537662274,
+            "final_equity": 18293.97162150244
+          }
+        }
+      },
+      "room_1p5": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.9773816002486162,
+            "max_drawdown": -0.9785209000554156,
+            "completed_trades": 1891,
+            "win_rate": 0.4843997884717081,
+            "profit_factor": 0.7235843090156234,
+            "total_fees": 38538.78691551655,
+            "total_funding": 932.655438200932,
+            "final_equity": 2261.839975138375
+          },
+          "stress": {
+            "net_return": -0.9988997187382419,
+            "max_drawdown": -0.9989214880448817,
+            "completed_trades": 1891,
+            "win_rate": 0.4309888947646748,
+            "profit_factor": 0.5854203698984324,
+            "total_fees": 43461.30945662458,
+            "total_funding": 433.83268815039145,
+            "final_equity": 110.02812617581147
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.6230211926795011,
+            "max_drawdown": -0.6348345167829822,
+            "completed_trades": 306,
+            "win_rate": 0.4738562091503268,
+            "profit_factor": 0.6312341448519155,
+            "total_fees": 21316.88406244893,
+            "total_funding": 371.6064062748257,
+            "final_equity": 37697.880732049896
+          },
+          "stress": {
+            "net_return": -0.7694693937243179,
+            "max_drawdown": -0.7764232865870759,
+            "completed_trades": 306,
+            "win_rate": 0.41830065359477125,
+            "profit_factor": 0.49915394201496477,
+            "total_fees": 34755.08159104034,
+            "total_funding": 325.95740905855115,
+            "final_equity": 23053.06062756821
+          }
+        }
+      },
+      "location_room_1p5_1p0": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.9882508518448453,
+            "max_drawdown": -0.9897362947677061,
+            "completed_trades": 1946,
+            "win_rate": 0.48612538540596095,
+            "profit_factor": 0.7205013215746332,
+            "total_fees": 41557.89267854762,
+            "total_funding": 772.6891388130973,
+            "final_equity": 1174.9148155154742
+          },
+          "stress": {
+            "net_return": -0.9994669289936036,
+            "max_drawdown": -0.999490771464903,
+            "completed_trades": 1946,
+            "win_rate": 0.4234326824254882,
+            "profit_factor": 0.5821174941268278,
+            "total_fees": 46806.11736561325,
+            "total_funding": 379.2221198728914,
+            "final_equity": 53.30710063964143
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.44405739289599744,
+            "max_drawdown": -0.44405739289599744,
+            "completed_trades": 289,
+            "win_rate": 0.4913494809688581,
+            "profit_factor": 0.687876884612881,
+            "total_fees": 22410.65425523689,
+            "total_funding": 354.34503232514436,
+            "final_equity": 55594.26071040025
+          },
+          "stress": {
+            "net_return": -0.6503027890790981,
+            "max_drawdown": -0.6503027890790981,
+            "completed_trades": 289,
+            "win_rate": 0.41522491349480967,
+            "profit_factor": 0.5095681818902623,
+            "total_fees": 36256.59508754876,
+            "total_funding": 311.2685042489486,
+            "final_equity": 34969.721092090185
+          }
+        }
+      },
+      "location_room_2p0_1p0": {
+        "development_2022_2025": {
+          "normal": {
+            "net_return": -0.9881317718885474,
+            "max_drawdown": -0.9893683645662638,
+            "completed_trades": 2260,
+            "win_rate": 0.5030973451327434,
+            "profit_factor": 0.7546543433288158,
+            "total_fees": 47731.524479275504,
+            "total_funding": 814.71078998076,
+            "final_equity": 1186.822811145258
+          },
+          "stress": {
+            "net_return": -0.9996705949125229,
+            "max_drawdown": -0.9996799968265895,
+            "completed_trades": 2260,
+            "win_rate": 0.43849557522123894,
+            "profit_factor": 0.5976182346709346,
+            "total_fees": 48703.71587004933,
+            "total_funding": 372.566152807049,
+            "final_equity": 32.94050874771901
+          }
+        },
+        "confirmation_2026": {
+          "normal": {
+            "net_return": -0.5428749856231335,
+            "max_drawdown": -0.5428749856231335,
+            "completed_trades": 342,
+            "win_rate": 0.49122807017543857,
+            "profit_factor": 0.7209563014061379,
+            "total_fees": 25835.53505004852,
+            "total_funding": 455.28493483315935,
+            "final_equity": 45712.501437686646
+          },
+          "stress": {
+            "net_return": -0.7360463046903799,
+            "max_drawdown": -0.7360463046903799,
+            "completed_trades": 342,
+            "win_rate": 0.4269005847953216,
+            "profit_factor": 0.5712858154314231,
+            "total_fees": 40610.78869414416,
+            "total_funding": 387.55762317616814,
+            "final_equity": 26395.36953096201
+          }
+        }
+      }
+    }
+  },
+  "decision": {
+    "status": "research_diagnostic",
+    "approved_for_trading": false,
+    "promotion_gates": [
+      "positive normal and stress net return in both development and fresh confirmation",
+      "no material drawdown deterioration versus baseline",
+      "improvement must persist across BTC and ETH without selecting on confirmation"
+    ]
+  }
+}

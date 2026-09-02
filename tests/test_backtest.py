@@ -80,10 +80,7 @@ def test_default_replay_start_reserves_requested_warmup_bars() -> None:
     )
 
     assert _default_replay_start(connection, "test", 15, 3) == 3 * BAR_MS
-    assert (
-        _replay_start_with_warmup(connection, "test", 15, 0, 10, 3)
-        == 3 * BAR_MS
-    )
+    assert _replay_start_with_warmup(connection, "test", 15, 0, 10, 3) == 3 * BAR_MS
 
 
 @pytest.mark.parametrize("period,multiplier", [(7, 1.0), (14, 1.5), (21, 2.0)])
@@ -236,9 +233,7 @@ def test_short_only_candidate_opens_short_and_never_opens_long() -> None:
         Decimal("0"),
         Decimal("0"),
     )
-    candidate = ReplayCandidate(
-        ReplayParameters(2, 1), strategy, broker, direction="short_only"
-    )
+    candidate = ReplayCandidate(ReplayParameters(2, 1), strategy, broker, direction="short_only")
 
     candidate.process_tick(tick("short-signal", 3 * BAR_MS, 99), [])
     assert candidate.pending_signal is not None
@@ -332,6 +327,119 @@ def test_fixed_atr_take_profit_closes_on_next_tick() -> None:
 
     assert not candidate.broker.has_position
     assert candidate.broker.trades[0].net_pnl > 0
+
+
+def test_gross_profit_take_profit_closes_on_next_tick() -> None:
+    candidate = opened_candidate(
+        ReplayParameters(2, 4, variant="gross_pct", gross_profit_take_profit_pct=0.02)
+    )
+
+    candidate.process_tick(tick("take-profit", 3 * BAR_MS, 102), [])
+
+    assert candidate.pending_signal is not None
+    assert candidate.pending_signal.reason == "gross_profit_take_profit"
+    assert candidate.pending_signal.reduce_only
+    candidate.process_tick(tick("take-profit-fill", 3 * BAR_MS + 1, 102), [])
+    assert not candidate.broker.has_position
+    assert candidate.broker.trades[0].net_pnl > 0
+
+
+def test_gross_profit_take_profit_rejects_non_positive_percentage() -> None:
+    with pytest.raises(ValueError):
+        opened_candidate(ReplayParameters(2, 4, gross_profit_take_profit_pct=0))
+
+
+def test_net_profit_take_profit_closes_on_next_tick() -> None:
+    candidate = opened_candidate(
+        ReplayParameters(2, 4, variant="net_pct", net_profit_take_profit_pct=0.02)
+    )
+
+    candidate.process_tick(tick("take-profit", 3 * BAR_MS, 102), [])
+
+    assert candidate.pending_signal is not None
+    assert candidate.pending_signal.reason == "net_profit_take_profit"
+    candidate.process_tick(tick("take-profit-fill", 3 * BAR_MS + 1, 102), [])
+    assert not candidate.broker.has_position
+
+
+def test_dynamic_net_profit_take_profit_closes_on_next_tick() -> None:
+    candidate = opened_candidate(
+        ReplayParameters(
+            2,
+            4,
+            variant="dynamic_net_pct",
+            dynamic_net_profit_take_profit_base_pct=0.01,
+        )
+    )
+
+    candidate.process_tick(tick("dynamic-take-profit", 3 * BAR_MS, 104), [])
+
+    assert candidate.pending_signal is not None
+    assert candidate.pending_signal.reason == "net_profit_take_profit"
+    candidate.process_tick(tick("dynamic-take-profit-fill", 3 * BAR_MS + 1, 104), [])
+    assert not candidate.broker.has_position
+
+
+def test_net_and_gross_profit_take_profit_are_mutually_exclusive() -> None:
+    with pytest.raises(ValueError):
+        opened_candidate(
+            ReplayParameters(
+                2,
+                4,
+                gross_profit_take_profit_pct=0.01,
+                net_profit_take_profit_pct=0.01,
+            )
+        )
+
+
+def test_dynamic_profit_take_profit_options_are_mutually_exclusive() -> None:
+    with pytest.raises(ValueError):
+        opened_candidate(
+            ReplayParameters(
+                2,
+                4,
+                net_profit_take_profit_pct=0.01,
+                dynamic_net_profit_take_profit_base_pct=0.01,
+            )
+        )
+
+
+def test_dynamic_net_profit_take_profit_rejects_non_positive_target() -> None:
+    with pytest.raises(ValueError):
+        opened_candidate(ReplayParameters(2, 4, dynamic_net_profit_take_profit_base_pct=0))
+
+
+def test_stop_exit_can_bypass_action_lock() -> None:
+    candidate = opened_candidate(ReplayParameters(2, 4, stop_exit_policy="bypass_action_lock"))
+    candidate.strategy.previous_price = Decimal("100")
+    candidate.strategy.trailing_stop = Decimal("99")
+    candidate.strategy.action_this_bar = True
+    candidate.strategy.last_action_bar_start_ms = 3 * BAR_MS
+
+    candidate.process_tick(tick("locked-stop-cross", 3 * BAR_MS, 98), [])
+
+    assert candidate.pending_signal is not None
+    assert candidate.pending_signal.reason == "price_crossed_below_atr_stop"
+
+
+def test_stop_exit_can_latch_until_next_bar() -> None:
+    candidate = opened_candidate(ReplayParameters(2, 4, stop_exit_policy="latch_next_bar"))
+    candidate.strategy.previous_price = Decimal("100")
+    candidate.strategy.trailing_stop = Decimal("99")
+    candidate.strategy.action_this_bar = True
+    candidate.strategy.last_action_bar_start_ms = 3 * BAR_MS
+
+    candidate.process_tick(tick("locked-stop-cross", 3 * BAR_MS, 98), [])
+    assert candidate.pending_signal is None
+    candidate.process_tick(tick("next-bar", 4 * BAR_MS, 98), [])
+
+    assert candidate.pending_signal is not None
+    assert candidate.pending_signal.reason == "latched_price_crossed_below_atr_stop"
+
+
+def test_stop_exit_policy_is_validated() -> None:
+    with pytest.raises(ValueError):
+        opened_candidate(ReplayParameters(2, 4, stop_exit_policy="unknown"))
 
 
 def test_profit_protection_activates_then_closes_on_retrace() -> None:

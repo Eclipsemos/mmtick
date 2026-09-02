@@ -1,0 +1,438 @@
+{
+  "generated_at": "2026-08-29T06:53:07.372048+00:00",
+  "protocol": {
+    "signal_timeframe": "4h",
+    "path_timeframe": "5m",
+    "path_rule": "scan completed 5m bars in chronological order; stop wins if both levels hit",
+    "selection": "4h candidate was frozen by research/validation before OOS",
+    "funding": "same historical Binance funding events as the main report"
+  },
+  "symbols": {
+    "BTCUSDT": {
+      "candidate": "rolling-20-3point-at_swing-atr1.25-rr4",
+      "bars_4h": 14591,
+      "bars_5m": 700374,
+      "funding_events": 7296,
+      "signal_count": 148,
+      "periods": {
+        "research": {
+          "standard_ohlc": {
+            "total_trades": 50,
+            "win_rate": 0.24,
+            "average_r": 0.1929232298841092,
+            "profit_factor": 1.2215625886377284,
+            "net_return": 0.08899358622451059,
+            "max_drawdown": -0.12954232656112383,
+            "ambiguous_bars": 0,
+            "fees_paid": 1209.4712620423932,
+            "funding_paid": 0.0
+          },
+          "standard_ohlc_funding": {
+            "total_trades": 50,
+            "win_rate": 0.24,
+            "average_r": 0.23571603266838423,
+            "profit_factor": 1.2925599312805496,
+            "net_return": 0.11280611468315538,
+            "max_drawdown": -0.12699413300647003,
+            "ambiguous_bars": 0,
+            "fees_paid": 1231.0599831112438,
+            "funding_paid": 2217.961668923584
+          },
+          "path_5m": {
+            "total_trades": 50,
+            "win_rate": 0.24,
+            "average_r": 0.1929232298841092,
+            "profit_factor": 1.2215625886377284,
+            "net_return": 0.08899358622451059,
+            "max_drawdown": -0.12954232656112383,
+            "ambiguous_bars": 0,
+            "fees_paid": 1209.4712620423932,
+            "funding_paid": 0.0
+          },
+          "path_5m_funding": {
+            "total_trades": 50,
+            "win_rate": 0.24,
+            "average_r": 0.23571603266838423,
+            "profit_factor": 1.2925599312805496,
+            "net_return": 0.11280611468315538,
+            "max_drawdown": -0.12699413300647003,
+            "ambiguous_bars": 0,
+            "fees_paid": 1231.0599831112438,
+            "funding_paid": 2217.961668923584
+          },
+          "delta_net_return": 0.0,
+          "delta_net_return_funding": 0.0,
+          "delta_average_r": 0.0,
+          "delta_average_r_funding": 0.0,
+          "exit_reason_changes": {}
+        },
+        "validation": {
+          "standard_ohlc": {
+            "total_trades": 24,
+            "win_rate": 0.25,
+            "average_r": 0.21338124342725484,
+            "profit_factor": 1.2494249763609133,
+            "net_return": 0.04668111449914436,
+            "max_drawdown": -0.08035535500792866,
+            "ambiguous_bars": 0,
+            "fees_paid": 699.8659195550479,
+            "funding_paid": 0.0
+          },
+          "standard_ohlc_funding": {
+            "total_trades": 24,
+            "win_rate": 0.25,
+            "average_r": 0.2565560357678201,
+            "profit_factor": 1.3132536010756297,
+            "net_return": 0.057378944580965596,
+            "max_drawdown": -0.07627688431628876,
+            "ambiguous_bars": 0,
+            "fees_paid": 702.7130800956327,
+            "funding_paid": 1020.179354844729
+          },
+          "path_5m": {
+            "total_trades": 24,
+            "win_rate": 0.25,
+            "average_r": 0.21338124342725484,
+            "profit_factor": 1.2494249763609133,
+            "net_return": 0.04668111449914436,
+            "max_drawdown": -0.08035535500792866,
+            "ambiguous_bars": 0,
+            "fees_paid": 699.8659195550479,
+            "funding_paid": 0.0
+          },
+          "path_5m_funding": {
+            "total_trades": 24,
+            "win_rate": 0.25,
+            "average_r": 0.2565560357678201,
+            "profit_factor": 1.3132536010756297,
+            "net_return": 0.057378944580965596,
+            "max_drawdown": -0.07627688431628876,
+            "ambiguous_bars": 0,
+            "fees_paid": 702.7130800956327,
+            "funding_paid": 1020.179354844729
+          },
+          "delta_net_return": 0.0,
+          "delta_net_return_funding": 0.0,
+          "delta_average_r": 0.0,
+          "delta_average_r_funding": 0.0,
+          "exit_reason_changes": {}
+        },
+        "oos": {
+          "standard_ohlc": {
+            "total_trades": 24,
+            "win_rate": 0.25,
+            "average_r": 0.20733817504047694,
+            "profit_factor": 1.2281546293457763,
+            "net_return": 0.04518433323163307,
+            "max_drawdown": -0.053357714515382855,
+            "ambiguous_bars": 0,
+            "fees_paid": 854.470424087249,
+            "funding_paid": 0.0
+          },
+          "standard_ohlc_funding": {
+            "total_trades": 24,
+            "win_rate": 0.25,
+            "average_r": 0.2201529017174355,
+            "profit_factor": 1.248030158875493,
+            "net_return": 0.04842784495989583,
+            "max_drawdown": -0.051780330073940346,
+            "ambiguous_bars": 0,
+            "fees_paid": 855.520599573972,
+            "funding_paid": 321.4819050288313
+          },
+          "path_5m": {
+            "total_trades": 24,
+            "win_rate": 0.25,
+            "average_r": 0.20733817504047694,
+            "profit_factor": 1.2281546293457763,
+            "net_return": 0.04518433323163307,
+            "max_drawdown": -0.053357714515382855,
+            "ambiguous_bars": 0,
+            "fees_paid": 854.470424087249,
+            "funding_paid": 0.0
+          },
+          "path_5m_funding": {
+            "total_trades": 24,
+            "win_rate": 0.25,
+            "average_r": 0.2201529017174355,
+            "profit_factor": 1.248030158875493,
+            "net_return": 0.04842784495989583,
+            "max_drawdown": -0.051780330073940346,
+            "ambiguous_bars": 0,
+            "fees_paid": 855.520599573972,
+            "funding_paid": 321.4819050288313
+          },
+          "delta_net_return": 0.0,
+          "delta_net_return_funding": 0.0,
+          "delta_average_r": 0.0,
+          "delta_average_r_funding": 0.0,
+          "exit_reason_changes": {}
+        },
+        "full": {
+          "standard_ohlc": {
+            "total_trades": 97,
+            "win_rate": 0.25773195876288657,
+            "average_r": 0.2553024441185938,
+            "profit_factor": 1.2997695310996111,
+            "net_return": 0.2518294319380605,
+            "max_drawdown": -0.12954232656112383,
+            "ambiguous_bars": 0,
+            "fees_paid": 2932.8010228724665,
+            "funding_paid": 0.0
+          },
+          "standard_ohlc_funding": {
+            "total_trades": 97,
+            "win_rate": 0.25773195876288657,
+            "average_r": 0.28936211010490887,
+            "profit_factor": 1.3554422995211004,
+            "net_return": 0.2940390179183243,
+            "max_drawdown": -0.12699413300647003,
+            "ambiguous_bars": 0,
+            "fees_paid": 3004.312403742913,
+            "funding_paid": 3603.6371891203175
+          },
+          "path_5m": {
+            "total_trades": 97,
+            "win_rate": 0.25773195876288657,
+            "average_r": 0.2553024441185938,
+            "profit_factor": 1.2997695310996111,
+            "net_return": 0.2518294319380605,
+            "max_drawdown": -0.12954232656112383,
+            "ambiguous_bars": 0,
+            "fees_paid": 2932.8010228724665,
+            "funding_paid": 0.0
+          },
+          "path_5m_funding": {
+            "total_trades": 97,
+            "win_rate": 0.25773195876288657,
+            "average_r": 0.28936211010490887,
+            "profit_factor": 1.3554422995211004,
+            "net_return": 0.2940390179183243,
+            "max_drawdown": -0.12699413300647003,
+            "ambiguous_bars": 0,
+            "fees_paid": 3004.312403742913,
+            "funding_paid": 3603.6371891203175
+          },
+          "delta_net_return": 0.0,
+          "delta_net_return_funding": 0.0,
+          "delta_average_r": 0.0,
+          "delta_average_r_funding": 0.0,
+          "exit_reason_changes": {}
+        }
+      }
+    },
+    "ETHUSDT": {
+      "candidate": "rolling-10-3point-at_swing-atr0.5-rr4",
+      "bars_4h": 14591,
+      "bars_5m": 700374,
+      "funding_events": 7296,
+      "signal_count": 163,
+      "periods": {
+        "research": {
+          "standard_ohlc": {
+            "total_trades": 75,
+            "win_rate": 0.25333333333333335,
+            "average_r": 0.23206184962919588,
+            "profit_factor": 1.272655012691035,
+            "net_return": 0.16937036148306328,
+            "max_drawdown": -0.08160313615614084,
+            "ambiguous_bars": 0,
+            "fees_paid": 2214.46128680081,
+            "funding_paid": 0.0
+          },
+          "standard_ohlc_funding": {
+            "total_trades": 75,
+            "win_rate": 0.25333333333333335,
+            "average_r": 0.26425101910241433,
+            "profit_factor": 1.3241204521827588,
+            "net_return": 0.19803803131579611,
+            "max_drawdown": -0.07974285161702056,
+            "ambiguous_bars": 0,
+            "fees_paid": 2256.1732846968416,
+            "funding_paid": 2488.189165004531
+          },
+          "path_5m": {
+            "total_trades": 75,
+            "win_rate": 0.25333333333333335,
+            "average_r": 0.23206184962919588,
+            "profit_factor": 1.272655012691035,
+            "net_return": 0.16937036148306328,
+            "max_drawdown": -0.08160313615614084,
+            "ambiguous_bars": 0,
+            "fees_paid": 2214.46128680081,
+            "funding_paid": 0.0
+          },
+          "path_5m_funding": {
+            "total_trades": 75,
+            "win_rate": 0.25333333333333335,
+            "average_r": 0.26425101910241433,
+            "profit_factor": 1.3241204521827588,
+            "net_return": 0.19803803131579611,
+            "max_drawdown": -0.07974285161702056,
+            "ambiguous_bars": 0,
+            "fees_paid": 2256.1732846968416,
+            "funding_paid": 2488.189165004531
+          },
+          "delta_net_return": 0.0,
+          "delta_net_return_funding": 0.0,
+          "delta_average_r": 0.0,
+          "delta_average_r_funding": 0.0,
+          "exit_reason_changes": {}
+        },
+        "validation": {
+          "standard_ohlc": {
+            "total_trades": 20,
+            "win_rate": 0.25,
+            "average_r": 0.20271346584325153,
+            "profit_factor": 1.2299454845226399,
+            "net_return": 0.03655704770931112,
+            "max_drawdown": -0.11137711204412276,
+            "ambiguous_bars": 0,
+            "fees_paid": 763.3016198532615,
+            "funding_paid": 0.0
+          },
+          "standard_ohlc_funding": {
+            "total_trades": 20,
+            "win_rate": 0.25,
+            "average_r": 0.20947213887196328,
+            "profit_factor": 1.2440401698024037,
+            "net_return": 0.038055519158503914,
+            "max_drawdown": -0.11032898458349331,
+            "ambiguous_bars": 0,
+            "fees_paid": 764.1428647380768,
+            "funding_paid": 156.31523146215224
+          },
+          "path_5m": {
+            "total_trades": 20,
+            "win_rate": 0.25,
+            "average_r": 0.20271346584325153,
+            "profit_factor": 1.2299454845226399,
+            "net_return": 0.03655704770931112,
+            "max_drawdown": -0.11137711204412276,
+            "ambiguous_bars": 0,
+            "fees_paid": 763.3016198532615,
+            "funding_paid": 0.0
+          },
+          "path_5m_funding": {
+            "total_trades": 20,
+            "win_rate": 0.25,
+            "average_r": 0.20947213887196328,
+            "profit_factor": 1.2440401698024037,
+            "net_return": 0.038055519158503914,
+            "max_drawdown": -0.11032898458349331,
+            "ambiguous_bars": 0,
+            "fees_paid": 764.1428647380768,
+            "funding_paid": 156.31523146215224
+          },
+          "delta_net_return": 0.0,
+          "delta_net_return_funding": 0.0,
+          "delta_average_r": 0.0,
+          "delta_average_r_funding": 0.0,
+          "exit_reason_changes": {}
+        },
+        "oos": {
+          "standard_ohlc": {
+            "total_trades": 37,
+            "win_rate": 0.1891891891891892,
+            "average_r": -0.1064431977510188,
+            "profit_factor": 0.8574278078106358,
+            "net_return": -0.045358300728636336,
+            "max_drawdown": -0.10240964973519236,
+            "ambiguous_bars": 0,
+            "fees_paid": 1554.314041216821,
+            "funding_paid": 0.0
+          },
+          "standard_ohlc_funding": {
+            "total_trades": 37,
+            "win_rate": 0.1891891891891892,
+            "average_r": -0.10507543757021996,
+            "profit_factor": 0.8585896803987548,
+            "net_return": -0.04485461182034167,
+            "max_drawdown": -0.10190590606973327,
+            "ambiguous_bars": 0,
+            "fees_paid": 1553.7659150419497,
+            "funding_paid": 49.44527651593514
+          },
+          "path_5m": {
+            "total_trades": 37,
+            "win_rate": 0.1891891891891892,
+            "average_r": -0.1064431977510188,
+            "profit_factor": 0.8574278078106358,
+            "net_return": -0.045358300728636336,
+            "max_drawdown": -0.10240964973519236,
+            "ambiguous_bars": 0,
+            "fees_paid": 1554.314041216821,
+            "funding_paid": 0.0
+          },
+          "path_5m_funding": {
+            "total_trades": 37,
+            "win_rate": 0.1891891891891892,
+            "average_r": -0.10507543757021996,
+            "profit_factor": 0.8585896803987548,
+            "net_return": -0.04485461182034167,
+            "max_drawdown": -0.10190590606973327,
+            "ambiguous_bars": 0,
+            "fees_paid": 1553.7659150419497,
+            "funding_paid": 49.44527651593514
+          },
+          "delta_net_return": 0.0,
+          "delta_net_return_funding": 0.0,
+          "delta_average_r": 0.0,
+          "delta_average_r_funding": 0.0,
+          "exit_reason_changes": {}
+        },
+        "full": {
+          "standard_ohlc": {
+            "total_trades": 132,
+            "win_rate": 0.23484848484848486,
+            "average_r": 0.13273113425959868,
+            "profit_factor": 1.1317483427145312,
+            "net_return": 0.15713943383236217,
+            "max_drawdown": -0.11137711337617076,
+            "ambiguous_bars": 0,
+            "fees_paid": 4991.05732906862,
+            "funding_paid": 0.0
+          },
+          "standard_ohlc_funding": {
+            "total_trades": 132,
+            "win_rate": 0.23484848484848486,
+            "average_r": 0.15242786378804699,
+            "profit_factor": 1.1575510588986255,
+            "net_return": 0.18784746524440243,
+            "max_drawdown": -0.11032898848898186,
+            "ambiguous_bars": 0,
+            "fees_paid": 5103.955429831633,
+            "funding_paid": 2736.95234271791
+          },
+          "path_5m": {
+            "total_trades": 132,
+            "win_rate": 0.23484848484848486,
+            "average_r": 0.13273113425959868,
+            "profit_factor": 1.1317483427145312,
+            "net_return": 0.15713943383236217,
+            "max_drawdown": -0.11137711337617076,
+            "ambiguous_bars": 0,
+            "fees_paid": 4991.05732906862,
+            "funding_paid": 0.0
+          },
+          "path_5m_funding": {
+            "total_trades": 132,
+            "win_rate": 0.23484848484848486,
+            "average_r": 0.15242786378804699,
+            "profit_factor": 1.1575510588986255,
+            "net_return": 0.18784746524440243,
+            "max_drawdown": -0.11032898848898186,
+            "ambiguous_bars": 0,
+            "fees_paid": 5103.955429831633,
+            "funding_paid": 2736.95234271791
+          },
+          "delta_net_return": 0.0,
+          "delta_net_return_funding": 0.0,
+          "delta_average_r": 0.0,
+          "delta_average_r_funding": 0.0,
+          "exit_reason_changes": {}
+        }
+      }
+    }
+  }
+}

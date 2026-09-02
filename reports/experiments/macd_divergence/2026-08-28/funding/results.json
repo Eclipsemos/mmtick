@@ -1,0 +1,1266 @@
+{
+  "generated_at": "2026-08-29T05:19:03.464782+00:00",
+  "protocol": {
+    "frozen_candidates_source": "reports/experiments/macd_divergence/2026-08-28/results.json",
+    "funding_source": "Binance USD-M /fapi/v1/fundingRate",
+    "blank_mark_price_fallback": "close of completed bar containing event",
+    "funding_timing": "apply at containing bar start before intrabar exit checks",
+    "selection_uses_funding_oos": false
+  },
+  "symbols": {
+    "BTCUSDT": {
+      "candidate": "pivot-3-3-2point-at_swing-atr1.5-rr3",
+      "timeframe": "15m",
+      "bars": 233455,
+      "funding_events": 7296,
+      "signal_count": 2818,
+      "periods": {
+        "research": {
+          "without_funding": {
+            "total_trades": 903,
+            "win_rate": 0.24916943521594684,
+            "average_r": -0.12119747942146246,
+            "expectancy_r": -0.12119747942146246,
+            "profit_factor": 0.8707439248633502,
+            "net_return": -0.7054140867893645,
+            "max_drawdown": -0.7947344063885526,
+            "fees_paid": 61092.450531615155,
+            "funding_paid": 0.0,
+            "slippage_cost": 30546.2261096983,
+            "ambiguous_bars": 1
+          },
+          "with_funding": {
+            "total_trades": 903,
+            "win_rate": 0.24916943521594684,
+            "average_r": -0.12169452092634969,
+            "expectancy_r": -0.12169452092634969,
+            "profit_factor": 0.8700080337757669,
+            "net_return": -0.7068135814883395,
+            "max_drawdown": -0.7941744507894481,
+            "fees_paid": 60759.90130670338,
+            "funding_paid": -272.7978469473801,
+            "slippage_cost": 30379.95148260339,
+            "ambiguous_bars": 1
+          },
+          "funding_delta": -272.7978469473801
+        },
+        "validation": {
+          "without_funding": {
+            "total_trades": 563,
+            "win_rate": 0.261101243339254,
+            "average_r": -0.13025143003870898,
+            "expectancy_r": -0.13025143003870898,
+            "profit_factor": 0.8166492352153136,
+            "net_return": -0.55168385770838,
+            "max_drawdown": -0.6313819025965008,
+            "fees_paid": 48929.4631054989,
+            "funding_paid": 0.0,
+            "slippage_cost": 24464.732281781835,
+            "ambiguous_bars": 0
+          },
+          "with_funding": {
+            "total_trades": 563,
+            "win_rate": 0.261101243339254,
+            "average_r": -0.13033023903074514,
+            "expectancy_r": -0.13033023903074514,
+            "profit_factor": 0.8164675109556986,
+            "net_return": -0.551562830247854,
+            "max_drawdown": -0.6316225363790525,
+            "fees_paid": 48913.29011003506,
+            "funding_paid": -2.2756685947723234,
+            "slippage_cost": 24456.645783654672,
+            "ambiguous_bars": 0
+          },
+          "funding_delta": -2.2756685947723234
+        },
+        "oos": {
+          "without_funding": {
+            "total_trades": 498,
+            "win_rate": 0.24096385542168675,
+            "average_r": -0.22163669414567905,
+            "expectancy_r": -0.22163669414567905,
+            "profit_factor": 0.7365124383212045,
+            "net_return": -0.6866804250862867,
+            "max_drawdown": -0.7049367184165655,
+            "fees_paid": 42488.762398214516,
+            "funding_paid": 0.0,
+            "slippage_cost": 21244.381001711292,
+            "ambiguous_bars": 0
+          },
+          "with_funding": {
+            "total_trades": 498,
+            "win_rate": 0.24096385542168675,
+            "average_r": -0.22176003527168298,
+            "expectancy_r": -0.22176003527168298,
+            "profit_factor": 0.736493331630507,
+            "net_return": -0.6868865061046756,
+            "max_drawdown": -0.7052145675964305,
+            "fees_paid": 42490.155995405454,
+            "funding_paid": -44.617510124822914,
+            "slippage_cost": 21245.077801350755,
+            "ambiguous_bars": 0
+          },
+          "funding_delta": -44.617510124822914
+        },
+        "full": {
+          "without_funding": {
+            "total_trades": 1963,
+            "win_rate": 0.25063678043810494,
+            "average_r": -0.1489918638109551,
+            "expectancy_r": -0.1489918638109551,
+            "profit_factor": 0.8567399044535762,
+            "net_return": -0.9583384720611702,
+            "max_drawdown": -0.9718014944424372,
+            "fees_paid": 81139.5957741074,
+            "funding_paid": 0.0,
+            "slippage_cost": 40569.7989220756,
+            "ambiguous_bars": 1
+          },
+          "with_funding": {
+            "total_trades": 1963,
+            "win_rate": 0.25063678043810494,
+            "average_r": -0.14927284997948134,
+            "expectancy_r": -0.14927284997948134,
+            "profit_factor": 0.8561301994938342,
+            "net_return": -0.9585511886855064,
+            "max_drawdown": -0.9717146165725528,
+            "fees_paid": 80708.93861337141,
+            "funding_paid": -278.9671779143547,
+            "slippage_cost": 40354.47032617599,
+            "ambiguous_bars": 1
+          },
+          "funding_delta": -278.9671779143547
+        }
+      },
+      "timeframes": {
+        "5": {
+          "candidate": "rolling-20-2point-at_swing-atr2-rr1.5",
+          "timeframe": "5m",
+          "bars": 700374,
+          "funding_events": 7296,
+          "signal_count": 27504,
+          "periods": {
+            "research": {
+              "without_funding": {
+                "total_trades": 4305,
+                "win_rate": 0.37514518002322883,
+                "average_r": -0.20569453577567431,
+                "expectancy_r": -0.20569453577567431,
+                "profit_factor": 0.7157689845973645,
+                "net_return": -0.999884980104109,
+                "max_drawdown": -0.9998874700322998,
+                "fees_paid": 58949.95245508061,
+                "funding_paid": 0.0,
+                "slippage_cost": 29474.975764997514,
+                "ambiguous_bars": 2
+              },
+              "with_funding": {
+                "total_trades": 4305,
+                "win_rate": 0.37514518002322883,
+                "average_r": -0.20599223802612465,
+                "expectancy_r": -0.20599223802612465,
+                "profit_factor": 0.7165434681404189,
+                "net_return": -0.9998864175234304,
+                "max_drawdown": -0.9998888531758748,
+                "fees_paid": 59095.177121483845,
+                "funding_paid": 248.2189104368191,
+                "slippage_cost": 29547.588096978103,
+                "ambiguous_bars": 2
+              },
+              "funding_delta": 248.2189104368191
+            },
+            "validation": {
+              "without_funding": {
+                "total_trades": 2913,
+                "win_rate": 0.37727428767593546,
+                "average_r": -0.2641451692680743,
+                "expectancy_r": -0.2641451692680743,
+                "profit_factor": 0.6168714763019236,
+                "net_return": -0.9995430259587533,
+                "max_drawdown": -0.999564442394214,
+                "fees_paid": 57911.12779983979,
+                "funding_paid": 0.0,
+                "slippage_cost": 28955.56337641544,
+                "ambiguous_bars": 4
+              },
+              "with_funding": {
+                "total_trades": 2913,
+                "win_rate": 0.37727428767593546,
+                "average_r": -0.26413275443201323,
+                "expectancy_r": -0.26413275443201323,
+                "profit_factor": 0.6171573420228891,
+                "net_return": -0.9995426409147968,
+                "max_drawdown": -0.9995641463947061,
+                "fees_paid": 57988.6224600795,
+                "funding_paid": 155.80471438457886,
+                "slippage_cost": 28994.31070495433,
+                "ambiguous_bars": 4
+              },
+              "funding_delta": 155.80471438457886
+            },
+            "oos": {
+              "without_funding": {
+                "total_trades": 2755,
+                "win_rate": 0.3680580762250454,
+                "average_r": -0.3226653018965925,
+                "expectancy_r": -0.3226653018965925,
+                "profit_factor": 0.6629110141853447,
+                "net_return": -0.9998152516280213,
+                "max_drawdown": -0.9998237166896066,
+                "fees_paid": 63526.42973712988,
+                "funding_paid": 0.0,
+                "slippage_cost": 31763.214680889712,
+                "ambiguous_bars": 1
+              },
+              "with_funding": {
+                "total_trades": 2755,
+                "win_rate": 0.3680580762250454,
+                "average_r": -0.3228173009197104,
+                "expectancy_r": -0.3228173009197104,
+                "profit_factor": 0.662840531006169,
+                "net_return": -0.99981576431527,
+                "max_drawdown": -0.9998243562672701,
+                "fees_paid": 63496.55274900362,
+                "funding_paid": -40.86498943064523,
+                "slippage_cost": 31748.27618666651,
+                "ambiguous_bars": 1
+              },
+              "funding_delta": -40.86498943064523
+            },
+            "full": {
+              "without_funding": {
+                "total_trades": 6791,
+                "win_rate": 0.37564423501693417,
+                "average_r": -0.24108624748920413,
+                "expectancy_r": -0.24108624748920413,
+                "profit_factor": 0.7157605067190317,
+                "net_return": -0.9999998746438591,
+                "max_drawdown": -0.9999998773575443,
+                "fees_paid": 58956.61469900211,
+                "funding_paid": 0.0,
+                "slippage_cost": 29478.30688689842,
+                "ambiguous_bars": 6
+              },
+              "with_funding": {
+                "total_trades": 6796,
+                "win_rate": 0.3755150088287228,
+                "average_r": -0.2413278334373874,
+                "expectancy_r": -0.2413278334373874,
+                "profit_factor": 0.7165350746852667,
+                "net_return": -0.9999998748713099,
+                "max_drawdown": -0.9999998775545583,
+                "fees_paid": 59101.76629532797,
+                "funding_paid": 248.2370062660596,
+                "slippage_cost": 29550.882683840966,
+                "ambiguous_bars": 6
+              },
+              "funding_delta": 248.2370062660596
+            }
+          }
+        },
+        "30": {
+          "candidate": "rolling-10-3point-at_swing-atr2-rr2.5",
+          "timeframe": "30m",
+          "bars": 116729,
+          "funding_events": 7296,
+          "signal_count": 1179,
+          "periods": {
+            "research": {
+              "without_funding": {
+                "total_trades": 273,
+                "win_rate": 0.29304029304029305,
+                "average_r": -0.027889817222598,
+                "expectancy_r": -0.027889817222598,
+                "profit_factor": 0.9496682025399078,
+                "net_return": -0.10454900752151708,
+                "max_drawdown": -0.32789068445472325,
+                "fees_paid": 12008.980798156339,
+                "funding_paid": 0.0,
+                "slippage_cost": 6004.490701420999,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 273,
+                "win_rate": 0.29304029304029305,
+                "average_r": -0.020745254863830765,
+                "expectancy_r": -0.020745254863830765,
+                "profit_factor": 0.9584071399569956,
+                "net_return": -0.08688754016837319,
+                "max_drawdown": -0.3163626181444293,
+                "fees_paid": 12160.105178973812,
+                "funding_paid": 2170.541714919625,
+                "slippage_cost": 6080.052884721399,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 2170.541714919625
+            },
+            "validation": {
+              "without_funding": {
+                "total_trades": 209,
+                "win_rate": 0.3062200956937799,
+                "average_r": -0.010416829660939583,
+                "expectancy_r": -0.010416829660939583,
+                "profit_factor": 0.9668995740965041,
+                "net_return": -0.04742242328481516,
+                "max_drawdown": -0.1693097437983525,
+                "fees_paid": 12591.478853824961,
+                "funding_paid": 0.0,
+                "slippage_cost": 6295.739992711541,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 209,
+                "win_rate": 0.3062200956937799,
+                "average_r": -0.0050586186629945715,
+                "expectancy_r": -0.0050586186629945715,
+                "profit_factor": 0.974346200887003,
+                "net_return": -0.036776832289496575,
+                "max_drawdown": -0.1600211223094473,
+                "fees_paid": 12637.684399626969,
+                "funding_paid": 990.4970167649227,
+                "slippage_cost": 6318.842771347361,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 990.4970167649227
+            },
+            "oos": {
+              "without_funding": {
+                "total_trades": 198,
+                "win_rate": 0.29797979797979796,
+                "average_r": -0.048651125911538765,
+                "expectancy_r": -0.048651125911538765,
+                "profit_factor": 0.9155441537896477,
+                "net_return": -0.11446682652359819,
+                "max_drawdown": -0.23576823577474568,
+                "fees_paid": 12786.239400744627,
+                "funding_paid": 0.0,
+                "slippage_cost": 6393.120009679384,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 198,
+                "win_rate": 0.29797979797979796,
+                "average_r": -0.050506799013048505,
+                "expectancy_r": -0.050506799013048505,
+                "profit_factor": 0.9131502144460523,
+                "net_return": -0.11772126917965953,
+                "max_drawdown": -0.23570699215322932,
+                "fees_paid": 12764.472644445212,
+                "funding_paid": -302.10327686071446,
+                "slippage_cost": 6382.2366292900315,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": -302.10327686071446
+            },
+            "full": {
+              "without_funding": {
+                "total_trades": 680,
+                "win_rate": 0.2985294117647059,
+                "average_r": -0.02856464769322103,
+                "expectancy_r": -0.02856464769322103,
+                "profit_factor": 0.9458276573551089,
+                "net_return": -0.2446522936041685,
+                "max_drawdown": -0.4784569008446602,
+                "fees_paid": 34190.52052075143,
+                "funding_paid": 0.0,
+                "slippage_cost": 17095.261333197817,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 680,
+                "win_rate": 0.2985294117647059,
+                "average_r": -0.024589782474963632,
+                "expectancy_r": -0.024589782474963632,
+                "profit_factor": 0.951198403203915,
+                "net_return": -0.22400862348085848,
+                "max_drawdown": -0.46398238822885784,
+                "fees_paid": 34926.47778284593,
+                "funding_paid": 2809.267776723505,
+                "slippage_cost": 17463.23997860647,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 2809.267776723505
+            }
+          }
+        },
+        "60": {
+          "candidate": "pivot-3-3-3point-at_swing-atr1-rr4",
+          "timeframe": "60m",
+          "bars": 58364,
+          "funding_events": 7296,
+          "signal_count": 92,
+          "periods": {
+            "research": {
+              "without_funding": {
+                "total_trades": 31,
+                "win_rate": 0.2903225806451613,
+                "average_r": 0.3898978469962848,
+                "expectancy_r": 0.3898978469962848,
+                "profit_factor": 1.4727215237237332,
+                "net_return": 0.11941965587687964,
+                "max_drawdown": -0.06019951347046257,
+                "fees_paid": 1645.1277409671238,
+                "funding_paid": 0.0,
+                "slippage_cost": 822.564446869873,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 31,
+                "win_rate": 0.2903225806451613,
+                "average_r": 0.4016088930539006,
+                "expectancy_r": 0.4016088930539006,
+                "profit_factor": 1.4872572592782736,
+                "net_return": 0.12332446210468162,
+                "max_drawdown": -0.06066888637027623,
+                "fees_paid": 1647.5606231184206,
+                "funding_paid": 383.08527576885933,
+                "slippage_cost": 823.7808883873081,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 383.08527576885933
+            },
+            "validation": {
+              "without_funding": {
+                "total_trades": 27,
+                "win_rate": 0.2962962962962963,
+                "average_r": 0.3704330404977998,
+                "expectancy_r": 0.3704330404977998,
+                "profit_factor": 1.4574529635689846,
+                "net_return": 0.09736721022876393,
+                "max_drawdown": -0.07764000553390321,
+                "fees_paid": 2380.309164800418,
+                "funding_paid": 0.0,
+                "slippage_cost": 1190.155114687621,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 27,
+                "win_rate": 0.2962962962962963,
+                "average_r": 0.36611748751514805,
+                "expectancy_r": 0.36611748751514805,
+                "profit_factor": 1.451936052787663,
+                "net_return": 0.09612991893107936,
+                "max_drawdown": -0.07798385239840999,
+                "fees_paid": 2377.4665836094678,
+                "funding_paid": -105.054902783793,
+                "slippage_cost": 1188.733823174622,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": -105.054902783793
+            },
+            "oos": {
+              "without_funding": {
+                "total_trades": 31,
+                "win_rate": 0.16129032258064516,
+                "average_r": -0.3258730950455581,
+                "expectancy_r": -0.3258730950455581,
+                "profit_factor": 0.6387651161651348,
+                "net_return": -0.1009684231850656,
+                "max_drawdown": -0.14757904134349908,
+                "fees_paid": 3092.791921104672,
+                "funding_paid": 0.0,
+                "slippage_cost": 1546.39574224615,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 31,
+                "win_rate": 0.16129032258064516,
+                "average_r": -0.32572058469077,
+                "expectancy_r": -0.32572058469077,
+                "profit_factor": 0.6371520678028507,
+                "net_return": -0.10085598416529029,
+                "max_drawdown": -0.14703870248024067,
+                "fees_paid": 3092.6421789058304,
+                "funding_paid": 5.604515979863261,
+                "slippage_cost": 1546.3208713633198,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 5.604515979863261
+            },
+            "full": {
+              "without_funding": {
+                "total_trades": 89,
+                "win_rate": 0.24719101123595505,
+                "average_r": 0.13467931914509126,
+                "expectancy_r": 0.13467931914509126,
+                "profit_factor": 1.1251239808226083,
+                "net_return": 0.10438330838426624,
+                "max_drawdown": -0.1475790653732886,
+                "fees_paid": 8108.9233146205015,
+                "funding_paid": 0.0,
+                "slippage_cost": 4054.4625613789194,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 89,
+                "win_rate": 0.24719101123595505,
+                "average_r": 0.13750235642883196,
+                "expectancy_r": 0.13750235642883196,
+                "profit_factor": 1.1284022522932708,
+                "net_return": 0.10712456246309632,
+                "max_drawdown": -0.14703871309557348,
+                "fees_paid": 8126.226895213744,
+                "funding_paid": 271.9754898123974,
+                "slippage_cost": 4063.1143527997524,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 271.9754898123974
+            }
+          }
+        },
+        "240": {
+          "candidate": "rolling-20-3point-at_swing-atr1.25-rr4",
+          "timeframe": "240m",
+          "bars": 14591,
+          "funding_events": 7296,
+          "signal_count": 148,
+          "periods": {
+            "research": {
+              "without_funding": {
+                "total_trades": 50,
+                "win_rate": 0.24,
+                "average_r": 0.1929232298841092,
+                "expectancy_r": 0.1929232298841092,
+                "profit_factor": 1.2215625886377284,
+                "net_return": 0.08899358622451059,
+                "max_drawdown": -0.12954232656112383,
+                "fees_paid": 1209.4712620423932,
+                "funding_paid": 0.0,
+                "slippage_cost": 604.7360595638344,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 50,
+                "win_rate": 0.24,
+                "average_r": 0.23571603266838423,
+                "expectancy_r": 0.23571603266838423,
+                "profit_factor": 1.2925599312805496,
+                "net_return": 0.11280611468315538,
+                "max_drawdown": -0.12699413300647003,
+                "fees_paid": 1231.0599831112438,
+                "funding_paid": 2217.961668923584,
+                "slippage_cost": 615.5304279252304,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 2217.961668923584
+            },
+            "validation": {
+              "without_funding": {
+                "total_trades": 24,
+                "win_rate": 0.25,
+                "average_r": 0.21338124342725484,
+                "expectancy_r": 0.21338124342725484,
+                "profit_factor": 1.2494249763609133,
+                "net_return": 0.04668111449914436,
+                "max_drawdown": -0.08035535500792866,
+                "fees_paid": 699.8659195550479,
+                "funding_paid": 0.0,
+                "slippage_cost": 349.9331884939462,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 24,
+                "win_rate": 0.25,
+                "average_r": 0.2565560357678201,
+                "expectancy_r": 0.2565560357678201,
+                "profit_factor": 1.3132536010756297,
+                "net_return": 0.057378944580965596,
+                "max_drawdown": -0.07627688431628876,
+                "fees_paid": 702.7130800956327,
+                "funding_paid": 1020.179354844729,
+                "slippage_cost": 351.3567709192145,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 1020.179354844729
+            },
+            "oos": {
+              "without_funding": {
+                "total_trades": 24,
+                "win_rate": 0.25,
+                "average_r": 0.20733817504047694,
+                "expectancy_r": 0.20733817504047694,
+                "profit_factor": 1.2281546293457763,
+                "net_return": 0.04518433323163307,
+                "max_drawdown": -0.053357714515382855,
+                "fees_paid": 854.470424087249,
+                "funding_paid": 0.0,
+                "slippage_cost": 427.23544404919215,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 24,
+                "win_rate": 0.25,
+                "average_r": 0.2201529017174355,
+                "expectancy_r": 0.2201529017174355,
+                "profit_factor": 1.248030158875493,
+                "net_return": 0.04842784495989583,
+                "max_drawdown": -0.051780330073940346,
+                "fees_paid": 855.520599573972,
+                "funding_paid": 321.4819050288313,
+                "slippage_cost": 427.7605319703349,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 321.4819050288313
+            },
+            "full": {
+              "without_funding": {
+                "total_trades": 97,
+                "win_rate": 0.25773195876288657,
+                "average_r": 0.2553024441185938,
+                "expectancy_r": 0.2553024441185938,
+                "profit_factor": 1.2997695310996111,
+                "net_return": 0.2518294319380605,
+                "max_drawdown": -0.12954232656112383,
+                "fees_paid": 2932.8010228724665,
+                "funding_paid": 0.0,
+                "slippage_cost": 1466.4016947220698,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 97,
+                "win_rate": 0.25773195876288657,
+                "average_r": 0.28936211010490887,
+                "expectancy_r": 0.28936211010490887,
+                "profit_factor": 1.3554422995211004,
+                "net_return": 0.2940390179183243,
+                "max_drawdown": -0.12699413300647003,
+                "fees_paid": 3004.312403742913,
+                "funding_paid": 3603.6371891203175,
+                "slippage_cost": 1502.1574141408335,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 3603.6371891203175
+            }
+          }
+        }
+      }
+    },
+    "ETHUSDT": {
+      "candidate": "rolling-20-2point-at_swing-atr2-rr2.5",
+      "timeframe": "15m",
+      "bars": 233455,
+      "funding_events": 7296,
+      "signal_count": 8089,
+      "periods": {
+        "research": {
+          "without_funding": {
+            "total_trades": 938,
+            "win_rate": 0.2867803837953092,
+            "average_r": -0.05554288042631767,
+            "expectancy_r": -0.05554288042631767,
+            "profit_factor": 0.8982518579776791,
+            "net_return": -0.47143742700995916,
+            "max_drawdown": -0.5478157095079585,
+            "fees_paid": 28088.119516796152,
+            "funding_paid": 0.0,
+            "slippage_cost": 14044.059557935532,
+            "ambiguous_bars": 0
+          },
+          "with_funding": {
+            "total_trades": 938,
+            "win_rate": 0.2867803837953092,
+            "average_r": -0.05090271354792553,
+            "expectancy_r": -0.05090271354792553,
+            "profit_factor": 0.9052349959244411,
+            "net_return": -0.44784390011032627,
+            "max_drawdown": -0.5276698534741723,
+            "fees_paid": 28851.072046789694,
+            "funding_paid": 2874.1439995611513,
+            "slippage_cost": 14425.535848117803,
+            "ambiguous_bars": 0
+          },
+          "funding_delta": 2874.1439995611513
+        },
+        "validation": {
+          "without_funding": {
+            "total_trades": 713,
+            "win_rate": 0.2791023842917251,
+            "average_r": -0.12654147720005363,
+            "expectancy_r": -0.12654147720005363,
+            "profit_factor": 0.8088971662610579,
+            "net_return": -0.6301356292773828,
+            "max_drawdown": -0.7100750307314424,
+            "fees_paid": 33828.50348988088,
+            "funding_paid": 0.0,
+            "slippage_cost": 16914.251254108112,
+            "ambiguous_bars": 1
+          },
+          "with_funding": {
+            "total_trades": 713,
+            "win_rate": 0.2791023842917251,
+            "average_r": -0.12381612698776528,
+            "expectancy_r": -0.12381612698776528,
+            "profit_factor": 0.8124536336008076,
+            "net_return": -0.6227251153863329,
+            "max_drawdown": -0.7039981664480184,
+            "fees_paid": 34100.922550967225,
+            "funding_paid": 1247.046696392729,
+            "slippage_cost": 17050.460780756617,
+            "ambiguous_bars": 1
+          },
+          "funding_delta": 1247.046696392729
+        },
+        "oos": {
+          "without_funding": {
+            "total_trades": 571,
+            "win_rate": 0.2819614711033275,
+            "average_r": -0.08672614700756083,
+            "expectancy_r": -0.08672614700756083,
+            "profit_factor": 0.8717360661541497,
+            "net_return": -0.43184651988547595,
+            "max_drawdown": -0.5415937812165584,
+            "fees_paid": 25096.802139135012,
+            "funding_paid": 0.0,
+            "slippage_cost": 12548.400847989546,
+            "ambiguous_bars": 0
+          },
+          "with_funding": {
+            "total_trades": 571,
+            "win_rate": 0.2819614711033275,
+            "average_r": -0.08624401489018471,
+            "expectancy_r": -0.08624401489018471,
+            "profit_factor": 0.8720687710028865,
+            "net_return": -0.430233088433836,
+            "max_drawdown": -0.5409430614775972,
+            "fees_paid": 25092.103057466516,
+            "funding_paid": 133.5290542730497,
+            "slippage_cost": 12546.051307985917,
+            "ambiguous_bars": 0
+          },
+          "funding_delta": 133.5290542730497
+        },
+        "full": {
+          "without_funding": {
+            "total_trades": 2218,
+            "win_rate": 0.28268710550045084,
+            "average_r": -0.08589674440757929,
+            "expectancy_r": -0.08589674440757929,
+            "profit_factor": 0.8727006717144028,
+            "net_return": -0.8874342074711934,
+            "max_drawdown": -0.9068328256705656,
+            "fees_paid": 50065.5348840659,
+            "funding_paid": 0.0,
+            "slippage_cost": 25032.766896228193,
+            "ambiguous_bars": 1
+          },
+          "with_funding": {
+            "total_trades": 2218,
+            "win_rate": 0.28268710550045084,
+            "average_r": -0.08290820170532318,
+            "expectancy_r": -0.08290820170532318,
+            "profit_factor": 0.8777534597327283,
+            "net_return": -0.8796432865209448,
+            "max_drawdown": -0.9005567855763761,
+            "fees_paid": 52082.80984928633,
+            "funding_paid": 3619.896174926429,
+            "slippage_cost": 26041.40438624274,
+            "ambiguous_bars": 1
+          },
+          "funding_delta": 3619.896174926429
+        }
+      },
+      "timeframes": {
+        "5": {
+          "candidate": "rolling-10-2point-at_swing-atr2-rr4",
+          "timeframe": "5m",
+          "bars": 700374,
+          "funding_events": 7296,
+          "signal_count": 27267,
+          "periods": {
+            "research": {
+              "without_funding": {
+                "total_trades": 1725,
+                "win_rate": 0.18782608695652173,
+                "average_r": -0.17045194222895182,
+                "expectancy_r": -0.17045194222895182,
+                "profit_factor": 0.8100683707612163,
+                "net_return": -0.9615601454426537,
+                "max_drawdown": -0.9665378636503198,
+                "fees_paid": 48035.737035931765,
+                "funding_paid": 0.0,
+                "slippage_cost": 24017.867553869484,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 1725,
+                "win_rate": 0.18782608695652173,
+                "average_r": -0.1687432329377222,
+                "expectancy_r": -0.1687432329377222,
+                "profit_factor": 0.812020079364571,
+                "net_return": -0.9603972965186633,
+                "max_drawdown": -0.9655245524439392,
+                "fees_paid": 48562.913642260115,
+                "funding_paid": 1193.024890987646,
+                "slippage_cost": 24281.455845594654,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 1193.024890987646
+            },
+            "validation": {
+              "without_funding": {
+                "total_trades": 1185,
+                "win_rate": 0.1949367088607595,
+                "average_r": -0.18737577417717577,
+                "expectancy_r": -0.18737577417717577,
+                "profit_factor": 0.7520059977408472,
+                "net_return": -0.9127516296426428,
+                "max_drawdown": -0.9218598154775772,
+                "fees_paid": 53643.58549573678,
+                "funding_paid": 0.0,
+                "slippage_cost": 26821.792315476985,
+                "ambiguous_bars": 1
+              },
+              "with_funding": {
+                "total_trades": 1185,
+                "win_rate": 0.1949367088607595,
+                "average_r": -0.18635905714467893,
+                "expectancy_r": -0.18635905714467893,
+                "profit_factor": 0.7527271282641771,
+                "net_return": -0.9117467050953866,
+                "max_drawdown": -0.9206942937479106,
+                "fees_paid": 53753.90900789934,
+                "funding_paid": 299.7263738252812,
+                "slippage_cost": 26876.954070208318,
+                "ambiguous_bars": 1
+              },
+              "funding_delta": 299.7263738252812
+            },
+            "oos": {
+              "without_funding": {
+                "total_trades": 1084,
+                "win_rate": 0.1992619926199262,
+                "average_r": -0.13663470269882436,
+                "expectancy_r": -0.13663470269882436,
+                "profit_factor": 0.835902185002057,
+                "net_return": -0.8154886763953559,
+                "max_drawdown": -0.8379058586481062,
+                "fees_paid": 55358.84052048248,
+                "funding_paid": 0.0,
+                "slippage_cost": 27679.42031981697,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 1084,
+                "win_rate": 0.1992619926199262,
+                "average_r": -0.13730670210700155,
+                "expectancy_r": -0.13730670210700155,
+                "profit_factor": 0.835064462750648,
+                "net_return": -0.8167865609344725,
+                "max_drawdown": -0.8391320939314838,
+                "fees_paid": 55130.73547463733,
+                "funding_paid": -363.06844834427704,
+                "slippage_cost": 27565.36779253929,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": -363.06844834427704
+            },
+            "full": {
+              "without_funding": {
+                "total_trades": 3977,
+                "win_rate": 0.19336183052552175,
+                "average_r": -0.16258843480486573,
+                "expectancy_r": -0.16258843480486573,
+                "profit_factor": 0.8089119532827422,
+                "net_return": -0.9992629720998425,
+                "max_drawdown": -0.9993948795487769,
+                "fees_paid": 50366.48710453213,
+                "funding_paid": 0.0,
+                "slippage_cost": 25183.24257720336,
+                "ambiguous_bars": 1
+              },
+              "with_funding": {
+                "total_trades": 3977,
+                "win_rate": 0.19336183052552175,
+                "average_r": -0.161792364767164,
+                "expectancy_r": -0.161792364767164,
+                "profit_factor": 0.8107848197877309,
+                "net_return": -0.9992392833988424,
+                "max_drawdown": -0.9993757522123082,
+                "fees_paid": 50967.14382908589,
+                "funding_paid": 1198.374961062417,
+                "slippage_cost": 25483.570927679404,
+                "ambiguous_bars": 1
+              },
+              "funding_delta": 1198.374961062417
+            }
+          }
+        },
+        "30": {
+          "candidate": "rolling-20-2point-at_swing-atr1.25-rr4",
+          "timeframe": "30m",
+          "bars": 116729,
+          "funding_events": 7296,
+          "signal_count": 3924,
+          "periods": {
+            "research": {
+              "without_funding": {
+                "total_trades": 652,
+                "win_rate": 0.20705521472392638,
+                "average_r": -0.02422894882483862,
+                "expectancy_r": -0.02422894882483862,
+                "profit_factor": 0.9372088530961066,
+                "net_return": -0.25073314998896157,
+                "max_drawdown": -0.4803457543340418,
+                "fees_paid": 20911.316558569026,
+                "funding_paid": 0.0,
+                "slippage_cost": 10455.658531030916,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 652,
+                "win_rate": 0.20705521472392638,
+                "average_r": -0.015800086361161522,
+                "expectancy_r": -0.015800086361161522,
+                "profit_factor": 0.9493920643821693,
+                "net_return": -0.2084362636459971,
+                "max_drawdown": -0.46657535289589747,
+                "fees_paid": 21726.90393443596,
+                "funding_paid": 3933.8724763108917,
+                "slippage_cost": 10863.452279732275,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 3933.8724763108917
+            },
+            "validation": {
+              "without_funding": {
+                "total_trades": 395,
+                "win_rate": 0.21772151898734177,
+                "average_r": -0.010293452117256059,
+                "expectancy_r": -0.010293452117256059,
+                "profit_factor": 0.9650169858425767,
+                "net_return": -0.11522430350786772,
+                "max_drawdown": -0.39293933021745375,
+                "fees_paid": 27631.46485311634,
+                "funding_paid": 0.0,
+                "slippage_cost": 13815.733623548895,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 395,
+                "win_rate": 0.21772151898734177,
+                "average_r": -0.010866896475027206,
+                "expectancy_r": -0.010866896475027206,
+                "profit_factor": 0.9644096150742103,
+                "net_return": -0.11725448326231902,
+                "max_drawdown": -0.39503815333253794,
+                "fees_paid": 27622.249585837468,
+                "funding_paid": -351.72470595880816,
+                "slippage_cost": 13811.125995304812,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": -351.72470595880816
+            },
+            "oos": {
+              "without_funding": {
+                "total_trades": 266,
+                "win_rate": 0.21804511278195488,
+                "average_r": 0.020049949636786798,
+                "expectancy_r": 0.020049949636786798,
+                "profit_factor": 0.9989748865952509,
+                "net_return": -0.0023606454066399385,
+                "max_drawdown": -0.43652963273420536,
+                "fees_paid": 15251.3826040236,
+                "funding_paid": 0.0,
+                "slippage_cost": 7625.6922076522105,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 266,
+                "win_rate": 0.21804511278195488,
+                "average_r": 0.019157625465582608,
+                "expectancy_r": 0.019157625465582608,
+                "profit_factor": 0.9979847538299574,
+                "net_return": -0.004641431419309616,
+                "max_drawdown": -0.43659331090942,
+                "fees_paid": 15252.555241763574,
+                "funding_paid": -219.9430959001731,
+                "slippage_cost": 7626.278526267136,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": -219.9430959001731
+            },
+            "full": {
+              "without_funding": {
+                "total_trades": 1299,
+                "win_rate": 0.21247113163972287,
+                "average_r": -0.005293904145842905,
+                "expectancy_r": -0.005293904145842905,
+                "profit_factor": 0.9651470295464755,
+                "net_return": -0.28496460550306035,
+                "max_drawdown": -0.4803457543340418,
+                "fees_paid": 52554.36475470894,
+                "funding_paid": 0.0,
+                "slippage_cost": 26277.184390758015,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 1299,
+                "win_rate": 0.21247113163972287,
+                "average_r": -0.0014641651586174672,
+                "expectancy_r": -0.0014641651586174672,
+                "profit_factor": 0.9708843636517044,
+                "net_return": -0.24845965806129278,
+                "max_drawdown": -0.46657535289589747,
+                "fees_paid": 55110.30527918339,
+                "funding_paid": 3425.8212874466744,
+                "slippage_cost": 27555.154815338617,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 3425.8212874466744
+            }
+          }
+        },
+        "60": {
+          "candidate": "pivot-3-3-2point-at_swing-atr1.25-rr2",
+          "timeframe": "60m",
+          "bars": 58364,
+          "funding_events": 7296,
+          "signal_count": 772,
+          "periods": {
+            "research": {
+              "without_funding": {
+                "total_trades": 277,
+                "win_rate": 0.35018050541516244,
+                "average_r": 0.0038945826175553785,
+                "expectancy_r": 0.0038945826175553785,
+                "profit_factor": 0.9915137156514202,
+                "net_return": -0.017357793883655215,
+                "max_drawdown": -0.20051282775029974,
+                "fees_paid": 11093.435279209163,
+                "funding_paid": 0.0,
+                "slippage_cost": 5546.718235779546,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 277,
+                "win_rate": 0.35018050541516244,
+                "average_r": 0.008818876068972442,
+                "expectancy_r": 0.008818876068972442,
+                "profit_factor": 0.998061730167288,
+                "net_return": -0.003988746098371632,
+                "max_drawdown": -0.19665493618793495,
+                "fees_paid": 11194.649563552697,
+                "funding_paid": 1382.704403728135,
+                "slippage_cost": 5597.325382192185,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 1382.704403728135
+            },
+            "validation": {
+              "without_funding": {
+                "total_trades": 178,
+                "win_rate": 0.3651685393258427,
+                "average_r": 0.01479860040819356,
+                "expectancy_r": 0.01479860040819356,
+                "profit_factor": 1.0061927602568372,
+                "net_return": 0.007922430910350275,
+                "max_drawdown": -0.15027019510494996,
+                "fees_paid": 11933.30184430205,
+                "funding_paid": 0.0,
+                "slippage_cost": 5966.65166983889,
+                "ambiguous_bars": 1
+              },
+              "with_funding": {
+                "total_trades": 178,
+                "win_rate": 0.3651685393258427,
+                "average_r": 0.016353516918158166,
+                "expectancy_r": 0.016353516918158166,
+                "profit_factor": 1.0083422387726422,
+                "net_return": 0.010681302678912097,
+                "max_drawdown": -0.1502892735688108,
+                "fees_paid": 11946.545999742075,
+                "funding_paid": 291.28232451059944,
+                "slippage_cost": 5973.273747737745,
+                "ambiguous_bars": 1
+              },
+              "funding_delta": 291.28232451059944
+            },
+            "oos": {
+              "without_funding": {
+                "total_trades": 165,
+                "win_rate": 0.34545454545454546,
+                "average_r": -0.025577408447112572,
+                "expectancy_r": -0.025577408447112572,
+                "profit_factor": 0.9514386933714997,
+                "net_return": -0.05718338562674641,
+                "max_drawdown": -0.20977294756327688,
+                "fees_paid": 8319.513088483893,
+                "funding_paid": 0.0,
+                "slippage_cost": 4159.7568146792,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 165,
+                "win_rate": 0.34545454545454546,
+                "average_r": -0.025241057280220563,
+                "expectancy_r": -0.025241057280220563,
+                "profit_factor": 0.9518497182083936,
+                "net_return": -0.056633134872061675,
+                "max_drawdown": -0.20953400954426607,
+                "fees_paid": 8319.40358899938,
+                "funding_paid": 52.72986094790081,
+                "slippage_cost": 4159.702065022182,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 52.72986094790081
+            },
+            "full": {
+              "without_funding": {
+                "total_trades": 620,
+                "win_rate": 0.3532258064516129,
+                "average_r": -0.0008182615097617429,
+                "expectancy_r": -0.0008182615097617429,
+                "profit_factor": 0.9851841012238041,
+                "net_return": -0.06620885965140577,
+                "max_drawdown": -0.2582102221922602,
+                "fees_paid": 31059.472648971234,
+                "funding_paid": 0.0,
+                "slippage_cost": 15529.737923218601,
+                "ambiguous_bars": 1
+              },
+              "with_funding": {
+                "total_trades": 620,
+                "win_rate": 0.3532258064516129,
+                "average_r": 0.0019177100504856896,
+                "expectancy_r": 0.0019177100504856896,
+                "profit_factor": 0.9888514656289391,
+                "net_return": -0.050359790645002844,
+                "max_drawdown": -0.25240614994847854,
+                "fees_paid": 31468.271074856322,
+                "funding_paid": 1725.9053833312528,
+                "slippage_cost": 15734.137155049113,
+                "ambiguous_bars": 1
+              },
+              "funding_delta": 1725.9053833312528
+            }
+          }
+        },
+        "240": {
+          "candidate": "rolling-10-3point-at_swing-atr0.5-rr4",
+          "timeframe": "240m",
+          "bars": 14591,
+          "funding_events": 7296,
+          "signal_count": 163,
+          "periods": {
+            "research": {
+              "without_funding": {
+                "total_trades": 75,
+                "win_rate": 0.25333333333333335,
+                "average_r": 0.23206184962919588,
+                "expectancy_r": 0.23206184962919588,
+                "profit_factor": 1.272655012691035,
+                "net_return": 0.16937036148306328,
+                "max_drawdown": -0.08160313615614084,
+                "fees_paid": 2214.46128680081,
+                "funding_paid": 0.0,
+                "slippage_cost": 1107.2314537495606,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 75,
+                "win_rate": 0.25333333333333335,
+                "average_r": 0.26425101910241433,
+                "expectancy_r": 0.26425101910241433,
+                "profit_factor": 1.3241204521827588,
+                "net_return": 0.19803803131579611,
+                "max_drawdown": -0.07974285161702056,
+                "fees_paid": 2256.1732846968416,
+                "funding_paid": 2488.189165004531,
+                "slippage_cost": 1128.0874703434097,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 2488.189165004531
+            },
+            "validation": {
+              "without_funding": {
+                "total_trades": 20,
+                "win_rate": 0.25,
+                "average_r": 0.20271346584325153,
+                "expectancy_r": 0.20271346584325153,
+                "profit_factor": 1.2299454845226399,
+                "net_return": 0.03655704770931112,
+                "max_drawdown": -0.11137711204412276,
+                "fees_paid": 763.3016198532615,
+                "funding_paid": 0.0,
+                "slippage_cost": 381.65100195292644,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 20,
+                "win_rate": 0.25,
+                "average_r": 0.20947213887196328,
+                "expectancy_r": 0.20947213887196328,
+                "profit_factor": 1.2440401698024037,
+                "net_return": 0.038055519158503914,
+                "max_drawdown": -0.11032898458349331,
+                "fees_paid": 764.1428647380768,
+                "funding_paid": 156.31523146215224,
+                "slippage_cost": 382.0716241870853,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 156.31523146215224
+            },
+            "oos": {
+              "without_funding": {
+                "total_trades": 37,
+                "win_rate": 0.1891891891891892,
+                "average_r": -0.1064431977510188,
+                "expectancy_r": -0.1064431977510188,
+                "profit_factor": 0.8574278078106358,
+                "net_return": -0.045358300728636336,
+                "max_drawdown": -0.10240964973519236,
+                "fees_paid": 1554.314041216821,
+                "funding_paid": 0.0,
+                "slippage_cost": 777.1569324340464,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 37,
+                "win_rate": 0.1891891891891892,
+                "average_r": -0.10507543757021996,
+                "expectancy_r": -0.10507543757021996,
+                "profit_factor": 0.8585896803987548,
+                "net_return": -0.04485461182034167,
+                "max_drawdown": -0.10190590606973327,
+                "fees_paid": 1553.7659150419497,
+                "funding_paid": 49.44527651593514,
+                "slippage_cost": 776.8828693506679,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 49.44527651593514
+            },
+            "full": {
+              "without_funding": {
+                "total_trades": 132,
+                "win_rate": 0.23484848484848486,
+                "average_r": 0.13273113425959868,
+                "expectancy_r": 0.13273113425959868,
+                "profit_factor": 1.1317483427145312,
+                "net_return": 0.15713943383236217,
+                "max_drawdown": -0.11137711337617076,
+                "fees_paid": 4991.05732906862,
+                "funding_paid": 0.0,
+                "slippage_cost": 2495.5295925555224,
+                "ambiguous_bars": 0
+              },
+              "with_funding": {
+                "total_trades": 132,
+                "win_rate": 0.23484848484848486,
+                "average_r": 0.15242786378804699,
+                "expectancy_r": 0.15242786378804699,
+                "profit_factor": 1.1575510588986255,
+                "net_return": 0.18784746524440243,
+                "max_drawdown": -0.11032898848898186,
+                "fees_paid": 5103.955429831633,
+                "funding_paid": 2736.95234271791,
+                "slippage_cost": 2551.978663064948,
+                "ambiguous_bars": 0
+              },
+              "funding_delta": 2736.95234271791
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import argparse
 import sqlite3
-from datetime import UTC, datetime
 from dataclasses import replace
+from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -17,6 +17,7 @@ from mastermind_tick.backtest import (
     ReplayBroker,
     ReplayCandidate,
     ReplayParameters,
+    ReplayTrade,
     _candidate_result,
     _load_funding_rates,
     _load_warmup_bars,
@@ -57,6 +58,20 @@ def _percent(value: Decimal) -> str:
     return f"{value * Decimal('100'):+.2f}%"
 
 
+def _maximum_favorable_excursion(
+    trade: ReplayTrade, price_path: list[tuple[int, Decimal]]
+) -> tuple[Decimal, int]:
+    """Return the best observed price and timestamp before a trade closed."""
+    observations = [item for item in price_path if trade.entry_at_ms <= item[0] <= trade.exit_at_ms]
+    if not observations:
+        return trade.entry_price, trade.entry_at_ms
+    if trade.direction == "SHORT":
+        timestamp_ms, price = min(observations, key=lambda item: item[1])
+    else:
+        timestamp_ms, price = max(observations, key=lambda item: item[1])
+    return price, timestamp_ms
+
+
 def _tick_from_row(row: sqlite3.Row) -> Tick:
     return Tick(
         event_id=row["event_id"],
@@ -78,6 +93,10 @@ def _build_candidate(
     warmup_bars: list[object],
     *,
     live_startup: bool = False,
+    gross_profit_take_profit_pct: float | None = None,
+    net_profit_take_profit_pct: float | None = None,
+    dynamic_net_profit_take_profit_base_pct: float | None = None,
+    dynamic_net_profit_take_profit_atr_multiplier: float | None = None,
 ) -> ReplayCandidate:
     strategy = ReplayATRTickStrategy(
         settings.strategy.atr_period,
@@ -104,6 +123,10 @@ def _build_candidate(
         parameters=ReplayParameters(
             atr_period=settings.strategy.atr_period,
             atr_multiplier=settings.strategy.atr_multiplier,
+            gross_profit_take_profit_pct=gross_profit_take_profit_pct,
+            net_profit_take_profit_pct=net_profit_take_profit_pct,
+            dynamic_net_profit_take_profit_base_pct=dynamic_net_profit_take_profit_base_pct,
+            dynamic_net_profit_take_profit_atr_multiplier=dynamic_net_profit_take_profit_atr_multiplier,
         ),
         strategy=strategy,
         broker=ReplayBroker(
@@ -130,6 +153,11 @@ def _render_report(
     warmup_bars: int,
     funding_events: int,
     last_price: Decimal,
+    price_path: list[tuple[int, Decimal]],
+    gross_profit_take_profit_pct: float | None,
+    net_profit_take_profit_pct: float | None,
+    dynamic_net_profit_take_profit_base_pct: float | None,
+    dynamic_net_profit_take_profit_atr_multiplier: float | None,
 ) -> str:
     result = _candidate_result(
         candidate,
@@ -168,7 +196,30 @@ def _render_report(
         f"- Direction: long-only; `SOXLUSDT` perpetual futures; {settings.strategy.bar_minutes}-minute Tick ATR execution.",
         f"- ATR: period {settings.strategy.atr_period}, multiplier {settings.strategy.atr_multiplier:g}; trend efficiency: {settings.strategy.trend_efficiency_period} bars / {settings.strategy.minimum_trend_efficiency:g} minimum.",
         f"- Reversal confirmation: {settings.strategy.reversal_confirmation_atr:g} ATR; one action per K line.",
-        "- Fixed profit-taker: disabled. Profit protection: disabled. Continuation re-entry: disabled.",
+        (
+            f"- Gross profit take-profit: {gross_profit_take_profit_pct:.2%} price gain; "
+            "triggered on a Tick and filled on the next Tick."
+            if gross_profit_take_profit_pct is not None
+            else "- Gross profit take-profit: disabled."
+        ),
+        (
+            f"- Net profit take-profit: {net_profit_take_profit_pct:.2%} of entry notional; "
+            "estimated after fees, slippage, and accrued funding."
+            if net_profit_take_profit_pct is not None
+            else "- Net profit take-profit: disabled."
+        ),
+        (
+            f"- Dynamic net profit take-profit: base {dynamic_net_profit_take_profit_base_pct:.2%} "
+            "x current ATR / entry ATR; estimated after fees, slippage, and accrued funding."
+            if dynamic_net_profit_take_profit_base_pct is not None
+            else (
+                f"- Dynamic net profit take-profit: multiplier {dynamic_net_profit_take_profit_atr_multiplier:g} "
+                "x current ATR / entry price; estimated after fees, slippage, and accrued funding."
+                if dynamic_net_profit_take_profit_atr_multiplier is not None
+                else "- Dynamic net profit take-profit: disabled."
+            )
+        ),
+        "- Fixed ATR profit-taker: disabled. Profit protection: disabled. Continuation re-entry: disabled.",
         f"- Sizing: {instrument.leverage}x isolated leverage x {float(instrument.position_fraction or settings.strategy.position_fraction):.1%} equity allocation = {instrument.leverage * float(instrument.position_fraction or settings.strategy.position_fraction):.2f}x target exposure.",
         f"- Costs: {float(instrument.fee_bps or settings.execution.fee_bps):g} bps per fill and {float(instrument.slippage_bps or settings.execution.slippage_bps):g} bps simulated slippage per fill; recorded funding is included.",
         "",
@@ -182,16 +233,24 @@ def _render_report(
             f"${_money(final_equity)} | {_percent(Decimal(str(result.net_return)))} | "
             f"{_percent(Decimal(str(result.max_drawdown)))} |"
         ),
+        f"Profit-taker/ATR exit signals: {result.profit_exit_signals}.",
         "",
         "The per-round return below is net PnL divided by entry notional, not return on margin. "
         "The period return is mark-to-market equity return on the $100,000 initial account.",
         "",
         "## Completed Trade Rounds",
         "",
-        "| # | Direction | Open (UTC / Beijing) | Close (UTC / Beijing) | Duration | Entry | Exit | Qty | Gross PnL | Fees | Funding | Net PnL | Net / entry notional |",
-        "| ---: | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| # | Direction | Open (UTC / Beijing) | Close (UTC / Beijing) | Duration | Entry | Exit | Qty | Max favorable price | Max profit time | Max gross profit | Max net profit* | Gross PnL | Fees | Funding | Net PnL | Net / entry notional |",
+        "| ---: | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for index, trade in enumerate(trades, start=1):
+        max_price, max_price_at = _maximum_favorable_excursion(trade, price_path)
+        direction_sign = Decimal("-1") if trade.direction == "SHORT" else Decimal("1")
+        max_gross = direction_sign * trade.quantity * (max_price - trade.entry_price)
+        max_exit_fee = trade.quantity * max_price * candidate.broker.fee_rate
+        actual_exit_fee = trade.quantity * trade.exit_price * candidate.broker.fee_rate
+        entry_fee = trade.fees - actual_exit_fee
+        max_net = max_gross - entry_fee - max_exit_fee + trade.funding
         gross = trade.net_pnl + trade.fees - trade.funding
         entry_notional = trade.entry_price * trade.quantity
         return_on_notional = trade.net_pnl / entry_notional if entry_notional else Decimal("0")
@@ -199,11 +258,20 @@ def _render_report(
             f"| {index} | {trade.direction} | {_format_timestamp(trade.entry_at_ms)} | "
             f"{_format_timestamp(trade.exit_at_ms)} | {_format_duration(trade.entry_at_ms, trade.exit_at_ms)} | "
             f"${trade.entry_price:.4f} | ${trade.exit_price:.4f} | {trade.quantity:.2f} | "
-            f"${_money(gross)} | ${_money(trade.fees)} | ${_money(trade.funding)} | "
+            f"${max_price:.4f} | {_format_timestamp(max_price_at)} | ${_money(max_gross)} | "
+            f"${_money(max_net)} | ${_money(gross)} | ${_money(trade.fees)} | ${_money(trade.funding)} | "
             f"${_money(trade.net_pnl)} | {_percent(return_on_notional)} |"
         )
     if not trades:
-        lines.append("| - | - | - | - | - | - | - | - | - | - | - | - | - |")
+        lines.append("| - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - |")
+
+    lines.extend(
+        [
+            "",
+            "\\* Max net profit is an estimate using the maximum favorable price, actual entry fee, "
+            "recorded funding, and an estimated exit taker fee at that price. It is not a realized fill.",
+        ]
+    )
 
     lines.extend(["", "## Open Round At Data Cutoff", ""])
     if position.has_position and position.open_trade is not None:
@@ -240,7 +308,24 @@ def main() -> None:
     parser.add_argument("--config", default="config/settings.toml")
     parser.add_argument("--instrument", default="soxl_perp")
     parser.add_argument("--start", default=DEFAULT_START)
-    parser.add_argument("--end", help="Inclusive ISO-8601 end timestamp; defaults to local data cutoff")
+    parser.add_argument(
+        "--end", help="Inclusive ISO-8601 end timestamp; defaults to local data cutoff"
+    )
+    parser.add_argument(
+        "--net-profit-take-profit-pct",
+        type=float,
+        help="research-only net PnL take-profit fraction of entry notional, e.g. 0.01",
+    )
+    parser.add_argument(
+        "--dynamic-net-profit-take-profit-base-pct",
+        type=float,
+        help="dynamic net PnL target base fraction scaled by current ATR / entry ATR, e.g. 0.001",
+    )
+    parser.add_argument(
+        "--dynamic-net-profit-take-profit-atr-multiplier",
+        type=float,
+        help="dynamic net PnL target as ATR/entry-price fraction multiplier, e.g. 0.1",
+    )
     parser.add_argument("--output", default=DEFAULT_OUTPUT)
     parser.add_argument(
         "--leverage",
@@ -257,7 +342,23 @@ def main() -> None:
         action="store_true",
         help="match live futures startup by disabling one-time trend-alignment entry",
     )
+    parser.add_argument(
+        "--gross-profit-take-profit-pct",
+        type=float,
+        help="research-only gross price-profit take-profit fraction, e.g. 0.02",
+    )
     args = parser.parse_args()
+    configured_profit_takers = sum(
+        value is not None
+        for value in (
+            args.gross_profit_take_profit_pct,
+            args.net_profit_take_profit_pct,
+            args.dynamic_net_profit_take_profit_base_pct,
+            args.dynamic_net_profit_take_profit_atr_multiplier,
+        )
+    )
+    if configured_profit_takers > 1:
+        raise ValueError("profit take-profit options are mutually exclusive")
 
     settings = load_settings(args.config)
     instrument = next(item for item in settings.instruments if item.id == args.instrument)
@@ -275,7 +376,11 @@ def main() -> None:
         ).fetchone()
         if last_row is None or last_row["last_ms"] is None:
             raise ValueError(f"no aggTrade data for {instrument.id}")
-        end_ms = min(_timestamp_ms(args.end), int(last_row["last_ms"])) if args.end else int(last_row["last_ms"])
+        end_ms = (
+            min(_timestamp_ms(args.end), int(last_row["last_ms"]))
+            if args.end
+            else int(last_row["last_ms"])
+        )
         if end_ms <= start_ms:
             raise ValueError("end must be after start")
         warmup_bars = _load_warmup_bars(
@@ -285,11 +390,19 @@ def main() -> None:
             raise ValueError("insufficient pre-replay warmup bars")
         funding_rates = _load_funding_rates(connection, instrument.market_id, start_ms, end_ms)
         candidate = _build_candidate(
-            settings, instrument, warmup_bars, live_startup=args.live_startup
+            settings,
+            instrument,
+            warmup_bars,
+            live_startup=args.live_startup,
+            gross_profit_take_profit_pct=args.gross_profit_take_profit_pct,
+            net_profit_take_profit_pct=args.net_profit_take_profit_pct,
+            dynamic_net_profit_take_profit_base_pct=args.dynamic_net_profit_take_profit_base_pct,
+            dynamic_net_profit_take_profit_atr_multiplier=args.dynamic_net_profit_take_profit_atr_multiplier,
         )
         tick_count = 0
         raw_trade_count = 0
         last_price: Decimal | None = None
+        price_path: list[tuple[int, Decimal]] = []
         rows = connection.execute(
             """
             SELECT event_id, timestamp_ms, price, open_price, high_price, low_price,
@@ -310,6 +423,7 @@ def main() -> None:
                 else 1
             )
             last_price = tick.price
+            price_path.append((tick.timestamp_ms, tick.price))
 
     if last_price is None:
         raise ValueError("no ticks in requested replay range")
@@ -324,6 +438,11 @@ def main() -> None:
         warmup_bars=len(warmup_bars),
         funding_events=len(funding_rates),
         last_price=last_price,
+        price_path=price_path,
+        gross_profit_take_profit_pct=args.gross_profit_take_profit_pct,
+        net_profit_take_profit_pct=args.net_profit_take_profit_pct,
+        dynamic_net_profit_take_profit_base_pct=args.dynamic_net_profit_take_profit_base_pct,
+        dynamic_net_profit_take_profit_atr_multiplier=args.dynamic_net_profit_take_profit_atr_multiplier,
     )
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)

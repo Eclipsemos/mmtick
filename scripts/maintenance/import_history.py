@@ -389,7 +389,11 @@ def _fetch_current_agg_trades(
             payload = json.loads(_get(f"{REST_BASE}/aggTrades?{urllib.parse.urlencode(query)}"))
         except urllib.error.HTTPError as exc:
             # Binance only exposes a short recent window for ID-based aggTrade lookup.
-            if use_id_cursor and exc.code == 400 and b"-1000" in exc.read():
+            if (
+                use_id_cursor
+                and exc.code == 400
+                and any(code in exc.read() for code in (b"-1000", b"-4166"))
+            ):
                 use_id_cursor = False
                 next_id = None
                 continue

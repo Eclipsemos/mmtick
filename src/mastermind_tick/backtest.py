@@ -34,6 +34,11 @@ class ReplayParameters:
     profit_activation_atr: float | None = None
     profit_trailing_atr: float | None = None
     continuation_reentry_atr: float | None = None
+    gross_profit_take_profit_pct: float | None = None
+    net_profit_take_profit_pct: float | None = None
+    dynamic_net_profit_take_profit_base_pct: float | None = None
+    dynamic_net_profit_take_profit_atr_multiplier: float | None = None
+    stop_exit_policy: str = "baseline"
 
 
 @dataclass
@@ -333,6 +338,7 @@ class ReplayCandidate:
     continuation_eligible_bar_ms: int | None = None
     direction: str = "long_short"
     daily_equity: list[dict[str, Any]] = field(default_factory=list)
+    deferred_stop_exit_bar_ms: int | None = None
 
     def __post_init__(self) -> None:
         if (
@@ -340,6 +346,48 @@ class ReplayCandidate:
             and self.parameters.continuation_reentry_atr < 0
         ):
             raise ValueError("continuation re-entry ATR must be non-negative")
+        if (
+            self.parameters.gross_profit_take_profit_pct is not None
+            and self.parameters.gross_profit_take_profit_pct <= 0
+        ):
+            raise ValueError("gross profit take-profit percentage must be positive")
+        if (
+            self.parameters.net_profit_take_profit_pct is not None
+            and self.parameters.net_profit_take_profit_pct <= 0
+        ):
+            raise ValueError("net profit take-profit percentage must be positive")
+        if (
+            self.parameters.dynamic_net_profit_take_profit_base_pct is not None
+            and self.parameters.dynamic_net_profit_take_profit_base_pct <= 0
+        ):
+            raise ValueError("dynamic net profit base percentage must be positive")
+        if (
+            self.parameters.dynamic_net_profit_take_profit_atr_multiplier is not None
+            and self.parameters.dynamic_net_profit_take_profit_atr_multiplier <= 0
+        ):
+            raise ValueError("dynamic net profit ATR multiplier must be positive")
+        configured_profit_takers = sum(
+            value is not None
+            for value in (
+                self.parameters.gross_profit_take_profit_pct,
+                self.parameters.net_profit_take_profit_pct,
+                self.parameters.dynamic_net_profit_take_profit_base_pct,
+                self.parameters.dynamic_net_profit_take_profit_atr_multiplier,
+            )
+        )
+        if configured_profit_takers > 1:
+            raise ValueError("profit take-profit options are mutually exclusive")
+        if self.parameters.stop_exit_policy not in {
+            "baseline",
+            "bypass_action_lock",
+            "latch_next_bar",
+        }:
+            raise ValueError("invalid stop exit policy")
+        if (
+            self.parameters.gross_profit_take_profit_pct is not None
+            and self.parameters.net_profit_take_profit_pct is not None
+        ):
+            raise ValueError("gross and net profit take-profit cannot both be enabled")
         activation = self.parameters.profit_activation_atr
         trailing = self.parameters.profit_trailing_atr
         if activation is not None and trailing is not None:
@@ -400,6 +448,26 @@ class ReplayCandidate:
                         self.continuation_eligible_bar_ms = fill_bar_start + self.strategy.bar_ms
                     self._clear_profit_state()
 
+        previous_price = self.strategy.previous_price
+        previous_stop = self.strategy.trailing_stop
+        action_locked = self.strategy.action_this_bar
+        bar_start = tick.timestamp_ms // self.strategy.bar_ms * self.strategy.bar_ms
+        long_stop_cross = (
+            self.broker.has_position
+            and not self.broker.is_short
+            and previous_price is not None
+            and previous_stop is not None
+            and previous_price >= previous_stop
+            and tick.price < previous_stop
+        )
+        short_stop_cross = (
+            self.broker.has_position
+            and self.broker.is_short
+            and previous_price is not None
+            and previous_stop is not None
+            and previous_price <= previous_stop
+            and tick.price > previous_stop
+        )
         signal = self.strategy.on_tick(
             tick,
             has_position=self.broker.has_position,
@@ -407,11 +475,41 @@ class ReplayCandidate:
             allow_short=self.direction in {"short_only", "long_short"},
             allow_long=self.direction in {"long_only", "long_short"},
             is_short=self.broker.is_short,
+            allow_stop_exit_when_action_locked=(
+                self.parameters.stop_exit_policy == "bypass_action_lock"
+            ),
         )
         if signal is None:
             signal = self._continuation_reentry_signal(tick)
         if signal is None:
             signal = self._profit_exit_signal(tick)
+        if (
+            signal is None
+            and self.parameters.stop_exit_policy == "latch_next_bar"
+            and action_locked
+            and (long_stop_cross or short_stop_cross)
+        ):
+            self.deferred_stop_exit_bar_ms = bar_start + self.strategy.bar_ms
+        if (
+            signal is None
+            and self.parameters.stop_exit_policy == "latch_next_bar"
+            and self.deferred_stop_exit_bar_ms is not None
+            and bar_start >= self.deferred_stop_exit_bar_ms
+            and self.broker.has_position
+            and self.strategy.last_atr is not None
+        ):
+            reason = (
+                "latched_price_crossed_above_atr_stop"
+                if self.broker.is_short
+                else "latched_price_crossed_below_atr_stop"
+            )
+            signal = self._build_profit_signal(
+                tick,
+                self.strategy.last_atr,
+                reason,
+                self.strategy.trailing_stop or tick.price,
+            )
+            self.deferred_stop_exit_bar_ms = None
         if signal is not None:
             self.pending_signal = signal
             self.signals += 1
@@ -463,6 +561,63 @@ class ReplayCandidate:
         )
         if self.strategy.action_this_bar:
             return None
+
+        gross_profit_pct = self.parameters.gross_profit_take_profit_pct
+        if gross_profit_pct is not None:
+            target_price = entry_price * (
+                Decimal("1") - Decimal(str(gross_profit_pct))
+                if is_short
+                else Decimal("1") + Decimal(str(gross_profit_pct))
+            )
+            reached = tick.price <= target_price if is_short else tick.price >= target_price
+            if reached:
+                return self._build_profit_signal(
+                    tick,
+                    atr,
+                    "gross_profit_take_profit",
+                    target_price,
+                )
+
+        net_profit_pct = self.parameters.net_profit_take_profit_pct
+        if self.parameters.dynamic_net_profit_take_profit_base_pct is not None:
+            if self.entry_atr <= 0:
+                return None
+            net_profit_pct = Decimal(
+                str(self.parameters.dynamic_net_profit_take_profit_base_pct)
+            ) * (atr / self.entry_atr)
+        elif self.parameters.dynamic_net_profit_take_profit_atr_multiplier is not None:
+            if entry_price <= 0:
+                return None
+            net_profit_pct = Decimal(
+                str(self.parameters.dynamic_net_profit_take_profit_atr_multiplier)
+            ) * (atr / entry_price)
+        if net_profit_pct is not None:
+            direction_sign = Decimal("-1") if is_short else Decimal("1")
+            projected_fill = tick.price * (
+                Decimal("1") + self.broker.slippage_rate
+                if is_short
+                else Decimal("1") - self.broker.slippage_rate
+            )
+            gross_pnl = direction_sign * abs(self.broker.quantity) * (projected_fill - entry_price)
+            projected_exit_fee = abs(self.broker.quantity) * projected_fill * self.broker.fee_rate
+            entry_fee = self.broker.open_trade.entry_fee if self.broker.open_trade else Decimal("0")
+            accrued_funding = (
+                self.broker.open_trade.funding if self.broker.open_trade else Decimal("0")
+            )
+            projected_net = gross_pnl - entry_fee - projected_exit_fee + accrued_funding
+            entry_notional = abs(self.broker.quantity) * entry_price
+            target_net = (
+                net_profit_pct
+                if isinstance(net_profit_pct, Decimal)
+                else Decimal(str(net_profit_pct))
+            )
+            if entry_notional and projected_net >= entry_notional * target_net:
+                return self._build_profit_signal(
+                    tick,
+                    atr,
+                    "net_profit_take_profit",
+                    tick.price,
+                )
 
         fixed_atr = self.parameters.fixed_take_profit_atr
         if fixed_atr is not None:
@@ -518,6 +673,7 @@ class ReplayCandidate:
     def _clear_profit_state(self) -> None:
         self.entry_atr = None
         self.favorable_extreme = None
+        self.deferred_stop_exit_bar_ms = None
         if self.profit_protection is not None:
             self.profit_protection.reset()
 
@@ -546,6 +702,7 @@ def run_parameter_grid(
     direction: str | None = None,
     progress_callback: Callable[[float], None] | None = None,
     warmup_callback: Callable[[int], None] | None = None,
+    live_startup: bool = False,
 ) -> tuple[dict[str, Any], list[ReplayResult]]:
     if direction is None:
         direction = "long_short" if instrument.short_enabled else "long_only"
@@ -637,6 +794,8 @@ def run_parameter_grid(
                 settings.strategy.reversal_confirmation_atr,
             )
             strategy.bootstrap(warmup_bars)
+            if live_startup:
+                strategy.startup_alignment_checked = True
             candidates.append(
                 ReplayCandidate(
                     parameters=item,
