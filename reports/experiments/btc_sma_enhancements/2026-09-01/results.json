@@ -1,0 +1,1702 @@
+{
+  "generated_at": "2026-09-02T06:36:41.641084+00:00",
+  "protocol": {
+    "symbol": "BTCUSDT",
+    "source": "Binance USD-M completed local 15m bars",
+    "base_strategy": "long when four SMAs are strictly ordered; flat on failure",
+    "timing": "completed aggregate candle, next 15m open execution",
+    "costs": "5 bps fee + 2 bps slippage per fill; historical funding included",
+    "selection": "mechanisms are predeclared; OOS is reported, not used for selection"
+  },
+  "data": {
+    "bars": 233455,
+    "funding_events": 7296,
+    "last": "2026-08-28T19:44:59.999000+00:00"
+  },
+  "buy_and_hold": {
+    "research": {
+      "net_return": 1.3044872956108056,
+      "max_drawdown": -0.7727231107978286
+    },
+    "validation": {
+      "net_return": 4.663657718527129,
+      "max_drawdown": -0.3253489953195883
+    },
+    "oos": {
+      "net_return": -0.17217658216491938,
+      "max_drawdown": -0.5385423777245091
+    },
+    "full": {
+      "net_return": 9.800904649497092,
+      "max_drawdown": -0.7727231107978286
+    }
+  },
+  "results": [
+    {
+      "id": "1h-25-50-100-200-base",
+      "timeframe": "1h",
+      "sma_periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mechanism": "base",
+      "periods": {
+        "research": {
+          "net_return": 0.06562204472493882,
+          "max_drawdown": -0.4625686623877947,
+          "completed_trades": 161,
+          "win_rate": 0.37888198757763975,
+          "profit_factor": 1.020999767764138,
+          "total_fees": 20764.26290511688,
+          "total_funding": -36258.70579470724
+        },
+        "validation": {
+          "net_return": 0.9344114120613145,
+          "max_drawdown": -0.2101798701201338,
+          "completed_trades": 116,
+          "win_rate": 0.3017241379310345,
+          "profit_factor": 1.5994962995809017,
+          "total_fees": 15574.18621552486,
+          "total_funding": -10697.744454423695
+        },
+        "oos": {
+          "net_return": 0.20393651496085122,
+          "max_drawdown": -0.17028654426275605,
+          "completed_trades": 82,
+          "win_rate": 0.4024390243902439,
+          "profit_factor": 1.3291581512855781,
+          "total_fees": 8413.19479212112,
+          "total_funding": -1769.6632372737597
+        },
+        "full": {
+          "net_return": 1.4817077942460413,
+          "max_drawdown": -0.46965662736604075,
+          "completed_trades": 359,
+          "win_rate": 0.3593314763231198,
+          "profit_factor": 1.2443757099840018,
+          "total_fees": 54705.684119206,
+          "total_funding": -51307.24177586788
+        }
+      }
+    },
+    {
+      "id": "1h-25-50-100-200-funding_le_0.01%",
+      "timeframe": "1h",
+      "sma_periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mechanism": "funding_le_0.01%",
+      "periods": {
+        "research": {
+          "net_return": 0.06562204472493882,
+          "max_drawdown": -0.4625686623877947,
+          "completed_trades": 161,
+          "win_rate": 0.37888198757763975,
+          "profit_factor": 1.020999767764138,
+          "total_fees": 20764.26290511688,
+          "total_funding": -36258.70579470724
+        },
+        "validation": {
+          "net_return": 0.9344114120613145,
+          "max_drawdown": -0.2101798701201338,
+          "completed_trades": 116,
+          "win_rate": 0.3017241379310345,
+          "profit_factor": 1.5994962995809017,
+          "total_fees": 15574.18621552486,
+          "total_funding": -10697.744454423695
+        },
+        "oos": {
+          "net_return": 0.20393651496085122,
+          "max_drawdown": -0.17028654426275605,
+          "completed_trades": 82,
+          "win_rate": 0.4024390243902439,
+          "profit_factor": 1.3291581512855781,
+          "total_fees": 8413.19479212112,
+          "total_funding": -1769.6632372737597
+        },
+        "full": {
+          "net_return": 1.4817077942460413,
+          "max_drawdown": -0.46965662736604075,
+          "completed_trades": 359,
+          "win_rate": 0.3593314763231198,
+          "profit_factor": 1.2443757099840018,
+          "total_fees": 54705.684119206,
+          "total_funding": -51307.24177586788
+        }
+      }
+    },
+    {
+      "id": "1h-25-50-100-200-funding_le_0.03%",
+      "timeframe": "1h",
+      "sma_periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mechanism": "funding_le_0.03%",
+      "periods": {
+        "research": {
+          "net_return": 0.06562204472493882,
+          "max_drawdown": -0.4625686623877947,
+          "completed_trades": 161,
+          "win_rate": 0.37888198757763975,
+          "profit_factor": 1.020999767764138,
+          "total_fees": 20764.26290511688,
+          "total_funding": -36258.70579470724
+        },
+        "validation": {
+          "net_return": 0.9344114120613145,
+          "max_drawdown": -0.2101798701201338,
+          "completed_trades": 116,
+          "win_rate": 0.3017241379310345,
+          "profit_factor": 1.5994962995809017,
+          "total_fees": 15574.18621552486,
+          "total_funding": -10697.744454423695
+        },
+        "oos": {
+          "net_return": 0.20393651496085122,
+          "max_drawdown": -0.17028654426275605,
+          "completed_trades": 82,
+          "win_rate": 0.4024390243902439,
+          "profit_factor": 1.3291581512855781,
+          "total_fees": 8413.19479212112,
+          "total_funding": -1769.6632372737597
+        },
+        "full": {
+          "net_return": 1.4817077942460413,
+          "max_drawdown": -0.46965662736604075,
+          "completed_trades": 359,
+          "win_rate": 0.3593314763231198,
+          "profit_factor": 1.2443757099840018,
+          "total_fees": 54705.684119206,
+          "total_funding": -51307.24177586788
+        }
+      }
+    },
+    {
+      "id": "1h-25-50-100-200-atr_percentile_0.3",
+      "timeframe": "1h",
+      "sma_periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mechanism": "atr_percentile_0.3",
+      "periods": {
+        "research": {
+          "net_return": 0.3444262787933403,
+          "max_drawdown": -0.3301796101783097,
+          "completed_trades": 278,
+          "win_rate": 0.5071942446043165,
+          "profit_factor": 1.1223094061732368,
+          "total_fees": 38763.048322708906,
+          "total_funding": -24675.36084342306
+        },
+        "validation": {
+          "net_return": 0.6147760098600847,
+          "max_drawdown": -0.25801300043565684,
+          "completed_trades": 166,
+          "win_rate": 0.39156626506024095,
+          "profit_factor": 1.460343533569293,
+          "total_fees": 19582.64374497789,
+          "total_funding": -6696.415047433635
+        },
+        "oos": {
+          "net_return": 0.18136595229791833,
+          "max_drawdown": -0.14175779788962029,
+          "completed_trades": 110,
+          "win_rate": 0.4090909090909091,
+          "profit_factor": 1.2590765089040057,
+          "total_fees": 11765.1441862581,
+          "total_funding": -1341.6204714700687
+        },
+        "full": {
+          "net_return": 1.564833699917104,
+          "max_drawdown": -0.39282921494546497,
+          "completed_trades": 554,
+          "win_rate": 0.45306859205776173,
+          "profit_factor": 1.2552050822060163,
+          "total_fees": 90637.71964981889,
+          "total_funding": -36591.47090983672
+        }
+      }
+    },
+    {
+      "id": "4h-20-40-80-160-atr_percentile_0.3",
+      "timeframe": "4h",
+      "sma_periods": [
+        20,
+        40,
+        80,
+        160
+      ],
+      "mechanism": "atr_percentile_0.3",
+      "periods": {
+        "research": {
+          "net_return": 0.081247704144044,
+          "max_drawdown": -0.5069566229131692,
+          "completed_trades": 72,
+          "win_rate": 0.4583333333333333,
+          "profit_factor": 1.0465105391382865,
+          "total_fees": 9937.606039475475,
+          "total_funding": -29266.974328154127
+        },
+        "validation": {
+          "net_return": 0.6572451461503719,
+          "max_drawdown": -0.23139823100423662,
+          "completed_trades": 57,
+          "win_rate": 0.43859649122807015,
+          "profit_factor": 1.5359821967107568,
+          "total_fees": 8508.00893357713,
+          "total_funding": -10688.998044965681
+        },
+        "oos": {
+          "net_return": 0.12140836591772737,
+          "max_drawdown": -0.12708382358054435,
+          "completed_trades": 41,
+          "win_rate": 0.4146341463414634,
+          "profit_factor": 1.5374942967560246,
+          "total_fees": 4283.83972699358,
+          "total_funding": -1036.8512234336836
+        },
+        "full": {
+          "net_return": 1.009699721081155,
+          "max_drawdown": -0.507286600467466,
+          "completed_trades": 170,
+          "win_rate": 0.4411764705882353,
+          "profit_factor": 1.290343929236357,
+          "total_fees": 26815.185475818384,
+          "total_funding": -42683.22712796013
+        }
+      }
+    },
+    {
+      "id": "1h-25-50-100-200-atr_percentile_0.5",
+      "timeframe": "1h",
+      "sma_periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mechanism": "atr_percentile_0.5",
+      "periods": {
+        "research": {
+          "net_return": 0.03287723396591728,
+          "max_drawdown": -0.3590581366053134,
+          "completed_trades": 235,
+          "win_rate": 0.46382978723404256,
+          "profit_factor": 1.0139718624635052,
+          "total_fees": 29298.821829961176,
+          "total_funding": -17279.611798035094
+        },
+        "validation": {
+          "net_return": 0.6392592416243191,
+          "max_drawdown": -0.23135713399038219,
+          "completed_trades": 178,
+          "win_rate": 0.4438202247191011,
+          "profit_factor": 1.506973597828136,
+          "total_fees": 22587.99684915464,
+          "total_funding": -5664.329800213452
+        },
+        "oos": {
+          "net_return": 0.12055949846300676,
+          "max_drawdown": -0.16517400992466152,
+          "completed_trades": 136,
+          "win_rate": 0.36764705882352944,
+          "profit_factor": 1.1688504106427997,
+          "total_fees": 14020.04577844487,
+          "total_funding": -1022.0360556344543
+        },
+        "full": {
+          "net_return": 0.8972596881915279,
+          "max_drawdown": -0.39180223341054604,
+          "completed_trades": 549,
+          "win_rate": 0.4335154826958106,
+          "profit_factor": 1.1844399558039176,
+          "total_fees": 76372.83328499434,
+          "total_funding": -24861.412341480867
+        }
+      }
+    },
+    {
+      "id": "4h-20-40-80-160-base",
+      "timeframe": "4h",
+      "sma_periods": [
+        20,
+        40,
+        80,
+        160
+      ],
+      "mechanism": "base",
+      "periods": {
+        "research": {
+          "net_return": 0.287127394083167,
+          "max_drawdown": -0.5855640911147112,
+          "completed_trades": 49,
+          "win_rate": 0.32653061224489793,
+          "profit_factor": 1.1350007626684229,
+          "total_fees": 7595.564300541088,
+          "total_funding": -52476.45601800621
+        },
+        "validation": {
+          "net_return": 0.4354349361570672,
+          "max_drawdown": -0.33692214378644225,
+          "completed_trades": 37,
+          "win_rate": 0.2702702702702703,
+          "profit_factor": 1.388607359404791,
+          "total_fees": 5110.39646486054,
+          "total_funding": -13696.343357712742
+        },
+        "oos": {
+          "net_return": 0.11413082918168249,
+          "max_drawdown": -0.13363858874367915,
+          "completed_trades": 27,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.405894893591557,
+          "total_fees": 2785.83590594993,
+          "total_funding": -1277.7468498618205
+        },
+        "full": {
+          "net_return": 1.058392509831093,
+          "max_drawdown": -0.5855640911147112,
+          "completed_trades": 113,
+          "win_rate": 0.30973451327433627,
+          "profit_factor": 1.2588501537385834,
+          "total_fees": 19321.27446525361,
+          "total_funding": -72467.82047126109
+        }
+      }
+    },
+    {
+      "id": "4h-20-40-80-160-funding_le_0.01%",
+      "timeframe": "4h",
+      "sma_periods": [
+        20,
+        40,
+        80,
+        160
+      ],
+      "mechanism": "funding_le_0.01%",
+      "periods": {
+        "research": {
+          "net_return": 0.287127394083167,
+          "max_drawdown": -0.5855640911147112,
+          "completed_trades": 49,
+          "win_rate": 0.32653061224489793,
+          "profit_factor": 1.1350007626684229,
+          "total_fees": 7595.564300541088,
+          "total_funding": -52476.45601800621
+        },
+        "validation": {
+          "net_return": 0.4354349361570672,
+          "max_drawdown": -0.33692214378644225,
+          "completed_trades": 37,
+          "win_rate": 0.2702702702702703,
+          "profit_factor": 1.388607359404791,
+          "total_fees": 5110.39646486054,
+          "total_funding": -13696.343357712742
+        },
+        "oos": {
+          "net_return": 0.11413082918168249,
+          "max_drawdown": -0.13363858874367915,
+          "completed_trades": 27,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.405894893591557,
+          "total_fees": 2785.83590594993,
+          "total_funding": -1277.7468498618205
+        },
+        "full": {
+          "net_return": 1.058392509831093,
+          "max_drawdown": -0.5855640911147112,
+          "completed_trades": 113,
+          "win_rate": 0.30973451327433627,
+          "profit_factor": 1.2588501537385834,
+          "total_fees": 19321.27446525361,
+          "total_funding": -72467.82047126109
+        }
+      }
+    },
+    {
+      "id": "4h-20-40-80-160-funding_le_0.03%",
+      "timeframe": "4h",
+      "sma_periods": [
+        20,
+        40,
+        80,
+        160
+      ],
+      "mechanism": "funding_le_0.03%",
+      "periods": {
+        "research": {
+          "net_return": 0.287127394083167,
+          "max_drawdown": -0.5855640911147112,
+          "completed_trades": 49,
+          "win_rate": 0.32653061224489793,
+          "profit_factor": 1.1350007626684229,
+          "total_fees": 7595.564300541088,
+          "total_funding": -52476.45601800621
+        },
+        "validation": {
+          "net_return": 0.4354349361570672,
+          "max_drawdown": -0.33692214378644225,
+          "completed_trades": 37,
+          "win_rate": 0.2702702702702703,
+          "profit_factor": 1.388607359404791,
+          "total_fees": 5110.39646486054,
+          "total_funding": -13696.343357712742
+        },
+        "oos": {
+          "net_return": 0.11413082918168249,
+          "max_drawdown": -0.13363858874367915,
+          "completed_trades": 27,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.405894893591557,
+          "total_fees": 2785.83590594993,
+          "total_funding": -1277.7468498618205
+        },
+        "full": {
+          "net_return": 1.058392509831093,
+          "max_drawdown": -0.5855640911147112,
+          "completed_trades": 113,
+          "win_rate": 0.30973451327433627,
+          "profit_factor": 1.2588501537385834,
+          "total_fees": 19321.27446525361,
+          "total_funding": -72467.82047126109
+        }
+      }
+    },
+    {
+      "id": "4h-20-40-80-160-atr_percentile_0.5",
+      "timeframe": "4h",
+      "sma_periods": [
+        20,
+        40,
+        80,
+        160
+      ],
+      "mechanism": "atr_percentile_0.5",
+      "periods": {
+        "research": {
+          "net_return": -0.10895706158865744,
+          "max_drawdown": -0.5580854104188514,
+          "completed_trades": 65,
+          "win_rate": 0.4461538461538462,
+          "profit_factor": 0.9210537657163573,
+          "total_fees": 8099.323396618381,
+          "total_funding": -19828.118782741363
+        },
+        "validation": {
+          "net_return": 0.7365906817622841,
+          "max_drawdown": -0.17846567496726387,
+          "completed_trades": 60,
+          "win_rate": 0.4166666666666667,
+          "profit_factor": 1.8769290230097841,
+          "total_fees": 9260.20431945608,
+          "total_funding": -8740.081161995506
+        },
+        "oos": {
+          "net_return": 0.10747171378237048,
+          "max_drawdown": -0.11027235596982889,
+          "completed_trades": 33,
+          "win_rate": 0.5151515151515151,
+          "profit_factor": 1.622105974233346,
+          "total_fees": 3497.73179527835,
+          "total_funding": -1102.719938504601
+        },
+        "full": {
+          "net_return": 0.7136531206283073,
+          "max_drawdown": -0.5583808833445711,
+          "completed_trades": 158,
+          "win_rate": 0.44936708860759494,
+          "profit_factor": 1.2978609962330923,
+          "total_fees": 21763.30906449099,
+          "total_funding": -29322.290090632276
+        }
+      }
+    },
+    {
+      "id": "4h-20-40-80-160-sma_spacing_0.10%",
+      "timeframe": "4h",
+      "sma_periods": [
+        20,
+        40,
+        80,
+        160
+      ],
+      "mechanism": "sma_spacing_0.10%",
+      "periods": {
+        "research": {
+          "net_return": 0.21207383535580987,
+          "max_drawdown": -0.5917503249297035,
+          "completed_trades": 50,
+          "win_rate": 0.32,
+          "profit_factor": 1.099749707613031,
+          "total_fees": 7322.988311945782,
+          "total_funding": -48639.67180372523
+        },
+        "validation": {
+          "net_return": 0.4691977268845655,
+          "max_drawdown": -0.3281297997825692,
+          "completed_trades": 38,
+          "win_rate": 0.3684210526315789,
+          "profit_factor": 1.4038263556766575,
+          "total_fees": 5402.21053630604,
+          "total_funding": -13229.069452237407
+        },
+        "oos": {
+          "net_return": 0.10638440117968076,
+          "max_drawdown": -0.15593520434094613,
+          "completed_trades": 23,
+          "win_rate": 0.4782608695652174,
+          "profit_factor": 1.3868136224264593,
+          "total_fees": 2391.20328406491,
+          "total_funding": -1186.7255774270134
+        },
+        "full": {
+          "net_return": 0.9700471037442565,
+          "max_drawdown": -0.5922616037120482,
+          "completed_trades": 111,
+          "win_rate": 0.36936936936936937,
+          "profit_factor": 1.241041770936805,
+          "total_fees": 18130.629226557052,
+          "total_funding": -66788.0306213693
+        }
+      }
+    },
+    {
+      "id": "4h-20-40-80-160-sma_spacing_0.50%",
+      "timeframe": "4h",
+      "sma_periods": [
+        20,
+        40,
+        80,
+        160
+      ],
+      "mechanism": "sma_spacing_0.50%",
+      "periods": {
+        "research": {
+          "net_return": 0.5446929289150091,
+          "max_drawdown": -0.5142655718745964,
+          "completed_trades": 44,
+          "win_rate": 0.3409090909090909,
+          "profit_factor": 1.3076691881327205,
+          "total_fees": 7503.869771255633,
+          "total_funding": -46625.97863471346
+        },
+        "validation": {
+          "net_return": 0.49904229697571156,
+          "max_drawdown": -0.24490945174754744,
+          "completed_trades": 35,
+          "win_rate": 0.3142857142857143,
+          "profit_factor": 1.647555284516002,
+          "total_fees": 4543.2038725067,
+          "total_funding": -9988.215230802143
+        },
+        "oos": {
+          "net_return": 0.1034648784902466,
+          "max_drawdown": -0.1108978264642261,
+          "completed_trades": 20,
+          "win_rate": 0.55,
+          "profit_factor": 1.6702701499026897,
+          "total_fees": 2123.41288796788,
+          "total_funding": -788.0547435274597
+        },
+        "full": {
+          "net_return": 1.5551274650009166,
+          "max_drawdown": -0.5175775531177956,
+          "completed_trades": 99,
+          "win_rate": 0.37373737373737376,
+          "profit_factor": 1.4686106127596026,
+          "total_fees": 19440.945296828522,
+          "total_funding": -63882.38498984981
+        }
+      }
+    },
+    {
+      "id": "1h-25-50-100-200-sma_spacing_0.10%",
+      "timeframe": "1h",
+      "sma_periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mechanism": "sma_spacing_0.10%",
+      "periods": {
+        "research": {
+          "net_return": -0.051446518274884716,
+          "max_drawdown": -0.4180917935540506,
+          "completed_trades": 165,
+          "win_rate": 0.3696969696969697,
+          "profit_factor": 0.9809599919607702,
+          "total_fees": 18853.22839997574,
+          "total_funding": -29323.07264460473
+        },
+        "validation": {
+          "net_return": 0.8859996498962983,
+          "max_drawdown": -0.21205390147138642,
+          "completed_trades": 105,
+          "win_rate": 0.34285714285714286,
+          "profit_factor": 1.6598334284544867,
+          "total_fees": 14227.11965007443,
+          "total_funding": -9447.81848163574
+        },
+        "oos": {
+          "net_return": 0.10033532466878008,
+          "max_drawdown": -0.16586415171442506,
+          "completed_trades": 71,
+          "win_rate": 0.38028169014084506,
+          "profit_factor": 1.1891075741559805,
+          "total_fees": 6617.58415433301,
+          "total_funding": -1347.0187912489823
+        },
+        "full": {
+          "net_return": 0.9685907991905518,
+          "max_drawdown": -0.43503612434668,
+          "completed_trades": 341,
+          "win_rate": 0.36363636363636365,
+          "profit_factor": 1.1966679446691735,
+          "total_fees": 44189.23006053415,
+          "total_funding": -40694.84851944267
+        }
+      }
+    },
+    {
+      "id": "4h-20-40-80-160-volume_above_mean",
+      "timeframe": "4h",
+      "sma_periods": [
+        20,
+        40,
+        80,
+        160
+      ],
+      "mechanism": "volume_above_mean",
+      "periods": {
+        "research": {
+          "net_return": -0.4400846343191178,
+          "max_drawdown": -0.564111412937053,
+          "completed_trades": 310,
+          "win_rate": 0.4483870967741935,
+          "profit_factor": 0.8059854461077915,
+          "total_fees": 30482.830227993247,
+          "total_funding": -13861.468131562533
+        },
+        "validation": {
+          "net_return": 0.22615419047496804,
+          "max_drawdown": -0.2266678031950911,
+          "completed_trades": 236,
+          "win_rate": 0.4576271186440678,
+          "profit_factor": 1.155116901894725,
+          "total_fees": 29887.60241581801,
+          "total_funding": -4983.254692705184
+        },
+        "oos": {
+          "net_return": 0.09762824448849111,
+          "max_drawdown": -0.10633037340529243,
+          "completed_trades": 138,
+          "win_rate": 0.5434782608695652,
+          "profit_factor": 1.171104191699942,
+          "total_fees": 14354.76312685721,
+          "total_funding": -622.4338542736792
+        },
+        "full": {
+          "net_return": -0.2464218356772365,
+          "max_drawdown": -0.564111412937053,
+          "completed_trades": 684,
+          "win_rate": 0.47076023391812866,
+          "profit_factor": 0.9291080206734431,
+          "total_fees": 57066.48214538279,
+          "total_funding": -17078.17779102486
+        }
+      }
+    },
+    {
+      "id": "1h-25-50-100-200-sma_spacing_0.25%",
+      "timeframe": "1h",
+      "sma_periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mechanism": "sma_spacing_0.25%",
+      "periods": {
+        "research": {
+          "net_return": -0.0850623829403926,
+          "max_drawdown": -0.3627837579094223,
+          "completed_trades": 157,
+          "win_rate": 0.36942675159235666,
+          "profit_factor": 0.9624931293078741,
+          "total_fees": 16306.422294514598,
+          "total_funding": -23324.299595836663
+        },
+        "validation": {
+          "net_return": 0.5276595670557573,
+          "max_drawdown": -0.18838829617362363,
+          "completed_trades": 90,
+          "win_rate": 0.4111111111111111,
+          "profit_factor": 1.4413251056310699,
+          "total_fees": 11232.71966718957,
+          "total_funding": -6941.837043014694
+        },
+        "oos": {
+          "net_return": 0.09746122845132096,
+          "max_drawdown": -0.13516539885757417,
+          "completed_trades": 68,
+          "win_rate": 0.35294117647058826,
+          "profit_factor": 1.2034418554726802,
+          "total_fees": 6638.01388016786,
+          "total_funding": -1091.978317380043
+        },
+        "full": {
+          "net_return": 0.534184715459828,
+          "max_drawdown": -0.3627837579094223,
+          "completed_trades": 315,
+          "win_rate": 0.37777777777777777,
+          "profit_factor": 1.1325023301050792,
+          "total_fees": 35863.816709562736,
+          "total_funding": -31202.752287406453
+        }
+      }
+    },
+    {
+      "id": "1h-25-50-100-200-4h_regime",
+      "timeframe": "1h",
+      "sma_periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mechanism": "4h_regime",
+      "periods": {
+        "research": {
+          "net_return": 0.351708060844214,
+          "max_drawdown": -0.3176483754903127,
+          "completed_trades": 84,
+          "win_rate": 0.40476190476190477,
+          "profit_factor": 1.2434904345643178,
+          "total_fees": 11070.280573644532,
+          "total_funding": -25612.40275121207
+        },
+        "validation": {
+          "net_return": 0.7204365939891773,
+          "max_drawdown": -0.18708464145505502,
+          "completed_trades": 64,
+          "win_rate": 0.359375,
+          "profit_factor": 1.9130990590583592,
+          "total_fees": 8620.95103395315,
+          "total_funding": -7838.9739754691245
+        },
+        "oos": {
+          "net_return": 0.08423949375158993,
+          "max_drawdown": -0.11478355822680404,
+          "completed_trades": 33,
+          "win_rate": 0.48484848484848486,
+          "profit_factor": 1.3276603015603226,
+          "total_fees": 3444.20363995863,
+          "total_funding": -596.0786752223777
+        },
+        "full": {
+          "net_return": 1.5216277153085558,
+          "max_drawdown": -0.3176483754903127,
+          "completed_trades": 181,
+          "win_rate": 0.40331491712707185,
+          "profit_factor": 1.4893944470760236,
+          "total_fees": 30736.840858760643,
+          "total_funding": -37596.585545241775
+        }
+      }
+    },
+    {
+      "id": "1h-25-50-100-200-close_above_slowest_sma",
+      "timeframe": "1h",
+      "sma_periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mechanism": "close_above_slowest_sma",
+      "periods": {
+        "research": {
+          "net_return": 0.08294692948919795,
+          "max_drawdown": -0.4918080096777807,
+          "completed_trades": 170,
+          "win_rate": 0.37058823529411766,
+          "profit_factor": 1.0255263612521668,
+          "total_fees": 22749.620375790575,
+          "total_funding": -37959.62964082163
+        },
+        "validation": {
+          "net_return": 0.709166085391379,
+          "max_drawdown": -0.23355255476224063,
+          "completed_trades": 122,
+          "win_rate": 0.3114754098360656,
+          "profit_factor": 1.4366048770907178,
+          "total_fees": 15431.95436911712,
+          "total_funding": -9868.480048504973
+        },
+        "oos": {
+          "net_return": 0.0775900851202609,
+          "max_drawdown": -0.20117116932566126,
+          "completed_trades": 94,
+          "win_rate": 0.35106382978723405,
+          "profit_factor": 1.1161048014866113,
+          "total_fees": 8930.07954315511,
+          "total_funding": -1581.8281538388
+        },
+        "full": {
+          "net_return": 0.9945346502765381,
+          "max_drawdown": -0.5133437121724692,
+          "completed_trades": 386,
+          "win_rate": 0.3471502590673575,
+          "profit_factor": 1.159239746104957,
+          "total_fees": 55992.75135395362,
+          "total_funding": -51575.337640064565
+        }
+      }
+    },
+    {
+      "id": "4h-20-40-80-160-close_above_slowest_sma",
+      "timeframe": "4h",
+      "sma_periods": [
+        20,
+        40,
+        80,
+        160
+      ],
+      "mechanism": "close_above_slowest_sma",
+      "periods": {
+        "research": {
+          "net_return": 0.37674528513810635,
+          "max_drawdown": -0.5453886384025929,
+          "completed_trades": 51,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.1841302567323837,
+          "total_fees": 7775.799495370306,
+          "total_funding": -51046.74514837506
+        },
+        "validation": {
+          "net_return": 0.43402644598971635,
+          "max_drawdown": -0.33220518473727567,
+          "completed_trades": 38,
+          "win_rate": 0.2631578947368421,
+          "profit_factor": 1.3878427013491632,
+          "total_fees": 5214.01095622498,
+          "total_funding": -13634.487688843385
+        },
+        "oos": {
+          "net_return": 0.07132121931537283,
+          "max_drawdown": -0.1475414519915933,
+          "completed_trades": 30,
+          "win_rate": 0.3,
+          "profit_factor": 1.2227436215044507,
+          "total_fees": 3012.25845681652,
+          "total_funding": -1238.5505254061964
+        },
+        "full": {
+          "net_return": 1.115177381823613,
+          "max_drawdown": -0.5460344460843531,
+          "completed_trades": 119,
+          "win_rate": 0.3025210084033613,
+          "profit_factor": 1.264314680951616,
+          "total_fees": 20902.832357405456,
+          "total_funding": -72265.83343536923
+        }
+      }
+    },
+    {
+      "id": "4h-10-20-30-40-sma_spacing_0.10%",
+      "timeframe": "4h",
+      "sma_periods": [
+        10,
+        20,
+        30,
+        40
+      ],
+      "mechanism": "sma_spacing_0.10%",
+      "periods": {
+        "research": {
+          "net_return": 0.011206554713066901,
+          "max_drawdown": -0.4427640415012414,
+          "completed_trades": 118,
+          "win_rate": 0.3474576271186441,
+          "profit_factor": 1.0047248381262497,
+          "total_fees": 13902.858727470975,
+          "total_funding": -34452.03034876633
+        },
+        "validation": {
+          "net_return": 1.1342440793235193,
+          "max_drawdown": -0.21054087229360882,
+          "completed_trades": 81,
+          "win_rate": 0.48148148148148145,
+          "profit_factor": 2.0137538504044534,
+          "total_fees": 12291.83675495114,
+          "total_funding": -11842.503511696921
+        },
+        "oos": {
+          "net_return": 0.04598543224907816,
+          "max_drawdown": -0.1890942664885689,
+          "completed_trades": 53,
+          "win_rate": 0.3584905660377358,
+          "profit_factor": 1.0890573382176807,
+          "total_fees": 5170.17433533219,
+          "total_funding": -1490.390272539994
+        },
+        "full": {
+          "net_return": 1.2571849890348727,
+          "max_drawdown": -0.4427640415012414,
+          "completed_trades": 252,
+          "win_rate": 0.39285714285714285,
+          "profit_factor": 1.272242462594429,
+          "total_fees": 37492.23229635553,
+          "total_funding": -49644.711507521206
+        }
+      }
+    },
+    {
+      "id": "4h-10-20-30-40-close_above_slowest_sma",
+      "timeframe": "4h",
+      "sma_periods": [
+        10,
+        20,
+        30,
+        40
+      ],
+      "mechanism": "close_above_slowest_sma",
+      "periods": {
+        "research": {
+          "net_return": 0.07812225788748267,
+          "max_drawdown": -0.4826359384696121,
+          "completed_trades": 148,
+          "win_rate": 0.35135135135135137,
+          "profit_factor": 1.0284875764238552,
+          "total_fees": 18953.88858436509,
+          "total_funding": -40052.77631712264
+        },
+        "validation": {
+          "net_return": 0.6916411654375548,
+          "max_drawdown": -0.21317013444451474,
+          "completed_trades": 98,
+          "win_rate": 0.3673469387755102,
+          "profit_factor": 1.5011792588506796,
+          "total_fees": 13255.41049595228,
+          "total_funding": -12126.781967972232
+        },
+        "oos": {
+          "net_return": 0.004968528356474019,
+          "max_drawdown": -0.23474759551334204,
+          "completed_trades": 74,
+          "win_rate": 0.32432432432432434,
+          "profit_factor": 1.0079787070724149,
+          "total_fees": 6959.92291568988,
+          "total_funding": -1615.3558081427182
+        },
+        "full": {
+          "net_return": 0.8331048581064521,
+          "max_drawdown": -0.4826359384696121,
+          "completed_trades": 320,
+          "win_rate": 0.35,
+          "profit_factor": 1.155251078421997,
+          "total_fees": 45941.69791860662,
+          "total_funding": -56075.662755124176
+        }
+      }
+    },
+    {
+      "id": "4h-10-20-30-40-atr_percentile_0.5",
+      "timeframe": "4h",
+      "sma_periods": [
+        10,
+        20,
+        30,
+        40
+      ],
+      "mechanism": "atr_percentile_0.5",
+      "periods": {
+        "research": {
+          "net_return": 0.0842070257806848,
+          "max_drawdown": -0.22418053215480924,
+          "completed_trades": 98,
+          "win_rate": 0.45918367346938777,
+          "profit_factor": 1.07928012858524,
+          "total_fees": 11466.851545556881,
+          "total_funding": -13365.88493454464
+        },
+        "validation": {
+          "net_return": 0.8875188249177856,
+          "max_drawdown": -0.18041468074185932,
+          "completed_trades": 72,
+          "win_rate": 0.4583333333333333,
+          "profit_factor": 2.078435300757563,
+          "total_fees": 11186.5200769798,
+          "total_funding": -8545.186882121645
+        },
+        "oos": {
+          "net_return": 0.002749334332583397,
+          "max_drawdown": -0.2413860899498245,
+          "completed_trades": 45,
+          "win_rate": 0.37777777777777777,
+          "profit_factor": 1.0068166869130886,
+          "total_fees": 4641.37433845931,
+          "total_funding": -1140.0490763823502
+        },
+        "full": {
+          "net_return": 1.0520502957520363,
+          "max_drawdown": -0.24145440630440818,
+          "completed_trades": 215,
+          "win_rate": 0.4418604651162791,
+          "profit_factor": 1.378420268564624,
+          "total_fees": 33096.47139123539,
+          "total_funding": -24964.799506870982
+        }
+      }
+    },
+    {
+      "id": "4h-20-40-80-160-sma_spacing_0.25%",
+      "timeframe": "4h",
+      "sma_periods": [
+        20,
+        40,
+        80,
+        160
+      ],
+      "mechanism": "sma_spacing_0.25%",
+      "periods": {
+        "research": {
+          "net_return": 0.28422443478963955,
+          "max_drawdown": -0.5624840766614594,
+          "completed_trades": 46,
+          "win_rate": 0.2608695652173913,
+          "profit_factor": 1.135071256204083,
+          "total_fees": 7036.862264716122,
+          "total_funding": -46915.28472285992
+        },
+        "validation": {
+          "net_return": 0.3940808365046151,
+          "max_drawdown": -0.2747059758675341,
+          "completed_trades": 41,
+          "win_rate": 0.3170731707317073,
+          "profit_factor": 1.4443699989297767,
+          "total_fees": 5186.33462648314,
+          "total_funding": -11112.214161215348
+        },
+        "oos": {
+          "net_return": 0.0015471191926960904,
+          "max_drawdown": -0.20460737421099714,
+          "completed_trades": 27,
+          "win_rate": 0.48148148148148145,
+          "profit_factor": 1.0041677517805454,
+          "total_fees": 2773.20130776986,
+          "total_funding": -957.107450080531
+        },
+        "full": {
+          "net_return": 0.7933032948986468,
+          "max_drawdown": -0.5624840766614594,
+          "completed_trades": 114,
+          "win_rate": 0.3333333333333333,
+          "profit_factor": 1.2029956956935102,
+          "total_fees": 18664.354258047213,
+          "total_funding": -62902.0956943681
+        }
+      }
+    },
+    {
+      "id": "4h-10-20-30-40-base",
+      "timeframe": "4h",
+      "sma_periods": [
+        10,
+        20,
+        30,
+        40
+      ],
+      "mechanism": "base",
+      "periods": {
+        "research": {
+          "net_return": 0.14009740493744774,
+          "max_drawdown": -0.453182121663597,
+          "completed_trades": 136,
+          "win_rate": 0.375,
+          "profit_factor": 1.0489444870892903,
+          "total_fees": 18004.814300736325,
+          "total_funding": -41666.0529899229
+        },
+        "validation": {
+          "net_return": 0.9145255880994311,
+          "max_drawdown": -0.191557177543207,
+          "completed_trades": 88,
+          "win_rate": 0.36363636363636365,
+          "profit_factor": 1.6945165879687638,
+          "total_fees": 12985.93497004489,
+          "total_funding": -13483.178407352
+        },
+        "oos": {
+          "net_return": -0.00011716708194636174,
+          "max_drawdown": -0.2196792411556544,
+          "completed_trades": 70,
+          "win_rate": 0.34285714285714286,
+          "profit_factor": 0.9998167787240931,
+          "total_fees": 6599.60103583987,
+          "total_funding": -1751.3761188547662
+        },
+        "full": {
+          "net_return": 1.1820437522736869,
+          "max_drawdown": -0.45417058779913544,
+          "completed_trades": 294,
+          "win_rate": 0.36394557823129253,
+          "profit_factor": 1.2052259536292935,
+          "total_fees": 47217.39181710114,
+          "total_funding": -60861.655061874175
+        }
+      }
+    },
+    {
+      "id": "4h-10-20-30-40-funding_le_0.01%",
+      "timeframe": "4h",
+      "sma_periods": [
+        10,
+        20,
+        30,
+        40
+      ],
+      "mechanism": "funding_le_0.01%",
+      "periods": {
+        "research": {
+          "net_return": 0.14009740493744774,
+          "max_drawdown": -0.453182121663597,
+          "completed_trades": 136,
+          "win_rate": 0.375,
+          "profit_factor": 1.0489444870892903,
+          "total_fees": 18004.814300736325,
+          "total_funding": -41666.0529899229
+        },
+        "validation": {
+          "net_return": 0.9145255880994311,
+          "max_drawdown": -0.191557177543207,
+          "completed_trades": 88,
+          "win_rate": 0.36363636363636365,
+          "profit_factor": 1.6945165879687638,
+          "total_fees": 12985.93497004489,
+          "total_funding": -13483.178407352
+        },
+        "oos": {
+          "net_return": -0.00011716708194636174,
+          "max_drawdown": -0.2196792411556544,
+          "completed_trades": 70,
+          "win_rate": 0.34285714285714286,
+          "profit_factor": 0.9998167787240931,
+          "total_fees": 6599.60103583987,
+          "total_funding": -1751.3761188547662
+        },
+        "full": {
+          "net_return": 1.1820437522736869,
+          "max_drawdown": -0.45417058779913544,
+          "completed_trades": 294,
+          "win_rate": 0.36394557823129253,
+          "profit_factor": 1.2052259536292935,
+          "total_fees": 47217.39181710114,
+          "total_funding": -60861.655061874175
+        }
+      }
+    },
+    {
+      "id": "4h-10-20-30-40-funding_le_0.03%",
+      "timeframe": "4h",
+      "sma_periods": [
+        10,
+        20,
+        30,
+        40
+      ],
+      "mechanism": "funding_le_0.03%",
+      "periods": {
+        "research": {
+          "net_return": 0.14009740493744774,
+          "max_drawdown": -0.453182121663597,
+          "completed_trades": 136,
+          "win_rate": 0.375,
+          "profit_factor": 1.0489444870892903,
+          "total_fees": 18004.814300736325,
+          "total_funding": -41666.0529899229
+        },
+        "validation": {
+          "net_return": 0.9145255880994311,
+          "max_drawdown": -0.191557177543207,
+          "completed_trades": 88,
+          "win_rate": 0.36363636363636365,
+          "profit_factor": 1.6945165879687638,
+          "total_fees": 12985.93497004489,
+          "total_funding": -13483.178407352
+        },
+        "oos": {
+          "net_return": -0.00011716708194636174,
+          "max_drawdown": -0.2196792411556544,
+          "completed_trades": 70,
+          "win_rate": 0.34285714285714286,
+          "profit_factor": 0.9998167787240931,
+          "total_fees": 6599.60103583987,
+          "total_funding": -1751.3761188547662
+        },
+        "full": {
+          "net_return": 1.1820437522736869,
+          "max_drawdown": -0.45417058779913544,
+          "completed_trades": 294,
+          "win_rate": 0.36394557823129253,
+          "profit_factor": 1.2052259536292935,
+          "total_fees": 47217.39181710114,
+          "total_funding": -60861.655061874175
+        }
+      }
+    },
+    {
+      "id": "1h-25-50-100-200-sma_spacing_0.50%",
+      "timeframe": "1h",
+      "sma_periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mechanism": "sma_spacing_0.50%",
+      "periods": {
+        "research": {
+          "net_return": 0.20445232339469185,
+          "max_drawdown": -0.26702276942642766,
+          "completed_trades": 117,
+          "win_rate": 0.41025641025641024,
+          "profit_factor": 1.1257936298830458,
+          "total_fees": 12908.525668756163,
+          "total_funding": -19977.017754504654
+        },
+        "validation": {
+          "net_return": 0.19707931752600844,
+          "max_drawdown": -0.20434893646687244,
+          "completed_trades": 87,
+          "win_rate": 0.40229885057471265,
+          "profit_factor": 1.2214015850320814,
+          "total_fees": 9194.32185691139,
+          "total_funding": -4179.402277347765
+        },
+        "oos": {
+          "net_return": -0.03003435883340312,
+          "max_drawdown": -0.1459371685440689,
+          "completed_trades": 47,
+          "win_rate": 0.3829787234042553,
+          "profit_factor": 0.920729791598269,
+          "total_fees": 4386.3051631862,
+          "total_funding": -552.7465072741123
+        },
+        "full": {
+          "net_return": 0.3986788410251818,
+          "max_drawdown": -0.26702276942642766,
+          "completed_trades": 251,
+          "win_rate": 0.40239043824701193,
+          "profit_factor": 1.1228968243924586,
+          "total_fees": 30309.723223669254,
+          "total_funding": -25809.056529922567
+        }
+      }
+    },
+    {
+      "id": "4h-10-20-30-40-atr_percentile_0.3",
+      "timeframe": "4h",
+      "sma_periods": [
+        10,
+        20,
+        30,
+        40
+      ],
+      "mechanism": "atr_percentile_0.3",
+      "periods": {
+        "research": {
+          "net_return": -0.1223656506176051,
+          "max_drawdown": -0.37645416303602586,
+          "completed_trades": 138,
+          "win_rate": 0.43478260869565216,
+          "profit_factor": 0.9281522842926021,
+          "total_fees": 15354.06731010141,
+          "total_funding": -19565.405564637098
+        },
+        "validation": {
+          "net_return": 0.9187768775776427,
+          "max_drawdown": -0.18899320365452443,
+          "completed_trades": 88,
+          "win_rate": 0.45454545454545453,
+          "profit_factor": 1.7035822010962216,
+          "total_fees": 13274.27459757645,
+          "total_funding": -10508.058466839275
+        },
+        "oos": {
+          "net_return": -0.07328835981257895,
+          "max_drawdown": -0.23931573972155917,
+          "completed_trades": 62,
+          "win_rate": 0.3548387096774194,
+          "profit_factor": 0.8524251818430645,
+          "total_fees": 5904.24535427784,
+          "total_funding": -1146.114001940054
+        },
+        "full": {
+          "net_return": 0.5606929973167425,
+          "max_drawdown": -0.37645416303602586,
+          "completed_trades": 288,
+          "win_rate": 0.4236111111111111,
+          "profit_factor": 1.152137493074034,
+          "total_fees": 36947.90587497244,
+          "total_funding": -30716.952092831303
+        }
+      }
+    },
+    {
+      "id": "4h-10-20-30-40-sma_spacing_0.25%",
+      "timeframe": "4h",
+      "sma_periods": [
+        10,
+        20,
+        30,
+        40
+      ],
+      "mechanism": "sma_spacing_0.25%",
+      "periods": {
+        "research": {
+          "net_return": 0.029267045207913633,
+          "max_drawdown": -0.3091337114566738,
+          "completed_trades": 114,
+          "win_rate": 0.37719298245614036,
+          "profit_factor": 1.0149782953787068,
+          "total_fees": 12239.694392519956,
+          "total_funding": -27131.371891934683
+        },
+        "validation": {
+          "net_return": 0.9764720932483062,
+          "max_drawdown": -0.18122704056991468,
+          "completed_trades": 68,
+          "win_rate": 0.39705882352941174,
+          "profit_factor": 2.350474810604149,
+          "total_fees": 9431.27423075187,
+          "total_funding": -8806.983265797506
+        },
+        "oos": {
+          "net_return": -0.08218929844196986,
+          "max_drawdown": -0.2197095378646608,
+          "completed_trades": 43,
+          "win_rate": 0.27906976744186046,
+          "profit_factor": 0.7818177602649311,
+          "total_fees": 4033.85524678592,
+          "total_funding": -1202.6733534510659
+        },
+        "full": {
+          "net_return": 0.8668792983991231,
+          "max_drawdown": -0.31274575321393555,
+          "completed_trades": 225,
+          "win_rate": 0.36444444444444446,
+          "profit_factor": 1.250201366896663,
+          "total_fees": 30154.640466481316,
+          "total_funding": -38642.60365513237
+        }
+      }
+    },
+    {
+      "id": "4h-10-20-30-40-price_above_all_sma",
+      "timeframe": "4h",
+      "sma_periods": [
+        10,
+        20,
+        30,
+        40
+      ],
+      "mechanism": "price_above_all_sma",
+      "periods": {
+        "research": {
+          "net_return": 0.0716840947112585,
+          "max_drawdown": -0.3607501637549334,
+          "completed_trades": 241,
+          "win_rate": 0.3070539419087137,
+          "profit_factor": 1.027101700991261,
+          "total_fees": 28244.296828812556,
+          "total_funding": -24300.746588089594
+        },
+        "validation": {
+          "net_return": 0.1333207699444421,
+          "max_drawdown": -0.268133919122718,
+          "completed_trades": 176,
+          "win_rate": 0.2897727272727273,
+          "profit_factor": 1.0888465285061653,
+          "total_fees": 19653.93220896855,
+          "total_funding": -7105.23049488724
+        },
+        "oos": {
+          "net_return": -0.09592491217157981,
+          "max_drawdown": -0.29695950995622045,
+          "completed_trades": 111,
+          "win_rate": 0.2702702702702703,
+          "profit_factor": 0.8554657995340668,
+          "total_fees": 9884.94963012879,
+          "total_funding": -1154.7736189291904
+        },
+        "full": {
+          "net_return": 0.09818760430721149,
+          "max_drawdown": -0.44621327845591147,
+          "completed_trades": 528,
+          "win_rate": 0.2935606060606061,
+          "profit_factor": 1.0194067170245074,
+          "total_fees": 61316.186191305234,
+          "total_funding": -33318.821402241614
+        }
+      }
+    },
+    {
+      "id": "4h-10-20-30-40-volume_above_mean",
+      "timeframe": "4h",
+      "sma_periods": [
+        10,
+        20,
+        30,
+        40
+      ],
+      "mechanism": "volume_above_mean",
+      "periods": {
+        "research": {
+          "net_return": -0.5205804638905565,
+          "max_drawdown": -0.5662039400659166,
+          "completed_trades": 380,
+          "win_rate": 0.4342105263157895,
+          "profit_factor": 0.7887891559511643,
+          "total_fees": 33314.58792512634,
+          "total_funding": -12589.809576991305
+        },
+        "validation": {
+          "net_return": 0.26603524056756894,
+          "max_drawdown": -0.2299485870670753,
+          "completed_trades": 259,
+          "win_rate": 0.44787644787644787,
+          "profit_factor": 1.1823332422131128,
+          "total_fees": 29987.62086996398,
+          "total_funding": -4496.164001999124
+        },
+        "oos": {
+          "net_return": -0.11543390904907541,
+          "max_drawdown": -0.2922118530618229,
+          "completed_trades": 171,
+          "win_rate": 0.4619883040935672,
+          "profit_factor": 0.8457612045366413,
+          "total_fees": 15382.10020197203,
+          "total_funding": -767.2298917955105
+        },
+        "full": {
+          "net_return": -0.4631019509535341,
+          "max_drawdown": -0.5798961795618317,
+          "completed_trades": 810,
+          "win_rate": 0.4444444444444444,
+          "profit_factor": 0.8720074217766945,
+          "total_fees": 57020.11435557735,
+          "total_funding": -15210.209518418062
+        }
+      }
+    },
+    {
+      "id": "4h-20-40-80-160-price_above_all_sma",
+      "timeframe": "4h",
+      "sma_periods": [
+        20,
+        40,
+        80,
+        160
+      ],
+      "mechanism": "price_above_all_sma",
+      "periods": {
+        "research": {
+          "net_return": 0.12245221663328149,
+          "max_drawdown": -0.40687244560593705,
+          "completed_trades": 117,
+          "win_rate": 0.23931623931623933,
+          "profit_factor": 1.067061542268257,
+          "total_fees": 14503.209958837742,
+          "total_funding": -29383.10449698611
+        },
+        "validation": {
+          "net_return": 0.49539945642647143,
+          "max_drawdown": -0.2751869407248799,
+          "completed_trades": 95,
+          "win_rate": 0.2631578947368421,
+          "profit_factor": 1.4375788661011402,
+          "total_fees": 12123.55909088897,
+          "total_funding": -9292.678897883889
+        },
+        "oos": {
+          "net_return": -0.16107046375524317,
+          "max_drawdown": -0.23995730781366725,
+          "completed_trades": 58,
+          "win_rate": 0.22413793103448276,
+          "profit_factor": 0.6593330623462178,
+          "total_fees": 4991.03934303606,
+          "total_funding": -700.2310320482579
+        },
+        "full": {
+          "net_return": 0.40827696995915114,
+          "max_drawdown": -0.42485780536588935,
+          "completed_trades": 270,
+          "win_rate": 0.24444444444444444,
+          "profit_factor": 1.1049392505581863,
+          "total_fees": 36492.334110742064,
+          "total_funding": -40990.809312734826
+        }
+      }
+    },
+    {
+      "id": "1h-25-50-100-200-price_above_all_sma",
+      "timeframe": "1h",
+      "sma_periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mechanism": "price_above_all_sma",
+      "periods": {
+        "research": {
+          "net_return": -0.48313262650522154,
+          "max_drawdown": -0.6412162174029927,
+          "completed_trades": 479,
+          "win_rate": 0.20041753653444677,
+          "profit_factor": 0.8338190014042225,
+          "total_fees": 41423.45669274681,
+          "total_funding": -16948.154135567343
+        },
+        "validation": {
+          "net_return": 0.028245640397697756,
+          "max_drawdown": -0.24999780971668598,
+          "completed_trades": 333,
+          "win_rate": 0.2012012012012012,
+          "profit_factor": 1.0159491003176029,
+          "total_fees": 34924.3691517,
+          "total_funding": -4985.316879690225
+        },
+        "oos": {
+          "net_return": -0.22054110758989606,
+          "max_drawdown": -0.38796360859020973,
+          "completed_trades": 218,
+          "win_rate": 0.20642201834862386,
+          "profit_factor": 0.7558752288407988,
+          "total_fees": 18161.83403748813,
+          "total_funding": -972.161632721477
+        },
+        "full": {
+          "net_return": -0.5857288907369285,
+          "max_drawdown": -0.7595476023033894,
+          "completed_trades": 1030,
+          "win_rate": 0.20194174757281552,
+          "profit_factor": 0.8638572971111107,
+          "total_fees": 69118.62483798938,
+          "total_funding": -20040.618191155467
+        }
+      }
+    },
+    {
+      "id": "4h-10-20-30-40-sma_spacing_0.50%",
+      "timeframe": "4h",
+      "sma_periods": [
+        10,
+        20,
+        30,
+        40
+      ],
+      "mechanism": "sma_spacing_0.50%",
+      "periods": {
+        "research": {
+          "net_return": 0.1698346463900832,
+          "max_drawdown": -0.31126102576905307,
+          "completed_trades": 97,
+          "win_rate": 0.4639175257731959,
+          "profit_factor": 1.1142586720695866,
+          "total_fees": 10396.358524170086,
+          "total_funding": -21558.380453283593
+        },
+        "validation": {
+          "net_return": 0.578786521929756,
+          "max_drawdown": -0.20086688784733847,
+          "completed_trades": 54,
+          "win_rate": 0.4074074074074074,
+          "profit_factor": 1.893906067447082,
+          "total_fees": 7239.28370498664,
+          "total_funding": -6398.481243557765
+        },
+        "oos": {
+          "net_return": -0.26382685159150365,
+          "max_drawdown": -0.33275506697068574,
+          "completed_trades": 32,
+          "win_rate": 0.25,
+          "profit_factor": 0.430692318672081,
+          "total_fees": 2727.88009303512,
+          "total_funding": -694.3027036752434
+        },
+        "full": {
+          "net_return": 0.3595610100485356,
+          "max_drawdown": -0.3565285349677607,
+          "completed_trades": 183,
+          "win_rate": 0.4098360655737705,
+          "profit_factor": 1.1159852452814045,
+          "total_fees": 23905.105674022645,
+          "total_funding": -30326.970611505796
+        }
+      }
+    },
+    {
+      "id": "1h-25-50-100-200-volume_above_mean",
+      "timeframe": "1h",
+      "sma_periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mechanism": "volume_above_mean",
+      "periods": {
+        "research": {
+          "net_return": -0.6815316877424262,
+          "max_drawdown": -0.7006893459896961,
+          "completed_trades": 973,
+          "win_rate": 0.40493319630010277,
+          "profit_factor": 0.7703128972665859,
+          "total_fees": 69400.21353385167,
+          "total_funding": -7452.001698484955
+        },
+        "validation": {
+          "net_return": -0.2445785204046817,
+          "max_drawdown": -0.370714737109324,
+          "completed_trades": 554,
+          "win_rate": 0.3971119133574007,
+          "profit_factor": 0.8488134781699056,
+          "total_fees": 46956.59919069514,
+          "total_funding": -2727.660013133029
+        },
+        "oos": {
+          "net_return": -0.3196288424712541,
+          "max_drawdown": -0.3964447671828965,
+          "completed_trades": 412,
+          "win_rate": 0.3737864077669903,
+          "profit_factor": 0.6719601754641074,
+          "total_fees": 31899.85098182899,
+          "total_funding": -546.3024428364195
+        },
+        "full": {
+          "net_return": -0.8362127349117087,
+          "max_drawdown": -0.8595076467395273,
+          "completed_trades": 1939,
+          "win_rate": 0.3960804538421867,
+          "profit_factor": 0.7749849120915496,
+          "total_fees": 92010.59555182826,
+          "total_funding": -8451.305002816604
+        }
+      }
+    }
+  ]
+}

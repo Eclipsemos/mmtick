@@ -1,0 +1,533 @@
+{
+  "generated_at": "2026-09-02T11:45:05.731783+00:00",
+  "status": "FORWARD_TESTING_ENSEMBLE",
+  "frozen_config": {
+    "frozen_at": "2026-09-02T11:45:05.731783+00:00",
+    "forward_start": "2026-09-03T00:00:00+00:00",
+    "status": "FORWARD_TESTING_SECONDARY",
+    "position_model": "fixed quantities between sparse target changes",
+    "weights": {
+      "primary": "0.5",
+      "partial_bear_challenger": "0.5"
+    },
+    "components": [
+      {
+        "id": "primary",
+        "timeframe": "4h",
+        "periods": [
+          26,
+          52,
+          104,
+          208
+        ],
+        "bear_exposure": "0",
+        "neutral_exposure": "1",
+        "bull_exposure": "1.5",
+        "funding_threshold": "0.0001"
+      },
+      {
+        "id": "partial_bear_challenger",
+        "timeframe": "4h",
+        "periods": [
+          25,
+          50,
+          100,
+          200
+        ],
+        "bear_exposure": "0.5",
+        "neutral_exposure": "1",
+        "bull_exposure": "1.75",
+        "funding_threshold": "0.0001"
+      }
+    ],
+    "maximum_allowed_exposure": "3",
+    "maximum_ensemble_exposure": "1.625",
+    "parameter_changes_allowed": false
+  },
+  "protocol": {
+    "construction": "50% capital to each frozen candidate; combined target is their arithmetic mean",
+    "selection": "fixed equal weights; no weight search and no OOS-based optimization",
+    "execution": "completed 4h signal; rebalance exposure delta at next 15m open",
+    "maximum_allowed_exposure": "3",
+    "ensemble_observed_exposure_range": {
+      "minimum": "0.25",
+      "maximum": "1.625"
+    },
+    "costs": "base 5+2 bps; stress 10+5 bps on changed notional",
+    "funding": "last known rate filter; charged only above 1x"
+  },
+  "data": {
+    "bars": 244857,
+    "first": "2019-09-08T17:45:00+00:00",
+    "last": "2026-09-02T07:59:59.999000+00:00"
+  },
+  "splits": {
+    "research": {
+      "buy_and_hold": {
+        "net_return": 1.3002658068859423,
+        "max_drawdown": -0.7755528264455603
+      },
+      "strategies": {
+        "primary": {
+          "base": {
+            "net_return": 3.2209688631259104,
+            "max_drawdown": -0.649234437706683,
+            "completed_trades": 288,
+            "total_fees": 60177.58035398691,
+            "total_funding": -13112.270802451056,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 2.556599764155752,
+            "max_drawdown": -0.6689511168103632,
+            "completed_trades": 288,
+            "total_fees": 108820.65200148913,
+            "total_funding": -11977.730431596008,
+            "bankrupt": false
+          },
+          "base_excess": 1.920703056239968,
+          "stress_excess": 1.2563339572698096
+        },
+        "partial_bear_challenger": {
+          "base": {
+            "net_return": 3.4956249794477627,
+            "max_drawdown": -0.7348380985499949,
+            "completed_trades": 296,
+            "total_fees": 63347.35164652525,
+            "total_funding": -23836.010154705495,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 2.866053852303416,
+            "max_drawdown": -0.744554742668236,
+            "completed_trades": 296,
+            "total_fees": 115221.83556544631,
+            "total_funding": -21736.23913703157,
+            "bankrupt": false
+          },
+          "base_excess": 2.1953591725618207,
+          "stress_excess": 1.5657880454174735
+        },
+        "equal_weight_ensemble": {
+          "base": {
+            "net_return": 3.4191745297204683,
+            "max_drawdown": -0.6922418957521167,
+            "completed_trades": 392,
+            "total_fees": 62128.42520891732,
+            "total_funding": -18130.84731389377,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 2.7618117708897505,
+            "max_drawdown": -0.7066632926122954,
+            "completed_trades": 392,
+            "total_fees": 112695.7572263739,
+            "total_funding": -16544.724328578766,
+            "bankrupt": false
+          },
+          "base_excess": 2.118908722834526,
+          "stress_excess": 1.4615459640038082
+        }
+      }
+    },
+    "validation": {
+      "buy_and_hold": {
+        "net_return": 4.656773998488284,
+        "max_drawdown": -0.3365730267702175
+      },
+      "strategies": {
+        "primary": {
+          "base": {
+            "net_return": 3.9070897739417756,
+            "max_drawdown": -0.3208803654889366,
+            "completed_trades": 168,
+            "total_fees": 15785.280002474092,
+            "total_funding": -6964.730325432884,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 3.476513624710012,
+            "max_drawdown": -0.3349845599946862,
+            "completed_trades": 168,
+            "total_fees": 29815.641934127874,
+            "total_funding": -6586.712817743708,
+            "bankrupt": false
+          },
+          "base_excess": -0.7496842245465087,
+          "stress_excess": -1.1802603737782724
+        },
+        "partial_bear_challenger": {
+          "base": {
+            "net_return": 5.454019225304121,
+            "max_drawdown": -0.30704874191023057,
+            "completed_trades": 175,
+            "total_fees": 20429.95744501081,
+            "total_funding": -12433.217746871767,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 4.877515069031706,
+            "max_drawdown": -0.31814513574538655,
+            "completed_trades": 175,
+            "total_fees": 38498.25123841425,
+            "total_funding": -11748.406197496048,
+            "bankrupt": false
+          },
+          "base_excess": 0.7972452268158365,
+          "stress_excess": 0.22074107054342207
+        },
+        "equal_weight_ensemble": {
+          "base": {
+            "net_return": 4.631684769528838,
+            "max_drawdown": -0.30681435050205264,
+            "completed_trades": 244,
+            "total_fees": 17939.63093629095,
+            "total_funding": -9506.445382406726,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 4.134784670219027,
+            "max_drawdown": -0.3201389834256924,
+            "completed_trades": 244,
+            "total_fees": 33852.34311928449,
+            "total_funding": -8989.74130948849,
+            "bankrupt": false
+          },
+          "base_excess": -0.02508922895944643,
+          "stress_excess": -0.5219893282692576
+        }
+      }
+    },
+    "oos": {
+      "buy_and_hold": {
+        "net_return": -0.17214437812136554,
+        "max_drawdown": -0.5415474735288048
+      },
+      "strategies": {
+        "primary": {
+          "base": {
+            "net_return": 0.0942544841790946,
+            "max_drawdown": -0.34815682004032766,
+            "completed_trades": 103,
+            "total_fees": 4110.626025209068,
+            "total_funding": -754.8629239680092,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 0.022904486604652816,
+            "max_drawdown": -0.3644744446817,
+            "completed_trades": 103,
+            "total_fees": 7953.210951043369,
+            "total_funding": -730.7139304230457,
+            "bankrupt": false
+          },
+          "base_excess": 0.26639886230046017,
+          "stress_excess": 0.19504886472601835
+        },
+        "partial_bear_challenger": {
+          "base": {
+            "net_return": 0.0035788006483689857,
+            "max_drawdown": -0.45797151455130625,
+            "completed_trades": 110,
+            "total_fees": 3361.934279562635,
+            "total_funding": -1173.6181363378969,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": -0.04797224033193891,
+            "max_drawdown": -0.4726411908051785,
+            "completed_trades": 110,
+            "total_fees": 6557.375508964832,
+            "total_funding": -1146.7899659036104,
+            "bankrupt": false
+          },
+          "base_excess": 0.17572317876973453,
+          "stress_excess": 0.12417213778942662
+        },
+        "equal_weight_ensemble": {
+          "base": {
+            "net_return": 0.053729949695726295,
+            "max_drawdown": -0.3966444253195323,
+            "completed_trades": 166,
+            "total_fees": 3705.974649101285,
+            "total_funding": -963.0279380684605,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": -0.00735103267639934,
+            "max_drawdown": -0.4096661321267695,
+            "completed_trades": 166,
+            "total_fees": 7200.54364838587,
+            "total_funding": -936.8748850836382,
+            "bankrupt": false
+          },
+          "base_excess": 0.22587432781709182,
+          "stress_excess": 0.1647933454449662
+        }
+      }
+    },
+    "full": {
+      "buy_and_hold": {
+        "net_return": 9.772050079074418,
+        "max_drawdown": -0.7755528264455603
+      },
+      "strategies": {
+        "primary": {
+          "base": {
+            "net_return": 21.664935467564618,
+            "max_drawdown": -0.6500041112746243,
+            "completed_trades": 559,
+            "total_fees": 211948.809019057,
+            "total_funding": -58145.40965912545,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 15.285833465080087,
+            "max_drawdown": -0.6702056207413704,
+            "completed_trades": 559,
+            "total_fees": 341487.3592112947,
+            "total_funding": -47037.85042182723,
+            "bankrupt": false
+          },
+          "base_excess": 11.8928853884902,
+          "stress_excess": 5.513783386005668
+        },
+        "partial_bear_challenger": {
+          "base": {
+            "net_return": 28.13898830129411,
+            "max_drawdown": -0.7348380985499949,
+            "completed_trades": 579,
+            "total_fees": 251216.89007226072,
+            "total_funding": -113839.23737616879,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 20.68192657515497,
+            "max_drawdown": -0.744554742668236,
+            "completed_trades": 579,
+            "total_fees": 410992.5102874542,
+            "total_funding": -93335.79697317666,
+            "bankrupt": false
+          },
+          "base_excess": 18.36693822221969,
+          "stress_excess": 10.909876496080553
+        },
+        "equal_weight_ensemble": {
+          "base": {
+            "net_return": 25.229120052910986,
+            "max_drawdown": -0.6922418957521167,
+            "completed_trades": 800,
+            "total_fees": 232964.15872604083,
+            "total_funding": -84123.6207045363,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 18.19239283118744,
+            "max_drawdown": -0.7066632926122954,
+            "completed_trades": 800,
+            "total_fees": 378223.322742243,
+            "total_funding": -68498.44303262279,
+            "bankrupt": false
+          },
+          "base_excess": 15.457069973836568,
+          "stress_excess": 8.420342752113022
+        }
+      }
+    }
+  },
+  "annualized": {
+    "elapsed_years": 6.670454104661312,
+    "base_cagr": 0.6319119468062055,
+    "stress_cagr": 0.5572562617290129
+  },
+  "rolling": {
+    "primary": {
+      "1y": {
+        "total_windows": 70,
+        "base_return_win_rate": 0.5714285714285714,
+        "stress_return_win_rate": 0.4714285714285714,
+        "base_return_and_drawdown_win_rate": 0.5,
+        "stress_return_and_drawdown_win_rate": 0.44285714285714284,
+        "median_base_excess": 0.043534953657388395,
+        "median_stress_excess": -0.006688460662597234,
+        "worst_base_excess": -1.129295396574939,
+        "worst_stress_excess": -1.60788616558923,
+        "best_base_excess": 2.3018720492788467,
+        "best_stress_excess": 1.921842360512858
+      },
+      "2y": {
+        "total_windows": 57,
+        "base_return_win_rate": 0.7017543859649122,
+        "stress_return_win_rate": 0.45614035087719296,
+        "base_return_and_drawdown_win_rate": 0.7017543859649122,
+        "stress_return_and_drawdown_win_rate": 0.45614035087719296,
+        "median_base_excess": 0.08597443734820667,
+        "median_stress_excess": -0.04035434583760319,
+        "worst_base_excess": -1.5872559953185,
+        "worst_stress_excess": -1.7874859384853452,
+        "best_base_excess": 3.654102417794655,
+        "best_stress_excess": 2.7293144679651653
+      },
+      "3y": {
+        "total_windows": 45,
+        "base_return_win_rate": 0.7111111111111111,
+        "stress_return_win_rate": 0.4222222222222222,
+        "base_return_and_drawdown_win_rate": 0.7111111111111111,
+        "stress_return_and_drawdown_win_rate": 0.4222222222222222,
+        "median_base_excess": 0.2754839150534115,
+        "median_stress_excess": -0.027648362316833985,
+        "worst_base_excess": -2.756849750179011,
+        "worst_stress_excess": -3.1606781755892515,
+        "best_base_excess": 2.288216208620771,
+        "best_stress_excess": 1.5556665386805753
+      }
+    },
+    "partial_bear_challenger": {
+      "1y": {
+        "total_windows": 70,
+        "base_return_win_rate": 0.7857142857142857,
+        "stress_return_win_rate": 0.7,
+        "base_return_and_drawdown_win_rate": 0.5285714285714286,
+        "stress_return_and_drawdown_win_rate": 0.4857142857142857,
+        "median_base_excess": 0.12196598817719276,
+        "median_stress_excess": 0.06133889548200483,
+        "worst_base_excess": -0.49312052790882555,
+        "worst_stress_excess": -0.5296321428958127,
+        "best_base_excess": 3.7492602781649356,
+        "best_stress_excess": 3.2319622431590127
+      },
+      "2y": {
+        "total_windows": 57,
+        "base_return_win_rate": 0.8245614035087719,
+        "stress_return_win_rate": 0.5964912280701754,
+        "base_return_and_drawdown_win_rate": 0.631578947368421,
+        "stress_return_and_drawdown_win_rate": 0.47368421052631576,
+        "median_base_excess": 0.12778603529360416,
+        "median_stress_excess": 0.028592518321659596,
+        "worst_base_excess": -0.8666374689836274,
+        "worst_stress_excess": -1.0899352267208686,
+        "best_base_excess": 6.33168579140924,
+        "best_stress_excess": 4.907295399255234
+      },
+      "3y": {
+        "total_windows": 45,
+        "base_return_win_rate": 0.8444444444444444,
+        "stress_return_win_rate": 0.6888888888888889,
+        "base_return_and_drawdown_win_rate": 0.7777777777777778,
+        "stress_return_and_drawdown_win_rate": 0.6666666666666666,
+        "median_base_excess": 0.3829898585259097,
+        "median_stress_excess": 0.0860175209951326,
+        "worst_base_excess": -1.2845287778324366,
+        "worst_stress_excess": -1.808497180599995,
+        "best_base_excess": 2.71856842365487,
+        "best_stress_excess": 2.02203880369765
+      }
+    },
+    "equal_weight_ensemble": {
+      "1y": {
+        "total_windows": 70,
+        "base_return_win_rate": 0.7285714285714285,
+        "stress_return_win_rate": 0.5857142857142857,
+        "base_return_and_drawdown_win_rate": 0.5857142857142857,
+        "stress_return_and_drawdown_win_rate": 0.5285714285714286,
+        "median_base_excess": 0.10027047792549992,
+        "median_stress_excess": 0.03341546584911237,
+        "worst_base_excess": -0.597158719895811,
+        "worst_stress_excess": -0.6376828927367717,
+        "best_base_excess": 3.0036844086164973,
+        "best_stress_excess": 2.5583806492090555
+      },
+      "2y": {
+        "total_windows": 57,
+        "base_return_win_rate": 0.7543859649122807,
+        "stress_return_win_rate": 0.5263157894736842,
+        "base_return_and_drawdown_win_rate": 0.7543859649122807,
+        "stress_return_and_drawdown_win_rate": 0.49122807017543857,
+        "median_base_excess": 0.09471146954182141,
+        "median_stress_excess": 0.00850229096651045,
+        "worst_base_excess": -1.2448522767991128,
+        "worst_stress_excess": -1.4577773707451218,
+        "best_base_excess": 4.9923484361389106,
+        "best_stress_excess": 3.7190273825185445
+      },
+      "3y": {
+        "total_windows": 45,
+        "base_return_win_rate": 0.7555555555555555,
+        "stress_return_win_rate": 0.6222222222222222,
+        "base_return_and_drawdown_win_rate": 0.7555555555555555,
+        "stress_return_and_drawdown_win_rate": 0.6222222222222222,
+        "median_base_excess": 0.3604434035505968,
+        "median_stress_excess": 0.05967231275861362,
+        "worst_base_excess": -2.0846197946408282,
+        "worst_stress_excess": -2.5474078072440185,
+        "best_base_excess": 2.57549518020105,
+        "best_stress_excess": 1.8482464955965345
+      }
+    }
+  },
+  "yearly": [
+    {
+      "year": 2020,
+      "buy_and_hold": 3.026978494818087,
+      "strategies": {
+        "primary": 4.951792009888764,
+        "partial_bear_challenger": 6.263937328512704,
+        "equal_weight_ensemble": 5.589314382231229
+      }
+    },
+    {
+      "year": 2021,
+      "buy_and_hold": 0.596319493550374,
+      "strategies": {
+        "primary": 0.5214428492885025,
+        "partial_bear_challenger": 0.5586179704168343,
+        "equal_weight_ensemble": 0.5471534260037841
+      }
+    },
+    {
+      "year": 2022,
+      "buy_and_hold": -0.6421251674670968,
+      "strategies": {
+        "primary": -0.6083653790210546,
+        "partial_bear_challenger": -0.6609925814457055,
+        "equal_weight_ensemble": -0.6330876565496125
+      }
+    },
+    {
+      "year": 2023,
+      "buy_and_hold": 1.5586696900982615,
+      "strategies": {
+        "primary": 1.453719650838603,
+        "partial_bear_challenger": 1.794664395331185,
+        "equal_weight_ensemble": 1.6245663287276608
+      }
+    },
+    {
+      "year": 2024,
+      "buy_and_hold": 1.2108262040932078,
+      "strategies": {
+        "primary": 0.8189136629568242,
+        "partial_bear_challenger": 1.0968202632195438,
+        "equal_weight_ensemble": 0.9505711599269745
+      }
+    },
+    {
+      "year": 2025,
+      "buy_and_hold": -0.06350268522952726,
+      "strategies": {
+        "primary": -0.07165403549288142,
+        "partial_bear_challenger": -0.07754316864214963,
+        "equal_weight_ensemble": -0.07119816852433959
+      }
+    },
+    {
+      "year": 2026,
+      "buy_and_hold": -0.11600955617218917,
+      "strategies": {
+        "primary": 0.10185698620205416,
+        "partial_bear_challenger": 0.030503626238984213,
+        "equal_weight_ensemble": 0.06793548594903712
+      }
+    }
+  ]
+}

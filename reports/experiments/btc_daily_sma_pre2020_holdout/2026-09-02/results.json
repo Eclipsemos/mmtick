@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-09-02T18:35:13.490322+00:00",
+  "candidate": {
+    "symbol": "BTCUSDT",
+    "daily_sma": [
+      8,
+      40
+    ],
+    "bull_exposure": "1.5",
+    "bear_exposure": "-0.1",
+    "leverage_cap": "2"
+  },
+  "protocol": {
+    "period": [
+      "2019-10-18T23:45:00+00:00",
+      "2019-12-31T23:59:59.999000+00:00"
+    ],
+    "reason": "data before 2020 was not used by the 2020-2026 research selection",
+    "costs": "10 bps fee + 5 bps slippage",
+    "funding": "historical funding on actual futures notional"
+  },
+  "strategy": {
+    "return": -0.16471743287326468,
+    "max_drawdown": -0.3435248836302463,
+    "maximum_open_leverage": 2.0,
+    "maximum_intrabar_leverage": 2.0379903672057336,
+    "liquidated": false
+  },
+  "benchmark": {
+    "net_return": -0.09498104105505395,
+    "max_drawdown": -0.3760194174757282
+  },
+  "excess": -0.06973639181821073
+}

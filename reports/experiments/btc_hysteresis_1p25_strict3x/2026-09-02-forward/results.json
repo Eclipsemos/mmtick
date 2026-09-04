@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-09-03T00:06:01.275515+00:00",
+  "freeze_timestamp": "2026-09-02T08:00:00+00:00",
+  "candidate": "SMA10/40 hysteresis; enter bear after 2 days; exit after 1; active 1.25X",
+  "data_last_complete": "2026-09-02T23:59:59.999000+00:00",
+  "forward_bars": 64,
+  "hard_effective_leverage_cap": "3X",
+  "status": "FORWARD_OBSERVATION",
+  "period": [
+    "2026-09-02T08:00:00+00:00",
+    "2026-09-02T23:45:00+00:00"
+  ],
+  "strategy_return": -0.006132130057208783,
+  "benchmark_return": -0.001869718819081462,
+  "excess": -0.0042624112381273215,
+  "strategy_drawdown": -0.02276039852409348,
+  "benchmark_drawdown": -0.01669447141706093,
+  "maximum_intrabar_leverage": 1.5130286307634542,
+  "liquidated": false
+}

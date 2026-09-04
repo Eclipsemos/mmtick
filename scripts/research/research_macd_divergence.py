@@ -529,6 +529,11 @@ def load_market(symbol: str) -> list[ResearchBar]:
                     item = dict(zip(KLINE_FIELDS, row, strict=True))
                     bar = row_to_bar(item)
                     bars[bar.start_ms] = bar
+    for path in sorted(archive_dir.glob(f"{symbol}-15m-current.csv")):
+        with path.open(encoding="utf-8") as handle:
+            for item in csv.DictReader(handle):
+                bar = row_to_bar(item)
+                bars[bar.start_ms] = bar
     if database.exists():
         connection = sqlite3.connect(database)
         try:

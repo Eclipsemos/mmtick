@@ -1,0 +1,235 @@
+{
+  "generated_at": "2026-09-03T03:54:33.920458+00:00",
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED",
+  "candidate": "daily SMA10/40 hysteresis; bear after 2 days; recovery after 1; active 1.25X",
+  "protocol": {
+    "signal": "completed UTC daily candle; target mapped to its final 15m bar",
+    "execution": "target change executes at the next 15m open",
+    "costs": "10 bps fee + 5 bps slippage; historical Funding",
+    "spot_cap": "0.5",
+    "maximum_futures_leverage": "3X",
+    "lookahead": "none; incomplete daily periods are excluded"
+  },
+  "data": {
+    "source_bars": 244926,
+    "complete_daily_bars": 2551,
+    "first": "2019-09-08T17:45:00+00:00",
+    "last_complete": "2026-09-03T01:14:59.999000+00:00"
+  },
+  "periods": {
+    "research": [
+      "2020-01-01T00:00:00+00:00",
+      "2022-12-31T23:59:59.999000+00:00"
+    ],
+    "validation": [
+      "2023-01-01T00:00:00+00:00",
+      "2024-12-31T23:59:59.999000+00:00"
+    ],
+    "oos": [
+      "2025-01-01T00:00:00+00:00",
+      "2026-09-03T01:14:59.999000+00:00"
+    ],
+    "full": [
+      "2020-01-01T00:00:00+00:00",
+      "2026-09-03T01:14:59.999000+00:00"
+    ]
+  },
+  "results": {
+    "research": {
+      "strategy_return": 3.6401732289537523,
+      "benchmark_return": 1.3002658068859423,
+      "excess": 2.33990742206781,
+      "strategy_cagr": 0.6677187989784923,
+      "benchmark_cagr": 0.3199658382261772,
+      "strategy_drawdown": -0.638882714930421,
+      "benchmark_drawdown": -0.7755528264455603,
+      "maximum_intrabar_leverage": 1.735387750220106,
+      "maximum_controlled_open_leverage": 1.7185729795720899,
+      "fees": 23610.43310572096,
+      "funding": -180753.2667585449,
+      "liquidated": false
+    },
+    "validation": {
+      "strategy_return": 4.016487898964754,
+      "benchmark_return": 4.656773998488284,
+      "excess": -0.6402860995235304,
+      "strategy_cagr": 1.238479717339286,
+      "benchmark_cagr": 1.3769460043193087,
+      "strategy_drawdown": -0.4542807106873721,
+      "benchmark_drawdown": -0.3365730267702175,
+      "maximum_intrabar_leverage": 1.804097955093879,
+      "maximum_controlled_open_leverage": 1.780433524594595,
+      "fees": 8060.582563363508,
+      "funding": -42006.2775738301,
+      "liquidated": false
+    },
+    "oos": {
+      "strategy_return": 0.18255807480731295,
+      "benchmark_return": -0.17283813367996168,
+      "excess": 0.3553962084872746,
+      "strategy_cagr": 0.10560331685480961,
+      "benchmark_cagr": -0.10739184203332719,
+      "strategy_drawdown": -0.37213162610218914,
+      "benchmark_drawdown": -0.5415474735288048,
+      "maximum_intrabar_leverage": 1.6240050230304313,
+      "maximum_controlled_open_leverage": 1.6000783415843958,
+      "fees": 3320.970796792684,
+      "funding": -3537.786218362956,
+      "liquidated": false
+    },
+    "full": {
+      "strategy_return": 26.526845226606618,
+      "benchmark_return": 9.763022937840692,
+      "excess": 16.763822288765926,
+      "strategy_cagr": 0.6435282995486309,
+      "benchmark_cagr": 0.42776465104028505,
+      "strategy_drawdown": -0.638882714930421,
+      "benchmark_drawdown": -0.7755528264455603,
+      "maximum_intrabar_leverage": 1.804097955093879,
+      "maximum_controlled_open_leverage": 1.780433524594595,
+      "fees": 138316.40799404576,
+      "funding": -458020.0402806523,
+      "liquidated": false
+    }
+  },
+  "bootstrap": {
+    "7d": {
+      "samples": 10000,
+      "block_days": 7,
+      "probability_beats_bh_return": 0.8147,
+      "probability_drawdown_no_worse_than_bh": 0.8608,
+      "probability_beats_return_and_drawdown": 0.7418,
+      "probability_cagr_above_20pct": 0.944,
+      "probability_drawdown_at_least_70pct": 0.1024,
+      "strategy_cagr": {
+        "p05": 0.18656787802199798,
+        "median": 0.6437191243006309,
+        "p95": 1.310845207409685
+      },
+      "annualized_excess_vs_bh": {
+        "p05": -0.10622974190853052,
+        "median": 0.15102340940808134,
+        "p95": 0.5057892624625355
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.748422695437063,
+        "median": -0.5399276135963081,
+        "p95": -0.3886830772119854
+      }
+    },
+    "30d": {
+      "samples": 10000,
+      "block_days": 30,
+      "probability_beats_bh_return": 0.8305,
+      "probability_drawdown_no_worse_than_bh": 0.8729,
+      "probability_beats_return_and_drawdown": 0.7701,
+      "probability_cagr_above_20pct": 0.9262,
+      "probability_drawdown_at_least_70pct": 0.1025,
+      "strategy_cagr": {
+        "p05": 0.15422165878684296,
+        "median": 0.6340870943635921,
+        "p95": 1.369712139819408
+      },
+      "annualized_excess_vs_bh": {
+        "p05": -0.09128489899237005,
+        "median": 0.14706934748009293,
+        "p95": 0.4804092572297558
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.7497971037720916,
+        "median": -0.5454742813967397,
+        "p95": -0.39214727650467307
+      }
+    },
+    "90d": {
+      "samples": 10000,
+      "block_days": 90,
+      "probability_beats_bh_return": 0.8573,
+      "probability_drawdown_no_worse_than_bh": 0.9012,
+      "probability_beats_return_and_drawdown": 0.812,
+      "probability_cagr_above_20pct": 0.9102,
+      "probability_drawdown_at_least_70pct": 0.1095,
+      "strategy_cagr": {
+        "p05": 0.126195585471084,
+        "median": 0.6251038315919619,
+        "p95": 1.4473734191541077
+      },
+      "annualized_excess_vs_bh": {
+        "p05": -0.0707821794951923,
+        "median": 0.14458655712169322,
+        "p95": 0.4449653861124894
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.7528389841470617,
+        "median": -0.5437885727413786,
+        "p95": -0.3879963876290037
+      }
+    }
+  },
+  "yearly": {
+    "2020": {
+      "strategy_return": 3.2382080021177857,
+      "benchmark_return": 3.026978494818087,
+      "excess": 0.21122950729969858,
+      "strategy_drawdown": -0.3518433511250623,
+      "benchmark_drawdown": -0.6552315315015159,
+      "maximum_intrabar_leverage": 1.607228799459897,
+      "liquidated": false
+    },
+    "2021": {
+      "strategy_return": 1.5374763339483495,
+      "benchmark_return": 0.596319493550374,
+      "excess": 0.9411568403979755,
+      "strategy_drawdown": -0.3794003299914555,
+      "benchmark_drawdown": -0.5573724761220595,
+      "maximum_intrabar_leverage": 1.6954880559547392,
+      "liquidated": false
+    },
+    "2022": {
+      "strategy_return": -0.5491795526082071,
+      "benchmark_return": -0.6421251674670968,
+      "excess": 0.09294561485888975,
+      "strategy_drawdown": -0.5973645294392552,
+      "benchmark_drawdown": -0.6788954963197074,
+      "maximum_intrabar_leverage": 1.735387750220106,
+      "liquidated": false
+    },
+    "2023": {
+      "strategy_return": 1.951508365964196,
+      "benchmark_return": 1.5586696900982615,
+      "excess": 0.3928386758659346,
+      "strategy_drawdown": -0.15966295842963293,
+      "benchmark_drawdown": -0.22435881254102086,
+      "maximum_intrabar_leverage": 1.5234812071647794,
+      "liquidated": false
+    },
+    "2024": {
+      "strategy_return": 0.6904556519128016,
+      "benchmark_return": 1.2108262040932078,
+      "excess": -0.5203705521804063,
+      "strategy_drawdown": -0.4542807106873721,
+      "benchmark_drawdown": -0.3365730267702174,
+      "maximum_intrabar_leverage": 1.804097955093879,
+      "liquidated": false
+    },
+    "2025": {
+      "strategy_return": 0.051173054763999075,
+      "benchmark_return": -0.06350268522952726,
+      "excess": 0.11467573999352634,
+      "strategy_drawdown": -0.24288504133116257,
+      "benchmark_drawdown": -0.3602463765815249,
+      "maximum_intrabar_leverage": 1.6240050230304313,
+      "liquidated": false
+    },
+    "2026": {
+      "strategy_return": 0.1249889534818902,
+      "benchmark_return": -0.11675035356239077,
+      "excess": 0.24173930704428098,
+      "strategy_drawdown": -0.25501294304488537,
+      "benchmark_drawdown": -0.40824744380468414,
+      "maximum_intrabar_leverage": 1.5577921759789946,
+      "liquidated": false
+    }
+  },
+  "hard_cap_passed": true
+}

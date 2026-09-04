@@ -1,0 +1,1273 @@
+{
+  "generated_at": "2026-09-03T03:17:36.002540+00:00",
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED",
+  "protocol": {
+    "base": "BTC SMA10/40 hysteresis enter3/exit1, active 1.55X, bear 0X",
+    "filter": "ETH/BTC ratio bearish when ratio close < slow SMA and fast SMA < slow SMA",
+    "execution": "completed daily bars; next BTC 15m open",
+    "costs": "default 10+5, moderate 20+10, stress 50+25 bps per side",
+    "wallets": "50% BTC spot and 50% isolated BTC USD-M collateral",
+    "hard_cap": "2.5X opening control and <=3X observed effective leverage",
+    "selection": "worst Research/Validation excess across costs; OOS excluded"
+  },
+  "data": {
+    "btc_bars": 244926,
+    "eth_bars": 233455,
+    "daily_bars": 2551,
+    "btc_last": "2026-09-03T01:14:59.999000+00:00",
+    "eth_last": "2026-08-28T19:44:59.999000+00:00"
+  },
+  "benchmarks": {
+    "research": {
+      "net_return": 1.3002658068859423,
+      "max_drawdown": -0.7755528264455603
+    },
+    "validation": {
+      "net_return": 4.656773998488284,
+      "max_drawdown": -0.3365730267702175
+    },
+    "oos": {
+      "net_return": -0.17283813367996168,
+      "max_drawdown": -0.5415474735288048
+    },
+    "full": {
+      "net_return": 9.763022937840692,
+      "max_drawdown": -0.7755528264455603
+    }
+  },
+  "results": [
+    {
+      "id": "ratio-sma30/90-reduce1x",
+      "ratio_fast": 30,
+      "ratio_slow": 90,
+      "reduced_target": "1",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.406405046526922,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.10613923964098,
+            "cagr": 0.5044854171492195,
+            "max_drawdown": -0.44062870501834567,
+            "maximum_intrabar_leverage": 1.098897895352701,
+            "liquidated": false,
+            "rebalances": 34
+          },
+          "moderate": {
+            "net_return": 2.236251714965292,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.9359859080793498,
+            "cagr": 0.4790124466239767,
+            "max_drawdown": -0.4506285668268613,
+            "maximum_intrabar_leverage": 1.098897895352701,
+            "liquidated": false,
+            "rebalances": 34
+          },
+          "stress": {
+            "net_return": 1.775088146440192,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.4748223395542497,
+            "cagr": 0.4051483945167076,
+            "max_drawdown": -0.479569316604624,
+            "maximum_intrabar_leverage": 1.098897895352701,
+            "liquidated": false,
+            "rebalances": 34
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 1.3238233696331059,
+            "benchmark_return": 4.656773998488284,
+            "excess": -3.3329506288551785,
+            "cagr": 0.5239564720701646,
+            "max_drawdown": -0.42584085201849936,
+            "maximum_intrabar_leverage": 1.0378536682814792,
+            "liquidated": false,
+            "rebalances": 36
+          },
+          "moderate": {
+            "net_return": 1.2014371252751248,
+            "benchmark_return": 4.656773998488284,
+            "excess": -3.4553368732131595,
+            "cagr": 0.4833117092513337,
+            "max_drawdown": -0.4377865692221517,
+            "maximum_intrabar_leverage": 1.0378536682814792,
+            "liquidated": false,
+            "rebalances": 36
+          },
+          "stress": {
+            "net_return": 0.8716011109375983,
+            "benchmark_return": 4.656773998488284,
+            "excess": -3.785172887550686,
+            "cagr": 0.3677627133027106,
+            "max_drawdown": -0.4839472074856921,
+            "maximum_intrabar_leverage": 1.0378536682814792,
+            "liquidated": false,
+            "rebalances": 36
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": -0.029298223424281147,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.14353991025568053,
+            "cagr": -0.017645606787886958,
+            "max_drawdown": -0.22440128770178155,
+            "maximum_intrabar_leverage": 1.0054980616505664,
+            "liquidated": false,
+            "rebalances": 31
+          },
+          "moderate": {
+            "net_return": -0.07480426151921084,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.09803387216075084,
+            "cagr": -0.045482639720104134,
+            "max_drawdown": -0.2518308967083955,
+            "maximum_intrabar_leverage": 1.0054980616505664,
+            "liquidated": false,
+            "rebalances": 31
+          },
+          "stress": {
+            "net_return": -0.19892087949765397,
+            "benchmark_return": -0.17283813367996168,
+            "excess": -0.026082745817692293,
+            "cagr": -0.1243515412077838,
+            "max_drawdown": -0.32843714584493816,
+            "maximum_intrabar_leverage": 1.0054980616505664,
+            "liquidated": false,
+            "rebalances": 31
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 6.683962325672927,
+            "benchmark_return": 9.763022937840692,
+            "excess": -3.0790606121677646,
+            "cagr": 0.3574480081051763,
+            "max_drawdown": -0.44062870501834567,
+            "maximum_intrabar_leverage": 1.098897895352701,
+            "liquidated": false,
+            "rebalances": 101
+          },
+          "moderate": {
+            "net_return": 5.59146884180243,
+            "benchmark_return": 9.763022937840692,
+            "excess": -4.171554096038261,
+            "cagr": 0.3266042012914008,
+            "max_drawdown": -0.4506285668268613,
+            "maximum_intrabar_leverage": 1.098897895352701,
+            "liquidated": false,
+            "rebalances": 101
+          },
+          "stress": {
+            "net_return": 3.1606912449782554,
+            "benchmark_return": 9.763022937840692,
+            "excess": -6.602331692862436,
+            "cagr": 0.23821116008294974,
+            "max_drawdown": -0.4839472074856921,
+            "maximum_intrabar_leverage": 1.098897895352701,
+            "liquidated": false,
+            "rebalances": 101
+          }
+        }
+      },
+      "development_worst_excess": -3.785172887550686
+    },
+    {
+      "id": "ratio-sma20/60-reduce1x",
+      "ratio_fast": 20,
+      "ratio_slow": 60,
+      "reduced_target": "1",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.8710397533422003,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.5707739464562582,
+            "cagr": 0.6949240376326249,
+            "max_drawdown": -0.36627621520236653,
+            "maximum_intrabar_leverage": 1.076368482564199,
+            "liquidated": false,
+            "rebalances": 34
+          },
+          "moderate": {
+            "net_return": 3.627943749235882,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.32767794234994,
+            "cagr": 0.6662527560703893,
+            "max_drawdown": -0.3681999975559956,
+            "maximum_intrabar_leverage": 1.076368482564199,
+            "liquidated": false,
+            "rebalances": 34
+          },
+          "stress": {
+            "net_return": 2.969027594060939,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.668761787174997,
+            "cagr": 0.5831124257029463,
+            "max_drawdown": -0.3739369743118055,
+            "maximum_intrabar_leverage": 1.076368482564199,
+            "liquidated": false,
+            "rebalances": 34
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 1.2135129391960306,
+            "benchmark_return": 4.656773998488284,
+            "excess": -3.4432610592922535,
+            "cagr": 0.4873715754275336,
+            "max_drawdown": -0.41232125183783513,
+            "maximum_intrabar_leverage": 1.0373216674751053,
+            "liquidated": false,
+            "rebalances": 40
+          },
+          "moderate": {
+            "net_return": 1.0843873481592448,
+            "benchmark_return": 4.656773998488284,
+            "excess": -3.5723866503290393,
+            "cagr": 0.44336727445018265,
+            "max_drawdown": -0.4262914071410784,
+            "maximum_intrabar_leverage": 1.0373216674751053,
+            "liquidated": false,
+            "rebalances": 40
+          },
+          "stress": {
+            "net_return": 0.7404630471686975,
+            "benchmark_return": 4.656773998488284,
+            "excess": -3.916310951319587,
+            "cagr": 0.3190086069680258,
+            "max_drawdown": -0.4662421872306518,
+            "maximum_intrabar_leverage": 1.0373216674751053,
+            "liquidated": false,
+            "rebalances": 40
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": -0.1007301228337783,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.07210801084618337,
+            "cagr": -0.06158780220014426,
+            "max_drawdown": -0.32834328590874706,
+            "maximum_intrabar_leverage": 1.0054980616505664,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "moderate": {
+            "net_return": -0.13773004250019036,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.03510809117977132,
+            "cagr": -0.08489872321454361,
+            "max_drawdown": -0.3442740532248581,
+            "maximum_intrabar_leverage": 1.0054980616505664,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": -0.23984623017686632,
+            "benchmark_return": -0.17283813367996168,
+            "excess": -0.06700809649690465,
+            "cagr": -0.1514159639559315,
+            "max_drawdown": -0.3898359590633476,
+            "maximum_intrabar_leverage": 1.0054980616505664,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 8.696026304867237,
+            "benchmark_return": 9.763022937840692,
+            "excess": -1.0669966329734546,
+            "cagr": 0.4055989353598384,
+            "max_drawdown": -0.41232125183783513,
+            "maximum_intrabar_leverage": 1.076368482564199,
+            "liquidated": false,
+            "rebalances": 101
+          },
+          "moderate": {
+            "net_return": 7.317824543274444,
+            "benchmark_return": 9.763022937840692,
+            "excess": -2.4451983945662477,
+            "cagr": 0.3736700512767668,
+            "max_drawdown": -0.4262914071410784,
+            "maximum_intrabar_leverage": 1.076368482564199,
+            "liquidated": false,
+            "rebalances": 101
+          },
+          "stress": {
+            "net_return": 4.25110108771173,
+            "benchmark_return": 9.763022937840692,
+            "excess": -5.511921850128962,
+            "cagr": 0.28216633247278167,
+            "max_drawdown": -0.4662421872306518,
+            "maximum_intrabar_leverage": 1.076368482564199,
+            "liquidated": false,
+            "rebalances": 101
+          }
+        }
+      },
+      "development_worst_excess": -3.916310951319587
+    },
+    {
+      "id": "ratio-sma30/90-reduce0.75x",
+      "ratio_fast": 30,
+      "ratio_slow": 90,
+      "reduced_target": "0.75",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 1.8583023734458999,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.5580365665599576,
+            "cagr": 0.41905182747103153,
+            "max_drawdown": -0.3480199169004827,
+            "maximum_intrabar_leverage": 0.812220674344747,
+            "liquidated": false,
+            "rebalances": 34
+          },
+          "moderate": {
+            "net_return": 1.7498756610590251,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.44960985417308286,
+            "cagr": 0.4008811071324154,
+            "max_drawdown": -0.356752698136846,
+            "maximum_intrabar_leverage": 0.812220674344747,
+            "liquidated": false,
+            "rebalances": 34
+          },
+          "stress": {
+            "net_return": 1.4486366602012448,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.14837085331530253,
+            "cagr": 0.3477496184246913,
+            "max_drawdown": -0.3923166534652482,
+            "maximum_intrabar_leverage": 0.812220674344747,
+            "liquidated": false,
+            "rebalances": 34
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 0.9974597791858195,
+            "benchmark_return": 4.656773998488284,
+            "excess": -3.659314219302465,
+            "cagr": 0.4129707721541862,
+            "max_drawdown": -0.3298900382140093,
+            "maximum_intrabar_leverage": 0.6575995163781166,
+            "liquidated": false,
+            "rebalances": 36
+          },
+          "moderate": {
+            "net_return": 0.9176440590761351,
+            "benchmark_return": 4.656773998488284,
+            "excess": -3.739129939412149,
+            "cagr": 0.38447269489525904,
+            "max_drawdown": -0.34329544917111415,
+            "maximum_intrabar_leverage": 0.6575995163781166,
+            "liquidated": false,
+            "rebalances": 36
+          },
+          "stress": {
+            "net_return": 0.6968185817035791,
+            "benchmark_return": 4.656773998488284,
+            "excess": -3.9599554167847053,
+            "cagr": 0.3023772964512297,
+            "max_drawdown": -0.3863729442287148,
+            "maximum_intrabar_leverage": 0.6575995163781166,
+            "liquidated": false,
+            "rebalances": 36
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": -0.012147576910791512,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.16069055676917016,
+            "cagr": -0.007290668185001681,
+            "max_drawdown": -0.17227250275606967,
+            "maximum_intrabar_leverage": 0.5684946795127431,
+            "liquidated": false,
+            "rebalances": 31
+          },
+          "moderate": {
+            "net_return": -0.047084370799624395,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.1257537628803373,
+            "cagr": -0.02846209154551793,
+            "max_drawdown": -0.1943406974102601,
+            "maximum_intrabar_leverage": 0.5684946795127431,
+            "liquidated": false,
+            "rebalances": 31
+          },
+          "stress": {
+            "net_return": -0.14465582645892666,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.028182307221035013,
+            "cagr": -0.08930641500249159,
+            "max_drawdown": -0.2570784950885755,
+            "maximum_intrabar_leverage": 0.5684946795127431,
+            "liquidated": false,
+            "rebalances": 31
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 4.639989332022781,
+            "benchmark_return": 9.763022937840692,
+            "excess": -5.123033605817911,
+            "cagr": 0.29596878137160676,
+            "max_drawdown": -0.3480199169004827,
+            "maximum_intrabar_leverage": 0.812220674344747,
+            "liquidated": false,
+            "rebalances": 101
+          },
+          "moderate": {
+            "net_return": 4.024993525490266,
+            "benchmark_return": 9.763022937840692,
+            "excess": -5.738029412350426,
+            "cagr": 0.2737365500749285,
+            "max_drawdown": -0.356752698136846,
+            "maximum_intrabar_leverage": 0.812220674344747,
+            "liquidated": false,
+            "rebalances": 101
+          },
+          "stress": {
+            "net_return": 2.5538628220199504,
+            "benchmark_return": 9.763022937840692,
+            "excess": -7.209160115820741,
+            "cagr": 0.209299429136534,
+            "max_drawdown": -0.3923166534652482,
+            "maximum_intrabar_leverage": 0.812220674344747,
+            "liquidated": false,
+            "rebalances": 101
+          }
+        }
+      },
+      "development_worst_excess": -3.9599554167847053
+    },
+    {
+      "id": "ratio-sma20/60-reduce0.75x",
+      "ratio_fast": 20,
+      "ratio_slow": 60,
+      "reduced_target": "0.75",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.604393822058863,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.3041280151729209,
+            "cagr": 0.533079226268599,
+            "max_drawdown": -0.2901760761094287,
+            "maximum_intrabar_leverage": 0.6591490264378352,
+            "liquidated": false,
+            "rebalances": 34
+          },
+          "moderate": {
+            "net_return": 2.4673155086517515,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.1670497017658092,
+            "cagr": 0.5133975834835389,
+            "max_drawdown": -0.2918648722102906,
+            "maximum_intrabar_leverage": 0.6591490264378352,
+            "liquidated": false,
+            "rebalances": 34
+          },
+          "stress": {
+            "net_return": 2.0865465124100484,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.7862807055241061,
+            "cagr": 0.4558513860133151,
+            "max_drawdown": -0.2969085892911371,
+            "maximum_intrabar_leverage": 0.6591490264378352,
+            "liquidated": false,
+            "rebalances": 34
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 0.9312692480454391,
+            "benchmark_return": 4.656773998488284,
+            "excess": -3.725504750442845,
+            "cagr": 0.38937898176592567,
+            "max_drawdown": -0.3243856391776692,
+            "maximum_intrabar_leverage": 0.6575995163781166,
+            "liquidated": false,
+            "rebalances": 40
+          },
+          "moderate": {
+            "net_return": 0.845797358517526,
+            "benchmark_return": 4.656773998488284,
+            "excess": -3.8109766399707583,
+            "cagr": 0.3583079636827857,
+            "max_drawdown": -0.3365167842701043,
+            "maximum_intrabar_leverage": 0.6575995163781166,
+            "liquidated": false,
+            "rebalances": 40
+          },
+          "stress": {
+            "net_return": 0.6114066146426178,
+            "benchmark_return": 4.656773998488284,
+            "excess": -4.045367383845667,
+            "cagr": 0.26919859644651467,
+            "max_drawdown": -0.3716203967748436,
+            "maximum_intrabar_leverage": 0.6575995163781166,
+            "liquidated": false,
+            "rebalances": 40
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": -0.06847368926043906,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.10436444441952261,
+            "cagr": -0.04157771365441176,
+            "max_drawdown": -0.2572400687833062,
+            "maximum_intrabar_leverage": 0.5536814255589432,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "moderate": {
+            "net_return": -0.0973462142871002,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.07549191939286147,
+            "cagr": -0.05947524169134799,
+            "max_drawdown": -0.27044042649652156,
+            "maximum_intrabar_leverage": 0.5536814255589432,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": -0.17870538921846837,
+            "benchmark_return": -0.17283813367996168,
+            "excess": -0.005867255538506699,
+            "cagr": -0.11118795789972302,
+            "max_drawdown": -0.30865038790469573,
+            "maximum_intrabar_leverage": 0.5536814255589432,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 5.484405833063485,
+            "benchmark_return": 9.763022937840692,
+            "excess": -4.278617104777207,
+            "cagr": 0.32335232940189584,
+            "max_drawdown": -0.3243856391776692,
+            "maximum_intrabar_leverage": 0.6591490264378352,
+            "liquidated": false,
+            "rebalances": 101
+          },
+          "moderate": {
+            "net_return": 4.776949753521193,
+            "benchmark_return": 9.763022937840692,
+            "excess": -4.9860731843194985,
+            "cagr": 0.30063739946589174,
+            "max_drawdown": -0.3365167842701043,
+            "maximum_intrabar_leverage": 0.6591490264378352,
+            "liquidated": false,
+            "rebalances": 101
+          },
+          "stress": {
+            "net_return": 3.0848577841801514,
+            "benchmark_return": 9.763022937840692,
+            "excess": -6.67816515366054,
+            "cagr": 0.23480240136387187,
+            "max_drawdown": -0.3716203967748436,
+            "maximum_intrabar_leverage": 0.6591490264378352,
+            "liquidated": false,
+            "rebalances": 101
+          }
+        }
+      },
+      "development_worst_excess": -4.045367383845667
+    },
+    {
+      "id": "ratio-sma10/40-reduce1x",
+      "ratio_fast": 10,
+      "ratio_slow": 40,
+      "reduced_target": "1",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.0672622307652397,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.7669964238792975,
+            "cagr": 0.596063733735851,
+            "max_drawdown": -0.3647378735633482,
+            "maximum_intrabar_leverage": 1.0673676545678283,
+            "liquidated": false,
+            "rebalances": 34
+          },
+          "moderate": {
+            "net_return": 2.8644839659047383,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.564218159018796,
+            "cagr": 0.5690923878416154,
+            "max_drawdown": -0.3760819716468003,
+            "maximum_intrabar_leverage": 1.0673676545678283,
+            "liquidated": false,
+            "rebalances": 34
+          },
+          "stress": {
+            "net_return": 2.314795922025088,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.0145301151391457,
+            "cagr": 0.49087923696704316,
+            "max_drawdown": -0.4089141843423505,
+            "maximum_intrabar_leverage": 1.0673676545678283,
+            "liquidated": false,
+            "rebalances": 34
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 0.8008732079195887,
+            "benchmark_return": 4.656773998488284,
+            "excess": -3.8559007905686955,
+            "cagr": 0.34168812132860893,
+            "max_drawdown": -0.4367794201773951,
+            "maximum_intrabar_leverage": 1.0226681665761517,
+            "liquidated": false,
+            "rebalances": 44
+          },
+          "moderate": {
+            "net_return": 0.6856969987659489,
+            "benchmark_return": 4.656773998488284,
+            "excess": -3.971076999722335,
+            "cagr": 0.2981051529005563,
+            "max_drawdown": -0.44518002148440183,
+            "maximum_intrabar_leverage": 1.0226681665761517,
+            "liquidated": false,
+            "rebalances": 44
+          },
+          "stress": {
+            "net_return": 0.3825022638886605,
+            "benchmark_return": 4.656773998488284,
+            "excess": -4.2742717345996235,
+            "cagr": 0.17566442299944418,
+            "max_drawdown": -0.46963832721578186,
+            "maximum_intrabar_leverage": 1.0226681665761517,
+            "liquidated": false,
+            "rebalances": 44
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": -0.04370409789331779,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.1291340357866439,
+            "cagr": -0.026400214570315828,
+            "max_drawdown": -0.26787333715480627,
+            "maximum_intrabar_leverage": 1.0054980616505664,
+            "liquidated": false,
+            "rebalances": 29
+          },
+          "moderate": {
+            "net_return": -0.08579571097809525,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.08704242270186642,
+            "cagr": -0.05228812875086997,
+            "max_drawdown": -0.280937075879196,
+            "maximum_intrabar_leverage": 1.0054980616505664,
+            "liquidated": false,
+            "rebalances": 29
+          },
+          "stress": {
+            "net_return": -0.20127988247724127,
+            "benchmark_return": -0.17283813367996168,
+            "excess": -0.028441748797279592,
+            "cagr": -0.12589627675909942,
+            "max_drawdown": -0.31874717400849517,
+            "maximum_intrabar_leverage": 1.0054980616505664,
+            "liquidated": false,
+            "rebalances": 29
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 6.004507514954034,
+            "benchmark_return": 9.763022937840692,
+            "excess": -3.7585154228866573,
+            "cagr": 0.33874315580290904,
+            "max_drawdown": -0.4367794201773951,
+            "maximum_intrabar_leverage": 1.0673676545678283,
+            "liquidated": false,
+            "rebalances": 107
+          },
+          "moderate": {
+            "net_return": 4.955445817108017,
+            "benchmark_return": 9.763022937840692,
+            "excess": -4.807577120732675,
+            "cagr": 0.3065826325301282,
+            "max_drawdown": -0.44518002148440183,
+            "maximum_intrabar_leverage": 1.0673676545678283,
+            "liquidated": false,
+            "rebalances": 107
+          },
+          "stress": {
+            "net_return": 2.660304959326769,
+            "benchmark_return": 9.763022937840692,
+            "excess": -7.1027179785139225,
+            "cagr": 0.214659863417763,
+            "max_drawdown": -0.46963832721578186,
+            "maximum_intrabar_leverage": 1.0673676545678283,
+            "liquidated": false,
+            "rebalances": 107
+          }
+        }
+      },
+      "development_worst_excess": -4.2742717345996235
+    },
+    {
+      "id": "ratio-sma10/40-reduce0.75x",
+      "ratio_fast": 10,
+      "ratio_slow": 40,
+      "reduced_target": "0.75",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.150263245414944,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.8499974385290019,
+            "cagr": 0.4657986440693276,
+            "max_drawdown": -0.28689541846547206,
+            "maximum_intrabar_leverage": 0.6587955302263218,
+            "liquidated": false,
+            "rebalances": 34
+          },
+          "moderate": {
+            "net_return": 2.0307220039356046,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.7304561970496624,
+            "cagr": 0.4470230857773869,
+            "max_drawdown": -0.29644262272646776,
+            "maximum_intrabar_leverage": 0.6587955302263218,
+            "liquidated": false,
+            "rebalances": 34
+          },
+          "stress": {
+            "net_return": 1.6986120792644002,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.3983462723784579,
+            "cagr": 0.3921234736236663,
+            "max_drawdown": -0.3243243453719517,
+            "maximum_intrabar_leverage": 0.6587955302263218,
+            "liquidated": false,
+            "rebalances": 34
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 0.6442986233111737,
+            "benchmark_return": 4.656773998488284,
+            "excess": -4.012475375177111,
+            "cagr": 0.282077467547462,
+            "max_drawdown": -0.34023501498275144,
+            "maximum_intrabar_leverage": 0.6271378997695259,
+            "liquidated": false,
+            "rebalances": 44
+          },
+          "moderate": {
+            "net_return": 0.5645675565843749,
+            "benchmark_return": 4.656773998488284,
+            "excess": -4.09220644190391,
+            "cagr": 0.25062954678702254,
+            "max_drawdown": -0.34760828462003523,
+            "maximum_intrabar_leverage": 0.6271378997695259,
+            "liquidated": false,
+            "rebalances": 44
+          },
+          "stress": {
+            "net_return": 0.34782354340835137,
+            "benchmark_return": 4.656773998488284,
+            "excess": -4.308950455079933,
+            "cagr": 0.1608359677619351,
+            "max_drawdown": -0.36923756905032495,
+            "maximum_intrabar_leverage": 0.6271378997695259,
+            "liquidated": false,
+            "rebalances": 44
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": -0.023710192930434453,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.14912794074952723,
+            "cagr": -0.014263752070659552,
+            "max_drawdown": -0.20721831404543345,
+            "maximum_intrabar_leverage": 0.5517572401036889,
+            "liquidated": false,
+            "rebalances": 29
+          },
+          "moderate": {
+            "net_return": -0.05611190943239072,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.11672622424757095,
+            "cagr": -0.03398308787050819,
+            "max_drawdown": -0.2178068836455641,
+            "maximum_intrabar_leverage": 0.5517572401036889,
+            "liquidated": false,
+            "rebalances": 29
+          },
+          "stress": {
+            "net_return": -0.14700764103596822,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.025830492643993452,
+            "cagr": -0.09080640610579294,
+            "max_drawdown": -0.24873145158813129,
+            "maximum_intrabar_leverage": 0.5517572401036889,
+            "liquidated": false,
+            "rebalances": 29
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 4.057155346029032,
+            "benchmark_return": 9.763022937840692,
+            "excess": -5.70586759181166,
+            "cagr": 0.27495504223912604,
+            "max_drawdown": -0.34023501498275144,
+            "maximum_intrabar_leverage": 0.6587955302263218,
+            "liquidated": false,
+            "rebalances": 107
+          },
+          "moderate": {
+            "net_return": 3.4756995897293517,
+            "benchmark_return": 9.763022937840692,
+            "excess": -6.2873233481113395,
+            "cagr": 0.2518287720226482,
+            "max_drawdown": -0.34760828462003523,
+            "maximum_intrabar_leverage": 0.6587955302263218,
+            "liquidated": false,
+            "rebalances": 107
+          },
+          "stress": {
+            "net_return": 2.1025489270195945,
+            "benchmark_return": 9.763022937840692,
+            "excess": -7.660474010821098,
+            "cagr": 0.18493404044930228,
+            "max_drawdown": -0.36923756905032495,
+            "maximum_intrabar_leverage": 0.6587955302263218,
+            "liquidated": false,
+            "rebalances": 107
+          }
+        }
+      },
+      "development_worst_excess": -4.308950455079933
+    },
+    {
+      "id": "ratio-sma10/40-reduce0x",
+      "ratio_fast": 10,
+      "ratio_slow": 40,
+      "reduced_target": "0",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 0.0,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -1.3002658068859423,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "moderate": {
+            "net_return": 0.0,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -1.3002658068859423,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "stress": {
+            "net_return": 0.0,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -1.3002658068859423,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 0.0,
+            "benchmark_return": 4.656773998488284,
+            "excess": -4.656773998488284,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "moderate": {
+            "net_return": 0.0,
+            "benchmark_return": 4.656773998488284,
+            "excess": -4.656773998488284,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "stress": {
+            "net_return": 0.0,
+            "benchmark_return": 4.656773998488284,
+            "excess": -4.656773998488284,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.0,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.17283813367996168,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "moderate": {
+            "net_return": 0.0,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.17283813367996168,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "stress": {
+            "net_return": 0.0,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.17283813367996168,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 0.0,
+            "benchmark_return": 9.763022937840692,
+            "excess": -9.763022937840692,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "moderate": {
+            "net_return": 0.0,
+            "benchmark_return": 9.763022937840692,
+            "excess": -9.763022937840692,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "stress": {
+            "net_return": 0.0,
+            "benchmark_return": 9.763022937840692,
+            "excess": -9.763022937840692,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          }
+        }
+      },
+      "development_worst_excess": -4.656773998488284
+    },
+    {
+      "id": "ratio-sma20/60-reduce0x",
+      "ratio_fast": 20,
+      "ratio_slow": 60,
+      "reduced_target": "0",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 0.0,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -1.3002658068859423,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "moderate": {
+            "net_return": 0.0,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -1.3002658068859423,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "stress": {
+            "net_return": 0.0,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -1.3002658068859423,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 0.0,
+            "benchmark_return": 4.656773998488284,
+            "excess": -4.656773998488284,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "moderate": {
+            "net_return": 0.0,
+            "benchmark_return": 4.656773998488284,
+            "excess": -4.656773998488284,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "stress": {
+            "net_return": 0.0,
+            "benchmark_return": 4.656773998488284,
+            "excess": -4.656773998488284,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.0,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.17283813367996168,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "moderate": {
+            "net_return": 0.0,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.17283813367996168,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "stress": {
+            "net_return": 0.0,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.17283813367996168,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 0.0,
+            "benchmark_return": 9.763022937840692,
+            "excess": -9.763022937840692,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "moderate": {
+            "net_return": 0.0,
+            "benchmark_return": 9.763022937840692,
+            "excess": -9.763022937840692,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "stress": {
+            "net_return": 0.0,
+            "benchmark_return": 9.763022937840692,
+            "excess": -9.763022937840692,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          }
+        }
+      },
+      "development_worst_excess": -4.656773998488284
+    },
+    {
+      "id": "ratio-sma30/90-reduce0x",
+      "ratio_fast": 30,
+      "ratio_slow": 90,
+      "reduced_target": "0",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 0.0,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -1.3002658068859423,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "moderate": {
+            "net_return": 0.0,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -1.3002658068859423,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "stress": {
+            "net_return": 0.0,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -1.3002658068859423,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 0.0,
+            "benchmark_return": 4.656773998488284,
+            "excess": -4.656773998488284,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "moderate": {
+            "net_return": 0.0,
+            "benchmark_return": 4.656773998488284,
+            "excess": -4.656773998488284,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "stress": {
+            "net_return": 0.0,
+            "benchmark_return": 4.656773998488284,
+            "excess": -4.656773998488284,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.0,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.17283813367996168,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "moderate": {
+            "net_return": 0.0,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.17283813367996168,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "stress": {
+            "net_return": 0.0,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.17283813367996168,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 0.0,
+            "benchmark_return": 9.763022937840692,
+            "excess": -9.763022937840692,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "moderate": {
+            "net_return": 0.0,
+            "benchmark_return": 9.763022937840692,
+            "excess": -9.763022937840692,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          },
+          "stress": {
+            "net_return": 0.0,
+            "benchmark_return": 9.763022937840692,
+            "excess": -9.763022937840692,
+            "cagr": 0.0,
+            "max_drawdown": 0.0,
+            "maximum_intrabar_leverage": 0.0,
+            "liquidated": false,
+            "rebalances": 0
+          }
+        }
+      },
+      "development_worst_excess": -4.656773998488284
+    }
+  ]
+}

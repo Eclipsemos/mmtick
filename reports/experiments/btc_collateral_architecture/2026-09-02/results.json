@@ -1,0 +1,694 @@
+{
+  "generated_at": "2026-09-02T12:24:36.643257+00:00",
+  "protocol": {
+    "wallets": "spot position and USD-M collateral are separate; only futures-wallet equity backs futures maintenance margin",
+    "spot_caps": [
+      "0",
+      "0.25",
+      "0.5",
+      "0.75"
+    ],
+    "operational_spot_cap": "0.75",
+    "bull_futures_leverage": "orders capped at 3x at the 1.5x total target",
+    "leverage_scope": "3x limits leverage when an order is sized; effective leverage may rise after futures-collateral losses before the next rebalance",
+    "maximum_total_exposure": "1.5x for the conservative selected family",
+    "maintenance": {
+      "base": "0.004",
+      "stress": "0.02"
+    },
+    "funding": "charged on the entire futures sleeve",
+    "execution": "fixed quantities between sparse target changes"
+  },
+  "data": {
+    "warmup_start": "2019-09-08T17:45:00+00:00",
+    "evaluation_start": "2020-01-01T00:00:00+00:00",
+    "last": "2026-09-02T07:59:59.999000+00:00",
+    "bars": 244857
+  },
+  "fixed_primary_sensitivity": {
+    "0": {
+      "research": {
+        "buy_and_hold": {
+          "net_return": 1.3002658068859423,
+          "max_drawdown": -0.7755528264455603
+        },
+        "base": {
+          "net_return": 1.6450537225368047,
+          "max_drawdown": -0.6685229919353849,
+          "total_fees": 41616.08653868854,
+          "total_funding": -240064.81640247852,
+          "rebalances": 288,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.5773936191278273,
+          "maximum_futures_leverage": 1.5,
+          "maximum_observed_futures_leverage": 1.7319207675182382
+        },
+        "stress": {
+          "net_return": 1.2321042683379153,
+          "max_drawdown": -0.6993659483255237,
+          "total_fees": 75656.64748978605,
+          "total_funding": -223109.04410666507,
+          "rebalances": 288,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.5773936191278273,
+          "maximum_futures_leverage": 1.5,
+          "maximum_observed_futures_leverage": 1.7319207675182382
+        }
+      },
+      "validation": {
+        "buy_and_hold": {
+          "net_return": 4.656773998488284,
+          "max_drawdown": -0.3365730267702175
+        },
+        "base": {
+          "net_return": 3.188018121380339,
+          "max_drawdown": -0.34508238846622746,
+          "total_fees": 14191.789944836515,
+          "total_funding": -52281.082969040064,
+          "rebalances": 168,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.6302390617629264,
+          "maximum_futures_leverage": 1.5,
+          "maximum_observed_futures_leverage": 1.586699493368065
+        },
+        "stress": {
+          "net_return": 2.8237927014223017,
+          "max_drawdown": -0.3586018889893789,
+          "total_fees": 26845.373714164845,
+          "total_funding": -49483.59633817802,
+          "rebalances": 168,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.6302390617629264,
+          "maximum_futures_leverage": 1.5,
+          "maximum_observed_futures_leverage": 1.586699493368065
+        }
+      },
+      "oos": {
+        "buy_and_hold": {
+          "net_return": -0.17214437812136554,
+          "max_drawdown": -0.5415474735288048
+        },
+        "base": {
+          "net_return": 0.05319855378369399,
+          "max_drawdown": -0.3582294287599117,
+          "total_fees": 4015.416780794352,
+          "total_funding": -4753.529062504153,
+          "rebalances": 103,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.5988385684277718,
+          "maximum_futures_leverage": 1.5,
+          "maximum_observed_futures_leverage": 1.6698991226057174
+        },
+        "stress": {
+          "net_return": -0.01524774038131881,
+          "max_drawdown": -0.37425655225008936,
+          "total_fees": 7770.6853674328995,
+          "total_funding": -4605.287329162137,
+          "rebalances": 103,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.5988385684277718,
+          "maximum_futures_leverage": 1.5,
+          "maximum_observed_futures_leverage": 1.6698991226057174
+        }
+      },
+      "full": {
+        "buy_and_hold": {
+          "net_return": 9.772050079074418,
+          "max_drawdown": -0.7755528264455603
+        },
+        "base": {
+          "net_return": 10.66684165295078,
+          "max_drawdown": -0.6692502962742848,
+          "total_fees": 123635.04494657423,
+          "total_funding": -431008.46421360824,
+          "rebalances": 559,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.5773936191278273,
+          "maximum_futures_leverage": 1.5,
+          "maximum_observed_futures_leverage": 1.7319207675182382
+        },
+        "stress": {
+          "net_return": 7.404962960010772,
+          "max_drawdown": -0.7005051759470766,
+          "total_fees": 201901.92858297817,
+          "total_funding": -372868.19705654384,
+          "rebalances": 559,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.5773936191278273,
+          "maximum_futures_leverage": 1.5,
+          "maximum_observed_futures_leverage": 1.7319207675182382
+        }
+      }
+    },
+    "0.25": {
+      "research": {
+        "buy_and_hold": {
+          "net_return": 1.3002658068859423,
+          "max_drawdown": -0.7755528264455603
+        },
+        "base": {
+          "net_return": 1.9764648400304865,
+          "max_drawdown": -0.659013455844848,
+          "total_fees": 45649.912366490535,
+          "total_funding": -195374.99423878288,
+          "rebalances": 288,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.4930612760896019,
+          "maximum_futures_leverage": 1.6666666666666667,
+          "maximum_observed_futures_leverage": 2.0281454831149106
+        },
+        "stress": {
+          "net_return": 1.510595051123901,
+          "max_drawdown": -0.6907801906895753,
+          "total_fees": 82870.87637269228,
+          "total_funding": -181366.30094732676,
+          "rebalances": 288,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.4930612760896019,
+          "maximum_futures_leverage": 1.6666666666666667,
+          "maximum_observed_futures_leverage": 2.0281454831149106
+        }
+      },
+      "validation": {
+        "buy_and_hold": {
+          "net_return": 4.656773998488284,
+          "max_drawdown": -0.3365730267702175
+        },
+        "base": {
+          "net_return": 3.357640333131397,
+          "max_drawdown": -0.339099987636083,
+          "total_fees": 14576.754741202407,
+          "total_funding": -41719.45643075005,
+          "rebalances": 168,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.5566982706721801,
+          "maximum_futures_leverage": 1.6666666666666667,
+          "maximum_observed_futures_leverage": 1.7963052028032338
+        },
+        "stress": {
+          "net_return": 2.9777299908833035,
+          "max_drawdown": -0.352772777084118,
+          "total_fees": 27563.16106621744,
+          "total_funding": -39473.983971799265,
+          "rebalances": 168,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.5566982706721801,
+          "maximum_futures_leverage": 1.6666666666666667,
+          "maximum_observed_futures_leverage": 1.7963052028032338
+        }
+      },
+      "oos": {
+        "buy_and_hold": {
+          "net_return": -0.17214437812136554,
+          "max_drawdown": -0.5415474735288048
+        },
+        "base": {
+          "net_return": 0.0633226554478422,
+          "max_drawdown": -0.3557244280173606,
+          "total_fees": 4038.9781851085345,
+          "total_funding": -3767.4663075690382,
+          "rebalances": 103,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.5188878215048578,
+          "maximum_futures_leverage": 1.6666666666666667,
+          "maximum_observed_futures_leverage": 1.927198825171575
+        },
+        "stress": {
+          "net_return": -0.0058390822917734975,
+          "max_drawdown": -0.3718239979833193,
+          "total_fees": 7815.85862195232,
+          "total_funding": -3649.616937281288,
+          "rebalances": 103,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.5188878215048578,
+          "maximum_futures_leverage": 1.6666666666666667,
+          "maximum_observed_futures_leverage": 1.927198825171575
+        }
+      },
+      "full": {
+        "buy_and_hold": {
+          "net_return": 9.772050079074418,
+          "max_drawdown": -0.7755528264455603
+        },
+        "base": {
+          "net_return": 12.791681079358323,
+          "max_drawdown": -0.6597616369293741,
+          "total_fees": 141424.12450286376,
+          "total_funding": -368416.89594266616,
+          "rebalances": 559,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.4930612760896019,
+          "maximum_futures_leverage": 1.6666666666666667,
+          "maximum_observed_futures_leverage": 2.0281454831149106
+        },
+        "stress": {
+          "net_return": 8.928157414181566,
+          "max_drawdown": -0.6919519584241971,
+          "total_fees": 230123.64377160912,
+          "total_funding": -316916.27699985506,
+          "rebalances": 559,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.4930612760896019,
+          "maximum_futures_leverage": 1.6666666666666667,
+          "maximum_observed_futures_leverage": 2.0281454831149106
+        }
+      }
+    },
+    "0.5": {
+      "research": {
+        "buy_and_hold": {
+          "net_return": 1.3002658068859423,
+          "max_drawdown": -0.7755528264455603
+        },
+        "base": {
+          "net_return": 2.346674994167433,
+          "max_drawdown": -0.6544492279115627,
+          "total_fees": 50064.54761581196,
+          "total_funding": -143265.5415867065,
+          "rebalances": 288,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.3665627615322638,
+          "maximum_futures_leverage": 2.0,
+          "maximum_observed_futures_leverage": 2.7280457944498075
+        },
+        "stress": {
+          "net_return": 1.821709869891077,
+          "max_drawdown": -0.681987318047438,
+          "total_fees": 90761.12195023021,
+          "total_funding": -132821.95650017328,
+          "rebalances": 288,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.3665627615322638,
+          "maximum_futures_leverage": 2.0,
+          "maximum_observed_futures_leverage": 2.7280457944498075
+        }
+      },
+      "validation": {
+        "buy_and_hold": {
+          "net_return": 4.656773998488284,
+          "max_drawdown": -0.3365730267702175
+        },
+        "base": {
+          "net_return": 3.533859753362112,
+          "max_drawdown": -0.3330724043694029,
+          "total_fees": 14970.549816551507,
+          "total_funding": -30659.711414308287,
+          "rebalances": 168,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.4460513083600507,
+          "maximum_futures_leverage": 2.0,
+          "maximum_observed_futures_leverage": 2.2418945562038446
+        },
+        "stress": {
+          "net_return": 3.1376756850844534,
+          "max_drawdown": -0.346893751714409,
+          "total_fees": 28297.25866356732,
+          "total_funding": -29000.54493946477,
+          "rebalances": 168,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.4460513083600507,
+          "maximum_futures_leverage": 2.0,
+          "maximum_observed_futures_leverage": 2.2418945562038446
+        }
+      },
+      "oos": {
+        "buy_and_hold": {
+          "net_return": -0.17214437812136554,
+          "max_drawdown": -0.5415474735288048
+        },
+        "base": {
+          "net_return": 0.07353952312186099,
+          "max_drawdown": -0.3532106713626043,
+          "total_fees": 4062.6966473652233,
+          "total_funding": -2772.3857522226713,
+          "rebalances": 103,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.39896170112048684,
+          "maximum_futures_leverage": 2.0,
+          "maximum_observed_futures_leverage": 2.5065062565942866
+        },
+        "stress": {
+          "net_return": 0.0036553287872564833,
+          "max_drawdown": -0.36938281742279466,
+          "total_fees": 7861.33715149239,
+          "total_funding": -2685.3461191594665,
+          "rebalances": 103,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.39896170112048684,
+          "maximum_futures_leverage": 2.0,
+          "maximum_observed_futures_leverage": 2.5065062565942866
+        }
+      },
+      "full": {
+        "buy_and_hold": {
+          "net_return": 9.772050079074418,
+          "max_drawdown": -0.7755528264455603
+        },
+        "base": {
+          "net_return": 15.289196359177797,
+          "max_drawdown": -0.655207435391572,
+          "total_fees": 161810.85108213147,
+          "total_funding": -287940.02449721063,
+          "rebalances": 559,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.3665627615322638,
+          "maximum_futures_leverage": 2.0,
+          "maximum_observed_futures_leverage": 2.7280457944498075
+        },
+        "stress": {
+          "net_return": 10.717997453473648,
+          "max_drawdown": -0.6831924110300597,
+          "total_fees": 262391.40539149503,
+          "total_funding": -246005.35649668096,
+          "rebalances": 559,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.3665627615322638,
+          "maximum_futures_leverage": 2.0,
+          "maximum_observed_futures_leverage": 2.7280457944498075
+        }
+      }
+    },
+    "0.75": {
+      "research": {
+        "buy_and_hold": {
+          "net_return": 1.3002658068859423,
+          "max_drawdown": -0.7755528264455603
+        },
+        "base": {
+          "net_return": 2.7599440507041053,
+          "max_drawdown": -0.6518510052302282,
+          "total_fees": 54894.562530109586,
+          "total_funding": -82841.42290057804,
+          "rebalances": 288,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.15573190393670033,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 6.4212918144663895
+        },
+        "stress": {
+          "net_return": 2.169051018195281,
+          "max_drawdown": -0.672982561215773,
+          "total_fees": 99388.79521089981,
+          "total_funding": -76660.09116360317,
+          "rebalances": 288,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.15573190393670033,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 6.4212918144663895
+        }
+      },
+      "validation": {
+        "buy_and_hold": {
+          "net_return": 4.656773998488284,
+          "max_drawdown": -0.3365730267702175
+        },
+        "base": {
+          "net_return": 3.716923978226643,
+          "max_drawdown": -0.3269993137071804,
+          "total_fees": 15373.33932281032,
+          "total_funding": -19081.754113807354,
+          "rebalances": 168,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.26162259942566146,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 3.8222997638403333
+        },
+        "stress": {
+          "net_return": 3.303858569381103,
+          "max_drawdown": -0.3409643764837053,
+          "total_fees": 29047.950921550055,
+          "total_funding": -18044.590640427075,
+          "rebalances": 168,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.26162259942566146,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 3.8222997638403333
+        }
+      },
+      "oos": {
+        "buy_and_hold": {
+          "net_return": -0.17214437812136554,
+          "max_drawdown": -0.5415474735288048
+        },
+        "base": {
+          "net_return": 0.08384984552963844,
+          "max_drawdown": -0.3506881468627243,
+          "total_fees": 4086.579904731947,
+          "total_funding": -1768.2104481685026,
+          "rebalances": 103,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.1990848338132018,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 5.0229843270647345
+        },
+        "stress": {
+          "net_return": 0.013236260290405552,
+          "max_drawdown": -0.36693297742107667,
+          "total_fees": 7907.12118688479,
+          "total_funding": -1712.4027141610375,
+          "rebalances": 103,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.1990848338132018,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 5.0229843270647345
+        }
+      },
+      "full": {
+        "buy_and_hold": {
+          "net_return": 9.772050079074418,
+          "max_drawdown": -0.7755528264455603
+        },
+        "base": {
+          "net_return": 18.22247830539309,
+          "max_drawdown": -0.6526149255395822,
+          "total_fees": 185174.4659211854,
+          "total_funding": -185947.61773518973,
+          "rebalances": 559,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.15573190393670033,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 6.4212918144663895
+        },
+        "stress": {
+          "net_return": 12.819678686345952,
+          "max_drawdown": -0.6742217826642157,
+          "total_fees": 299289.62488635594,
+          "total_funding": -157200.03250042984,
+          "rebalances": 559,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.15573190393670033,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 6.4212918144663895
+        }
+      }
+    }
+  },
+  "walk_forward": {
+    "spot_cap": "0.75",
+    "years": [
+      {
+        "year": 2022,
+        "selected_id": "4h-26-52-104-208-bull1.5x-funding-le-0.0001",
+        "training": {
+          "eligible_candidates": 3,
+          "base_return": 8.14396577546859,
+          "stress_return": 7.139665281288871,
+          "benchmark_return": 5.427569362244295,
+          "max_drawdown": -0.43598982391879854,
+          "maximum_futures_leverage": 3.0
+        },
+        "base": {
+          "net_return": -0.5888059794808863,
+          "max_drawdown": -0.6259521576992039,
+          "total_fees": 2185.141843497755,
+          "total_funding": -817.5541065413017,
+          "rebalances": 76,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.15573190393670033,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 6.4212918144663895
+        },
+        "stress": {
+          "net_return": -0.6106656835779027,
+          "max_drawdown": -0.645269992963458,
+          "total_fees": 4271.276107494489,
+          "total_funding": -806.09248859406,
+          "rebalances": 76,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.15573190393670033,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 6.4212918144663895
+        },
+        "buy_and_hold": {
+          "net_return": -0.6421251674670968,
+          "max_drawdown": -0.6788954963197074
+        }
+      },
+      {
+        "year": 2023,
+        "selected_id": "4h-26-52-104-208-bull1.5x-funding-le-0.0001",
+        "training": {
+          "eligible_candidates": 5,
+          "base_return": 2.7599440507041053,
+          "stress_return": 2.169051018195281,
+          "benchmark_return": 1.3002658068859423,
+          "max_drawdown": -0.6518510052302282,
+          "maximum_futures_leverage": 3.0
+        },
+        "base": {
+          "net_return": 1.5231573360817565,
+          "max_drawdown": -0.24037416479583926,
+          "total_fees": 4118.117458376156,
+          "total_funding": -5233.780887641784,
+          "rebalances": 73,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.2909850605139554,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 3.4366025466521877
+        },
+        "stress": {
+          "net_return": 1.418055065781693,
+          "max_drawdown": -0.24913521200859984,
+          "total_fees": 8048.614957659346,
+          "total_funding": -5095.5473952784605,
+          "rebalances": 73,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.2909850605139554,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 3.4366025466521877
+        },
+        "buy_and_hold": {
+          "net_return": 1.5586696900982615,
+          "max_drawdown": -0.22435881254102086
+        }
+      },
+      {
+        "year": 2024,
+        "selected_id": "4h-26-52-104-208-bull1.5x-funding-le-0.0001",
+        "training": {
+          "eligible_candidates": 3,
+          "base_return": 8.486930414791019,
+          "stress_return": 6.662939868267731,
+          "benchmark_return": 4.885584809922344,
+          "max_drawdown": -0.6526149255395822,
+          "maximum_futures_leverage": 3.0
+        },
+        "base": {
+          "net_return": 0.8667236882160099,
+          "max_drawdown": -0.3269993137071804,
+          "total_fees": 4554.224924487737,
+          "total_funding": -5480.176093743784,
+          "rebalances": 96,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.26162259942566146,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 3.8222997638403333
+        },
+        "stress": {
+          "net_return": 0.7744433043721819,
+          "max_drawdown": -0.3409643764837053,
+          "total_fees": 8857.620017686095,
+          "total_funding": -5338.615199717624,
+          "rebalances": 96,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.26162259942566146,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 3.8222997638403333
+        },
+        "buy_and_hold": {
+          "net_return": 1.2108262040932078,
+          "max_drawdown": -0.3365730267702174
+        }
+      },
+      {
+        "year": 2025,
+        "selected_id": "4h-26-52-104-208-bull1.5x-funding-le-0.0001",
+        "training": {
+          "eligible_candidates": 1,
+          "base_return": 16.73537024955681,
+          "stress_return": 12.63914738146567,
+          "benchmark_return": 12.012005124189262,
+          "max_drawdown": -0.6526149255395822,
+          "maximum_futures_leverage": 3.0
+        },
+        "base": {
+          "net_return": -0.03730678401641903,
+          "max_drawdown": -0.31876988654953164,
+          "total_fees": 2713.187358354541,
+          "total_funding": -1330.2806854238324,
+          "rebalances": 64,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.1990848338132018,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 5.0229843270647345
+        },
+        "stress": {
+          "net_return": -0.07810237482135825,
+          "max_drawdown": -0.32422171948486156,
+          "total_fees": 5307.772306911168,
+          "total_funding": -1300.6338253705194,
+          "rebalances": 64,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.1990848338132018,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 5.0229843270647345
+        },
+        "buy_and_hold": {
+          "net_return": -0.06350268522952726,
+          "max_drawdown": -0.3602463765815249
+        }
+      },
+      {
+        "year": 2026,
+        "selected_id": "4h-26-52-104-208-bull1.5x-funding-le-0.0001",
+        "training": {
+          "eligible_candidates": 1,
+          "base_return": 16.073720622205368,
+          "stress_return": 11.573897580434691,
+          "benchmark_return": 11.18569483255279,
+          "max_drawdown": -0.6526149255395822,
+          "maximum_futures_leverage": 3.0
+        },
+        "base": {
+          "net_return": 0.12585175374095897,
+          "max_drawdown": -0.2177906330121833,
+          "total_fees": 1426.6149626641072,
+          "total_funding": -454.9006427735533,
+          "rebalances": 39,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.2958540132664861,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 3.3800454114484664
+        },
+        "stress": {
+          "net_return": 0.09907676581124131,
+          "max_drawdown": -0.22250399151618355,
+          "total_fees": 2819.5634840364523,
+          "total_funding": -446.65359530644974,
+          "rebalances": 39,
+          "liquidated": false,
+          "minimum_margin_ratio": 0.2958540132664861,
+          "maximum_futures_leverage": 3.0,
+          "maximum_observed_futures_leverage": 3.3800454114484664
+        },
+        "buy_and_hold": {
+          "net_return": -0.11600955617218917,
+          "max_drawdown": -0.40824744380468414
+        }
+      }
+    ],
+    "years_elapsed": 4.6690440825527135,
+    "base_compound_return": 1.099134574368962,
+    "stress_compound_return": 0.692628785510124,
+    "benchmark_compound_return": 0.675923120729833,
+    "any_liquidation": false
+  },
+  "summary": {
+    "full_stress_cagr": 0.4824414745064458,
+    "full_benchmark_cagr": 0.4280941324102039,
+    "walk_forward_stress_cagr": 0.11931564286345697,
+    "walk_forward_benchmark_cagr": 0.11694034838805245,
+    "continuous_effective_leverage_cap_passed": false
+  },
+  "status": "FORWARD_OBSERVATION"
+}

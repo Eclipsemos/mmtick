@@ -3,30 +3,19 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .venv/
-data/*.db
-data/*.db-*
-data/*.db.bak-*
-data/*.token
-data/backups/
-data/history_soxl/
-data/history_btc/
-data/history_eth/
-data/history_btc_tick/
-data/history_eth_tick/
-data/funding_rates/
-data/mark_price_klines/
-data/order_flow_cache/
-data/futures_metrics/
-data/deep_factor_models/
-data/event_meta_models/
-data/continuous_factor_models/
-data/run/
+# Research and runtime data are local-only. Keep all generated market data,
+# databases, model artifacts, credentials, and run state out of Git.
+data/
 frontend/node_modules/
 frontend/dist/
 reports/backtests/*.json
 reports/backtests/*.md
 !reports/backtests/README.md
 reports/experiments/individual_crypto_atr/*/checkpoints/
+# Large parameter-grid details are reproducible from their scripts. Commit the
+# compact README summaries, not 30-100 MB generated JSON matrices.
+reports/experiments/btc_sma_trend/*/results.json
+reports/experiments/btc_daily_sma_guard_3x/*/results.json
 frontend/artifacts/
 frontend/test-results/
 .env

@@ -1,0 +1,656 @@
+{
+  "generated_at": "2026-09-02T11:50:41.181042+00:00",
+  "protocol": {
+    "periods": [
+      25,
+      50,
+      100,
+      200
+    ],
+    "variants": {
+      "buy_and_hold_stress": "1x throughout, with strategy execution costs",
+      "bear_defense_only": "0.5x bear, otherwise 1x",
+      "bull_leverage_only": "1.75x bull, otherwise 1x",
+      "combined_no_funding": "0.5x bear, 1x neutral, 1.75x bull",
+      "combined_with_funding": "combined exposure; bull leverage allowed only when known funding <=0.01%"
+    },
+    "maximum_exposure": "1.75",
+    "execution": "completed 4h candle; next 15m open; exposure-delta rebalance",
+    "costs": "base 5+2 bps; stress 10+5 bps on changed notional",
+    "funding": "charged only above 1x"
+  },
+  "data": {
+    "first": "2019-09-08T17:45:00+00:00",
+    "last": "2026-09-02T07:59:59.999000+00:00",
+    "bars": 244857
+  },
+  "splits": {
+    "research": {
+      "buy_and_hold_price": {
+        "net_return": 1.3002658068859423,
+        "max_drawdown": -0.7755528264455603
+      },
+      "variants": {
+        "buy_and_hold_stress": {
+          "base": {
+            "net_return": 1.2970476874399144,
+            "max_drawdown": -0.7755528264455603,
+            "completed_trades": 1,
+            "total_fees": 164.89786184100845,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 1.2933753451578864,
+            "max_drawdown": -0.7755528264455609,
+            "completed_trades": 1,
+            "total_fees": 329.53228226519894,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress_excess": -0.006890461728055852
+        },
+        "bear_defense_only": {
+          "base": {
+            "net_return": 1.6378078170204917,
+            "max_drawdown": -0.674414145224848,
+            "completed_trades": 144,
+            "total_fees": 13316.00907653773,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 1.4880634053835002,
+            "max_drawdown": -0.6815151360968988,
+            "completed_trades": 144,
+            "total_fees": 25794.36982404295,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress_excess": 0.18779759849755795
+        },
+        "bull_leverage_only": {
+          "base": {
+            "net_return": 2.1456697003113283,
+            "max_drawdown": -0.8306910594828815,
+            "completed_trades": 83,
+            "total_fees": 21996.20576974335,
+            "total_funding": -177189.27476217717,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 1.9862834849521191,
+            "max_drawdown": -0.8340272051988111,
+            "completed_trades": 83,
+            "total_fees": 42644.57594132735,
+            "total_funding": -172581.4484330976,
+            "bankrupt": false
+          },
+          "stress_excess": 0.6860176780661769
+        },
+        "combined_no_funding": {
+          "base": {
+            "net_return": 2.612320358265438,
+            "max_drawdown": -0.7673888673962556,
+            "completed_trades": 226,
+            "total_fees": 42356.78981483616,
+            "total_funding": -160988.225837699,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 2.2397935526332704,
+            "max_drawdown": -0.7807172189893663,
+            "completed_trades": 226,
+            "total_fees": 79581.7039056175,
+            "total_funding": -153655.05264269665,
+            "bankrupt": false
+          },
+          "stress_excess": 0.9395277457473281
+        },
+        "combined_with_funding": {
+          "base": {
+            "net_return": 3.4956249794477627,
+            "max_drawdown": -0.7348380985499949,
+            "completed_trades": 296,
+            "total_fees": 63347.35164652525,
+            "total_funding": -23836.010154705495,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 2.866053852303416,
+            "max_drawdown": -0.744554742668236,
+            "completed_trades": 296,
+            "total_fees": 115221.83556544631,
+            "total_funding": -21736.23913703157,
+            "bankrupt": false
+          },
+          "stress_excess": 1.5657880454174735
+        }
+      }
+    },
+    "validation": {
+      "buy_and_hold_price": {
+        "net_return": 4.656773998488284,
+        "max_drawdown": -0.3365730267702175
+      },
+      "variants": {
+        "buy_and_hold_stress": {
+          "base": {
+            "net_return": 4.648860054651087,
+            "max_drawdown": -0.33657302677021744,
+            "completed_trades": 1,
+            "total_fees": 332.6058758113463,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 4.639829093849812,
+            "max_drawdown": -0.336573026770218,
+            "completed_trades": 1,
+            "total_fees": 664.6803792799136,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress_excess": -0.016944904638472202
+        },
+        "bear_defense_only": {
+          "base": {
+            "net_return": 3.8254073564559214,
+            "max_drawdown": -0.270637574205456,
+            "completed_trades": 63,
+            "total_fees": 3750.3420268641385,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 3.7037906677651193,
+            "max_drawdown": -0.2744105644374964,
+            "completed_trades": 63,
+            "total_fees": 7382.581072158694,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress_excess": -0.952983330723165
+        },
+        "bull_leverage_only": {
+          "base": {
+            "net_return": 6.023676998791076,
+            "max_drawdown": -0.46442870206695946,
+            "completed_trades": 65,
+            "total_fees": 8761.454458378335,
+            "total_funding": -30342.08314693767,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 5.742818063357185,
+            "max_drawdown": -0.4687280750120491,
+            "completed_trades": 65,
+            "total_fees": 17080.05409666851,
+            "total_funding": -29519.254541486895,
+            "bankrupt": false
+          },
+          "stress_excess": 1.0860440648689007
+        },
+        "combined_no_funding": {
+          "base": {
+            "net_return": 4.99981276424631,
+            "max_drawdown": -0.4112003328042573,
+            "completed_trades": 127,
+            "total_fees": 11691.173428996302,
+            "total_funding": -26847.539768268,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 4.6237173419748565,
+            "max_drawdown": -0.4189484122034676,
+            "completed_trades": 127,
+            "total_fees": 22455.309157643285,
+            "total_funding": -25676.240228065737,
+            "bankrupt": false
+          },
+          "stress_excess": -0.03305665651342782
+        },
+        "combined_with_funding": {
+          "base": {
+            "net_return": 5.454019225304121,
+            "max_drawdown": -0.30704874191023057,
+            "completed_trades": 175,
+            "total_fees": 20429.95744501081,
+            "total_funding": -12433.217746871767,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 4.877515069031706,
+            "max_drawdown": -0.31814513574538655,
+            "completed_trades": 175,
+            "total_fees": 38498.25123841425,
+            "total_funding": -11748.406197496048,
+            "bankrupt": false
+          },
+          "stress_excess": 0.22074107054342207
+        }
+      }
+    },
+    "oos": {
+      "buy_and_hold_price": {
+        "net_return": -0.17214437812136554,
+        "max_drawdown": -0.5415474735288048
+      },
+      "variants": {
+        "buy_and_hold_stress": {
+          "base": {
+            "net_return": -0.1733025652609979,
+            "max_drawdown": -0.5415474735288048,
+            "completed_trades": 1,
+            "total_fees": 91.32885089830293,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": -0.17462422521636028,
+            "max_drawdown": -0.5415474735288078,
+            "completed_trades": 1,
+            "total_fees": 182.51179449612064,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress_excess": -0.0024798470949947415
+        },
+        "bear_defense_only": {
+          "base": {
+            "net_return": -0.04693077311199545,
+            "max_drawdown": -0.3786197730405519,
+            "completed_trades": 72,
+            "total_fees": 1777.9114801458695,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": -0.0747820694906486,
+            "max_drawdown": -0.38804491331784274,
+            "completed_trades": 72,
+            "total_fees": 3505.5683504835106,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress_excess": 0.09736230863071695
+        },
+        "bull_leverage_only": {
+          "base": {
+            "net_return": -0.1294902860692852,
+            "max_drawdown": -0.5892342399994752,
+            "completed_trades": 39,
+            "total_fees": 1669.2386234151427,
+            "total_funding": -1200.00113880614,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": -0.15070749945478237,
+            "max_drawdown": -0.5944663055584236,
+            "completed_trades": 39,
+            "total_fees": 3301.206806337133,
+            "total_funding": -1187.8508607585825,
+            "bankrupt": false
+          },
+          "stress_excess": 0.02143687866658317
+        },
+        "combined_no_funding": {
+          "base": {
+            "net_return": 0.0035788006483689857,
+            "max_drawdown": -0.45797151455130625,
+            "completed_trades": 110,
+            "total_fees": 3361.934279562635,
+            "total_funding": -1173.6181363378969,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": -0.04797224033193891,
+            "max_drawdown": -0.4726411908051785,
+            "completed_trades": 110,
+            "total_fees": 6557.375508964832,
+            "total_funding": -1146.7899659036104,
+            "bankrupt": false
+          },
+          "stress_excess": 0.12417213778942662
+        },
+        "combined_with_funding": {
+          "base": {
+            "net_return": 0.0035788006483689857,
+            "max_drawdown": -0.45797151455130625,
+            "completed_trades": 110,
+            "total_fees": 3361.934279562635,
+            "total_funding": -1173.6181363378969,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": -0.04797224033193891,
+            "max_drawdown": -0.4726411908051785,
+            "completed_trades": 110,
+            "total_fees": 6557.375508964832,
+            "total_funding": -1146.7899659036104,
+            "bankrupt": false
+          },
+          "stress_excess": 0.12417213778942662
+        }
+      }
+    },
+    "full": {
+      "buy_and_hold_price": {
+        "net_return": 9.772050079074418,
+        "max_drawdown": -0.7755528264455603
+      },
+      "variants": {
+        "buy_and_hold_stress": {
+          "base": {
+            "net_return": 9.756979758188336,
+            "max_drawdown": -0.7755528264455603,
+            "completed_trades": 1,
+            "total_fees": 588.190770414431,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 9.73978233046019,
+            "max_drawdown": -0.7755528264455609,
+            "completed_trades": 1,
+            "total_fees": 1175.4418451397412,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress_excess": -0.03226774861422754
+        },
+        "bear_defense_only": {
+          "base": {
+            "net_return": 11.13959616764776,
+            "max_drawdown": -0.674414145224848,
+            "completed_trades": 277,
+            "total_fees": 45106.742082359706,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 9.852756960706888,
+            "max_drawdown": -0.6815151360968988,
+            "completed_trades": 277,
+            "total_fees": 83914.56451387797,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress_excess": 0.08070688163246942
+        },
+        "bull_leverage_only": {
+          "base": {
+            "net_return": 18.286978951752857,
+            "max_drawdown": -0.8306910594828815,
+            "completed_trades": 185,
+            "total_fees": 84050.04407152491,
+            "total_funding": -299355.76463973656,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 16.20411915270168,
+            "max_drawdown": -0.8340272051988111,
+            "completed_trades": 185,
+            "total_fees": 156032.4611152396,
+            "total_funding": -285060.92822448816,
+            "bankrupt": false
+          },
+          "stress_excess": 6.432069073627261
+        },
+        "combined_no_funding": {
+          "base": {
+            "net_return": 20.76597344528563,
+            "max_drawdown": -0.7673888673962556,
+            "completed_trades": 461,
+            "total_fees": 156288.55079824815,
+            "total_funding": -283479.595132389,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 16.385093863379645,
+            "max_drawdown": -0.7807172189893663,
+            "completed_trades": 461,
+            "total_fees": 270070.28715462337,
+            "total_funding": -257896.09157504054,
+            "bankrupt": false
+          },
+          "stress_excess": 6.613043784305226
+        },
+        "combined_with_funding": {
+          "base": {
+            "net_return": 28.13898830129411,
+            "max_drawdown": -0.7348380985499949,
+            "completed_trades": 579,
+            "total_fees": 251216.89007226072,
+            "total_funding": -113839.23737616879,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 20.68192657515497,
+            "max_drawdown": -0.744554742668236,
+            "completed_trades": 579,
+            "total_fees": 410992.5102874542,
+            "total_funding": -93335.79697317666,
+            "bankrupt": false
+          },
+          "stress_excess": 10.909876496080553
+        }
+      }
+    }
+  },
+  "yearly_stress": [
+    {
+      "year": 2019,
+      "buy_and_hold": -0.2811,
+      "variants": {
+        "buy_and_hold_stress": -0.2832534697953092,
+        "bear_defense_only": -0.24334771390816892,
+        "bull_leverage_only": -0.3348377867765662,
+        "combined_no_funding": -0.2978040519935554,
+        "combined_with_funding": -0.25739069412132887
+      }
+    },
+    {
+      "year": 2020,
+      "buy_and_hold": 3.026978494818087,
+      "variants": {
+        "buy_and_hold_stress": 3.0149156535954895,
+        "bear_defense_only": 2.970264239099598,
+        "bull_leverage_only": 5.802923798049268,
+        "combined_no_funding": 5.727265877311061,
+        "combined_with_funding": 6.263937328512704
+      }
+    },
+    {
+      "year": 2021,
+      "buy_and_hold": 0.596319493550374,
+      "variants": {
+        "buy_and_hold_stress": 0.5915377077484303,
+        "bear_defense_only": 0.4884047865710252,
+        "bull_leverage_only": 0.5476681677896625,
+        "combined_no_funding": 0.44737802802085574,
+        "combined_with_funding": 0.5586179704168343
+      }
+    },
+    {
+      "year": 2022,
+      "buy_and_hold": -0.6421251674670968,
+      "variants": {
+        "buy_and_hold_stress": -0.643197183939991,
+        "bear_defense_only": -0.5820021536101543,
+        "bull_leverage_only": -0.7106233856224348,
+        "combined_no_funding": -0.6609925814457055,
+        "combined_with_funding": -0.6609925814457055
+      }
+    },
+    {
+      "year": 2023,
+      "buy_and_hold": 1.5586696900982615,
+      "variants": {
+        "buy_and_hold_stress": 1.5510051777964313,
+        "bear_defense_only": 1.314484357995242,
+        "bull_leverage_only": 1.8247893641720523,
+        "combined_no_funding": 1.5628841740160744,
+        "combined_with_funding": 1.794664395331185
+      }
+    },
+    {
+      "year": 2024,
+      "buy_and_hold": 1.2108262040932078,
+      "variants": {
+        "buy_and_hold_stress": 1.20420365929813,
+        "bear_defense_only": 1.0262398468654663,
+        "bull_leverage_only": 1.3798659084703209,
+        "combined_no_funding": 1.1877194122229269,
+        "combined_with_funding": 1.0968202632195438
+      }
+    },
+    {
+      "year": 2025,
+      "buy_and_hold": -0.06350268522952726,
+      "variants": {
+        "buy_and_hold_stress": -0.06630796924781175,
+        "bear_defense_only": -0.07610137759474882,
+        "bull_leverage_only": -0.06776504340976205,
+        "combined_no_funding": -0.07754316864214963,
+        "combined_with_funding": -0.07754316864214963
+      }
+    },
+    {
+      "year": 2026,
+      "buy_and_hold": -0.11600955617218917,
+      "variants": {
+        "buy_and_hold_stress": -0.11865755550467477,
+        "bear_defense_only": -7.901005910239857e-05,
+        "bull_leverage_only": -0.09170165028294312,
+        "combined_no_funding": 0.030503626238984213,
+        "combined_with_funding": 0.030503626238984213
+      }
+    }
+  ],
+  "candidate_daily_concentration": {
+    "total_annualized_excess": 0.11053331749773078,
+    "positive_month_rate": 0.48148148148148145,
+    "positive_year_rate": 0.42857142857142855,
+    "top_day_removal": {
+      "5": {
+        "share_of_positive_excess": 0.06375598165605101,
+        "remaining_annualized_excess": 0.008083011073721067
+      },
+      "10": {
+        "share_of_positive_excess": 0.09526193719076687,
+        "remaining_annualized_excess": -0.03899878671200401
+      },
+      "20": {
+        "share_of_positive_excess": 0.14788419100467987,
+        "remaining_annualized_excess": -0.11278418069243851
+      }
+    },
+    "top_10_excess_days": [
+      {
+        "date": "2020-03-12",
+        "strategy_return": -0.18917557635028126,
+        "benchmark_return": -0.3997964322740506,
+        "excess_log_return": 0.3007826598100119
+      },
+      {
+        "date": "2022-06-13",
+        "strategy_return": -0.07447964146710262,
+        "benchmark_return": -0.1540841793809078,
+        "excess_log_return": 0.08993627726473931
+      },
+      {
+        "date": "2021-05-19",
+        "strategy_return": -0.0663390944989255,
+        "benchmark_return": -0.14442687966404966,
+        "excess_log_return": 0.08734175554166983
+      },
+      {
+        "date": "2026-02-05",
+        "strategy_return": -0.06299272007243129,
+        "benchmark_return": -0.14041106191907282,
+        "excess_log_return": 0.08623675560447033
+      },
+      {
+        "date": "2020-04-29",
+        "strategy_return": 0.2319689575146131,
+        "benchmark_return": 0.1355330769479366,
+        "excess_log_return": 0.08151145597924589
+      },
+      {
+        "date": "2022-05-09",
+        "strategy_return": -0.05218957547559944,
+        "benchmark_return": -0.11681358721203572,
+        "excess_log_return": 0.07061821679425381
+      },
+      {
+        "date": "2023-10-23",
+        "strategy_return": 0.17703582017846586,
+        "benchmark_return": 0.10314694061337826,
+        "excess_log_return": 0.06483231082208273
+      },
+      {
+        "date": "2022-01-21",
+        "strategy_return": -0.04635807542152248,
+        "benchmark_return": -0.10416955124098382,
+        "excess_log_return": 0.06253709610478403
+      },
+      {
+        "date": "2021-06-21",
+        "strategy_return": -0.055933574736917735,
+        "benchmark_return": -0.1119076199596275,
+        "excess_log_return": 0.06112076025648146
+      },
+      {
+        "date": "2024-11-11",
+        "strategy_return": 0.17172226326720752,
+        "benchmark_return": 0.10345603780624302,
+        "excess_log_return": 0.06002757928651317
+      }
+    ]
+  },
+  "candidate_leave_one_year_out": [
+    {
+      "omitted_year": 2020,
+      "remaining_annualized_excess": 0.019250584663371716,
+      "still_beats_buy_and_hold": true
+    },
+    {
+      "omitted_year": 2021,
+      "remaining_annualized_excess": 0.13556658299935362,
+      "still_beats_buy_and_hold": true
+    },
+    {
+      "omitted_year": 2022,
+      "remaining_annualized_excess": 0.14120149366922047,
+      "still_beats_buy_and_hold": true
+    },
+    {
+      "omitted_year": 2023,
+      "remaining_annualized_excess": 0.11335909134477232,
+      "still_beats_buy_and_hold": true
+    },
+    {
+      "omitted_year": 2024,
+      "remaining_annualized_excess": 0.1414642531758609,
+      "still_beats_buy_and_hold": true
+    },
+    {
+      "omitted_year": 2025,
+      "remaining_annualized_excess": 0.13406532871285026,
+      "still_beats_buy_and_hold": true
+    },
+    {
+      "omitted_year": 2026,
+      "remaining_annualized_excess": 0.0951371660087185,
+      "still_beats_buy_and_hold": true
+    }
+  ],
+  "conclusion": {
+    "bear_defense_role": "drawdown reduction",
+    "bull_leverage_role": "return enhancement with worse standalone drawdown",
+    "funding_filter_role": "avoids expensive/overheated leveraged bull exposure",
+    "edge_shape": "lumpy tail-event capture rather than consistent monthly excess",
+    "status": "FORWARD_TESTING_REQUIRED"
+  }
+}

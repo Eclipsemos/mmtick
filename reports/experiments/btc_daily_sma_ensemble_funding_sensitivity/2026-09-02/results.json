@@ -1,0 +1,367 @@
+{
+  "generated_at": "2026-09-02T21:57:45.216354+00:00",
+  "status": "RESEARCH_ONLY",
+  "protocol": {
+    "candidate": "fixed daily SMA ensemble + Funding >0.02% gate",
+    "fair_bh": "1x spot B&H charged entry and exit fee+slippage",
+    "effective_cap": "all observed intrabar leverage must remain <=3x"
+  },
+  "data": {
+    "bars": 244909,
+    "first": "2019-09-08T17:45:00+00:00",
+    "last": "2026-09-02T20:59:59.999000+00:00"
+  },
+  "results": [
+    {
+      "fee_bps": "5",
+      "slippage_bps": "2",
+      "open_cap": "2",
+      "metrics": {
+        "research": {
+          "strategy_return": 4.514965537649455,
+          "benchmark_return": 1.2970465618865474,
+          "excess": 3.2179189757629074,
+          "max_drawdown": -0.7194793854495045,
+          "maximum_intrabar_leverage": 2.2577618225269878,
+          "liquidated": false
+        },
+        "validation": {
+          "strategy_return": 5.776473851924868,
+          "benchmark_return": 4.64885728670966,
+          "excess": 1.1276165652152077,
+          "max_drawdown": -0.4575348713459619,
+          "maximum_intrabar_leverage": 2.1621974217408106,
+          "liquidated": false
+        },
+        "oos": {
+          "strategy_return": 0.28693239908876145,
+          "benchmark_return": -0.17416227948882296,
+          "excess": 0.4610946785775844,
+          "max_drawdown": -0.3399297057434651,
+          "maximum_intrabar_leverage": 2.2062508180722666,
+          "liquidated": false
+        },
+        "full": {
+          "strategy_return": 47.10725634220785,
+          "benchmark_return": 9.745793164208568,
+          "excess": 37.36146317799928,
+          "max_drawdown": -0.7194793854495045,
+          "maximum_intrabar_leverage": 2.2577618225269878,
+          "liquidated": false
+        }
+      }
+    },
+    {
+      "fee_bps": "5",
+      "slippage_bps": "2",
+      "open_cap": "2.5",
+      "metrics": {
+        "research": {
+          "strategy_return": 4.856862069388565,
+          "benchmark_return": 1.2970465618865474,
+          "excess": 3.5598155075020173,
+          "max_drawdown": -0.7348951552059481,
+          "maximum_intrabar_leverage": 2.5985502783809222,
+          "liquidated": false
+        },
+        "validation": {
+          "strategy_return": 5.912101485919542,
+          "benchmark_return": 4.64885728670966,
+          "excess": 1.2632441992098817,
+          "max_drawdown": -0.47211760297083866,
+          "maximum_intrabar_leverage": 2.6936886222493075,
+          "liquidated": false
+        },
+        "oos": {
+          "strategy_return": 0.29246958309837034,
+          "benchmark_return": -0.17416227948882296,
+          "excess": 0.4666318625871933,
+          "max_drawdown": -0.3433020226176587,
+          "maximum_intrabar_leverage": 2.300911932854474,
+          "liquidated": false
+        },
+        "full": {
+          "strategy_return": 51.33638458331137,
+          "benchmark_return": 9.745793164208568,
+          "excess": 41.59059141910281,
+          "max_drawdown": -0.7348951552059481,
+          "maximum_intrabar_leverage": 2.6936886222493075,
+          "liquidated": false
+        }
+      }
+    },
+    {
+      "fee_bps": "5",
+      "slippage_bps": "2",
+      "open_cap": "3",
+      "metrics": {
+        "research": {
+          "strategy_return": 4.911868186676956,
+          "benchmark_return": 1.2970465618865474,
+          "excess": 3.6148216247904084,
+          "max_drawdown": -0.7363136095251345,
+          "maximum_intrabar_leverage": 2.861801614385107,
+          "liquidated": false
+        },
+        "validation": {
+          "strategy_return": 5.952470395452546,
+          "benchmark_return": 4.64885728670966,
+          "excess": 1.3036131087428862,
+          "max_drawdown": -0.4707724429221658,
+          "maximum_intrabar_leverage": 2.9959174072981005,
+          "liquidated": false
+        },
+        "oos": {
+          "strategy_return": 0.29246958309837034,
+          "benchmark_return": -0.17416227948882296,
+          "excess": 0.4666318625871933,
+          "max_drawdown": -0.3433020226176587,
+          "maximum_intrabar_leverage": 2.300911932854474,
+          "liquidated": false
+        },
+        "full": {
+          "strategy_return": 52.136446338992656,
+          "benchmark_return": 9.745793164208568,
+          "excess": 42.39065317478409,
+          "max_drawdown": -0.7363136095251345,
+          "maximum_intrabar_leverage": 2.9959174072981005,
+          "liquidated": false
+        }
+      }
+    },
+    {
+      "fee_bps": "10",
+      "slippage_bps": "5",
+      "open_cap": "2",
+      "metrics": {
+        "research": {
+          "strategy_return": 3.772792214203278,
+          "benchmark_return": 1.2933701850633499,
+          "excess": 2.4794220291399283,
+          "max_drawdown": -0.7292511086424475,
+          "maximum_intrabar_leverage": 2.258050475146207,
+          "liquidated": false
+        },
+        "validation": {
+          "strategy_return": 5.325184062073619,
+          "benchmark_return": 4.639816404234316,
+          "excess": 0.6853676578393033,
+          "max_drawdown": -0.4656884310115174,
+          "maximum_intrabar_leverage": 2.1623128663035236,
+          "liquidated": false
+        },
+        "oos": {
+          "strategy_return": 0.23528698246321691,
+          "benchmark_return": -0.1754840161509287,
+          "excess": 0.4107709986141456,
+          "max_drawdown": -0.35256991200251286,
+          "maximum_intrabar_leverage": 2.2063016104176376,
+          "liquidated": false
+        },
+        "full": {
+          "strategy_return": 36.30972963729707,
+          "benchmark_return": 9.72859473837286,
+          "excess": 26.581134898924205,
+          "max_drawdown": -0.7292511086424475,
+          "maximum_intrabar_leverage": 2.258050475146207,
+          "liquidated": false
+        }
+      }
+    },
+    {
+      "fee_bps": "10",
+      "slippage_bps": "5",
+      "open_cap": "2.5",
+      "metrics": {
+        "research": {
+          "strategy_return": 4.069050068147948,
+          "benchmark_return": 1.2933701850633499,
+          "excess": 2.7756798830845977,
+          "max_drawdown": -0.7440676902344722,
+          "maximum_intrabar_leverage": 2.5986651369421034,
+          "liquidated": false
+        },
+        "validation": {
+          "strategy_return": 5.451629763240151,
+          "benchmark_return": 4.639816404234316,
+          "excess": 0.8118133590058347,
+          "max_drawdown": -0.4800955188782317,
+          "maximum_intrabar_leverage": 2.693926372476331,
+          "liquidated": false
+        },
+        "oos": {
+          "strategy_return": 0.24060022170831447,
+          "benchmark_return": -0.1754840161509287,
+          "excess": 0.4160842378592432,
+          "max_drawdown": -0.3558789010701855,
+          "maximum_intrabar_leverage": 2.300911932854474,
+          "liquidated": false
+        },
+        "full": {
+          "strategy_return": 39.59091405410495,
+          "benchmark_return": 9.72859473837286,
+          "excess": 29.862319315732087,
+          "max_drawdown": -0.7440676902344722,
+          "maximum_intrabar_leverage": 2.693926372476331,
+          "liquidated": false
+        }
+      }
+    },
+    {
+      "fee_bps": "10",
+      "slippage_bps": "5",
+      "open_cap": "3",
+      "metrics": {
+        "research": {
+          "strategy_return": 4.11677196714422,
+          "benchmark_return": 1.2933701850633499,
+          "excess": 2.82340178208087,
+          "max_drawdown": -0.7454130221124478,
+          "maximum_intrabar_leverage": 2.861801614385107,
+          "liquidated": false
+        },
+        "validation": {
+          "strategy_return": 5.489382958742835,
+          "benchmark_return": 4.639816404234316,
+          "excess": 0.8495665545085194,
+          "max_drawdown": -0.477053178223418,
+          "maximum_intrabar_leverage": 2.9959174072981005,
+          "liquidated": false
+        },
+        "oos": {
+          "strategy_return": 0.24060022170831447,
+          "benchmark_return": -0.1754840161509287,
+          "excess": 0.4160842378592432,
+          "max_drawdown": -0.3558789010701855,
+          "maximum_intrabar_leverage": 2.300911932854474,
+          "liquidated": false
+        },
+        "full": {
+          "strategy_return": 40.21281506338998,
+          "benchmark_return": 9.72859473837286,
+          "excess": 30.48422032501712,
+          "max_drawdown": -0.7454130221124478,
+          "maximum_intrabar_leverage": 2.9959174072981005,
+          "liquidated": false
+        }
+      }
+    },
+    {
+      "fee_bps": "20",
+      "slippage_bps": "10",
+      "open_cap": "2",
+      "metrics": {
+        "research": {
+          "strategy_return": 2.643639393406162,
+          "benchmark_return": 1.2864849144368886,
+          "excess": 1.3571544789692735,
+          "max_drawdown": -0.7469009050683727,
+          "maximum_intrabar_leverage": 2.2585924577502894,
+          "liquidated": false
+        },
+        "validation": {
+          "strategy_return": 4.558269515213474,
+          "benchmark_return": 4.622884265463341,
+          "excess": -0.06461475024986729,
+          "max_drawdown": -0.48064822681457936,
+          "maximum_intrabar_leverage": 2.1625301358230535,
+          "liquidated": false
+        },
+        "oos": {
+          "strategy_return": 0.14388761274053896,
+          "benchmark_return": -0.17795941925925293,
+          "excess": 0.3218470319997919,
+          "max_drawdown": -0.3756224924831769,
+          "maximum_intrabar_leverage": 2.2063972925908906,
+          "liquidated": false
+        },
+        "full": {
+          "strategy_return": 22.186367391867012,
+          "benchmark_return": 9.696384814874058,
+          "excess": 12.489982576992954,
+          "max_drawdown": -0.7469009050683727,
+          "maximum_intrabar_leverage": 2.2585924577502894,
+          "liquidated": false
+        }
+      }
+    },
+    {
+      "fee_bps": "20",
+      "slippage_bps": "10",
+      "open_cap": "2.5",
+      "metrics": {
+        "research": {
+          "strategy_return": 2.866008946394497,
+          "benchmark_return": 1.2864849144368886,
+          "excess": 1.5795240319576083,
+          "max_drawdown": -0.7607244267334382,
+          "maximum_intrabar_leverage": 2.598881722657412,
+          "liquidated": false
+        },
+        "validation": {
+          "strategy_return": 4.669117391950929,
+          "benchmark_return": 4.622884265463341,
+          "excess": 0.046233126487587484,
+          "max_drawdown": -0.49473165782838424,
+          "maximum_intrabar_leverage": 2.6943735636945076,
+          "liquidated": false
+        },
+        "oos": {
+          "strategy_return": 0.14888646561272778,
+          "benchmark_return": -0.17795941925925293,
+          "excess": 0.32684588487198074,
+          "max_drawdown": -0.37881569408262833,
+          "maximum_intrabar_leverage": 2.300911932854474,
+          "liquidated": false
+        },
+        "full": {
+          "strategy_return": 24.201717677570258,
+          "benchmark_return": 9.696384814874058,
+          "excess": 14.5053328626962,
+          "max_drawdown": -0.7607244267334382,
+          "maximum_intrabar_leverage": 2.6943735636945076,
+          "liquidated": false
+        }
+      }
+    },
+    {
+      "fee_bps": "20",
+      "slippage_bps": "10",
+      "open_cap": "3",
+      "metrics": {
+        "research": {
+          "strategy_return": 2.9025697896384264,
+          "benchmark_return": 1.2864849144368886,
+          "excess": 1.6160848752015378,
+          "max_drawdown": -0.761939831826656,
+          "maximum_intrabar_leverage": 2.861801614385107,
+          "liquidated": false
+        },
+        "validation": {
+          "strategy_return": 4.702413328100812,
+          "benchmark_return": 4.622884265463341,
+          "excess": 0.07952906263747117,
+          "max_drawdown": -0.4917641090379165,
+          "maximum_intrabar_leverage": 2.9959174072981005,
+          "liquidated": false
+        },
+        "oos": {
+          "strategy_return": 0.14888646561272778,
+          "benchmark_return": -0.17795941925925293,
+          "excess": 0.32684588487198074,
+          "max_drawdown": -0.37881569408262833,
+          "maximum_intrabar_leverage": 2.300911932854474,
+          "liquidated": false
+        },
+        "full": {
+          "strategy_return": 24.589465143675998,
+          "benchmark_return": 9.696384814874058,
+          "excess": 14.89308032880194,
+          "max_drawdown": -0.761939831826656,
+          "maximum_intrabar_leverage": 2.9959174072981005,
+          "liquidated": false
+        }
+      }
+    }
+  ]
+}

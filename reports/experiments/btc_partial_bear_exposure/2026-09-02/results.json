@@ -1,0 +1,1137 @@
+{
+  "generated_at": "2026-09-02T11:33:32.694324+00:00",
+  "protocol": {
+    "bear": "0x, 0.25x, or 0.5x",
+    "neutral": "1x",
+    "bull": "1.25x, 1.5x, or 1.75x",
+    "funding": "last known rate <=0.01%; charged only above 1x",
+    "ranking": "research and validation stress excess only; OOS excluded"
+  },
+  "benchmark": {
+    "research": {
+      "net_return": 1.3002658068859423,
+      "max_drawdown": -0.7755528264455603
+    },
+    "validation": {
+      "net_return": 4.656773998488284,
+      "max_drawdown": -0.3365730267702175
+    },
+    "oos": {
+      "net_return": -0.17214437812136554,
+      "max_drawdown": -0.5415474735288048
+    },
+    "full": {
+      "net_return": 9.772050079074418,
+      "max_drawdown": -0.7755528264455603
+    }
+  },
+  "results": [
+    {
+      "id": "4h-25-50-100-200-bear0.5x-bull1.75x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exposure": "0.5",
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 3.4956249794477627,
+          "stress_return": 2.866053852303416,
+          "max_drawdown": -0.7348380985499949,
+          "excess_return": 2.1953591725618207,
+          "stress_excess": 1.5657880454174735
+        },
+        "validation": {
+          "base_return": 5.454019225304121,
+          "stress_return": 4.877515069031706,
+          "max_drawdown": -0.30704874191023057,
+          "excess_return": 0.7972452268158365,
+          "stress_excess": 0.22074107054342207
+        },
+        "oos": {
+          "base_return": 0.0035788006483689857,
+          "stress_return": -0.04797224033193891,
+          "max_drawdown": -0.45797151455130625,
+          "excess_return": 0.17572317876973453,
+          "stress_excess": 0.12417213778942662
+        },
+        "full": {
+          "base_return": 28.13898830129411,
+          "stress_return": 20.68192657515497,
+          "max_drawdown": -0.7348380985499949,
+          "excess_return": 18.36693822221969,
+          "stress_excess": 10.909876496080553
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear0.5x-bull1.75x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exposure": "0.5",
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 3.821599513834127,
+          "stress_return": 3.1615222735515567,
+          "max_drawdown": -0.7418668222484189,
+          "excess_return": 2.5213337069481847,
+          "stress_excess": 1.8612564666656144
+        },
+        "validation": {
+          "base_return": 5.085896810076093,
+          "stress_return": 4.55964078667997,
+          "max_drawdown": -0.3242192236186664,
+          "excess_return": 0.42912281158780896,
+          "stress_excess": -0.09713321180831436
+        },
+        "oos": {
+          "base_return": -0.026297062062155478,
+          "stress_return": -0.07452706353046164,
+          "max_drawdown": -0.47627653371753714,
+          "excess_return": 0.14584731605921006,
+          "stress_excess": 0.0976173145909039
+        },
+        "full": {
+          "base_return": 27.592021340566646,
+          "stress_return": 20.460966959613028,
+          "max_drawdown": -0.7418668222484189,
+          "excess_return": 17.819971261492228,
+          "stress_excess": 10.68891688053861
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear0.25x-bull1.75x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exposure": "0.25",
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 4.001448272432124,
+          "stress_return": 3.2010284255636243,
+          "max_drawdown": -0.7078198431136105,
+          "excess_return": 2.7011824655461814,
+          "stress_excess": 1.900762618677682
+        },
+        "validation": {
+          "base_return": 4.651319921834126,
+          "stress_return": 4.103022030299922,
+          "max_drawdown": -0.3334080265467452,
+          "excess_return": -0.00545407665415798,
+          "stress_excess": -0.5537519681883625
+        },
+        "oos": {
+          "base_return": 0.03722586668066063,
+          "stress_return": -0.026279042306728007,
+          "max_drawdown": -0.4216801614588645,
+          "excess_return": 0.20937024480202618,
+          "stress_excess": 0.14586533581463754
+        },
+        "full": {
+          "base_return": 28.322022281499464,
+          "stress_return": 19.894487008900718,
+          "max_drawdown": -0.7078198431136105,
+          "excess_return": 18.549972202425046,
+          "stress_excess": 10.1224369298263
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear0.5x-bull1.75x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exposure": "0.5",
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 2.9123535922488815,
+          "stress_return": 2.3853652944242176,
+          "max_drawdown": -0.7415411424819578,
+          "excess_return": 1.6120877853629392,
+          "stress_excess": 1.0850994875382753
+        },
+        "validation": {
+          "base_return": 5.498328671340098,
+          "stress_return": 4.906438652398336,
+          "max_drawdown": -0.2926550045335141,
+          "excess_return": 0.8415546728518137,
+          "stress_excess": 0.24966465391005155
+        },
+        "oos": {
+          "base_return": -0.027384605531525143,
+          "stress_return": -0.08068973467093032,
+          "max_drawdown": -0.47703026941719395,
+          "excess_return": 0.1447597725898404,
+          "stress_excess": 0.09145464345043522
+        },
+        "full": {
+          "base_return": 23.745220332361118,
+          "stress_return": 17.424181436103467,
+          "max_drawdown": -0.7415411424819578,
+          "excess_return": 13.9731702532867,
+          "stress_excess": 7.652131357029049
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear0.25x-bull1.75x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exposure": "0.25",
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 3.614117008516915,
+          "stress_return": 2.8569498725347753,
+          "max_drawdown": -0.697488382711318,
+          "excess_return": 2.313851201630973,
+          "stress_excess": 1.556684065648833
+        },
+        "validation": {
+          "base_return": 4.944942089712405,
+          "stress_return": 4.349240500331125,
+          "max_drawdown": -0.3057349441262183,
+          "excess_return": 0.28816809122412046,
+          "stress_excess": -0.30753349815715936
+        },
+        "oos": {
+          "base_return": 0.0610587907908993,
+          "stress_return": -0.007418325994742006,
+          "max_drawdown": -0.41373668459259055,
+          "excess_return": 0.23320316891226484,
+          "stress_excess": 0.16472605212662353
+        },
+        "full": {
+          "base_return": 28.110561705924226,
+          "stress_return": 19.498236677672907,
+          "max_drawdown": -0.697488382711318,
+          "excess_return": 18.338511626849808,
+          "stress_excess": 9.726186598598488
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear0.5x-bull1.5x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exposure": "0.5",
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 3.0126571287815276,
+          "stress_return": 2.5699227910594633,
+          "max_drawdown": -0.7218489962874921,
+          "excess_return": 1.7123913218955853,
+          "stress_excess": 1.269656984173521
+        },
+        "validation": {
+          "base_return": 4.703850931692803,
+          "stress_return": 4.325850675069336,
+          "max_drawdown": -0.3058734605579581,
+          "excess_return": 0.04707693320451867,
+          "stress_excess": -0.3309233234189479
+        },
+        "oos": {
+          "base_return": -0.027205025873283443,
+          "stress_return": -0.06785972640303135,
+          "max_drawdown": -0.44327774664377495,
+          "excess_return": 0.1449393522480821,
+          "stress_excess": 0.10428465171833419
+        },
+        "full": {
+          "base_return": 21.28046225152663,
+          "stress_return": 16.76297433497419,
+          "max_drawdown": -0.7218489962874921,
+          "excess_return": 11.50841217245221,
+          "stress_excess": 6.99092425589977
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear0.5x-bull1.5x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exposure": "0.5",
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 2.811770960745724,
+          "stress_return": 2.3802922007576948,
+          "max_drawdown": -0.7150894058432407,
+          "excess_return": 1.5115051538597817,
+          "stress_excess": 1.0800263938717525
+        },
+        "validation": {
+          "base_return": 4.898148074771858,
+          "stress_return": 4.494277916587661,
+          "max_drawdown": -0.2946109035229927,
+          "excess_return": 0.24137407628357366,
+          "stress_excess": -0.16249608190062315
+        },
+        "oos": {
+          "base_return": -0.01211808004692942,
+          "stress_return": -0.05563442501886334,
+          "max_drawdown": -0.4320310847198124,
+          "excess_return": 0.16002629807443614,
+          "stress_excess": 0.1165099531025022
+        },
+        "full": {
+          "base_return": 21.22542966600211,
+          "stress_return": 16.57889698677372,
+          "max_drawdown": -0.7150894058432407,
+          "excess_return": 11.453379586927692,
+          "stress_excess": 6.806846907699303
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear0x-bull1.75x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exposure": "0",
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 4.071906411434852,
+          "stress_return": 3.1459913849424557,
+          "max_drawdown": -0.6744781502418066,
+          "excess_return": 2.7716406045489093,
+          "stress_excess": 1.8457255780565134
+        },
+        "validation": {
+          "base_return": 4.2357683185675645,
+          "stress_return": 3.673020189350757,
+          "max_drawdown": -0.3479971680000892,
+          "excess_return": -0.4210056799207198,
+          "stress_excess": -0.9837538091375273
+        },
+        "oos": {
+          "base_return": 0.09527581292587603,
+          "stress_return": 0.015587938597305348,
+          "max_drawdown": -0.38810441374570803,
+          "excess_return": 0.2674201910472416,
+          "stress_excess": 0.18773231671867088
+        },
+        "full": {
+          "base_return": 28.085407261995595,
+          "stress_return": 18.676306868027005,
+          "max_drawdown": -0.6751924323449531,
+          "excess_return": 18.313357182921177,
+          "stress_excess": 8.904256788952587
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear0.25x-bull1.75x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exposure": "0.25",
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 3.0486761601884447,
+          "stress_return": 2.420345876375395,
+          "max_drawdown": -0.7056519321059621,
+          "excess_return": 1.7484103533025024,
+          "stress_excess": 1.1200800694894528
+        },
+        "validation": {
+          "base_return": 4.931791940382893,
+          "stress_return": 4.324961609049039,
+          "max_drawdown": -0.2919723363084078,
+          "excess_return": 0.2750179418946086,
+          "stress_excess": -0.3318123894392455
+        },
+        "oos": {
+          "base_return": 0.021970242922261397,
+          "stress_return": -0.04859263877220588,
+          "max_drawdown": -0.43819982025736853,
+          "excess_return": 0.19411462104362695,
+          "stress_excess": 0.12355173934915967
+        },
+        "full": {
+          "base_return": 23.548101073467166,
+          "stress_return": 16.344960429221352,
+          "max_drawdown": -0.7056519321059621,
+          "excess_return": 13.776050994392747,
+          "stress_excess": 6.572910350146934
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear0x-bull1.75x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exposure": "0",
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 3.618550129803719,
+          "stress_return": 2.7526184129061204,
+          "max_drawdown": -0.6607410593171943,
+          "excess_return": 2.3182843229177763,
+          "stress_excess": 1.4523526060201781
+        },
+        "validation": {
+          "base_return": 4.4637268983227125,
+          "stress_return": 3.8573281235463726,
+          "max_drawdown": -0.321503453282527,
+          "excess_return": -0.1930471001655718,
+          "stress_excess": -0.7994458749419118
+        },
+        "oos": {
+          "base_return": 0.11159538455894932,
+          "stress_return": 0.02543911781819998,
+          "max_drawdown": -0.3833172292607283,
+          "excess_return": 0.28373976268031487,
+          "stress_excess": 0.19758349593956553
+        },
+        "full": {
+          "base_return": 27.05054992495043,
+          "stress_return": 17.691395535190537,
+          "max_drawdown": -0.6614854842762015,
+          "excess_return": 17.278499845876013,
+          "stress_excess": 7.919345456116119
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear0.5x-bull1.5x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exposure": "0.5",
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 2.505003159874504,
+          "stress_return": 2.1303471162092893,
+          "max_drawdown": -0.721716096774921,
+          "excess_return": 1.2047373529885619,
+          "stress_excess": 0.830081309323347
+        },
+        "validation": {
+          "base_return": 4.887026775874661,
+          "stress_return": 4.475383431881652,
+          "max_drawdown": -0.285439882894454,
+          "excess_return": 0.23025277738637673,
+          "stress_excess": -0.18139056660663222
+        },
+        "oos": {
+          "base_return": -0.03578964964054327,
+          "stress_return": -0.08122378033633956,
+          "max_drawdown": -0.4492921288311885,
+          "excess_return": 0.13635472848082228,
+          "stress_excess": 0.09092059778502598
+        },
+        "full": {
+          "base_return": 18.909787647601423,
+          "stress_return": 14.78380251766257,
+          "max_drawdown": -0.721716096774921,
+          "excess_return": 9.137737568527005,
+          "stress_excess": 5.011752438588152
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear0.25x-bull1.5x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exposure": "0.25",
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 3.1623318168637966,
+          "stress_return": 2.603812772461533,
+          "max_drawdown": -0.6851617269398861,
+          "excess_return": 1.8620660099778543,
+          "stress_excess": 1.3035469655755907
+        },
+        "validation": {
+          "base_return": 4.29655487225467,
+          "stress_return": 3.8884333300958254,
+          "max_drawdown": -0.30568446153674866,
+          "excess_return": -0.3602191262336145,
+          "stress_excess": -0.768340668392459
+        },
+        "oos": {
+          "base_return": 0.03625866866346317,
+          "stress_return": -0.019264114438873475,
+          "max_drawdown": -0.38424438319225057,
+          "excess_return": 0.2084030467848287,
+          "stress_excess": 0.15288026368249208
+        },
+        "full": {
+          "base_return": 21.849318794206763,
+          "stress_return": 16.29410595431287,
+          "max_drawdown": -0.6851617269398861,
+          "excess_return": 12.077268715132345,
+          "stress_excess": 6.5220558752384505
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear0.25x-bull1.5x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exposure": "0.25",
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 2.912238521440945,
+          "stress_return": 2.372332117172867,
+          "max_drawdown": -0.6749579628531551,
+          "excess_return": 1.6119727145550027,
+          "stress_excess": 1.0720663102869248
+        },
+        "validation": {
+          "base_return": 4.432916686022909,
+          "stress_return": 4.000448932294735,
+          "max_drawdown": -0.2932735242758973,
+          "excess_return": -0.2238573124653751,
+          "stress_excess": -0.6563250661935491
+        },
+        "oos": {
+          "base_return": 0.04446287102955643,
+          "stress_return": -0.01540689988436958,
+          "max_drawdown": -0.3818043133914739,
+          "excess_return": 0.21660724915092197,
+          "stress_excess": 0.15673747823699596
+        },
+        "full": {
+          "base_return": 21.203747605887152,
+          "stress_return": 15.619205388335898,
+          "max_drawdown": -0.6749579628531551,
+          "excess_return": 11.431697526812734,
+          "stress_excess": 5.847155309261479
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear0x-bull1.75x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exposure": "0",
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 3.0789458104201284,
+          "stress_return": 2.3642668838484338,
+          "max_drawdown": -0.6793731188097223,
+          "excess_return": 1.778680003534186,
+          "stress_excess": 1.0640010769624915
+        },
+        "validation": {
+          "base_return": 4.402097772362456,
+          "stress_return": 3.789398581504814,
+          "max_drawdown": -0.30866888501009426,
+          "excess_return": -0.2546762261258282,
+          "stress_excess": -0.8673754169834704
+        },
+        "oos": {
+          "base_return": 0.0633454591564314,
+          "stress_return": -0.024973551111652923,
+          "max_drawdown": -0.41651142939106395,
+          "excess_return": 0.23548983727779693,
+          "stress_excess": 0.14717082700971262
+        },
+        "full": {
+          "base_return": 22.430672658405182,
+          "stress_return": 14.710420831320176,
+          "max_drawdown": -0.6800002231220368,
+          "excess_return": 12.658622579330764,
+          "stress_excess": 4.938370752245758
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear0.25x-bull1.5x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exposure": "0.25",
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 2.627131955271995,
+          "stress_return": 2.1626926252787437,
+          "max_drawdown": -0.6812187763949761,
+          "excess_return": 1.3268661483860529,
+          "stress_excess": 0.8624268183928014
+        },
+        "validation": {
+          "base_return": 4.373784514157268,
+          "stress_return": 3.936342910757913,
+          "max_drawdown": -0.28475025125783726,
+          "excess_return": -0.2829894843310159,
+          "stress_excess": -0.7204310877303715
+        },
+        "oos": {
+          "base_return": 0.013138689341340508,
+          "stress_return": -0.049145330280681826,
+          "max_drawdown": -0.4053028631068083,
+          "excess_return": 0.18528306746270606,
+          "stress_excess": 0.12299904784068372
+        },
+        "full": {
+          "base_return": 18.75118721757422,
+          "stress_return": 13.859245228394874,
+          "max_drawdown": -0.6812187763949761,
+          "excess_return": 8.979137138499802,
+          "stress_excess": 4.087195149320456
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear0.5x-bull1.25x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exposure": "0.5",
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 2.2954136819623683,
+          "stress_return": 2.022268138729353,
+          "max_drawdown": -0.702192042194968,
+          "excess_return": 0.995147875076426,
+          "stress_excess": 0.7220023318434106
+        },
+        "validation": {
+          "base_return": 4.308500930097417,
+          "stress_return": 4.066448313000667,
+          "max_drawdown": -0.2878914906613588,
+          "excess_return": -0.348273068390867,
+          "stress_excess": -0.5903256854876178
+        },
+        "oos": {
+          "base_return": -0.02976489229958377,
+          "stress_return": -0.06274022838758102,
+          "max_drawdown": -0.40846513774654336,
+          "excess_return": 0.14237948582178178,
+          "stress_excess": 0.10940414973378453
+        },
+        "full": {
+          "base_return": 15.98484091706815,
+          "stress_return": 13.384116540140607,
+          "max_drawdown": -0.702192042194968,
+          "excess_return": 6.212790837993731,
+          "stress_excess": 3.6120664610661883
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear0x-bull1.5x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exposure": "0",
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 3.2209688631259104,
+          "stress_return": 2.556599764155752,
+          "max_drawdown": -0.649234437706683,
+          "excess_return": 1.920703056239968,
+          "stress_excess": 1.2563339572698096
+        },
+        "validation": {
+          "base_return": 3.9070897739417756,
+          "stress_return": 3.476513624710012,
+          "max_drawdown": -0.3208803654889366,
+          "excess_return": -0.7496842245465087,
+          "stress_excess": -1.1802603737782724
+        },
+        "oos": {
+          "base_return": 0.0942544841790946,
+          "stress_return": 0.022904486604652816,
+          "max_drawdown": -0.34815682004032766,
+          "excess_return": 0.26639886230046017,
+          "stress_excess": 0.19504886472601835
+        },
+        "full": {
+          "base_return": 21.664935467564618,
+          "stress_return": 15.285833465080087,
+          "max_drawdown": -0.6500041112746243,
+          "excess_return": 11.8928853884902,
+          "stress_excess": 5.513783386005668
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear0.5x-bull1.25x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exposure": "0.5",
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 2.1915432594882414,
+          "stress_return": 1.9188105847642614,
+          "max_drawdown": -0.6947597938694198,
+          "excess_return": 0.8912774526022991,
+          "stress_excess": 0.6185447778783191
+        },
+        "validation": {
+          "base_return": 4.353777093104864,
+          "stress_return": 4.101573612186358,
+          "max_drawdown": -0.2824707643041271,
+          "excess_return": -0.30299690538342006,
+          "stress_excess": -0.5552003863019266
+        },
+        "oos": {
+          "base_return": -0.02897046546065964,
+          "stress_return": -0.06457757965401623,
+          "max_drawdown": -0.4059021306614537,
+          "excess_return": 0.1431739126607059,
+          "stress_excess": 0.10756679846734932
+        },
+        "full": {
+          "base_return": 15.60336517694857,
+          "stress_return": 12.960611833790038,
+          "max_drawdown": -0.6947597938694198,
+          "excess_return": 5.8313150978741515,
+          "stress_excess": 3.1885617547156198
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear0.5x-bull1.25x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exposure": "0.5",
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 2.097517563140628,
+          "stress_return": 1.855433134265176,
+          "max_drawdown": -0.7019609287919586,
+          "excess_return": 0.7972517562546859,
+          "stress_excess": 0.5551673273792337
+        },
+        "validation": {
+          "base_return": 4.299761096124501,
+          "stress_return": 4.0441599371402805,
+          "max_drawdown": -0.27848012895957946,
+          "excess_return": -0.3570129023637829,
+          "stress_excess": -0.6126140613480038
+        },
+        "oos": {
+          "base_return": -0.04544804992770025,
+          "stress_return": -0.08302689149086491,
+          "max_drawdown": -0.42012803525832976,
+          "excess_return": 0.1266963281936653,
+          "stress_excess": 0.08911748663050063
+        },
+        "full": {
+          "base_return": 14.681227425983353,
+          "stress_return": 12.237692841353207,
+          "max_drawdown": -0.7019609287919586,
+          "excess_return": 4.909177346908935,
+          "stress_excess": 2.4656427622787884
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear0x-bull1.5x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exposure": "0",
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 2.9159972964864065,
+          "stress_return": 2.2811096891494707,
+          "max_drawdown": -0.6354737772117107,
+          "excess_return": 1.6157314896004642,
+          "stress_excess": 0.9808438822635284
+        },
+        "validation": {
+          "base_return": 3.993147550610651,
+          "stress_return": 3.540611181660127,
+          "max_drawdown": -0.3093250636831857,
+          "excess_return": -0.6636264478776335,
+          "stress_excess": -1.1161628168281572
+        },
+        "oos": {
+          "base_return": 0.09420902673473439,
+          "stress_return": 0.01718609806522617,
+          "max_drawdown": -0.3497279825330954,
+          "excess_return": 0.26635340485609993,
+          "stress_excess": 0.1893304761865917
+        },
+        "full": {
+          "base_return": 20.39523575778979,
+          "stress_return": 14.154286013894547,
+          "max_drawdown": -0.6362736453534613,
+          "excess_return": 10.623185678715373,
+          "stress_excess": 4.3822359348201285
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear0.25x-bull1.25x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exposure": "0.25",
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 2.418334728819837,
+          "stress_return": 2.050959126464478,
+          "max_drawdown": -0.6620155801355962,
+          "excess_return": 1.1180689219338948,
+          "stress_excess": 0.7506933195785359
+        },
+        "validation": {
+          "base_return": 3.929435709732214,
+          "stress_return": 3.650335938710446,
+          "max_drawdown": -0.28600189016966626,
+          "excess_return": -0.7273382887560702,
+          "stress_excess": -1.0064380597778384
+        },
+        "oos": {
+          "base_return": 0.033531800366004436,
+          "stress_return": -0.013877719749116734,
+          "max_drawdown": -0.34574033681189925,
+          "excess_return": 0.20567617848736996,
+          "stress_excess": 0.15826665837224882
+        },
+        "full": {
+          "base_return": 16.41849160945439,
+          "stress_return": 13.004435902076526,
+          "max_drawdown": -0.6620155801355962,
+          "excess_return": 6.64644153037997,
+          "stress_excess": 3.232385823002108
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear0.25x-bull1.25x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exposure": "0.25",
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 2.2756633625679403,
+          "stress_return": 1.9119372215036006,
+          "max_drawdown": -0.6517647976079904,
+          "excess_return": 0.975397555681998,
+          "stress_excess": 0.6116714146176583
+        },
+        "validation": {
+          "base_return": 3.9314843462117905,
+          "stress_return": 3.643041125579592,
+          "max_drawdown": -0.28111036801533457,
+          "excess_return": -0.7252896522764938,
+          "stress_excess": -1.0137328729086925
+        },
+        "oos": {
+          "base_return": 0.026645265000533408,
+          "stress_return": -0.024731009720980815,
+          "max_drawdown": -0.3481787501135874,
+          "excess_return": 0.19878964312189895,
+          "stress_excess": 0.14741336840038471
+        },
+        "full": {
+          "base_return": 15.587167732521854,
+          "stress_return": 12.198454691847628,
+          "max_drawdown": -0.6517647976079904,
+          "excess_return": 5.815117653447436,
+          "stress_excess": 2.4264046127732097
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear0x-bull1.5x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exposure": "0",
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 2.6542499591049102,
+          "stress_return": 2.1108380402430402,
+          "max_drawdown": -0.6534293188002663,
+          "excess_return": 1.353984152218968,
+          "stress_excess": 0.8105722333570979
+        },
+        "validation": {
+          "base_return": 3.8939190121376708,
+          "stress_return": 3.439865574698005,
+          "max_drawdown": -0.30161710954057297,
+          "excess_return": -0.7628549863506136,
+          "stress_excess": -1.2169084237902794
+        },
+        "oos": {
+          "base_return": 0.05415635363931187,
+          "stress_return": -0.025539963419147164,
+          "max_drawdown": -0.3823444796511096,
+          "excess_return": 0.22630073176067741,
+          "stress_excess": 0.14660441470221838
+        },
+        "full": {
+          "base_return": 17.852114097332667,
+          "stress_return": 12.458952341025947,
+          "max_drawdown": -0.6541071657976713,
+          "excess_return": 8.080064018258248,
+          "stress_excess": 2.686902261951529
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear0.25x-bull1.25x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exposure": "0.25",
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 2.2054478763111467,
+          "stress_return": 1.8849379894498763,
+          "max_drawdown": -0.6560690239558623,
+          "excess_return": 0.9051820694252044,
+          "stress_excess": 0.584672182563934
+        },
+        "validation": {
+          "base_return": 3.837717780357068,
+          "stress_return": 3.547572504502129,
+          "max_drawdown": -0.2777837803702806,
+          "excess_return": -0.8190562181312164,
+          "stress_excess": -1.1092014939861552
+        },
+        "oos": {
+          "base_return": 0.002990178692802831,
+          "stress_return": -0.05101139584116298,
+          "max_drawdown": -0.37045367693055914,
+          "excess_return": 0.17513455681416837,
+          "stress_excess": 0.12113298228020256
+        },
+        "full": {
+          "base_return": 14.556311507384109,
+          "stress_return": 11.462277323079713,
+          "max_drawdown": -0.6560690239558623,
+          "excess_return": 4.784261428309691,
+          "stress_excess": 1.6902272440052943
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear0x-bull1.25x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exposure": "0",
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 2.4664906809284624,
+          "stress_return": 2.0109889705010198,
+          "max_drawdown": -0.6234470036700988,
+          "excess_return": 1.16622487404252,
+          "stress_excess": 0.7107231636150775
+        },
+        "validation": {
+          "base_return": 3.566965536266321,
+          "stress_return": 3.258479308892991,
+          "max_drawdown": -0.3016285701126786,
+          "excess_return": -1.0898084622219635,
+          "stress_excess": -1.3982946895952932
+        },
+        "oos": {
+          "base_return": 0.09137500248934567,
+          "stress_return": 0.028522479558610283,
+          "max_drawdown": -0.30585177598837554,
+          "excess_return": 0.26351938061071123,
+          "stress_excess": 0.20066685767997583
+        },
+        "full": {
+          "base_return": 16.277932520714447,
+          "stress_return": 12.187956143909716,
+          "max_drawdown": -0.624273261773401,
+          "excess_return": 6.505882441640029,
+          "stress_excess": 2.4159060648352977
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear0x-bull1.25x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exposure": "0",
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 2.2788105330783974,
+          "stress_return": 1.8331685906666215,
+          "max_drawdown": -0.61353211645261,
+          "excess_return": 0.9785447261924551,
+          "stress_excess": 0.5329027837806792
+        },
+        "validation": {
+          "base_return": 3.5323038079178817,
+          "stress_return": 3.216070344316015,
+          "max_drawdown": -0.2974381633557736,
+          "excess_return": -1.1244701905704027,
+          "stress_excess": -1.4407036541722693
+        },
+        "oos": {
+          "base_return": 0.07554279561007768,
+          "stress_return": 0.0075533321017836694,
+          "max_drawdown": -0.31435768904054445,
+          "excess_return": 0.24768717373144322,
+          "stress_excess": 0.1796977102231492
+        },
+        "full": {
+          "base_return": 14.983174124048013,
+          "stress_return": 11.035061404443857,
+          "max_drawdown": -0.6143801304733705,
+          "excess_return": 5.2111240449735945,
+          "stress_excess": 1.2630113253694386
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear0x-bull1.25x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exposure": "0",
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 2.229413187986569,
+          "stress_return": 1.8376373883415154,
+          "max_drawdown": -0.6273479905448791,
+          "excess_return": 0.9291473811006268,
+          "stress_excess": 0.5373715814555731
+        },
+        "validation": {
+          "base_return": 3.405721695440731,
+          "stress_return": 3.090196118097918,
+          "max_drawdown": -0.29481492039851553,
+          "excess_return": -1.2510523030475533,
+          "stress_excess": -1.5665778803903665
+        },
+        "oos": {
+          "base_return": 0.04359697307998564,
+          "stress_return": -0.027452354841556136,
+          "max_drawdown": -0.346149934754062,
+          "excess_return": 0.21574135120135118,
+          "stress_excess": 0.1446920232798094
+        },
+        "full": {
+          "base_return": 13.848188933671189,
+          "stress_return": 10.287867854247438,
+          "max_drawdown": -0.6280768492146651,
+          "excess_return": 4.0761388545967705,
+          "stress_excess": 0.5158177751730193
+        }
+      }
+    }
+  ]
+}

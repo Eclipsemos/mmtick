@@ -1,0 +1,348 @@
+{
+  "generated_at": "2026-09-03T03:12:17.656701+00:00",
+  "status": "RESEARCH_ONLY",
+  "protocol": {
+    "position": "100% spot when active; 0% cash when bearish",
+    "signal": "completed UTC daily SMA; next 15m open",
+    "costs": "10+5 bps default and 50+25 bps stress per side",
+    "purpose": "diagnostic separation of timing signal from leverage and funding",
+    "selection": "Research/Validation only; OOS reported, not selected"
+  },
+  "data": {
+    "bars": 244926,
+    "daily_bars": 2551,
+    "last": "2026-09-03T01:14:59.999000+00:00"
+  },
+  "benchmarks": {
+    "research": {
+      "net_return": 1.3002658068859423,
+      "max_drawdown": -0.7755528264455603
+    },
+    "validation": {
+      "net_return": 4.656773998488284,
+      "max_drawdown": -0.3365730267702175
+    },
+    "oos": {
+      "net_return": -0.17283813367996168,
+      "max_drawdown": -0.5415474735288048
+    },
+    "full": {
+      "net_return": 9.763022937840692,
+      "max_drawdown": -0.7755528264455603
+    }
+  },
+  "results": [
+    {
+      "id": "spot-sma10/40-enter3-exit1",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.186820666859707,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.8865548599737647,
+            "max_drawdown": -0.5974034408611163,
+            "trades": 16,
+            "fees": 15966.47273070928
+          },
+          "stress": {
+            "net_return": 2.4602125336700325,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.1599467267840902,
+            "max_drawdown": -0.6357704039550157,
+            "trades": 16,
+            "fees": 72050.87317959675
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 3.5322191306203097,
+            "benchmark_return": 4.656773998488284,
+            "excess": -1.1245548678679747,
+            "max_drawdown": -0.3778330131197712,
+            "trades": 10,
+            "fees": 4773.97249481905
+          },
+          "stress": {
+            "net_return": 3.03801397115865,
+            "benchmark_return": 4.656773998488284,
+            "excess": -1.6187600273296345,
+            "max_drawdown": -0.39375467156879185,
+            "trades": 10,
+            "fees": 22354.082495135
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.0975792907541745,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.2704174244341362,
+            "max_drawdown": -0.3512470420735252,
+            "trades": 13,
+            "fees": 2544.13495403255
+          },
+          "stress": {
+            "net_return": -0.0613769120151,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.11146122166486166,
+            "max_drawdown": -0.3841246642053917,
+            "trades": 13,
+            "fees": 11834.54520851
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 19.830037890644206,
+            "benchmark_return": 9.763022937840692,
+            "excess": 10.067014952803515,
+            "max_drawdown": -0.5974034408611163,
+            "trades": 39,
+            "fees": 84262.63008400923
+          },
+          "stress": {
+            "net_return": 12.112931817906045,
+            "benchmark_return": 9.763022937840692,
+            "excess": 2.349908880065353,
+            "max_drawdown": -0.6362987628668036,
+            "trades": 39,
+            "fees": 314809.0003912455
+          }
+        }
+      },
+      "development_worst_excess": -1.6187600273296345
+    },
+    {
+      "id": "spot-sma12/40-enter2-exit1",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.865100824275398,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.5648350173894556,
+            "max_drawdown": -0.6166002622323817,
+            "trades": 18,
+            "fees": 20106.335370025176
+          },
+          "stress": {
+            "net_return": 2.927610570858821,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.6273447639728789,
+            "max_drawdown": -0.6573580363807657,
+            "trades": 18,
+            "fees": 89293.20839134288
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 3.4892317005997877,
+            "benchmark_return": 4.656773998488284,
+            "excess": -1.1675422978884966,
+            "max_drawdown": -0.33349841079670595,
+            "trades": 12,
+            "fees": 5684.79871827125
+          },
+          "stress": {
+            "net_return": 2.9036435355018373,
+            "benchmark_return": 4.656773998488284,
+            "excess": -1.753130462986447,
+            "max_drawdown": -0.35044552072258417,
+            "trades": 12,
+            "fees": 26263.74675806625
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.168811674639582,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.34164980831954367,
+            "max_drawdown": -0.32352828904687064,
+            "trades": 13,
+            "fees": 2665.8291440418
+          },
+          "stress": {
+            "net_return": -0.0001664093592375,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.17267172432072417,
+            "max_drawdown": -0.35760715138756605,
+            "trades": 13,
+            "fees": 12392.50063967375
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 24.53168306788499,
+            "benchmark_return": 9.763022937840692,
+            "excess": 14.7686601300443,
+            "max_drawdown": -0.6166002622323817,
+            "trades": 43,
+            "fees": 106019.16567471583
+          },
+          "stress": {
+            "net_return": 14.329328105485983,
+            "benchmark_return": 9.763022937840692,
+            "excess": 4.566305167645291,
+            "max_drawdown": -0.659745739185409,
+            "trades": 43,
+            "fees": 382539.5607363766
+          }
+        }
+      },
+      "development_worst_excess": -1.753130462986447
+    },
+    {
+      "id": "spot-sma10/40-enter2-exit1",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 4.32198567417465,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 3.0217198672887076,
+            "max_drawdown": -0.5454676514616841,
+            "trades": 19,
+            "fees": 19170.384915979987
+          },
+          "stress": {
+            "net_return": 3.24599418081789,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.9457283739319478,
+            "max_drawdown": -0.588571418200596,
+            "trades": 19,
+            "fees": 83602.045670061
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 3.302462692135986,
+            "benchmark_return": 4.656773998488284,
+            "excess": -1.3543113063522982,
+            "max_drawdown": -0.3729896350571146,
+            "trades": 12,
+            "fees": 5760.2955098014
+          },
+          "stress": {
+            "net_return": 2.74059921925605,
+            "benchmark_return": 4.656773998488284,
+            "excess": -1.9161747792322341,
+            "max_drawdown": -0.4035580436468498,
+            "trades": 12,
+            "fees": 26636.135915895
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.188180097371619,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.3610182310515807,
+            "max_drawdown": -0.3023411301396422,
+            "trades": 13,
+            "fees": 2703.6722296381
+          },
+          "stress": {
+            "net_return": 0.0162413914845375,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.18907952516449916,
+            "max_drawdown": -0.3440827333386778,
+            "trades": 13,
+            "fees": 12560.52616329625
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 26.21098990790238,
+            "benchmark_return": 9.763022937840692,
+            "excess": 16.44796697006169,
+            "max_drawdown": -0.5454676514616841,
+            "trades": 44,
+            "fees": 111775.54536600699
+          },
+          "stress": {
+            "net_return": 15.141764003566552,
+            "benchmark_return": 9.763022937840692,
+            "excess": 5.37874106572586,
+            "max_drawdown": -0.5914384129520649,
+            "trades": 44,
+            "fees": 396320.64591494476
+          }
+        }
+      },
+      "development_worst_excess": -1.9161747792322341
+    },
+    {
+      "id": "spot-sma12/40-enter3-exit1",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.8218103677770774,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.521544560891135,
+            "max_drawdown": -0.5966611052664065,
+            "trades": 16,
+            "fees": 18519.59747477226
+          },
+          "stress": {
+            "net_return": 2.98600892735607,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.6857431204701279,
+            "max_drawdown": -0.6351005372452438,
+            "trades": 16,
+            "fees": 83532.393624043
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 3.169087219282887,
+            "benchmark_return": 4.656773998488284,
+            "excess": -1.4876867792053972,
+            "max_drawdown": -0.3633365597067396,
+            "trades": 10,
+            "fees": 4494.6497060113
+          },
+          "stress": {
+            "net_return": 2.7129993309999,
+            "benchmark_return": 4.656773998488284,
+            "excess": -1.9437746674883845,
+            "max_drawdown": -0.3795983850097855,
+            "trades": 10,
+            "fees": 21051.02207351
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.1240405352397345,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.29687866891969616,
+            "max_drawdown": -0.3386371716867409,
+            "trades": 13,
+            "fees": 2596.65953417655
+          },
+          "stress": {
+            "net_return": -0.0389212591221375,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.13391687455782417,
+            "max_drawdown": -0.3783476153553513,
+            "trades": 13,
+            "fees": 12074.02662896375
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 21.596714532831317,
+            "benchmark_return": 9.763022937840692,
+            "excess": 11.833691594990626,
+            "max_drawdown": -0.5966611052664065,
+            "trades": 39,
+            "fees": 92424.7039463981
+          },
+          "stress": {
+            "net_return": 13.226065597428383,
+            "benchmark_return": 9.763022937840692,
+            "excess": 3.463042659587691,
+            "max_drawdown": -0.6356299398178055,
+            "trades": 39,
+            "fees": 346244.54594106175
+          }
+        }
+      },
+      "development_worst_excess": -1.9437746674883845
+    }
+  ]
+}

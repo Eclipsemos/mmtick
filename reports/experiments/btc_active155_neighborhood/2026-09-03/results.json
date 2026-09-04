@@ -1,0 +1,4953 @@
+{
+  "generated_at": "2026-09-03T03:26:09.409713+00:00",
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED",
+  "protocol": {
+    "neighborhood": "SMA fast 9/10/11, slow 40; enter 2/3/4 days; exit 1/2 days; active 1.50/1.55/1.60X",
+    "execution": "completed UTC daily signal; next 15m open",
+    "wallets": "50% spot and 50% isolated USD-M collateral",
+    "costs": "default 10+5 bps and stress 50+25 bps per side",
+    "hard_cap": "2.5X opening control and <=3X observed effective leverage",
+    "selection": "development-only; OOS is reported and never selected"
+  },
+  "data": {
+    "bars": 244926,
+    "daily_bars": 2551,
+    "last": "2026-09-03T01:14:59.999000+00:00"
+  },
+  "benchmarks": {
+    "research": {
+      "net_return": 1.3002658068859423,
+      "max_drawdown": -0.7755528264455603
+    },
+    "validation": {
+      "net_return": 4.656773998488284,
+      "max_drawdown": -0.3365730267702175
+    },
+    "oos": {
+      "net_return": -0.17283813367996168,
+      "max_drawdown": -0.5415474735288048
+    },
+    "full": {
+      "net_return": 9.763022937840692,
+      "max_drawdown": -0.7755528264455603
+    }
+  },
+  "candidate_count": 54,
+  "passing_development_count": 6,
+  "results": [
+    {
+      "id": "sma11/40-enter2-exit1-active1.60x",
+      "fast": 11,
+      "enter": 2,
+      "exit": 1,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.8469276427963215,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.5466618359103794,
+            "max_drawdown": -0.7537369256760916,
+            "maximum_intrabar_leverage": 2.6742413171305426,
+            "liquidated": false,
+            "rebalances": 64
+          },
+          "stress": {
+            "net_return": 2.428675724640818,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.1284099177548759,
+            "max_drawdown": -0.7894526051135309,
+            "maximum_intrabar_leverage": 2.6753578061838756,
+            "liquidated": false,
+            "rebalances": 64
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 6.636723317020646,
+            "benchmark_return": 4.656773998488284,
+            "excess": 1.9799493185323618,
+            "max_drawdown": -0.521223700067175,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 35
+          },
+          "stress": {
+            "net_return": 5.091369874022941,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.43459587553465706,
+            "max_drawdown": -0.5394686324505074,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 35
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.2762467680096668,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.44908490168962845,
+            "max_drawdown": -0.4452895793181473,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 30
+          },
+          "stress": {
+            "net_return": -0.02416350911574949,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.14867462456421218,
+            "max_drawdown": -0.486962658013801,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 30
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 46.23982149141572,
+            "benchmark_return": 9.763022937840692,
+            "excess": 36.47679855357502,
+            "max_drawdown": -0.7537369256760916,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 129
+          },
+          "stress": {
+            "net_return": 19.380669106295745,
+            "benchmark_return": 9.763022937840692,
+            "excess": 9.617646168455053,
+            "max_drawdown": -0.7894526051135309,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 129
+          }
+        }
+      },
+      "development_worst_excess": 0.43459587553465706,
+      "development_all_positive": true
+    },
+    {
+      "id": "sma11/40-enter2-exit1-active1.55x",
+      "fast": 11,
+      "enter": 2,
+      "exit": 1,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.848286492089471,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.5480206852035288,
+            "max_drawdown": -0.7426220216250906,
+            "maximum_intrabar_leverage": 2.598665394339953,
+            "liquidated": false,
+            "rebalances": 51
+          },
+          "stress": {
+            "net_return": 2.4673246183010353,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.167058811415093,
+            "max_drawdown": -0.778802278255363,
+            "maximum_intrabar_leverage": 2.599547617756153,
+            "liquidated": false,
+            "rebalances": 51
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 6.318342922289541,
+            "benchmark_return": 4.656773998488284,
+            "excess": 1.6615689238012568,
+            "max_drawdown": -0.5157553205820951,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 31
+          },
+          "stress": {
+            "net_return": 4.876850395939378,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.22007639745109397,
+            "max_drawdown": -0.5335326776984617,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 31
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.27279648589986044,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.4456346195798221,
+            "max_drawdown": -0.43416539265402593,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": -0.01862275445948698,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.15421537922047468,
+            "max_drawdown": -0.4753335490077533,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 44.16063068046394,
+            "benchmark_return": 9.763022937840692,
+            "excess": 34.39760774262325,
+            "max_drawdown": -0.7426220216250906,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 109
+          },
+          "stress": {
+            "net_return": 18.99747315563381,
+            "benchmark_return": 9.763022937840692,
+            "excess": 9.234450217793118,
+            "max_drawdown": -0.778802278255363,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 109
+          }
+        }
+      },
+      "development_worst_excess": 0.22007639745109397,
+      "development_all_positive": true
+    },
+    {
+      "id": "sma10/40-enter3-exit1-active1.55x",
+      "fast": 10,
+      "enter": 3,
+      "exit": 1,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.348278753563796,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.0480129466778536,
+            "max_drawdown": -0.7712668427101224,
+            "maximum_intrabar_leverage": 2.698579600403331,
+            "liquidated": false,
+            "rebalances": 50
+          },
+          "stress": {
+            "net_return": 1.4812917100995955,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.1810259032136532,
+            "max_drawdown": -0.8035464531172236,
+            "maximum_intrabar_leverage": 2.6991566244132352,
+            "liquidated": false,
+            "rebalances": 50
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.997412276667913,
+            "benchmark_return": 4.656773998488284,
+            "excess": 1.3406382781796289,
+            "max_drawdown": -0.5424306987913425,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": 4.831515457548731,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.17474145906044658,
+            "max_drawdown": -0.5592989280374833,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.057135665580345746,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.22997379926030742,
+            "max_drawdown": -0.5036080793432018,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": -0.17016359440178408,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.0026745392781775956,
+            "max_drawdown": -0.5424871492091593,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 23.767934754477974,
+            "benchmark_return": 9.763022937840692,
+            "excess": 14.004911816637282,
+            "max_drawdown": -0.7712668427101224,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 102
+          },
+          "stress": {
+            "net_return": 11.007476338133701,
+            "benchmark_return": 9.763022937840692,
+            "excess": 1.2444534002930094,
+            "max_drawdown": -0.8035464531172236,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 102
+          }
+        }
+      },
+      "development_worst_excess": 0.17474145906044658,
+      "development_all_positive": true
+    },
+    {
+      "id": "sma10/40-enter3-exit1-active1.60x",
+      "fast": 10,
+      "enter": 3,
+      "exit": 1,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.3331193192757227,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.0328535123897804,
+            "max_drawdown": -0.7812063817770593,
+            "maximum_intrabar_leverage": 2.698580077249103,
+            "liquidated": false,
+            "rebalances": 65
+          },
+          "stress": {
+            "net_return": 1.4460395946569689,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.14577378777102656,
+            "max_drawdown": -0.8130561304833069,
+            "maximum_intrabar_leverage": 2.69916913440093,
+            "liquidated": false,
+            "rebalances": 65
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 6.297903886043377,
+            "benchmark_return": 4.656773998488284,
+            "excess": 1.6411298875550928,
+            "max_drawdown": -0.5481420097745839,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 31
+          },
+          "stress": {
+            "net_return": 5.04834044278947,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.39156644430118526,
+            "max_drawdown": -0.5654367616664837,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 31
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.053358551980525235,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.2261966856604869,
+            "max_drawdown": -0.5155840749585037,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 28
+          },
+          "stress": {
+            "net_return": -0.17959900589922398,
+            "benchmark_return": -0.17283813367996168,
+            "excess": -0.006760872219262304,
+            "max_drawdown": -0.5546609755943913,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 28
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 24.62271970736057,
+            "benchmark_return": 9.763022937840692,
+            "excess": 14.859696769519879,
+            "max_drawdown": -0.7812063817770593,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 124
+          },
+          "stress": {
+            "net_return": 11.137406267409311,
+            "benchmark_return": 9.763022937840692,
+            "excess": 1.3743833295686194,
+            "max_drawdown": -0.8130561304833069,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 124
+          }
+        }
+      },
+      "development_worst_excess": 0.14577378777102656,
+      "development_all_positive": true
+    },
+    {
+      "id": "sma11/40-enter2-exit2-active1.60x",
+      "fast": 11,
+      "enter": 2,
+      "exit": 2,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.6865599390495576,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.3862941321636153,
+            "max_drawdown": -0.8166793570296552,
+            "maximum_intrabar_leverage": 2.7068961297172263,
+            "liquidated": false,
+            "rebalances": 72
+          },
+          "stress": {
+            "net_return": 1.707055182562166,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.40678937567622375,
+            "max_drawdown": -0.843454380452248,
+            "maximum_intrabar_leverage": 2.7074982522783726,
+            "liquidated": false,
+            "rebalances": 72
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.928682833616414,
+            "benchmark_return": 4.656773998488284,
+            "excess": 1.27190883512813,
+            "max_drawdown": -0.514619198615667,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 31
+          },
+          "stress": {
+            "net_return": 4.7414357016162905,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.08466170312800614,
+            "max_drawdown": -0.5331338166277036,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 31
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.4425328152209584,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.61537094890092,
+            "max_drawdown": -0.38763190176884815,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 26
+          },
+          "stress": {
+            "net_return": 0.14668611942868887,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.3195242531086505,
+            "max_drawdown": -0.42244828109365745,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 26
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 35.846622284049246,
+            "benchmark_return": 9.763022937840692,
+            "excess": 26.083599346208555,
+            "max_drawdown": -0.8166793570296552,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 129
+          },
+          "stress": {
+            "net_return": 16.82223516016401,
+            "benchmark_return": 9.763022937840692,
+            "excess": 7.059212222323318,
+            "max_drawdown": -0.843454380452248,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 129
+          }
+        }
+      },
+      "development_worst_excess": 0.08466170312800614,
+      "development_all_positive": true
+    },
+    {
+      "id": "sma11/40-enter2-exit1-active1.50x",
+      "fast": 11,
+      "enter": 2,
+      "exit": 1,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.8319505080206233,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.5316847011346812,
+            "max_drawdown": -0.7292236197745369,
+            "maximum_intrabar_leverage": 2.598628760619864,
+            "liquidated": false,
+            "rebalances": 42
+          },
+          "stress": {
+            "net_return": 2.493368670492951,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.193102863607009,
+            "max_drawdown": -0.7660668492850982,
+            "maximum_intrabar_leverage": 2.5993434576001664,
+            "liquidated": false,
+            "rebalances": 42
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 6.038281173627104,
+            "benchmark_return": 4.656773998488284,
+            "excess": 1.38150717513882,
+            "max_drawdown": -0.5083796824499431,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 29
+          },
+          "stress": {
+            "net_return": 4.690730784095971,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.033956785607686335,
+            "max_drawdown": -0.5256970288806407,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 29
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.2679790952990655,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.4408172289790272,
+            "max_drawdown": -0.4233531611518668,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": -0.014136123654851791,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.1587020100251099,
+            "max_drawdown": -0.4639498603710259,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 42.122227198727494,
+            "benchmark_return": 9.763022937840692,
+            "excess": 32.3592042608868,
+            "max_drawdown": -0.7292236197745369,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 98
+          },
+          "stress": {
+            "net_return": 18.59879703066105,
+            "benchmark_return": 9.763022937840692,
+            "excess": 8.835774092820358,
+            "max_drawdown": -0.7660668492850982,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 98
+          }
+        }
+      },
+      "development_worst_excess": 0.033956785607686335,
+      "development_all_positive": true
+    },
+    {
+      "id": "sma10/40-enter3-exit1-active1.50x",
+      "fast": 10,
+      "enter": 3,
+      "exit": 1,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.368385524689238,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.0681197178032955,
+            "max_drawdown": -0.7589293578652155,
+            "maximum_intrabar_leverage": 2.598628760619864,
+            "liquidated": false,
+            "rebalances": 39
+          },
+          "stress": {
+            "net_return": 1.5208284825934362,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.22056267570749388,
+            "max_drawdown": -0.7918524074151182,
+            "maximum_intrabar_leverage": 2.5993434576001664,
+            "liquidated": false,
+            "rebalances": 39
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.733512606774249,
+            "benchmark_return": 4.656773998488284,
+            "excess": 1.0767386082859645,
+            "max_drawdown": -0.5348895208088367,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": 4.643353609450139,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.013420389038145686,
+            "max_drawdown": -0.5513379269336067,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.05975336231784631,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.23259149599780798,
+            "max_drawdown": -0.49181920656551287,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": -0.16156457101060934,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.011273562669352338,
+            "max_drawdown": -0.5304306478967833,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 23.0363363730247,
+            "benchmark_return": 9.763022937840692,
+            "excess": 13.273313435184008,
+            "max_drawdown": -0.7589293578652155,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 89
+          },
+          "stress": {
+            "net_return": 10.927520801254575,
+            "benchmark_return": 9.763022937840692,
+            "excess": 1.1644978634138834,
+            "max_drawdown": -0.7918524074151182,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 89
+          }
+        }
+      },
+      "development_worst_excess": -0.013420389038145686,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter3-exit1-active1.50x",
+      "fast": 9,
+      "enter": 3,
+      "exit": 1,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.1557728499956985,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.8555070431097562,
+            "max_drawdown": -0.7369550805224497,
+            "maximum_intrabar_leverage": 2.598628760619864,
+            "liquidated": false,
+            "rebalances": 43
+          },
+          "stress": {
+            "net_return": 1.2782572035803916,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.022008603305550656,
+            "max_drawdown": -0.7727699349024763,
+            "maximum_intrabar_leverage": 2.5993434576001664,
+            "liquidated": false,
+            "rebalances": 43
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.970945928098485,
+            "benchmark_return": 4.656773998488284,
+            "excess": 1.3141719296102004,
+            "max_drawdown": -0.5348895208088367,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": 4.842756076286168,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.18598207779788378,
+            "max_drawdown": -0.5513379269336067,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.1471596015369905,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.3199977352169522,
+            "max_drawdown": -0.4481703709061942,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": -0.09218517702459667,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.08065295665536501,
+            "max_drawdown": -0.48996142770721646,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 24.23604504761427,
+            "benchmark_return": 9.763022937840692,
+            "excess": 14.473022109773577,
+            "max_drawdown": -0.7369550805224497,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 93
+          },
+          "stress": {
+            "net_return": 11.084196469427527,
+            "benchmark_return": 9.763022937840692,
+            "excess": 1.321173531586835,
+            "max_drawdown": -0.7727699349024763,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 93
+          }
+        }
+      },
+      "development_worst_excess": -0.022008603305550656,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter3-exit1-active1.55x",
+      "fast": 9,
+      "enter": 3,
+      "exit": 1,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.121718671886219,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.8214528650002768,
+            "max_drawdown": -0.7503052632522829,
+            "maximum_intrabar_leverage": 2.698579600403331,
+            "liquidated": false,
+            "rebalances": 54
+          },
+          "stress": {
+            "net_return": 1.2289101572194194,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.07135564966652286,
+            "max_drawdown": -0.7854318817287915,
+            "maximum_intrabar_leverage": 2.6991566244132352,
+            "liquidated": false,
+            "rebalances": 54
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 6.249292666979762,
+            "benchmark_return": 4.656773998488284,
+            "excess": 1.5925186684914774,
+            "max_drawdown": -0.5424306987913425,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": 5.0418955704231365,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.3851215719348522,
+            "max_drawdown": -0.5592989280374833,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.14742159174254332,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.320259725422505,
+            "max_drawdown": -0.4593906128748104,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": -0.09903417076708401,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.07380396291287766,
+            "max_drawdown": -0.5015803768083447,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 24.966440088612355,
+            "benchmark_return": 9.763022937840692,
+            "excess": 15.203417150771664,
+            "max_drawdown": -0.7503052632522829,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 106
+          },
+          "stress": {
+            "net_return": 11.133164835268202,
+            "benchmark_return": 9.763022937840692,
+            "excess": 1.3701418974275104,
+            "max_drawdown": -0.7854318817287915,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 106
+          }
+        }
+      },
+      "development_worst_excess": -0.07135564966652286,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma11/40-enter2-exit2-active1.55x",
+      "fast": 11,
+      "enter": 2,
+      "exit": 2,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.6836635391111257,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.3833977322251834,
+            "max_drawdown": -0.8075673770871598,
+            "maximum_intrabar_leverage": 2.674572420384527,
+            "liquidated": false,
+            "rebalances": 55
+          },
+          "stress": {
+            "net_return": 1.7311874224808583,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.43092161559491604,
+            "max_drawdown": -0.834810622086854,
+            "maximum_intrabar_leverage": 2.677015526501493,
+            "liquidated": false,
+            "rebalances": 55
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.65128376099776,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.9945097625094759,
+            "max_drawdown": -0.5093753101695115,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": 4.542264751045576,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.11450924744270807,
+            "max_drawdown": -0.5274065229207829,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.43283950432634427,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.6056776380063059,
+            "max_drawdown": -0.3772864093919596,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 23
+          },
+          "stress": {
+            "net_return": 0.14711687835413514,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.3199550120340968,
+            "max_drawdown": -0.4115631587042565,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 23
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 34.10613176975104,
+            "benchmark_return": 9.763022937840692,
+            "excess": 24.343108831910346,
+            "max_drawdown": -0.8075673770871598,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 105
+          },
+          "stress": {
+            "net_return": 16.363866639204765,
+            "benchmark_return": 9.763022937840692,
+            "excess": 6.600843701364074,
+            "max_drawdown": -0.834810622086854,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 105
+          }
+        }
+      },
+      "development_worst_excess": -0.11450924744270807,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter3-exit1-active1.60x",
+      "fast": 9,
+      "enter": 3,
+      "exit": 1,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.088289264150035,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.7880234572640925,
+            "max_drawdown": -0.7612884876189915,
+            "maximum_intrabar_leverage": 2.698580077249103,
+            "liquidated": false,
+            "rebalances": 69
+          },
+          "stress": {
+            "net_return": 1.1807628366571434,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.11950297022879885,
+            "max_drawdown": -0.7959377732277111,
+            "maximum_intrabar_leverage": 2.69916913440093,
+            "liquidated": false,
+            "rebalances": 69
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 6.565835582119135,
+            "benchmark_return": 4.656773998488284,
+            "excess": 1.9090615836308507,
+            "max_drawdown": -0.5481420097745839,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 31
+          },
+          "stress": {
+            "net_return": 5.27092750730619,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.614153508817906,
+            "max_drawdown": -0.5654367616664837,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 31
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.14642091544791566,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.31925904912787734,
+            "max_drawdown": -0.4708792066576747,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 28
+          },
+          "stress": {
+            "net_return": -0.10683165081947843,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.06600648286048325,
+            "max_drawdown": -0.5133939503865227,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 28
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 25.78668506294506,
+            "benchmark_return": 9.763022937840692,
+            "excess": 16.02366212510437,
+            "max_drawdown": -0.7612884876189915,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 128
+          },
+          "stress": {
+            "net_return": 11.214439497094835,
+            "benchmark_return": 9.763022937840692,
+            "excess": 1.4514165592541435,
+            "max_drawdown": -0.7959377732277111,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 128
+          }
+        }
+      },
+      "development_worst_excess": -0.11950297022879885,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma11/40-enter2-exit2-active1.50x",
+      "fast": 11,
+      "enter": 2,
+      "exit": 2,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.6869831779619435,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.3867173710760012,
+            "max_drawdown": -0.7964907360291396,
+            "maximum_intrabar_leverage": 2.6209152281245065,
+            "liquidated": false,
+            "rebalances": 44
+          },
+          "stress": {
+            "net_return": 1.7602857013582291,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.46001989447228686,
+            "max_drawdown": -0.8243782207982536,
+            "maximum_intrabar_leverage": 2.6209152281245065,
+            "liquidated": false,
+            "rebalances": 44
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.407721858694263,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.7509478602059785,
+            "max_drawdown": -0.502231022851322,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": 4.36959764767046,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.2871763508178242,
+            "max_drawdown": -0.5197873110803088,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.4215546756777821,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.5943928093577437,
+            "max_drawdown": -0.3674107622199728,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 23
+          },
+          "stress": {
+            "net_return": 0.14619552980487066,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.3190336634848323,
+            "max_drawdown": -0.4010958805530448,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 23
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 32.58446050276854,
+            "benchmark_return": 9.763022937840692,
+            "excess": 22.82143756492785,
+            "max_drawdown": -0.7964907360291396,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 92
+          },
+          "stress": {
+            "net_return": 15.988478724984757,
+            "benchmark_return": 9.763022937840692,
+            "excess": 6.225455787144066,
+            "max_drawdown": -0.8243782207982536,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 92
+          }
+        }
+      },
+      "development_worst_excess": -0.2871763508178242,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter4-exit1-active1.60x",
+      "fast": 9,
+      "enter": 4,
+      "exit": 1,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.5111222076434423,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.2108564007575,
+            "max_drawdown": -0.7776554878854057,
+            "maximum_intrabar_leverage": 2.8445696488101126,
+            "liquidated": false,
+            "rebalances": 69
+          },
+          "stress": {
+            "net_return": 2.3128389713200015,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.0125731644340592,
+            "max_drawdown": -0.8100176794926804,
+            "maximum_intrabar_leverage": 2.847279409984167,
+            "liquidated": false,
+            "rebalances": 69
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.477024441945813,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.8202504434575291,
+            "max_drawdown": -0.5338943706962281,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 32
+          },
+          "stress": {
+            "net_return": 4.365997769839361,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.29077622864892305,
+            "max_drawdown": -0.551711129325823,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 32
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.15440049090156302,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.3272386245815247,
+            "max_drawdown": -0.5176918275361674,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": -0.06540779873982223,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.10743033494013944,
+            "max_drawdown": -0.5625289401906486,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 32.730022517636016,
+            "benchmark_return": 9.763022937840692,
+            "excess": 22.966999579795324,
+            "max_drawdown": -0.7776554878854057,
+            "maximum_intrabar_leverage": 2.8445696488101126,
+            "liquidated": false,
+            "rebalances": 126
+          },
+          "stress": {
+            "net_return": 15.61395259699801,
+            "benchmark_return": 9.763022937840692,
+            "excess": 5.850929659157318,
+            "max_drawdown": -0.8100176794926804,
+            "maximum_intrabar_leverage": 2.847279409984167,
+            "liquidated": false,
+            "rebalances": 126
+          }
+        }
+      },
+      "development_worst_excess": -0.29077622864892305,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter2-exit1-active1.60x",
+      "fast": 10,
+      "enter": 2,
+      "exit": 1,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.9176506964202558,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.6173848895343133,
+            "max_drawdown": -0.7346329182245676,
+            "maximum_intrabar_leverage": 2.6742413171305426,
+            "liquidated": false,
+            "rebalances": 66
+          },
+          "stress": {
+            "net_return": 2.4125835236219375,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.1123177167359952,
+            "max_drawdown": -0.7730640440542341,
+            "maximum_intrabar_leverage": 2.6753578061838756,
+            "liquidated": false,
+            "rebalances": 66
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.715045663413731,
+            "benchmark_return": 4.656773998488284,
+            "excess": 1.0582716649254467,
+            "max_drawdown": -0.5383053022668114,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 35
+          },
+          "stress": {
+            "net_return": 4.354521317230931,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.30225268125735294,
+            "max_drawdown": -0.5727878716078724,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 35
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.19941683120753875,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.37225496488750043,
+            "max_drawdown": -0.4516935000163325,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 28
+          },
+          "stress": {
+            "net_return": -0.06537546369242972,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.10746266998753196,
+            "max_drawdown": -0.4970961256228729,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 28
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 38.60744123475254,
+            "benchmark_return": 9.763022937840692,
+            "excess": 28.84441829691185,
+            "max_drawdown": -0.7346329182245676,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 129
+          },
+          "stress": {
+            "net_return": 16.078161639855065,
+            "benchmark_return": 9.763022937840692,
+            "excess": 6.315138702014373,
+            "max_drawdown": -0.7730640440542341,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 129
+          }
+        }
+      },
+      "development_worst_excess": -0.30225268125735294,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter4-exit2-active1.60x",
+      "fast": 9,
+      "enter": 4,
+      "exit": 2,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.280256172683019,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.9799903657970768,
+            "max_drawdown": -0.8342477775088668,
+            "maximum_intrabar_leverage": 2.844569648810121,
+            "liquidated": false,
+            "rebalances": 79
+          },
+          "stress": {
+            "net_return": 1.4528663120917102,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.15260050520576796,
+            "max_drawdown": -0.8585352982303416,
+            "maximum_intrabar_leverage": 2.847279410010068,
+            "liquidated": false,
+            "rebalances": 79
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.279234896464689,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.6224608979764046,
+            "max_drawdown": -0.5262856997691858,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 30
+          },
+          "stress": {
+            "net_return": 4.30267302137837,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.3541009771099146,
+            "max_drawdown": -0.5443636695642661,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 30
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.3105948576373627,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.4834329913173244,
+            "max_drawdown": -0.44270325172373715,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 22
+          },
+          "stress": {
+            "net_return": 0.08215581217577986,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.25499394585574153,
+            "max_drawdown": -0.48444442862778175,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 22
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 25.99497630740782,
+            "benchmark_return": 9.763022937840692,
+            "excess": 16.23195336956713,
+            "max_drawdown": -0.8342477775088668,
+            "maximum_intrabar_leverage": 2.844569648810121,
+            "liquidated": false,
+            "rebalances": 131
+          },
+          "stress": {
+            "net_return": 13.07532796537558,
+            "benchmark_return": 9.763022937840692,
+            "excess": 3.3123050275348884,
+            "max_drawdown": -0.8585352982303416,
+            "maximum_intrabar_leverage": 2.847279410010068,
+            "liquidated": false,
+            "rebalances": 131
+          }
+        }
+      },
+      "development_worst_excess": -0.3541009771099146,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter2-exit1-active1.60x",
+      "fast": 9,
+      "enter": 2,
+      "exit": 1,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 4.095116185198654,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.794850378312711,
+            "max_drawdown": -0.7420457608072105,
+            "maximum_intrabar_leverage": 2.6742413171305426,
+            "liquidated": false,
+            "rebalances": 66
+          },
+          "stress": {
+            "net_return": 2.536493385471297,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.236227578585355,
+            "max_drawdown": -0.7792600814955032,
+            "maximum_intrabar_leverage": 2.6753578061838756,
+            "liquidated": false,
+            "rebalances": 66
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.631587217166014,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.9748132186777294,
+            "max_drawdown": -0.5383053022668114,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 35
+          },
+          "stress": {
+            "net_return": 4.287846038156768,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.36892796033151676,
+            "max_drawdown": -0.5727878716078724,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 35
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.17063519044948697,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.34347332412944864,
+            "max_drawdown": -0.45234535154709865,
+            "maximum_intrabar_leverage": 2.6078946451946967,
+            "liquidated": false,
+            "rebalances": 28
+          },
+          "stress": {
+            "net_return": -0.10520678692164273,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.06763134675831894,
+            "max_drawdown": -0.5164707628447321,
+            "maximum_intrabar_leverage": 2.6078946451946967,
+            "liquidated": false,
+            "rebalances": 28
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 38.55424987979265,
+            "benchmark_return": 9.763022937840692,
+            "excess": 28.791226941951958,
+            "max_drawdown": -0.7420457608072105,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 129
+          },
+          "stress": {
+            "net_return": 15.73302011603437,
+            "benchmark_return": 9.763022937840692,
+            "excess": 5.969997178193678,
+            "max_drawdown": -0.7792600814955032,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 129
+          }
+        }
+      },
+      "development_worst_excess": -0.36892796033151676,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter3-exit2-active1.50x",
+      "fast": 10,
+      "enter": 3,
+      "exit": 2,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 1.4810685282873868,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.1808027214014445,
+            "max_drawdown": -0.8188622162385778,
+            "maximum_intrabar_leverage": 2.6209152281245065,
+            "liquidated": false,
+            "rebalances": 43
+          },
+          "stress": {
+            "net_return": 0.8883365152195613,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.41192929166638104,
+            "max_drawdown": -0.8463814954910543,
+            "maximum_intrabar_leverage": 2.6209152281245065,
+            "liquidated": false,
+            "rebalances": 43
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.385919503882627,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.7291455053943423,
+            "max_drawdown": -0.5281358769923677,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 23
+          },
+          "stress": {
+            "net_return": 4.448528067305888,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.20824593118239676,
+            "max_drawdown": -0.5448061211754367,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 23
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.1842078875450351,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.35704602122499673,
+            "max_drawdown": -0.43162317664947186,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 21
+          },
+          "stress": {
+            "net_return": -0.028416681220784966,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.1444214524591767,
+            "max_drawdown": -0.4689895244086864,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 21
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 17.762475974114224,
+            "benchmark_return": 9.763022937840692,
+            "excess": 7.9994530362735325,
+            "max_drawdown": -0.8188622162385778,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 87
+          },
+          "stress": {
+            "net_return": 8.996285088470152,
+            "benchmark_return": 9.763022937840692,
+            "excess": -0.7667378493705392,
+            "max_drawdown": -0.8463814954910543,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 87
+          }
+        }
+      },
+      "development_worst_excess": -0.41192929166638104,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma11/40-enter4-exit1-active1.60x",
+      "fast": 11,
+      "enter": 4,
+      "exit": 1,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 4.360838521003593,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 3.060572714117651,
+            "max_drawdown": -0.734751650621666,
+            "maximum_intrabar_leverage": 2.8445696488101126,
+            "liquidated": false,
+            "rebalances": 63
+          },
+          "stress": {
+            "net_return": 3.0157748538561746,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.7155090469702323,
+            "max_drawdown": -0.7688016354247658,
+            "maximum_intrabar_leverage": 2.847279409984167,
+            "liquidated": false,
+            "rebalances": 63
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.303522836618659,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.6467488381303745,
+            "max_drawdown": -0.5326291455534983,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 31
+          },
+          "stress": {
+            "net_return": 4.221826540331866,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.4349474581564179,
+            "max_drawdown": -0.5504901953990865,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 31
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.19157897187437153,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.3644171055543332,
+            "max_drawdown": -0.5083304684031916,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": -0.03524920828555898,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.1375889253944027,
+            "max_drawdown": -0.5564965541927536,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 39.26597835799392,
+            "benchmark_return": 9.763022937840692,
+            "excess": 29.50295542015323,
+            "max_drawdown": -0.734751650621666,
+            "maximum_intrabar_leverage": 2.8445696488101126,
+            "liquidated": false,
+            "rebalances": 122
+          },
+          "stress": {
+            "net_return": 19.23048565187897,
+            "benchmark_return": 9.763022937840692,
+            "excess": 9.467462714038277,
+            "max_drawdown": -0.7688016354247658,
+            "maximum_intrabar_leverage": 2.847279409984167,
+            "liquidated": false,
+            "rebalances": 122
+          }
+        }
+      },
+      "development_worst_excess": -0.4349474581564179,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter3-exit2-active1.55x",
+      "fast": 10,
+      "enter": 3,
+      "exit": 2,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 1.4563933675883232,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.15612756070238087,
+            "max_drawdown": -0.8288354788745682,
+            "maximum_intrabar_leverage": 2.6985797029272223,
+            "liquidated": false,
+            "rebalances": 56
+          },
+          "stress": {
+            "net_return": 0.8523498476352979,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.4479159592506444,
+            "max_drawdown": -0.8551014561226803,
+            "maximum_intrabar_leverage": 2.6991591900720873,
+            "liquidated": false,
+            "rebalances": 56
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.6305608536175065,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.9737868551292221,
+            "max_drawdown": -0.5353846115893949,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": 4.628748048601087,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.028025949887197754,
+            "max_drawdown": -0.552489593838995,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.18606608616191342,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.3589042198418751,
+            "max_drawdown": -0.4426442155084922,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 21
+          },
+          "stress": {
+            "net_return": -0.03328055370636285,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.13955757997359883,
+            "max_drawdown": -0.48041088013484984,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 21
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 18.3177734880796,
+            "benchmark_return": 9.763022937840692,
+            "excess": 8.554750550238907,
+            "max_drawdown": -0.8288354788745682,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 102
+          },
+          "stress": {
+            "net_return": 9.079413872591838,
+            "benchmark_return": 9.763022937840692,
+            "excess": -0.683609065248854,
+            "max_drawdown": -0.8551014561226803,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 102
+          }
+        }
+      },
+      "development_worst_excess": -0.4479159592506444,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma11/40-enter3-exit1-active1.60x",
+      "fast": 11,
+      "enter": 3,
+      "exit": 1,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.8291017420589624,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.52883593517302,
+            "max_drawdown": -0.7922690787472182,
+            "maximum_intrabar_leverage": 2.698580077249103,
+            "liquidated": false,
+            "rebalances": 65
+          },
+          "stress": {
+            "net_return": 1.810784655574418,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.5105188486884757,
+            "max_drawdown": -0.8225382347824219,
+            "maximum_intrabar_leverage": 2.69916913440093,
+            "liquidated": false,
+            "rebalances": 65
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.268743914459585,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.6119699159713008,
+            "max_drawdown": -0.5565878843178788,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 31
+          },
+          "stress": {
+            "net_return": 4.193268233309352,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.46350576517893227,
+            "max_drawdown": -0.5735915442959185,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 31
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.04327427764437629,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.21611241132433795,
+            "max_drawdown": -0.5046455649703995,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 28
+          },
+          "stress": {
+            "net_return": -0.18748489443319688,
+            "benchmark_return": -0.17283813367996168,
+            "excess": -0.014646760753235205,
+            "max_drawdown": -0.5445652260239139,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 28
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 24.04239921468341,
+            "benchmark_return": 9.763022937840692,
+            "excess": 14.279376276842719,
+            "max_drawdown": -0.7922690787472182,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 124
+          },
+          "stress": {
+            "net_return": 10.860411911610557,
+            "benchmark_return": 9.763022937840692,
+            "excess": 1.0973889737698652,
+            "max_drawdown": -0.8225382347824219,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 124
+          }
+        }
+      },
+      "development_worst_excess": -0.46350576517893227,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter4-exit1-active1.55x",
+      "fast": 9,
+      "enter": 4,
+      "exit": 1,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.508349555388888,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.208083748502946,
+            "max_drawdown": -0.767460263981866,
+            "maximum_intrabar_leverage": 2.844569646498834,
+            "liquidated": false,
+            "rebalances": 52
+          },
+          "stress": {
+            "net_return": 2.3431306761811084,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.042864869295166,
+            "max_drawdown": -0.8002700690975532,
+            "maximum_intrabar_leverage": 2.84727910623334,
+            "liquidated": false,
+            "rebalances": 52
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.228876160533769,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.5721021620454847,
+            "max_drawdown": -0.5281836934418145,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": 4.189249895675203,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.46752410281308165,
+            "max_drawdown": -0.54555466142061,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.15564770954904805,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.32848584322900976,
+            "max_drawdown": -0.5055709606266379,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 21
+          },
+          "stress": {
+            "net_return": -0.05817856203257226,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.11465957164738941,
+            "max_drawdown": -0.5501002696657871,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 21
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 31.4528424324599,
+            "benchmark_return": 9.763022937840692,
+            "excess": 21.689819494619208,
+            "max_drawdown": -0.767460263981866,
+            "maximum_intrabar_leverage": 2.844569646498834,
+            "liquidated": false,
+            "rebalances": 100
+          },
+          "stress": {
+            "net_return": 15.339039007926822,
+            "benchmark_return": 9.763022937840692,
+            "excess": 5.57601607008613,
+            "max_drawdown": -0.8002700690975532,
+            "maximum_intrabar_leverage": 2.84727910623334,
+            "liquidated": false,
+            "rebalances": 100
+          }
+        }
+      },
+      "development_worst_excess": -0.46752410281308165,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter3-exit2-active1.60x",
+      "fast": 10,
+      "enter": 3,
+      "exit": 2,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 1.4469376258529152,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.1466718189669729,
+            "max_drawdown": -0.8368837483465745,
+            "maximum_intrabar_leverage": 2.7068961297172263,
+            "liquidated": false,
+            "rebalances": 75
+          },
+          "stress": {
+            "net_return": 0.8285008219220278,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.4717649849639145,
+            "max_drawdown": -0.8617031364978611,
+            "maximum_intrabar_leverage": 2.7074982522783726,
+            "liquidated": false,
+            "rebalances": 75
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.909224091866678,
+            "benchmark_return": 4.656773998488284,
+            "excess": 1.2524500933783935,
+            "max_drawdown": -0.5408085940456615,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 29
+          },
+          "stress": {
+            "net_return": 4.836348220179665,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.1795742216913805,
+            "max_drawdown": -0.5583559827936514,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 29
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.18652203295980588,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.35936016663976755,
+            "max_drawdown": -0.45401843492597854,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 24
+          },
+          "stress": {
+            "net_return": -0.039276029664600906,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.13356210401536078,
+            "max_drawdown": -0.4921178579475285,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 24
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 19.059864028583505,
+            "benchmark_return": 9.763022937840692,
+            "excess": 9.296841090742813,
+            "max_drawdown": -0.8368837483465745,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 128
+          },
+          "stress": {
+            "net_return": 9.252622860025848,
+            "benchmark_return": 9.763022937840692,
+            "excess": -0.5104000778148432,
+            "max_drawdown": -0.8617031364978611,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 128
+          }
+        }
+      },
+      "development_worst_excess": -0.4717649849639145,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma11/40-enter4-exit2-active1.60x",
+      "fast": 11,
+      "enter": 4,
+      "exit": 2,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.078874023581438,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.7786082166954957,
+            "max_drawdown": -0.792697082583113,
+            "maximum_intrabar_leverage": 2.844569648810121,
+            "liquidated": false,
+            "rebalances": 71
+          },
+          "stress": {
+            "net_return": 2.1117412499403017,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.8114754430543594,
+            "max_drawdown": -0.8194826886353973,
+            "maximum_intrabar_leverage": 2.847279410010068,
+            "liquidated": false,
+            "rebalances": 71
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.110989348443082,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.45421534995479806,
+            "max_drawdown": -0.5250117918241792,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 29
+          },
+          "stress": {
+            "net_return": 4.160165897381007,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.4966081011072774,
+            "max_drawdown": -0.5431343916392356,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 29
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.3508322558264161,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.5236703895063778,
+            "max_drawdown": -0.4321089009580783,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 24
+          },
+          "stress": {
+            "net_return": 0.11542488062901363,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.2882630143089753,
+            "max_drawdown": -0.47461594556270015,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 24
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 32.67073619963504,
+            "benchmark_return": 9.763022937840692,
+            "excess": 22.907713261794346,
+            "max_drawdown": -0.792697082583113,
+            "maximum_intrabar_leverage": 2.844569648810121,
+            "liquidated": false,
+            "rebalances": 125
+          },
+          "stress": {
+            "net_return": 16.910464049713475,
+            "benchmark_return": 9.763022937840692,
+            "excess": 7.147441111872784,
+            "max_drawdown": -0.8194826886353973,
+            "maximum_intrabar_leverage": 2.847279410010068,
+            "liquidated": false,
+            "rebalances": 125
+          }
+        }
+      },
+      "development_worst_excess": -0.4966081011072774,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter2-exit1-active1.55x",
+      "fast": 10,
+      "enter": 2,
+      "exit": 1,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.921689838302097,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.6214240314161543,
+            "max_drawdown": -0.7231679466598665,
+            "maximum_intrabar_leverage": 2.598665394339953,
+            "liquidated": false,
+            "rebalances": 53
+          },
+          "stress": {
+            "net_return": 2.455017791381011,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.1547519844950689,
+            "max_drawdown": -0.7620302384676519,
+            "maximum_intrabar_leverage": 2.599547617756153,
+            "liquidated": false,
+            "rebalances": 53
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.427439608361183,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.770665609872899,
+            "max_drawdown": -0.5293308080938058,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 31
+          },
+          "stress": {
+            "net_return": 4.159592401115964,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.49718159737231993,
+            "max_drawdown": -0.5634305564858818,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 31
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.19837061181680596,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.37120874549676763,
+            "max_drawdown": -0.4406169009592118,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": -0.058882298009042065,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.1139558356709196,
+            "max_drawdown": -0.4855376196142615,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 36.909093203598694,
+            "benchmark_return": 9.763022937840692,
+            "excess": 27.146070265758002,
+            "max_drawdown": -0.7231679466598665,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 109
+          },
+          "stress": {
+            "net_return": 15.77681922574895,
+            "benchmark_return": 9.763022937840692,
+            "excess": 6.013796287908258,
+            "max_drawdown": -0.7620302384676519,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 109
+          }
+        }
+      },
+      "development_worst_excess": -0.49718159737231993,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter4-exit2-active1.55x",
+      "fast": 9,
+      "enter": 4,
+      "exit": 2,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.276137983771302,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.9758721768853598,
+            "max_drawdown": -0.826053064080292,
+            "maximum_intrabar_leverage": 2.844569646995769,
+            "liquidated": false,
+            "rebalances": 60
+          },
+          "stress": {
+            "net_return": 1.4720565216452002,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.1717907147592579,
+            "max_drawdown": -0.8507645218061499,
+            "maximum_intrabar_leverage": 2.8472791685292522,
+            "liquidated": false,
+            "rebalances": 60
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.039620566315548,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.38284656782726323,
+            "max_drawdown": -0.5208803176070563,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": 4.12574532272035,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.5310286757679341,
+            "max_drawdown": -0.5384958872617001,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.306546312418487,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.47938444609844866,
+            "max_drawdown": -0.43133108855177144,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 19
+          },
+          "stress": {
+            "net_return": 0.08527261447552639,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.25811074815548807,
+            "max_drawdown": -0.4725886718488374,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 19
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 24.852148912281173,
+            "benchmark_return": 9.763022937840692,
+            "excess": 15.089125974440481,
+            "max_drawdown": -0.826053064080292,
+            "maximum_intrabar_leverage": 2.844569646995769,
+            "liquidated": false,
+            "rebalances": 104
+          },
+          "stress": {
+            "net_return": 12.751632720402,
+            "benchmark_return": 9.763022937840692,
+            "excess": 2.9886097825613085,
+            "max_drawdown": -0.8507645218061499,
+            "maximum_intrabar_leverage": 2.8472791685292522,
+            "liquidated": false,
+            "rebalances": 104
+          }
+        }
+      },
+      "development_worst_excess": -0.5310286757679341,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter4-exit1-active1.60x",
+      "fast": 10,
+      "enter": 4,
+      "exit": 1,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.1414398174924125,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.8411740106064702,
+            "max_drawdown": -0.7958764198158724,
+            "maximum_intrabar_leverage": 2.8445696488101126,
+            "liquidated": false,
+            "rebalances": 71
+          },
+          "stress": {
+            "net_return": 2.0408283816785615,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.7405625747926192,
+            "max_drawdown": -0.8256167482883648,
+            "maximum_intrabar_leverage": 2.847279409984167,
+            "liquidated": false,
+            "rebalances": 71
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.185125356170577,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.5283513576822925,
+            "max_drawdown": -0.5338943706962281,
+            "maximum_intrabar_leverage": 2.7833270190139094,
+            "liquidated": false,
+            "rebalances": 32
+          },
+          "stress": {
+            "net_return": 4.123573123103149,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.5332008753851349,
+            "max_drawdown": -0.551711129325823,
+            "maximum_intrabar_leverage": 2.784091141945133,
+            "liquidated": false,
+            "rebalances": 32
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.15182243775948728,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.32466057143944893,
+            "max_drawdown": -0.5219059957644784,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": -0.0675610141709911,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.10527711950897058,
+            "max_drawdown": -0.5663713767877515,
+            "maximum_intrabar_leverage": 2.669698733834754,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 28.504305424616657,
+            "benchmark_return": 9.763022937840692,
+            "excess": 18.741282486775965,
+            "max_drawdown": -0.7958764198158724,
+            "maximum_intrabar_leverage": 2.8445696488101126,
+            "liquidated": false,
+            "rebalances": 130
+          },
+          "stress": {
+            "net_return": 13.527312279891355,
+            "benchmark_return": 9.763022937840692,
+            "excess": 3.764289342050663,
+            "max_drawdown": -0.8256167482883648,
+            "maximum_intrabar_leverage": 2.847279409984167,
+            "liquidated": false,
+            "rebalances": 130
+          }
+        }
+      },
+      "development_worst_excess": -0.5332008753851349,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter2-exit1-active1.55x",
+      "fast": 9,
+      "enter": 2,
+      "exit": 1,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 4.091944158261481,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.7916783513755385,
+            "max_drawdown": -0.732348643665363,
+            "maximum_intrabar_leverage": 2.598665394339953,
+            "liquidated": false,
+            "rebalances": 53
+          },
+          "stress": {
+            "net_return": 2.575228092960193,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.2749622860742507,
+            "max_drawdown": -0.7684427493788729,
+            "maximum_intrabar_leverage": 2.599547617756153,
+            "liquidated": false,
+            "rebalances": 53
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.348875093280513,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.6921010947922284,
+            "max_drawdown": -0.5293308080938058,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 31
+          },
+          "stress": {
+            "net_return": 4.096414027401864,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.5603599710864202,
+            "max_drawdown": -0.5634305564858818,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 31
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.17028868338031958,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.34312681706028125,
+            "max_drawdown": -0.44149358242361064,
+            "maximum_intrabar_leverage": 2.452106651873418,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": -0.09792973059999298,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.0749084030799687,
+            "max_drawdown": -0.5049735544462414,
+            "maximum_intrabar_leverage": 2.452106651873418,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 36.83322999825373,
+            "benchmark_return": 9.763022937840692,
+            "excess": 27.070207060413036,
+            "max_drawdown": -0.732348643665363,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 111
+          },
+          "stress": {
+            "net_return": 15.43648039659685,
+            "benchmark_return": 9.763022937840692,
+            "excess": 5.6734574587561575,
+            "max_drawdown": -0.7684427493788729,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 111
+          }
+        }
+      },
+      "development_worst_excess": -0.5603599710864202,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter3-exit2-active1.50x",
+      "fast": 9,
+      "enter": 3,
+      "exit": 2,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 1.3408474594290491,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.04058165254310686,
+            "max_drawdown": -0.8024381985803449,
+            "maximum_intrabar_leverage": 2.6209152281245065,
+            "liquidated": false,
+            "rebalances": 47
+          },
+          "stress": {
+            "net_return": 0.7186578008076109,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.5816080060783314,
+            "max_drawdown": -0.8323766686617854,
+            "maximum_intrabar_leverage": 2.6209152281245065,
+            "liquidated": false,
+            "rebalances": 47
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.610753870833789,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.9539798723455046,
+            "max_drawdown": -0.5281358769923677,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 23
+          },
+          "stress": {
+            "net_return": 4.6407515889519875,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.016022409536296855,
+            "max_drawdown": -0.5448061211754367,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 23
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.282089210925533,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.45492734460549467,
+            "max_drawdown": -0.3826159782856387,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 21
+          },
+          "stress": {
+            "net_return": 0.05215562530186411,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.22499375898182578,
+            "max_drawdown": -0.4230471882843803,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 21
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 18.84003104745876,
+            "benchmark_return": 9.763022937840692,
+            "excess": 9.077008109618067,
+            "max_drawdown": -0.8024381985803449,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 91
+          },
+          "stress": {
+            "net_return": 9.200145563119536,
+            "benchmark_return": 9.763022937840692,
+            "excess": -0.5628773747211557,
+            "max_drawdown": -0.8323766686617854,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 91
+          }
+        }
+      },
+      "development_worst_excess": -0.5816080060783314,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter4-exit2-active1.60x",
+      "fast": 10,
+      "enter": 4,
+      "exit": 2,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.0124087198644633,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.7121429129785211,
+            "max_drawdown": -0.8477821809993574,
+            "maximum_intrabar_leverage": 2.844569648810121,
+            "liquidated": false,
+            "rebalances": 81
+          },
+          "stress": {
+            "net_return": 1.2521791229259436,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.04808668395999871,
+            "max_drawdown": -0.8701095749140619,
+            "maximum_intrabar_leverage": 2.847279410010068,
+            "liquidated": false,
+            "rebalances": 81
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.9965252714025805,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.3397512729142962,
+            "max_drawdown": -0.5262856997691858,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 30
+          },
+          "stress": {
+            "net_return": 4.063344539776825,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.5934294587114595,
+            "max_drawdown": -0.5443636695642661,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 30
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.3060695729916625,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.4789077066716242,
+            "max_drawdown": -0.4477682839778569,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 24
+          },
+          "stress": {
+            "net_return": 0.07832345170480776,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.2511615853847694,
+            "max_drawdown": -0.4891577062081948,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 24
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 22.592821196976683,
+            "benchmark_return": 9.763022937840692,
+            "excess": 12.829798259135991,
+            "max_drawdown": -0.8477821809993574,
+            "maximum_intrabar_leverage": 2.844569648810121,
+            "liquidated": false,
+            "rebalances": 135
+          },
+          "stress": {
+            "net_return": 11.296724956666068,
+            "benchmark_return": 9.763022937840692,
+            "excess": 1.5337020188253767,
+            "max_drawdown": -0.8701095749140619,
+            "maximum_intrabar_leverage": 2.847279410010068,
+            "liquidated": false,
+            "rebalances": 135
+          }
+        }
+      },
+      "development_worst_excess": -0.5934294587114595,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma11/40-enter4-exit1-active1.55x",
+      "fast": 11,
+      "enter": 4,
+      "exit": 1,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 4.3434832273576465,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 3.043217420471704,
+            "max_drawdown": -0.7234658056013666,
+            "maximum_intrabar_leverage": 2.844569646498834,
+            "liquidated": false,
+            "rebalances": 48
+          },
+          "stress": {
+            "net_return": 3.039330853631717,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.7390650467457747,
+            "max_drawdown": -0.757860720732744,
+            "maximum_intrabar_leverage": 2.84727910623334,
+            "liquidated": false,
+            "rebalances": 48
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.066253170266559,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.4094791717782744,
+            "max_drawdown": -0.5269439778116524,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 26
+          },
+          "stress": {
+            "net_return": 4.053394327163095,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.6033796713251895,
+            "max_drawdown": -0.5443569833892125,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 26
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.19385125273498083,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.36668938641494253,
+            "max_drawdown": -0.49555245662865977,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 21
+          },
+          "stress": {
+            "net_return": -0.026970014282901814,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.14586811939705985,
+            "max_drawdown": -0.5434773760185628,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 21
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 37.69854010490392,
+            "benchmark_return": 9.763022937840692,
+            "excess": 27.935517167063228,
+            "max_drawdown": -0.7234658056013666,
+            "maximum_intrabar_leverage": 2.844569646498834,
+            "liquidated": false,
+            "rebalances": 96
+          },
+          "stress": {
+            "net_return": 18.861782350437824,
+            "benchmark_return": 9.763022937840692,
+            "excess": 9.098759412597133,
+            "max_drawdown": -0.757860720732744,
+            "maximum_intrabar_leverage": 2.84727910623334,
+            "liquidated": false,
+            "rebalances": 96
+          }
+        }
+      },
+      "development_worst_excess": -0.6033796713251895,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter2-exit2-active1.60x",
+      "fast": 10,
+      "enter": 2,
+      "exit": 2,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.740264137785168,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.4399983308992257,
+            "max_drawdown": -0.8025351430830154,
+            "maximum_intrabar_leverage": 2.7068961297172263,
+            "liquidated": false,
+            "rebalances": 74
+          },
+          "stress": {
+            "net_return": 1.694283291147305,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.3940174842613626,
+            "max_drawdown": -0.8313359108250608,
+            "maximum_intrabar_leverage": 2.7074982522783726,
+            "liquidated": false,
+            "rebalances": 74
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.094781402096136,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.43800740360785184,
+            "max_drawdown": -0.5269470253497245,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 31
+          },
+          "stress": {
+            "net_return": 4.048884523966292,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.6078894745219925,
+            "max_drawdown": -0.562294978743562,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 31
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.35547997147132554,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.5283181051512872,
+            "max_drawdown": -0.39469144235790043,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 24
+          },
+          "stress": {
+            "net_return": 0.09808456737611082,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.2709227010560725,
+            "max_drawdown": -0.42913331057470366,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 24
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 29.89964654845928,
+            "benchmark_return": 9.763022937840692,
+            "excess": 20.13662361061859,
+            "max_drawdown": -0.8025351430830154,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 129
+          },
+          "stress": {
+            "net_return": 13.93738186322242,
+            "benchmark_return": 9.763022937840692,
+            "excess": 4.174358925381728,
+            "max_drawdown": -0.8313359108250608,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 129
+          }
+        }
+      },
+      "development_worst_excess": -0.6078894745219925,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter4-exit1-active1.50x",
+      "fast": 9,
+      "enter": 4,
+      "exit": 1,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.5101164318250864,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.2098506249391443,
+            "max_drawdown": -0.7549950802368205,
+            "maximum_intrabar_leverage": 2.844034490323336,
+            "liquidated": false,
+            "rebalances": 41
+          },
+          "stress": {
+            "net_return": 2.377300838471849,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.0770350315859065,
+            "max_drawdown": -0.7884486593227932,
+            "maximum_intrabar_leverage": 2.8445862595967073,
+            "liquidated": false,
+            "rebalances": 41
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.010051692413298,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.35327769392501374,
+            "max_drawdown": -0.5206036101805815,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": 4.035436700312148,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.6213372981761367,
+            "max_drawdown": -0.5375356988075385,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.15500006898681423,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.3278382026667759,
+            "max_drawdown": -0.49389384257147917,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 21
+          },
+          "stress": {
+            "net_return": -0.052473201387244164,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.12036493229271751,
+            "max_drawdown": -0.5380159289268849,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 21
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 30.307469862611306,
+            "benchmark_return": 9.763022937840692,
+            "excess": 20.544446924770615,
+            "max_drawdown": -0.7549950802368205,
+            "maximum_intrabar_leverage": 2.844034490323336,
+            "liquidated": false,
+            "rebalances": 87
+          },
+          "stress": {
+            "net_return": 15.11381564121452,
+            "benchmark_return": 9.763022937840692,
+            "excess": 5.350792703373829,
+            "max_drawdown": -0.7884486593227932,
+            "maximum_intrabar_leverage": 2.8445862595967073,
+            "liquidated": false,
+            "rebalances": 87
+          }
+        }
+      },
+      "development_worst_excess": -0.6213372981761367,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter3-exit2-active1.55x",
+      "fast": 9,
+      "enter": 3,
+      "exit": 2,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 1.3041677823420281,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.0039019754560858377,
+            "max_drawdown": -0.8134590171440745,
+            "maximum_intrabar_leverage": 2.6985797029272223,
+            "liquidated": false,
+            "rebalances": 60
+          },
+          "stress": {
+            "net_return": 0.6740674834675963,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.626198323418346,
+            "max_drawdown": -0.842010877977236,
+            "maximum_intrabar_leverage": 2.6991591900720873,
+            "liquidated": false,
+            "rebalances": 60
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.8688429857756015,
+            "benchmark_return": 4.656773998488284,
+            "excess": 1.2120689872873172,
+            "max_drawdown": -0.5353846115893949,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": 4.831476010758065,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.17470201226978066,
+            "max_drawdown": -0.552489593838995,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.2876101965200661,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.46044833020002773,
+            "max_drawdown": -0.3927847832501716,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 21
+          },
+          "stress": {
+            "net_return": 0.04978602805534417,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.22262416173530586,
+            "max_drawdown": -0.4337539936573398,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 21
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 19.378963715509453,
+            "benchmark_return": 9.763022937840692,
+            "excess": 9.615940777668762,
+            "max_drawdown": -0.8134590171440745,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 106
+          },
+          "stress": {
+            "net_return": 9.248309733772,
+            "benchmark_return": 9.763022937840692,
+            "excess": -0.5147132040686913,
+            "max_drawdown": -0.842010877977236,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 106
+          }
+        }
+      },
+      "development_worst_excess": -0.626198323418346,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma11/40-enter3-exit1-active1.55x",
+      "fast": 11,
+      "enter": 3,
+      "exit": 1,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.8355626102724023,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.53529680338646,
+            "max_drawdown": -0.7828493938371492,
+            "maximum_intrabar_leverage": 2.698579600403331,
+            "liquidated": false,
+            "rebalances": 50
+          },
+          "stress": {
+            "net_return": 1.8430537940050629,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.5427879871191206,
+            "max_drawdown": -0.8135276572349984,
+            "maximum_intrabar_leverage": 2.6991566244132352,
+            "liquidated": false,
+            "rebalances": 50
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.028185855041562,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.37141185655327735,
+            "max_drawdown": -0.5507008666572435,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": 4.0218765563753625,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.6348974421129219,
+            "max_drawdown": -0.567293143084189,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.04785224215658295,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.22069037583654463,
+            "max_drawdown": -0.4925372616507937,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": -0.17747437557664675,
+            "benchmark_return": -0.17283813367996168,
+            "excess": -0.004636241896685073,
+            "max_drawdown": -0.5322445791218355,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 23.22789913783933,
+            "benchmark_return": 9.763022937840692,
+            "excess": 13.464876199998638,
+            "max_drawdown": -0.7828493938371492,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 102
+          },
+          "stress": {
+            "net_return": 10.743580976039185,
+            "benchmark_return": 9.763022937840692,
+            "excess": 0.9805580381984935,
+            "max_drawdown": -0.8135276572349984,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 102
+          }
+        }
+      },
+      "development_worst_excess": -0.6348974421129219,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma11/40-enter3-exit2-active1.60x",
+      "fast": 11,
+      "enter": 3,
+      "exit": 2,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 1.8077377360601754,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.5074719291742331,
+            "max_drawdown": -0.8450575947982584,
+            "maximum_intrabar_leverage": 2.7068961297172263,
+            "liquidated": false,
+            "rebalances": 75
+          },
+          "stress": {
+            "net_return": 1.0987038197446333,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.20156198714130902,
+            "max_drawdown": -0.8677843232424051,
+            "maximum_intrabar_leverage": 2.7074982522783726,
+            "liquidated": false,
+            "rebalances": 75
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.932387418790603,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.27561342030231906,
+            "max_drawdown": -0.5493131192414318,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 29
+          },
+          "stress": {
+            "net_return": 4.009124774118715,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.6476492243695695,
+            "max_drawdown": -0.5665671693180703,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 29
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.17523263731138855,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.3480707709913502,
+            "max_drawdown": -0.4417067704140751,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 24
+          },
+          "stress": {
+            "net_return": -0.048453208225884566,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.12438492545407712,
+            "max_drawdown": -0.4806201918095945,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 24
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 18.575365868137755,
+            "benchmark_return": 9.763022937840692,
+            "excess": 8.812342930297064,
+            "max_drawdown": -0.8450575947982584,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 128
+          },
+          "stress": {
+            "net_return": 9.003296742562027,
+            "benchmark_return": 9.763022937840692,
+            "excess": -0.7597261952786649,
+            "max_drawdown": -0.8677843232424051,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 128
+          }
+        }
+      },
+      "development_worst_excess": -0.6476492243695695,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter3-exit2-active1.60x",
+      "fast": 9,
+      "enter": 3,
+      "exit": 2,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 1.2830895244229923,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.01717628246295,
+            "max_drawdown": -0.8222512368665502,
+            "maximum_intrabar_leverage": 2.7068961297172263,
+            "liquidated": false,
+            "rebalances": 79
+          },
+          "stress": {
+            "net_return": 0.641610760752855,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.6586550461330873,
+            "max_drawdown": -0.8492300885960069,
+            "maximum_intrabar_leverage": 2.7074982522783726,
+            "liquidated": false,
+            "rebalances": 79
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 6.162437224706621,
+            "benchmark_return": 4.656773998488284,
+            "excess": 1.5056632262183367,
+            "max_drawdown": -0.5408085940456615,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 29
+          },
+          "stress": {
+            "net_return": 5.050750612600852,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.39397661411256735,
+            "max_drawdown": -0.5583559827936514,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 29
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.29163512286375315,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.46447325654371485,
+            "max_drawdown": -0.4033965903668303,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 24
+          },
+          "stress": {
+            "net_return": 0.046172947902409466,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.21901108158237115,
+            "max_drawdown": -0.44483327878822054,
+            "maximum_intrabar_leverage": 2.6896037384118996,
+            "liquidated": false,
+            "rebalances": 24
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 20.12144448496575,
+            "benchmark_return": 9.763022937840692,
+            "excess": 10.358421547125058,
+            "max_drawdown": -0.8222512368665502,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 132
+          },
+          "stress": {
+            "net_return": 9.391612160417782,
+            "benchmark_return": 9.763022937840692,
+            "excess": -0.3714107774229092,
+            "max_drawdown": -0.8492300885960069,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 132
+          }
+        }
+      },
+      "development_worst_excess": -0.6586550461330873,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma11/40-enter4-exit2-active1.55x",
+      "fast": 11,
+      "enter": 4,
+      "exit": 2,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.049845095368387,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.7495792884824446,
+            "max_drawdown": -0.7838521291703131,
+            "maximum_intrabar_leverage": 2.844569646995769,
+            "liquidated": false,
+            "rebalances": 55
+          },
+          "stress": {
+            "net_return": 2.1155781523200874,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.8153123454341451,
+            "max_drawdown": -0.8109248450708236,
+            "maximum_intrabar_leverage": 2.8472791685292522,
+            "liquidated": false,
+            "rebalances": 55
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.8819107248520845,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.22513672636380022,
+            "max_drawdown": -0.5196321449252496,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 24
+          },
+          "stress": {
+            "net_return": 3.9915273314679345,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.6652466670203498,
+            "max_drawdown": -0.5372900751199894,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 24
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.34850160019870835,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.52133973387867,
+            "max_drawdown": -0.41978397249185345,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 19
+          },
+          "stress": {
+            "net_return": 0.120195415914121,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.2930335495940827,
+            "max_drawdown": -0.46183965111750674,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 19
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 31.122378014387774,
+            "benchmark_return": 9.763022937840692,
+            "excess": 21.359355076547082,
+            "max_drawdown": -0.7838521291703131,
+            "maximum_intrabar_leverage": 2.844569646995769,
+            "liquidated": false,
+            "rebalances": 99
+          },
+          "stress": {
+            "net_return": 16.42068688618041,
+            "benchmark_return": 9.763022937840692,
+            "excess": 6.657663948339717,
+            "max_drawdown": -0.8109248450708236,
+            "maximum_intrabar_leverage": 2.8472791685292522,
+            "liquidated": false,
+            "rebalances": 99
+          }
+        }
+      },
+      "development_worst_excess": -0.6652466670203498,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter2-exit1-active1.50x",
+      "fast": 10,
+      "enter": 2,
+      "exit": 1,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.9076585482408013,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.607392741354859,
+            "max_drawdown": -0.7092981541006484,
+            "maximum_intrabar_leverage": 2.598628760619864,
+            "liquidated": false,
+            "rebalances": 44
+          },
+          "stress": {
+            "net_return": 2.4848967720587725,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.1846309651728302,
+            "max_drawdown": -0.748802231799062,
+            "maximum_intrabar_leverage": 2.5993434576001664,
+            "liquidated": false,
+            "rebalances": 44
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.172408417354599,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.5156344188663144,
+            "max_drawdown": -0.5182165871933526,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 29
+          },
+          "stress": {
+            "net_return": 3.98860547707131,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.6681685214169741,
+            "max_drawdown": -0.5520052739512109,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 29
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.1963515794217097,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.36918971310167137,
+            "max_drawdown": -0.4296864956343223,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": -0.05312731130634362,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.11971082237361805,
+            "max_drawdown": -0.4740604135043416,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 35.23996929694993,
+            "benchmark_return": 9.763022937840692,
+            "excess": 25.476946359109238,
+            "max_drawdown": -0.7092981541006484,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 98
+          },
+          "stress": {
+            "net_return": 15.461168764110592,
+            "benchmark_return": 9.763022937840692,
+            "excess": 5.698145826269901,
+            "max_drawdown": -0.748802231799062,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 98
+          }
+        }
+      },
+      "development_worst_excess": -0.6681685214169741,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter2-exit2-active1.60x",
+      "fast": 9,
+      "enter": 2,
+      "exit": 2,
+      "active": "1.60",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.875052133186146,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.5747863263002035,
+            "max_drawdown": -0.8079332030230797,
+            "maximum_intrabar_leverage": 2.7068961297172263,
+            "liquidated": false,
+            "rebalances": 74
+          },
+          "stress": {
+            "net_return": 1.7919593567444854,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.4916935498585431,
+            "max_drawdown": -0.8359496718660808,
+            "maximum_intrabar_leverage": 2.7074982522783726,
+            "liquidated": false,
+            "rebalances": 74
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.019249189614404,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.36247519112611926,
+            "max_drawdown": -0.5269470253497245,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 31
+          },
+          "stress": {
+            "net_return": 3.986196865792407,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.6705771326958772,
+            "max_drawdown": -0.562294978743562,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 31
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.32858090165010745,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.5014190353300692,
+            "max_drawdown": -0.3973426306426317,
+            "maximum_intrabar_leverage": 2.59730514813689,
+            "liquidated": false,
+            "rebalances": 24
+          },
+          "stress": {
+            "net_return": 0.05578001343390544,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.22861814711386713,
+            "max_drawdown": -0.45289880005790595,
+            "maximum_intrabar_leverage": 2.59730514813689,
+            "liquidated": false,
+            "rebalances": 24
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 29.989022535121354,
+            "benchmark_return": 9.763022937840692,
+            "excess": 20.225999597280662,
+            "max_drawdown": -0.8079332030230797,
+            "maximum_intrabar_leverage": 2.783327019682007,
+            "liquidated": false,
+            "rebalances": 129
+          },
+          "stress": {
+            "net_return": 13.697787007722404,
+            "benchmark_return": 9.763022937840692,
+            "excess": 3.9347640698817123,
+            "max_drawdown": -0.8359496718660808,
+            "maximum_intrabar_leverage": 2.784091227206557,
+            "liquidated": false,
+            "rebalances": 129
+          }
+        }
+      },
+      "development_worst_excess": -0.6705771326958772,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter4-exit2-active1.50x",
+      "fast": 9,
+      "enter": 4,
+      "exit": 2,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.2927269785229933,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.992461171637051,
+            "max_drawdown": -0.8158864336614654,
+            "maximum_intrabar_leverage": 2.8440635114023918,
+            "liquidated": false,
+            "rebalances": 45
+          },
+          "stress": {
+            "net_return": 1.5075607721910023,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.20729496530505997,
+            "max_drawdown": -0.8412008467314736,
+            "maximum_intrabar_leverage": 2.8447314272277655,
+            "liquidated": false,
+            "rebalances": 45
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.827968410157637,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.17119441166935268,
+            "max_drawdown": -0.5136103057345643,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 23
+          },
+          "stress": {
+            "net_return": 3.9712652441684235,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.6855087543198608,
+            "max_drawdown": -0.5307714081034661,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 23
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.3001722950021085,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.4730104286820702,
+            "max_drawdown": -0.42067738372780644,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 19
+          },
+          "stress": {
+            "net_return": 0.08641769578404315,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.25925582946400483,
+            "max_drawdown": -0.46136031928128696,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 19
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 23.95018778371714,
+            "benchmark_return": 9.763022937840692,
+            "excess": 14.187164845876449,
+            "max_drawdown": -0.8158864336614654,
+            "maximum_intrabar_leverage": 2.8440635114023918,
+            "liquidated": false,
+            "rebalances": 87
+          },
+          "stress": {
+            "net_return": 12.543011080975178,
+            "benchmark_return": 9.763022937840692,
+            "excess": 2.779988143134487,
+            "max_drawdown": -0.8412008467314736,
+            "maximum_intrabar_leverage": 2.8447314272277655,
+            "liquidated": false,
+            "rebalances": 87
+          }
+        }
+      },
+      "development_worst_excess": -0.6855087543198608,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter4-exit1-active1.55x",
+      "fast": 10,
+      "enter": 4,
+      "exit": 1,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.1579362987986435,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.8576704919127012,
+            "max_drawdown": -0.7855345071574756,
+            "maximum_intrabar_leverage": 2.844569646498834,
+            "liquidated": false,
+            "rebalances": 52
+          },
+          "stress": {
+            "net_return": 2.0829951165816767,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.7827293096957344,
+            "max_drawdown": -0.8158114470383685,
+            "maximum_intrabar_leverage": 2.84727910623334,
+            "liquidated": false,
+            "rebalances": 52
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.953892816266355,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.29711881777807037,
+            "max_drawdown": -0.5281836934418145,
+            "maximum_intrabar_leverage": 2.783326855259696,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": 3.959637675925144,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.6971363225631402,
+            "max_drawdown": -0.54555466142061,
+            "maximum_intrabar_leverage": 2.7840866258753962,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.15464679163916942,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.3274849253191311,
+            "max_drawdown": -0.5093173784352237,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 21
+          },
+          "stress": {
+            "net_return": -0.05904009989023851,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.11379803378972317,
+            "max_drawdown": -0.5535221870685875,
+            "maximum_intrabar_leverage": 2.505103688254763,
+            "liquidated": false,
+            "rebalances": 21
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 27.58432866084296,
+            "benchmark_return": 9.763022937840692,
+            "excess": 17.82130572300227,
+            "max_drawdown": -0.7855345071574756,
+            "maximum_intrabar_leverage": 2.844569646498834,
+            "liquidated": false,
+            "rebalances": 100
+          },
+          "stress": {
+            "net_return": 13.387783800608146,
+            "benchmark_return": 9.763022937840692,
+            "excess": 3.624760862767454,
+            "max_drawdown": -0.8158114470383685,
+            "maximum_intrabar_leverage": 2.84727910623334,
+            "liquidated": false,
+            "rebalances": 100
+          }
+        }
+      },
+      "development_worst_excess": -0.6971363225631402,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter2-exit1-active1.50x",
+      "fast": 9,
+      "enter": 2,
+      "exit": 1,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 4.069726273977262,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 2.76946046709132,
+            "max_drawdown": -0.7204868643827996,
+            "maximum_intrabar_leverage": 2.598628760619864,
+            "liquidated": false,
+            "rebalances": 44
+          },
+          "stress": {
+            "net_return": 2.6006171715346538,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.3003513646487115,
+            "max_drawdown": -0.7554651878819891,
+            "maximum_intrabar_leverage": 2.5993434576001664,
+            "liquidated": false,
+            "rebalances": 44
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 5.098266765169928,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.4414927666816437,
+            "max_drawdown": -0.5182165871933526,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 29
+          },
+          "stress": {
+            "net_return": 3.9285861139094664,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.7281878845788179,
+            "max_drawdown": -0.5520052739512109,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 29
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.16925242621065628,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.342090559890618,
+            "max_drawdown": -0.430659481973731,
+            "maximum_intrabar_leverage": 2.300911932854474,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": -0.09113432946127738,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.0817038042186843,
+            "max_drawdown": -0.49341040012583365,
+            "maximum_intrabar_leverage": 2.300911932854474,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 35.14924319938489,
+            "benchmark_return": 9.763022937840692,
+            "excess": 25.3862202615442,
+            "max_drawdown": -0.7204868643827996,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 100
+          },
+          "stress": {
+            "net_return": 15.128686375810648,
+            "benchmark_return": 9.763022937840692,
+            "excess": 5.365663437969957,
+            "max_drawdown": -0.7554651878819891,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 100
+          }
+        }
+      },
+      "development_worst_excess": -0.7281878845788179,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma11/40-enter4-exit1-active1.50x",
+      "fast": 11,
+      "enter": 4,
+      "exit": 1,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 4.323999768729881,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 3.0237339618439387,
+            "max_drawdown": -0.7099740675249542,
+            "maximum_intrabar_leverage": 2.844034490323336,
+            "liquidated": false,
+            "rebalances": 39
+          },
+          "stress": {
+            "net_return": 3.061663136865012,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.7613973299790697,
+            "max_drawdown": -0.744859225206174,
+            "maximum_intrabar_leverage": 2.8445862595967073,
+            "liquidated": false,
+            "rebalances": 39
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.857318218414704,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.20054421992642002,
+            "max_drawdown": -0.5193854577681352,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 24
+          },
+          "stress": {
+            "net_return": 3.907147594844358,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.7496264036439264,
+            "max_drawdown": -0.5363574040920159,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 24
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.19230885905898115,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.3651469927389428,
+            "max_drawdown": -0.4840012310864011,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 21
+          },
+          "stress": {
+            "net_return": -0.021799716200029906,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.15103841747993177,
+            "max_drawdown": -0.5315125081440193,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 21
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 36.18133763542992,
+            "benchmark_return": 9.763022937840692,
+            "excess": 26.418314697589228,
+            "max_drawdown": -0.7099740675249542,
+            "maximum_intrabar_leverage": 2.844034490323336,
+            "liquidated": false,
+            "rebalances": 85
+          },
+          "stress": {
+            "net_return": 18.496659065908634,
+            "benchmark_return": 9.763022937840692,
+            "excess": 8.733636128067943,
+            "max_drawdown": -0.744859225206174,
+            "maximum_intrabar_leverage": 2.8445862595967073,
+            "liquidated": false,
+            "rebalances": 85
+          }
+        }
+      },
+      "development_worst_excess": -0.7496264036439264,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter4-exit2-active1.55x",
+      "fast": 10,
+      "enter": 4,
+      "exit": 2,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.0125003613304124,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.7122345544444701,
+            "max_drawdown": -0.8400509350014549,
+            "maximum_intrabar_leverage": 2.844569646995769,
+            "liquidated": false,
+            "rebalances": 62
+          },
+          "stress": {
+            "net_return": 1.2727722581386407,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.027493548747301588,
+            "max_drawdown": -0.862795105290187,
+            "maximum_intrabar_leverage": 2.8472791685292522,
+            "liquidated": false,
+            "rebalances": 62
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.773234652381914,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.11646065389362992,
+            "max_drawdown": -0.5208803176070563,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": 3.8991509032311393,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.757623095257145,
+            "max_drawdown": -0.5384958872617001,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.30435033552998786,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.4771884692099495,
+            "max_drawdown": -0.4356583923968634,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 19
+          },
+          "stress": {
+            "net_return": 0.08338572417763106,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.2562238578575927,
+            "max_drawdown": -0.4766173913574403,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 19
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 21.685093395666037,
+            "benchmark_return": 9.763022937840692,
+            "excess": 11.922070457825345,
+            "max_drawdown": -0.8400509350014549,
+            "maximum_intrabar_leverage": 2.844569646995769,
+            "liquidated": false,
+            "rebalances": 106
+          },
+          "stress": {
+            "net_return": 11.063125470344527,
+            "benchmark_return": 9.763022937840692,
+            "excess": 1.3001025325038356,
+            "max_drawdown": -0.862795105290187,
+            "maximum_intrabar_leverage": 2.8472791685292522,
+            "liquidated": false,
+            "rebalances": 106
+          }
+        }
+      },
+      "development_worst_excess": -0.757623095257145,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma11/40-enter3-exit1-active1.50x",
+      "fast": 11,
+      "enter": 3,
+      "exit": 1,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.8470098065150986,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.5467439996291563,
+            "max_drawdown": -0.7711751016307334,
+            "maximum_intrabar_leverage": 2.598628760619864,
+            "liquidated": false,
+            "rebalances": 39
+          },
+          "stress": {
+            "net_return": 1.8795536317026698,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.5792878248167275,
+            "max_drawdown": -0.8024635544719652,
+            "maximum_intrabar_leverage": 2.5993434576001664,
+            "liquidated": false,
+            "rebalances": 39
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.817882528478373,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.16110852999008873,
+            "max_drawdown": -0.5430098219051589,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": 3.874257035835871,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.7825169626524131,
+            "max_drawdown": -0.5591969335533145,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.05073066348711711,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.22356879716707878,
+            "max_drawdown": -0.4808989483410141,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": -0.16872394731430357,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.004114186365658107,
+            "max_drawdown": -0.520305335559505,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 22.516877006356463,
+            "benchmark_return": 9.763022937840692,
+            "excess": 12.753854068515771,
+            "max_drawdown": -0.7711751016307334,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 89
+          },
+          "stress": {
+            "net_return": 10.667528448961423,
+            "benchmark_return": 9.763022937840692,
+            "excess": 0.9045055111207319,
+            "max_drawdown": -0.8024635544719652,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 89
+          }
+        }
+      },
+      "development_worst_excess": -0.7825169626524131,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter2-exit2-active1.55x",
+      "fast": 10,
+      "enter": 2,
+      "exit": 2,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.739412449551983,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.4391466426660406,
+            "max_drawdown": -0.7930957468278649,
+            "maximum_intrabar_leverage": 2.674572420384527,
+            "liquidated": false,
+            "rebalances": 57
+          },
+          "stress": {
+            "net_return": 1.721474721974405,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.4212089150884628,
+            "max_drawdown": -0.8223493530020338,
+            "maximum_intrabar_leverage": 2.677015526501493,
+            "liquidated": false,
+            "rebalances": 57
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.843706092918599,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.18693209443031478,
+            "max_drawdown": -0.5182198341231751,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": 3.867648481447597,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.7891255170406875,
+            "max_drawdown": -0.5531427253215473,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.34878825769598526,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.5216263913759469,
+            "max_drawdown": -0.3844062330046842,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 21
+          },
+          "stress": {
+            "net_return": 0.09983792371518546,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.2726760573951471,
+            "max_drawdown": -0.41831752860919097,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 21
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 28.473757849839956,
+            "benchmark_return": 9.763022937840692,
+            "excess": 18.710734911999264,
+            "max_drawdown": -0.7930957468278649,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 105
+          },
+          "stress": {
+            "net_return": 13.569753473397332,
+            "benchmark_return": 9.763022937840692,
+            "excess": 3.8067305355566408,
+            "max_drawdown": -0.8223493530020338,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 105
+          }
+        }
+      },
+      "development_worst_excess": -0.7891255170406875,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma11/40-enter3-exit2-active1.55x",
+      "fast": 11,
+      "enter": 3,
+      "exit": 2,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 1.810676690087665,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.5104108832017227,
+            "max_drawdown": -0.8374240388376191,
+            "maximum_intrabar_leverage": 2.6985797029272223,
+            "liquidated": false,
+            "rebalances": 56
+          },
+          "stress": {
+            "net_return": 1.1200223326315355,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.1802434742544068,
+            "max_drawdown": -0.8605470332245462,
+            "maximum_intrabar_leverage": 2.6991591900720873,
+            "liquidated": false,
+            "rebalances": 56
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.709977033396929,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.05320303490864475,
+            "max_drawdown": -0.5437118211150509,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": 3.8454023847371763,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.811371613751108,
+            "max_drawdown": -0.5605387123143263,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.17581545063419746,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.34865358431415916,
+            "max_drawdown": -0.43017909035373153,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 21
+          },
+          "stress": {
+            "net_return": -0.04166095392051872,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.13117717975944296,
+            "max_drawdown": -0.4687458248703756,
+            "maximum_intrabar_leverage": 2.5218739581096252,
+            "liquidated": false,
+            "rebalances": 21
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 17.870543819880055,
+            "benchmark_return": 9.763022937840692,
+            "excess": 8.107520882039363,
+            "max_drawdown": -0.8374240388376191,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 102
+          },
+          "stress": {
+            "net_return": 8.84440489686163,
+            "benchmark_return": 9.763022937840692,
+            "excess": -0.9186180409790623,
+            "max_drawdown": -0.8605470332245462,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 102
+          }
+        }
+      },
+      "development_worst_excess": -0.811371613751108,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma11/40-enter4-exit2-active1.50x",
+      "fast": 11,
+      "enter": 4,
+      "exit": 2,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.049590214679127,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.7493244077931849,
+            "max_drawdown": -0.772519782799219,
+            "maximum_intrabar_leverage": 2.8440635114023918,
+            "liquidated": false,
+            "rebalances": 43
+          },
+          "stress": {
+            "net_return": 2.14224098568187,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.8419751787959278,
+            "max_drawdown": -0.8000784796880402,
+            "maximum_intrabar_leverage": 2.8447314272277655,
+            "liquidated": false,
+            "rebalances": 43
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.679845577461916,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.023071578973631546,
+            "max_drawdown": -0.5123839543713175,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 22
+          },
+          "stress": {
+            "net_return": 3.844595852220522,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.8121781462677622,
+            "max_drawdown": -0.5295852231657341,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 22
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.341074107379023,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.5139122410589847,
+            "max_drawdown": -0.40933209944368626,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 19
+          },
+          "stress": {
+            "net_return": 0.12066106802241414,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.2934992017023758,
+            "max_drawdown": -0.45077637313088254,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 19
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 29.846065579543623,
+            "benchmark_return": 9.763022937840692,
+            "excess": 20.08304264170293,
+            "max_drawdown": -0.772519782799219,
+            "maximum_intrabar_leverage": 2.8440635114023918,
+            "liquidated": false,
+            "rebalances": 85
+          },
+          "stress": {
+            "net_return": 16.059673651811735,
+            "benchmark_return": 9.763022937840692,
+            "excess": 6.296650713971044,
+            "max_drawdown": -0.8000784796880402,
+            "maximum_intrabar_leverage": 2.8447314272277655,
+            "liquidated": false,
+            "rebalances": 85
+          }
+        }
+      },
+      "development_worst_excess": -0.8121781462677622,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter4-exit1-active1.50x",
+      "fast": 10,
+      "enter": 4,
+      "exit": 1,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 3.171897022262137,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.8716312153761947,
+            "max_drawdown": -0.7733683130690353,
+            "maximum_intrabar_leverage": 2.844034490323336,
+            "liquidated": false,
+            "rebalances": 41
+          },
+          "stress": {
+            "net_return": 2.123601660718515,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.8233358538325726,
+            "max_drawdown": -0.8043401666978683,
+            "maximum_intrabar_leverage": 2.8445862595967073,
+            "liquidated": false,
+            "rebalances": 41
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.750384202550857,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.09361020406257303,
+            "max_drawdown": -0.5206036101805815,
+            "maximum_intrabar_leverage": 2.693926372476331,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": 3.8174182693033747,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.8393557291849096,
+            "max_drawdown": -0.5375356988075385,
+            "maximum_intrabar_leverage": 2.6957263104763824,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.15452241438012385,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.3273605480600855,
+            "max_drawdown": -0.497591186048875,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 21
+          },
+          "stress": {
+            "net_return": -0.05290369756492323,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.11993443611503844,
+            "max_drawdown": -0.5414025323567844,
+            "maximum_intrabar_leverage": 2.3460017330361356,
+            "liquidated": false,
+            "rebalances": 21
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 26.697005110719324,
+            "benchmark_return": 9.763022937840692,
+            "excess": 16.933982172878633,
+            "max_drawdown": -0.7733683130690353,
+            "maximum_intrabar_leverage": 2.844034490323336,
+            "liquidated": false,
+            "rebalances": 87
+          },
+          "stress": {
+            "net_return": 13.25161696367285,
+            "benchmark_return": 9.763022937840692,
+            "excess": 3.4885940258321586,
+            "max_drawdown": -0.8043401666978683,
+            "maximum_intrabar_leverage": 2.8445862595967073,
+            "liquidated": false,
+            "rebalances": 87
+          }
+        }
+      },
+      "development_worst_excess": -0.8393557291849096,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter2-exit2-active1.55x",
+      "fast": 9,
+      "enter": 2,
+      "exit": 2,
+      "active": "1.55",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.869847350777333,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.5695815438913907,
+            "max_drawdown": -0.7988591197121861,
+            "maximum_intrabar_leverage": 2.674572420384527,
+            "liquidated": false,
+            "rebalances": 57
+          },
+          "stress": {
+            "net_return": 1.81694598421978,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.5166801773338376,
+            "max_drawdown": -0.827077193088864,
+            "maximum_intrabar_leverage": 2.677015526501493,
+            "liquidated": false,
+            "rebalances": 57
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.772466976759193,
+            "benchmark_return": 4.656773998488284,
+            "excess": 0.11569297827090885,
+            "max_drawdown": -0.5182198341231751,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 27
+          },
+          "stress": {
+            "net_return": 3.8082049552991917,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.8485690431890927,
+            "max_drawdown": -0.5531427253215473,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 27
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.32239108152996115,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.4952292152099228,
+            "max_drawdown": -0.38737668198178243,
+            "maximum_intrabar_leverage": 2.443083788611543,
+            "liquidated": false,
+            "rebalances": 23
+          },
+          "stress": {
+            "net_return": 0.05839176872181635,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.23122990240177804,
+            "max_drawdown": -0.44213768606806814,
+            "maximum_intrabar_leverage": 2.443083788611543,
+            "liquidated": false,
+            "rebalances": 23
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 28.54032050210678,
+            "benchmark_return": 9.763022937840692,
+            "excess": 18.77729756426609,
+            "max_drawdown": -0.7988591197121861,
+            "maximum_intrabar_leverage": 2.7833272230164794,
+            "liquidated": false,
+            "rebalances": 107
+          },
+          "stress": {
+            "net_return": 13.335338244553872,
+            "benchmark_return": 9.763022937840692,
+            "excess": 3.5723153067131808,
+            "max_drawdown": -0.827077193088864,
+            "maximum_intrabar_leverage": 2.7840958298691727,
+            "liquidated": false,
+            "rebalances": 107
+          }
+        }
+      },
+      "development_worst_excess": -0.8485690431890927,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter4-exit2-active1.50x",
+      "fast": 10,
+      "enter": 4,
+      "exit": 2,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.042966909948102,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.7427011030621598,
+            "max_drawdown": -0.8298518238241528,
+            "maximum_intrabar_leverage": 2.8440635114023918,
+            "liquidated": false,
+            "rebalances": 45
+          },
+          "stress": {
+            "net_return": 1.3169999960004106,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.016734189114468334,
+            "max_drawdown": -0.8532687057603968,
+            "maximum_intrabar_leverage": 2.8447314272277655,
+            "liquidated": false,
+            "rebalances": 45
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.576380001824298,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.08039399666398594,
+            "max_drawdown": -0.5136103057345643,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 23
+          },
+          "stress": {
+            "net_return": 3.756207930503922,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.9005660679843621,
+            "max_drawdown": -0.5307714081034661,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 23
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.29868903874705305,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.4715271724270147,
+            "max_drawdown": -0.4249259046247294,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 19
+          },
+          "stress": {
+            "net_return": 0.08512537941513498,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.2579635130950967,
+            "max_drawdown": -0.46532420002603475,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 19
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 21.037116409282888,
+            "benchmark_return": 9.763022937840692,
+            "excess": 11.274093471442196,
+            "max_drawdown": -0.8298518238241528,
+            "maximum_intrabar_leverage": 2.8440635114023918,
+            "liquidated": false,
+            "rebalances": 87
+          },
+          "stress": {
+            "net_return": 10.95822682313589,
+            "benchmark_return": 9.763022937840692,
+            "excess": 1.1952038852951983,
+            "max_drawdown": -0.8532687057603968,
+            "maximum_intrabar_leverage": 2.8447314272277655,
+            "liquidated": false,
+            "rebalances": 87
+          }
+        }
+      },
+      "development_worst_excess": -0.9005660679843621,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma10/40-enter2-exit2-active1.50x",
+      "fast": 10,
+      "enter": 2,
+      "exit": 2,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.74479025899608,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.444524452110138,
+            "max_drawdown": -0.781585483795475,
+            "maximum_intrabar_leverage": 2.6209152281245065,
+            "liquidated": false,
+            "rebalances": 46
+          },
+          "stress": {
+            "net_return": 1.7536180311483847,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.45335222426244237,
+            "max_drawdown": -0.8114785670183279,
+            "maximum_intrabar_leverage": 2.6209152281245065,
+            "liquidated": false,
+            "rebalances": 46
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.6213796488689605,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.03539434961932386,
+            "max_drawdown": -0.5073470811885407,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": 3.7087707609918548,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.9480032374964296,
+            "max_drawdown": -0.54191840857013,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.34100223565542986,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.5138403693353916,
+            "max_drawdown": -0.37437598174686854,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 21
+          },
+          "stress": {
+            "net_return": 0.10065611062572677,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.27349424430568847,
+            "max_drawdown": -0.4077137097484336,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 21
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 27.229287536895114,
+            "benchmark_return": 9.763022937840692,
+            "excess": 17.466264599054423,
+            "max_drawdown": -0.781585483795475,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 92
+          },
+          "stress": {
+            "net_return": 13.271278911986299,
+            "benchmark_return": 9.763022937840692,
+            "excess": 3.508255974145607,
+            "max_drawdown": -0.8114785670183279,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 92
+          }
+        }
+      },
+      "development_worst_excess": -0.9480032374964296,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma11/40-enter3-exit2-active1.50x",
+      "fast": 11,
+      "enter": 3,
+      "exit": 2,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 1.8305047962855474,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.5302389893996051,
+            "max_drawdown": -0.8279783924059988,
+            "maximum_intrabar_leverage": 2.6209152281245065,
+            "liquidated": false,
+            "rebalances": 43
+          },
+          "stress": {
+            "net_return": 1.1547151483675835,
+            "benchmark_return": 1.3002658068859423,
+            "excess": -0.1455506585183588,
+            "max_drawdown": -0.8516613355046627,
+            "maximum_intrabar_leverage": 2.6209152281245065,
+            "liquidated": false,
+            "rebalances": 43
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.515677434473207,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.14109656401507742,
+            "max_drawdown": -0.5363113967408323,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 23
+          },
+          "stress": {
+            "net_return": 3.704367510506156,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.9524064879821283,
+            "max_drawdown": -0.5527183054575154,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 23
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.17426959328414351,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.3471077269641052,
+            "max_drawdown": -0.41937866350200104,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 21
+          },
+          "stress": {
+            "net_return": -0.036593345046889526,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.13624478863307216,
+            "max_drawdown": -0.4575102967185335,
+            "maximum_intrabar_leverage": 2.3599827053097786,
+            "liquidated": false,
+            "rebalances": 21
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 17.33287471356678,
+            "benchmark_return": 9.763022937840692,
+            "excess": 7.5698517757260895,
+            "max_drawdown": -0.8279783924059988,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 87
+          },
+          "stress": {
+            "net_return": 8.765640863842304,
+            "benchmark_return": 9.763022937840692,
+            "excess": -0.9973820739983879,
+            "max_drawdown": -0.8516613355046627,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 87
+          }
+        }
+      },
+      "development_worst_excess": -0.9524064879821283,
+      "development_all_positive": false
+    },
+    {
+      "id": "sma9/40-enter2-exit2-active1.50x",
+      "fast": 9,
+      "enter": 2,
+      "exit": 2,
+      "active": "1.50",
+      "metrics": {
+        "research": {
+          "default": {
+            "net_return": 2.8690715965006532,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 1.568805789614711,
+            "max_drawdown": -0.7888895120483551,
+            "maximum_intrabar_leverage": 2.6209152281245065,
+            "liquidated": false,
+            "rebalances": 46
+          },
+          "stress": {
+            "net_return": 1.8454997979462833,
+            "benchmark_return": 1.3002658068859423,
+            "excess": 0.545233991060341,
+            "max_drawdown": -0.8164397424153571,
+            "maximum_intrabar_leverage": 2.6209152281245065,
+            "liquidated": false,
+            "rebalances": 46
+          }
+        },
+        "validation": {
+          "default": {
+            "net_return": 4.554022496770239,
+            "benchmark_return": 4.656773998488284,
+            "excess": -0.10275150171804537,
+            "max_drawdown": -0.5073470811885407,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 25
+          },
+          "stress": {
+            "net_return": 3.65225826971352,
+            "benchmark_return": 4.656773998488284,
+            "excess": -1.0045157287747641,
+            "max_drawdown": -0.54191840857013,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 25
+          }
+        },
+        "oos": {
+          "default": {
+            "net_return": 0.31561196830765803,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.48845010198761973,
+            "max_drawdown": -0.37743255472759396,
+            "maximum_intrabar_leverage": 2.2932966667573544,
+            "liquidated": false,
+            "rebalances": 23
+          },
+          "stress": {
+            "net_return": 0.060509958101061447,
+            "benchmark_return": -0.17283813367996168,
+            "excess": 0.23334809178102311,
+            "max_drawdown": -0.43133839780836336,
+            "maximum_intrabar_leverage": 2.2932966667573544,
+            "liquidated": false,
+            "rebalances": 23
+          }
+        },
+        "full": {
+          "default": {
+            "net_return": 27.271068087789384,
+            "benchmark_return": 9.763022937840692,
+            "excess": 17.508045149948693,
+            "max_drawdown": -0.7888895120483551,
+            "maximum_intrabar_leverage": 2.693926372481769,
+            "liquidated": false,
+            "rebalances": 94
+          },
+          "stress": {
+            "net_return": 13.039030789776321,
+            "benchmark_return": 9.763022937840692,
+            "excess": 3.2760078519356295,
+            "max_drawdown": -0.8164397424153571,
+            "maximum_intrabar_leverage": 2.6957263138854373,
+            "liquidated": false,
+            "rebalances": 94
+          }
+        }
+      },
+      "development_worst_excess": -1.0045157287747641,
+      "development_all_positive": false
+    }
+  ]
+}

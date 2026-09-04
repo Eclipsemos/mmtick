@@ -1,0 +1,226 @@
+{
+  "generated_at": "2026-09-02T19:10:49.871939+00:00",
+  "data": {
+    "files": 29,
+    "bars": 867,
+    "first": "2017-08-17T00:00:00+00:00",
+    "last": "2019-12-31T23:59:59.999000+00:00",
+    "continuity": "one  UTC daily bar per day; no duplicate or missing open timestamps"
+  },
+  "protocol": {
+    "signal": "completed daily SMA; next daily open execution",
+    "sma": "fast 8, slow 40",
+    "slope_variant": "bear state additionally requires SMA40 below its value 5 days earlier",
+    "pre_perpetual_funding": "no funding applied; funding-gated short is represented by bear-flat",
+    "costs": "10 bps fee + 5 bps slippage",
+    "capital": "50% spot and 50% futures collateral; 2.5x order cap used as a buffer for the hard 3x effective-leverage limit"
+  },
+  "periods": {
+    "full_pre2020": [
+      "2017-10-01T00:00:00+00:00",
+      "2019-12-31T23:59:59.999000+00:00"
+    ],
+    "2017Q4": [
+      "2017-10-01T00:00:00+00:00",
+      "2017-12-31T23:59:59.999000+00:00"
+    ],
+    "2018": [
+      "2018-01-01T00:00:00+00:00",
+      "2018-12-31T23:59:59.999000+00:00"
+    ],
+    "2019": [
+      "2019-01-01T00:00:00+00:00",
+      "2019-12-31T23:59:59.999000+00:00"
+    ]
+  },
+  "results": {
+    "sma8-40-bear-minus0.1": {
+      "full_pre2020": {
+        "strategy_return": 2.757162077525727,
+        "benchmark_return": 0.6433131056597138,
+        "excess": 2.113848971866013,
+        "strategy_drawdown": -0.8016210768711552,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.968272004981693,
+        "liquidated": false,
+        "fees": 16574.91385904603,
+        "rebalances": 42
+      },
+      "2017Q4": {
+        "strategy_return": 3.1825443077502533,
+        "benchmark_return": 2.1326690251662104,
+        "excess": 1.049875282584043,
+        "strategy_drawdown": -0.46146259863830164,
+        "benchmark_drawdown": -0.426205565088841,
+        "maximum_intrabar_leverage": 2.1397835746880784,
+        "liquidated": false,
+        "fees": 618.5087091792782,
+        "rebalances": 1
+      },
+      "2018": {
+        "strategy_return": -0.6665001199069723,
+        "benchmark_return": -0.730023732014159,
+        "excess": 0.06352361210718671,
+        "strategy_drawdown": -0.7621997282356061,
+        "benchmark_drawdown": -0.8150967293680824,
+        "maximum_intrabar_leverage": 2.968272004981693,
+        "liquidated": false,
+        "fees": 2523.501057266163,
+        "rebalances": 29
+      },
+      "2019": {
+        "strategy_return": 1.6860002946833097,
+        "benchmark_return": 0.9440105046160331,
+        "excess": 0.7419897900672766,
+        "strategy_drawdown": -0.4005252135488457,
+        "benchmark_drawdown": -0.5085460294185034,
+        "maximum_intrabar_leverage": 2.275376574823133,
+        "liquidated": false,
+        "fees": 4733.855081700147,
+        "rebalances": 13
+      }
+    },
+    "sma8-40-bear-flat": {
+      "full_pre2020": {
+        "strategy_return": 2.569118845756795,
+        "benchmark_return": 0.6433131056597138,
+        "excess": 1.925805740097081,
+        "strategy_drawdown": -0.808594063077688,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.968272004981693,
+        "liquidated": false,
+        "fees": 15166.207213246582,
+        "rebalances": 42
+      },
+      "2017Q4": {
+        "strategy_return": 3.1825443077502533,
+        "benchmark_return": 2.1326690251662104,
+        "excess": 1.049875282584043,
+        "strategy_drawdown": -0.46146259863830164,
+        "benchmark_drawdown": -0.426205565088841,
+        "maximum_intrabar_leverage": 2.1397835746880784,
+        "liquidated": false,
+        "fees": 618.5087091792782,
+        "rebalances": 1
+      },
+      "2018": {
+        "strategy_return": -0.6791480447837309,
+        "benchmark_return": -0.730023732014159,
+        "excess": 0.050875687230428124,
+        "strategy_drawdown": -0.7712182621316598,
+        "benchmark_drawdown": -0.8150967293680824,
+        "maximum_intrabar_leverage": 2.968272004981693,
+        "liquidated": false,
+        "fees": 2349.6458276647604,
+        "rebalances": 29
+      },
+      "2019": {
+        "strategy_return": 1.652150268866665,
+        "benchmark_return": 0.9440105046160331,
+        "excess": 0.7081397642506319,
+        "strategy_drawdown": -0.40484422871037384,
+        "benchmark_drawdown": -0.5085460294185034,
+        "maximum_intrabar_leverage": 2.275376574823133,
+        "liquidated": false,
+        "fees": 4415.901722648154,
+        "rebalances": 12
+      }
+    },
+    "sma8-40-slope5-bear-minus0.1": {
+      "full_pre2020": {
+        "strategy_return": 1.348669375983612,
+        "benchmark_return": 0.6433131056597138,
+        "excess": 0.7053562703238981,
+        "strategy_drawdown": -0.8615913776593562,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.968272004981693,
+        "liquidated": false,
+        "fees": 13499.041174798966,
+        "rebalances": 48
+      },
+      "2017Q4": {
+        "strategy_return": 3.1825443077502533,
+        "benchmark_return": 2.1326690251662104,
+        "excess": 1.049875282584043,
+        "strategy_drawdown": -0.46146259863830164,
+        "benchmark_drawdown": -0.426205565088841,
+        "maximum_intrabar_leverage": 2.1397835746880784,
+        "liquidated": false,
+        "fees": 618.5087091792782,
+        "rebalances": 1
+      },
+      "2018": {
+        "strategy_return": -0.7755677648582904,
+        "benchmark_return": -0.730023732014159,
+        "excess": -0.04554403284413133,
+        "strategy_drawdown": -0.8399698179966312,
+        "benchmark_drawdown": -0.8150967293680824,
+        "maximum_intrabar_leverage": 4.149873115390357,
+        "liquidated": false,
+        "fees": 1864.1843061571317,
+        "rebalances": 32
+      },
+      "2019": {
+        "strategy_return": 1.2460146420058693,
+        "benchmark_return": 0.9440105046160331,
+        "excess": 0.3020041373898362,
+        "strategy_drawdown": -0.4474970549758443,
+        "benchmark_drawdown": -0.5085460294185034,
+        "maximum_intrabar_leverage": 2.275376574823133,
+        "liquidated": false,
+        "fees": 5296.3520338574135,
+        "rebalances": 17
+      }
+    },
+    "sma8-40-slope5-bear-flat": {
+      "full_pre2020": {
+        "strategy_return": 1.2999148618473673,
+        "benchmark_return": 0.6433131056597138,
+        "excess": 0.6566017561876535,
+        "strategy_drawdown": -0.8628585486661612,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.968272004981693,
+        "liquidated": false,
+        "fees": 12635.038624970859,
+        "rebalances": 48
+      },
+      "2017Q4": {
+        "strategy_return": 3.1825443077502533,
+        "benchmark_return": 2.1326690251662104,
+        "excess": 1.049875282584043,
+        "strategy_drawdown": -0.46146259863830164,
+        "benchmark_drawdown": -0.426205565088841,
+        "maximum_intrabar_leverage": 2.1397835746880784,
+        "liquidated": false,
+        "fees": 618.5087091792782,
+        "rebalances": 1
+      },
+      "2018": {
+        "strategy_return": -0.7800425025069349,
+        "benchmark_return": -0.730023732014159,
+        "excess": -0.05001877049277581,
+        "strategy_drawdown": -0.8431605052875087,
+        "benchmark_drawdown": -0.8150967293680824,
+        "maximum_intrabar_leverage": 4.149873115390357,
+        "liquidated": false,
+        "fees": 1769.3548560873714,
+        "rebalances": 32
+      },
+      "2019": {
+        "strategy_return": 1.2441347065602406,
+        "benchmark_return": 0.9440105046160331,
+        "excess": 0.3001242019442075,
+        "strategy_drawdown": -0.4518253480089783,
+        "benchmark_drawdown": -0.5085460294185034,
+        "maximum_intrabar_leverage": 2.275376574823133,
+        "liquidated": false,
+        "fees": 4992.472310852596,
+        "rebalances": 16
+      }
+    }
+  },
+  "conclusion": {
+    "status": "RESEARCH_ONLY",
+    "reason": "The pre-2020 spot history is an independent path check without perpetual funding; it can reject fragile price timing but cannot prove current futures profitability."
+  }
+}

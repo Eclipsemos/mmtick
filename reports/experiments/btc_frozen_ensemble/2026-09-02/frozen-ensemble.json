@@ -1,0 +1,43 @@
+{
+  "frozen_at": "2026-09-02T11:45:05.731783+00:00",
+  "forward_start": "2026-09-03T00:00:00+00:00",
+  "status": "FORWARD_TESTING_SECONDARY",
+  "position_model": "fixed quantities between sparse target changes",
+  "weights": {
+    "primary": "0.5",
+    "partial_bear_challenger": "0.5"
+  },
+  "components": [
+    {
+      "id": "primary",
+      "timeframe": "4h",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exposure": "0",
+      "neutral_exposure": "1",
+      "bull_exposure": "1.5",
+      "funding_threshold": "0.0001"
+    },
+    {
+      "id": "partial_bear_challenger",
+      "timeframe": "4h",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exposure": "0.5",
+      "neutral_exposure": "1",
+      "bull_exposure": "1.75",
+      "funding_threshold": "0.0001"
+    }
+  ],
+  "maximum_allowed_exposure": "3",
+  "maximum_ensemble_exposure": "1.625",
+  "parameter_changes_allowed": false
+}

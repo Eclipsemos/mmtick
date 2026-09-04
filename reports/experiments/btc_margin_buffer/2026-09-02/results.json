@@ -1,0 +1,180 @@
+{
+  "generated_at": "2026-09-02T11:50:52.705649+00:00",
+  "protocol": {
+    "margin_model": "approximate cross-margin check: account equity must exceed maintenance rate times linear-futures notional",
+    "price_path": "intrabar low for long positions",
+    "rates": [
+      "0.004",
+      "0.005",
+      "0.01",
+      "0.02"
+    ],
+    "costs": "10 bps fee + 5 bps slippage; historical funding above 1x",
+    "limitation": "not an exchange liquidation simulator; Binance tiered maintenance, mark price, liquidation fee, ADL and isolated/cross settings require live account specification"
+  },
+  "data": {
+    "first": "2019-09-08T17:45:00+00:00",
+    "last": "2026-09-02T07:59:59.999000+00:00",
+    "bars": 244857
+  },
+  "results": {
+    "primary": {
+      "historical_bankruptcy": false,
+      "maximum_exposure": "1.5",
+      "minimum_equity_ratio": 0.9694987380424066,
+      "rates": {
+        "0.004": {
+          "minimum_buffer": 99677.15376227156,
+          "minimum_buffer_pct_initial_equity": 0.9967715376227156,
+          "at_or_below_liquidation_buffer_bars": 0,
+          "minimum_at": "2020-01-06T13:59:59.999000+00:00",
+          "minimum_exposure": "1.5",
+          "maximum_maintenance_utilization": 0.0023067117040363873,
+          "minimum_additional_price_decline_to_maintenance": 0.5774600095946505,
+          "headroom_minimum_at": "2022-11-08T19:44:59.999000+00:00",
+          "headroom_exposure": "1.5"
+        },
+        "0.005": {
+          "minimum_buffer": 99627.02170215212,
+          "minimum_buffer_pct_initial_equity": 0.9962702170215213,
+          "at_or_below_liquidation_buffer_bars": 0,
+          "minimum_at": "2020-01-06T13:59:59.999000+00:00",
+          "minimum_exposure": "1.5",
+          "maximum_maintenance_utilization": 0.002883389630045484,
+          "minimum_additional_price_decline_to_maintenance": 0.5773189277948491,
+          "headroom_minimum_at": "2022-11-08T19:44:59.999000+00:00",
+          "headroom_exposure": "1.5"
+        },
+        "0.01": {
+          "minimum_buffer": 99376.36140155495,
+          "minimum_buffer_pct_initial_equity": 0.9937636140155495,
+          "at_or_below_liquidation_buffer_bars": 0,
+          "minimum_at": "2020-01-06T13:59:59.999000+00:00",
+          "minimum_exposure": "1.5",
+          "maximum_maintenance_utilization": 0.005766779260090968,
+          "minimum_additional_price_decline_to_maintenance": 0.5766121032593889,
+          "headroom_minimum_at": "2022-11-08T19:44:59.999000+00:00",
+          "headroom_exposure": "1.5"
+        },
+        "0.02": {
+          "minimum_buffer": 98875.0408003606,
+          "minimum_buffer_pct_initial_equity": 0.988750408003606,
+          "at_or_below_liquidation_buffer_bars": 0,
+          "minimum_at": "2020-01-06T13:59:59.999000+00:00",
+          "minimum_exposure": "1.5",
+          "maximum_maintenance_utilization": 0.011533558520181937,
+          "minimum_additional_price_decline_to_maintenance": 0.5751913385052259,
+          "headroom_minimum_at": "2022-11-08T19:44:59.999000+00:00",
+          "headroom_exposure": "1.5"
+        }
+      }
+    },
+    "partial_bear_challenger": {
+      "historical_bankruptcy": false,
+      "maximum_exposure": "1.75",
+      "minimum_equity_ratio": 0.9320437583752426,
+      "rates": {
+        "0.004": {
+          "minimum_buffer": 101243.58809713194,
+          "minimum_buffer_pct_initial_equity": 1.0124358809713194,
+          "at_or_below_liquidation_buffer_bars": 0,
+          "minimum_at": "2020-01-06T13:59:59.999000+00:00",
+          "minimum_exposure": "1.75",
+          "maximum_maintenance_utilization": 0.0037536316476962776,
+          "minimum_additional_price_decline_to_maintenance": 0.4557676004953743,
+          "headroom_minimum_at": "2022-11-08T19:44:59.999000+00:00",
+          "headroom_exposure": "1.75"
+        },
+        "0.005": {
+          "minimum_buffer": 101166.98271087834,
+          "minimum_buffer_pct_initial_equity": 1.0116698271087834,
+          "at_or_below_liquidation_buffer_bars": 0,
+          "minimum_at": "2020-01-06T13:59:59.999000+00:00",
+          "minimum_exposure": "1.75",
+          "maximum_maintenance_utilization": 0.004692039559620347,
+          "minimum_additional_price_decline_to_maintenance": 0.45553385715986766,
+          "headroom_minimum_at": "2022-11-08T19:44:59.999000+00:00",
+          "headroom_exposure": "1.75"
+        },
+        "0.01": {
+          "minimum_buffer": 100783.95577961033,
+          "minimum_buffer_pct_initial_equity": 1.0078395577961032,
+          "at_or_below_liquidation_buffer_bars": 0,
+          "minimum_at": "2020-01-06T13:59:59.999000+00:00",
+          "minimum_exposure": "1.75",
+          "maximum_maintenance_utilization": 0.009384079119240694,
+          "minimum_additional_price_decline_to_maintenance": 0.4543621222757067,
+          "headroom_minimum_at": "2022-11-08T19:44:59.999000+00:00",
+          "headroom_exposure": "1.75"
+        },
+        "0.02": {
+          "minimum_buffer": 100017.90191707431,
+          "minimum_buffer_pct_initial_equity": 1.0001790191707431,
+          "at_or_below_liquidation_buffer_bars": 0,
+          "minimum_at": "2020-01-06T13:59:59.999000+00:00",
+          "minimum_exposure": "1.75",
+          "maximum_maintenance_utilization": 0.018768158238481387,
+          "minimum_additional_price_decline_to_maintenance": 0.45200345709822415,
+          "headroom_minimum_at": "2022-11-08T19:44:59.999000+00:00",
+          "headroom_exposure": "1.75"
+        }
+      }
+    },
+    "equal_weight_ensemble": {
+      "historical_bankruptcy": false,
+      "maximum_exposure": "1.625",
+      "minimum_equity_ratio": 0.9782113481347117,
+      "rates": {
+        "0.004": {
+          "minimum_buffer": 100460.43680885597,
+          "minimum_buffer_pct_initial_equity": 1.0046043680885597,
+          "at_or_below_liquidation_buffer_bars": 0,
+          "minimum_at": "2020-01-06T13:59:59.999000+00:00",
+          "minimum_exposure": "1.625",
+          "maximum_maintenance_utilization": 0.003002323804432869,
+          "minimum_additional_price_decline_to_maintenance": 0.5116723153905594,
+          "headroom_minimum_at": "2022-11-08T19:44:59.999000+00:00",
+          "headroom_exposure": "1.625"
+        },
+        "0.005": {
+          "minimum_buffer": 100397.18618337775,
+          "minimum_buffer_pct_initial_equity": 1.0039718618337776,
+          "at_or_below_liquidation_buffer_bars": 0,
+          "minimum_at": "2020-01-06T13:59:59.999000+00:00",
+          "minimum_exposure": "1.625",
+          "maximum_maintenance_utilization": 0.0037529047555410863,
+          "minimum_additional_price_decline_to_maintenance": 0.5114841351652764,
+          "headroom_minimum_at": "2022-11-08T19:44:59.999000+00:00",
+          "headroom_exposure": "1.625"
+        },
+        "0.01": {
+          "minimum_buffer": 100080.93305598664,
+          "minimum_buffer_pct_initial_equity": 1.0008093305598664,
+          "at_or_below_liquidation_buffer_bars": 0,
+          "minimum_at": "2020-01-06T13:59:59.999000+00:00",
+          "minimum_exposure": "1.625",
+          "maximum_maintenance_utilization": 0.007505809511082173,
+          "minimum_additional_price_decline_to_maintenance": 0.5105410543451321,
+          "headroom_minimum_at": "2022-11-08T19:44:59.999000+00:00",
+          "headroom_exposure": "1.625"
+        },
+        "0.02": {
+          "minimum_buffer": 99448.4268012044,
+          "minimum_buffer_pct_initial_equity": 0.994484268012044,
+          "at_or_below_liquidation_buffer_bars": 0,
+          "minimum_at": "2020-01-06T13:59:59.999000+00:00",
+          "minimum_exposure": "1.625",
+          "maximum_maintenance_utilization": 0.015011619022164345,
+          "minimum_additional_price_decline_to_maintenance": 0.5086439266487954,
+          "headroom_minimum_at": "2022-11-08T19:44:59.999000+00:00",
+          "headroom_exposure": "1.625"
+        }
+      }
+    }
+  },
+  "decision": {
+    "historical_bankruptcy_seen": false,
+    "requires_exchange_tier_confirmation": true,
+    "live_approval": false
+  }
+}

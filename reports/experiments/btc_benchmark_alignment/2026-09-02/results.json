@@ -1,0 +1,51 @@
+{
+  "generated_at": "2026-09-02T11:01:22.384066+00:00",
+  "finding": "strategy replay starts at the first selected bar open and audits intrabar lows; B&H must use the same start and drawdown sampling convention",
+  "results": {
+    "research": {
+      "legacy_close_only": {
+        "net_return": 1.3044872956108056,
+        "max_drawdown": -0.7727231107978286
+      },
+      "aligned_open_intrabar": {
+        "net_return": 1.3002658068859423,
+        "max_drawdown": -0.7755528264455603
+      }
+    },
+    "validation": {
+      "legacy_close_only": {
+        "net_return": 4.663657718527129,
+        "max_drawdown": -0.3253489953195883
+      },
+      "aligned_open_intrabar": {
+        "net_return": 4.656773998488284,
+        "max_drawdown": -0.3365730267702175
+      }
+    },
+    "oos": {
+      "legacy_close_only": {
+        "net_return": -0.1728729312451405,
+        "max_drawdown": -0.5385423777245091
+      },
+      "aligned_open_intrabar": {
+        "net_return": -0.17214437812136554,
+        "max_drawdown": -0.5415474735288048
+      }
+    },
+    "full": {
+      "legacy_close_only": {
+        "net_return": 9.79181913698779,
+        "max_drawdown": -0.7727231107978286
+      },
+      "aligned_open_intrabar": {
+        "net_return": 9.772050079074418,
+        "max_drawdown": -0.7755528264455603
+      }
+    }
+  },
+  "decision": {
+    "authoritative_start": "first selected 15m open",
+    "authoritative_drawdown": "intrabar low against prior close-equity peak",
+    "legacy_close_only_allowed": false
+  }
+}

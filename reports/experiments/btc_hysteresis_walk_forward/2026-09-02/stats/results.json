@@ -1,0 +1,53 @@
+{
+  "source": "reports/experiments/btc_hysteresis_walk_forward/2026-09-02/results.json",
+  "seed": 20260902,
+  "samples": 100000,
+  "years": [
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "annual_excess": [
+    0.1517177786377063,
+    0.5982194214958874,
+    0.6683579538172739,
+    0.05532478992458323,
+    -0.11930088011507367,
+    -0.5203705521804063,
+    0.12425579599664832,
+    0.34856359582259505
+  ],
+  "summary": {
+    "positive_years": 6,
+    "total_years": 8,
+    "positive_year_fraction": 0.75,
+    "mean_excess": 0.1633459879249018,
+    "median_excess": 0.1379867873171773,
+    "worst_excess": -0.5203705521804063,
+    "best_excess": 0.6683579538172739,
+    "max_positive_streak": 4,
+    "max_negative_streak": 2,
+    "max_intrabar_leverage": 1.804468997357799,
+    "liquidations": 0,
+    "one_sided_sign_test_pvalue": 0.14453125
+  },
+  "bootstrap": {
+    "mean_excess_ci95": {
+      "p025": -0.09333057395100325,
+      "p50": 0.16627444709922096,
+      "p975": 0.40644525738060977
+    },
+    "compound_relative_ci95": {
+      "p025": -0.2040645883811305,
+      "p50": 1.375797443222715,
+      "p975": 5.333664932114708
+    },
+    "probability_mean_excess_positive": 0.89571,
+    "probability_compound_outperformance": 0.94155
+  }
+}

@@ -1,0 +1,210 @@
+{
+  "generated_at": "2026-09-03T05:11:10.449051+00:00",
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED",
+  "protocol": {
+    "family": "all 30 pre-declared SMA fast 8-12 / slow 40 / enter 1-3 / active 1.25 or 1.5",
+    "weights": "fixed equal 1/30; no member or weight selection",
+    "signal": "completed UTC daily SMA; bear-flat; no future data",
+    "execution": "spot daily pre-2020; perpetual next 15m open",
+    "costs": "10 bps fee + 5 bps slippage per side; historical Funding",
+    "wallets": "50% spot and 50% isolated USD-M collateral",
+    "hard_cap": "2X futures opening control and <=3X observed effective leverage",
+    "oos_policy": "all members and weights are fixed before reading OOS results"
+  },
+  "data": {
+    "spot_daily_bars": 867,
+    "perpetual_15m_bars": 233971,
+    "last": "2026-09-03T04:44:59.999000+00:00",
+    "member_count": 30
+  },
+  "results": {
+    "spot_pre2020": {
+      "strategy_return": 2.511209169407789,
+      "benchmark_return": 0.6433131056597138,
+      "excess": 1.8678960637480753,
+      "strategy_cagr": 0.7472897384246422,
+      "strategy_drawdown": -0.7630531842567067,
+      "benchmark_drawdown": -0.8347737959006756,
+      "maximum_intrabar_leverage": 2.0889735104557956,
+      "liquidated": false,
+      "fees": 12589.56217803973,
+      "funding": 0.0
+    },
+    "research": {
+      "strategy_return": 3.1641704107538406,
+      "benchmark_return": 1.3002658068859423,
+      "excess": 1.8639046038678984,
+      "strategy_cagr": 0.6086373689203708,
+      "strategy_drawdown": -0.7036448049515964,
+      "benchmark_drawdown": -0.7755528264455603,
+      "maximum_intrabar_leverage": 2.0531797961652023,
+      "liquidated": false,
+      "fees": 30963.352210226032,
+      "funding": -223229.84163148789
+    },
+    "validation": {
+      "strategy_return": 4.594579390539962,
+      "benchmark_return": 4.656773998488284,
+      "excess": -0.062194607948322655,
+      "strategy_cagr": 1.3638521747029344,
+      "strategy_drawdown": -0.48268168993933946,
+      "benchmark_drawdown": -0.3365730267702175,
+      "maximum_intrabar_leverage": 2.1515104944858336,
+      "liquidated": false,
+      "fees": 9362.45011647717,
+      "funding": -51250.95180499466
+    },
+    "oos": {
+      "strategy_return": 0.15647741532416254,
+      "benchmark_return": -0.17131700246288567,
+      "excess": 0.3277944177870482,
+      "strategy_cagr": 0.09091679523446139,
+      "strategy_drawdown": -0.40235541084283993,
+      "benchmark_drawdown": -0.5415474735288048,
+      "maximum_intrabar_leverage": 1.9417349700756863,
+      "liquidated": false,
+      "fees": 3919.602187140674,
+      "funding": -3937.337996337893
+    },
+    "full": {
+      "strategy_return": 93.82827996334125,
+      "benchmark_return": 16.705259119011348,
+      "excess": 77.1230208443299,
+      "strategy_cagr": 0.665504602744325,
+      "strategy_drawdown": -0.7630531842567067,
+      "benchmark_drawdown": -0.8347737959006756,
+      "maximum_intrabar_leverage": 2.1515104944858336,
+      "liquidated": false,
+      "fees": 579417.044887122,
+      "funding": -1859717.171464932
+    }
+  },
+  "bootstrap": {
+    "7d": {
+      "samples": 10000,
+      "block_days": 7,
+      "probability_beats_bh_return": 0.8857,
+      "probability_drawdown_no_worse_than_bh": 0.8208,
+      "probability_beats_return_and_drawdown": 0.763,
+      "probability_cagr_above_20pct": 0.9414,
+      "probability_drawdown_at_least_70pct": 0.3918,
+      "strategy_cagr": {
+        "p05": 0.18223901885992805,
+        "median": 0.6593098273045636,
+        "p95": 1.360474233729569
+      },
+      "annualized_excess_vs_bh": {
+        "p05": -0.06279914575312247,
+        "median": 0.20224089541433898,
+        "p95": 0.5548116299230882
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8565055437596661,
+        "median": -0.6698080547502258,
+        "p95": -0.504631554354025
+      }
+    },
+    "30d": {
+      "samples": 10000,
+      "block_days": 30,
+      "probability_beats_bh_return": 0.9057,
+      "probability_drawdown_no_worse_than_bh": 0.8372,
+      "probability_beats_return_and_drawdown": 0.796,
+      "probability_cagr_above_20pct": 0.9233,
+      "probability_drawdown_at_least_70pct": 0.4328,
+      "strategy_cagr": {
+        "p05": 0.13915964977156806,
+        "median": 0.6525696306197213,
+        "p95": 1.4554775125862962
+      },
+      "annualized_excess_vs_bh": {
+        "p05": -0.04371608578009924,
+        "median": 0.20344705705535193,
+        "p95": 0.5316809704131327
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8693155353604787,
+        "median": -0.67956125127074,
+        "p95": -0.5123426627806441
+      }
+    },
+    "90d": {
+      "samples": 10000,
+      "block_days": 90,
+      "probability_beats_bh_return": 0.9383,
+      "probability_drawdown_no_worse_than_bh": 0.8363,
+      "probability_beats_return_and_drawdown": 0.815,
+      "probability_cagr_above_20pct": 0.888,
+      "probability_drawdown_at_least_70pct": 0.5412,
+      "strategy_cagr": {
+        "p05": 0.08412161445282801,
+        "median": 0.6494167709869817,
+        "p95": 1.628241828441191
+      },
+      "annualized_excess_vs_bh": {
+        "p05": -0.013698674070167411,
+        "median": 0.20456817157417728,
+        "p95": 0.4854601198966595
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8980130229230362,
+        "median": -0.7133468975470214,
+        "p95": -0.5342465416144355
+      }
+    },
+    "180d": {
+      "samples": 10000,
+      "block_days": 180,
+      "probability_beats_bh_return": 0.977,
+      "probability_drawdown_no_worse_than_bh": 0.8931,
+      "probability_beats_return_and_drawdown": 0.8842,
+      "probability_cagr_above_20pct": 0.8907,
+      "probability_drawdown_at_least_70pct": 0.5649,
+      "strategy_cagr": {
+        "p05": 0.08609347295066976,
+        "median": 0.6470281546560316,
+        "p95": 1.5932111167228031
+      },
+      "annualized_excess_vs_bh": {
+        "p05": 0.03556710251660922,
+        "median": 0.20860269256925434,
+        "p95": 0.4118475052897888
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8942393474330537,
+        "median": -0.7179091896098359,
+        "p95": -0.5494723468567583
+      }
+    },
+    "365d": {
+      "samples": 10000,
+      "block_days": 365,
+      "probability_beats_bh_return": 0.9877,
+      "probability_drawdown_no_worse_than_bh": 0.925,
+      "probability_beats_return_and_drawdown": 0.9176,
+      "probability_cagr_above_20pct": 0.9107,
+      "probability_drawdown_at_least_70pct": 0.6024,
+      "strategy_cagr": {
+        "p05": 0.12034844239192466,
+        "median": 0.6662789905193579,
+        "p95": 1.4732186943195351
+      },
+      "annualized_excess_vs_bh": {
+        "p05": 0.05393934572559618,
+        "median": 0.20750451673788872,
+        "p95": 0.3826953858695118
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8952320269934715,
+        "median": -0.7299095538826119,
+        "p95": -0.548124418610554
+      }
+    }
+  },
+  "decision": {
+    "beats_bh_all_splits": false,
+    "hard_3x_passed": true,
+    "bootstrap_90d_p05_positive": false,
+    "bootstrap_365d_p05_positive": true
+  }
+}

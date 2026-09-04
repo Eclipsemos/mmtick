@@ -1,0 +1,602 @@
+{
+  "generated_at": "2026-09-03T06:07:44.695915+00:00",
+  "status": "RESEARCH_ONLY / NOT_PROMOTED",
+  "protocol": {
+    "structure": "cash-only spot long plus equal-BTC perpetual short; no spot borrowing",
+    "signal": "completed 4h BTC perp/spot basis and last settled Funding",
+    "execution": "next 15m open; both legs pay 10 bps fee + 5 bps slippage per side",
+    "funding": "historical Funding paid to the perpetual short",
+    "selection": "Research 2020-2022 and Validation 2023-2024 only",
+    "oos": "2025 through last common spot/perpetual 15m bar; unread unless qualified",
+    "leverage": "pair uses 50% equity spot notional; gross intrabar leverage audited <=3X"
+  },
+  "data": {
+    "pair_bars": 230624,
+    "futures_data_gaps": 16,
+    "first": "2020-01-01T00:00:00+00:00",
+    "last": "2026-07-31T23:59:59.999000+00:00",
+    "funding_events": 7208
+  },
+  "candidate_count": 16,
+  "development_qualifying_count": 0,
+  "benchmarks": {
+    "research": {
+      "net_return": 1.3036442151965542,
+      "max_drawdown": -0.7747926698477421
+    },
+    "validation": {
+      "net_return": 4.664170201123561,
+      "max_drawdown": -0.33430967913726534
+    },
+    "oos": {
+      "net_return": -0.3285239692671642,
+      "max_drawdown": -0.5413090330556384
+    },
+    "full": {
+      "net_return": 7.757574533802536,
+      "max_drawdown": -0.7747926698477421
+    }
+  },
+  "results": [
+    {
+      "id": "cash-carry-basis-ge-20p000bps-funding-ge-0bps",
+      "candidate": {
+        "basis_threshold": 0.002,
+        "funding_threshold": 0.0,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.10149480264207987,
+          "max_drawdown": -0.10505482088552179,
+          "maximum_gross_leverage": 1.0977117450183336,
+          "liquidated": false,
+          "fees": 8942.4183007133,
+          "rebalances": 94,
+          "forced_gap_flats": 0,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.405139017838634
+        },
+        "validation": {
+          "net_return": -0.0016866450746684017,
+          "max_drawdown": -0.007250228546026255,
+          "maximum_gross_leverage": 1.0184825856555981,
+          "liquidated": false,
+          "fees": 200.85168978480567,
+          "rebalances": 2,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.6658568461982295
+        }
+      },
+      "development_min_excess": -4.6658568461982295
+    },
+    {
+      "id": "cash-carry-basis-ge-20p000bps-funding-ge-0p250000bps",
+      "candidate": {
+        "basis_threshold": 0.002,
+        "funding_threshold": 2.5e-05,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.09969188704560537,
+          "max_drawdown": -0.10325904872286795,
+          "maximum_gross_leverage": 1.0977117450183336,
+          "liquidated": false,
+          "fees": 8760.877787155181,
+          "rebalances": 92,
+          "forced_gap_flats": 0,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.4033361022421595
+        },
+        "validation": {
+          "net_return": -0.0016866450746684017,
+          "max_drawdown": -0.007250228546026255,
+          "maximum_gross_leverage": 1.0184825856555981,
+          "liquidated": false,
+          "fees": 200.85168978480567,
+          "rebalances": 2,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.6658568461982295
+        }
+      },
+      "development_min_excess": -4.6658568461982295
+    },
+    {
+      "id": "cash-carry-basis-ge-20p000bps-funding-ge-0p50000bps",
+      "candidate": {
+        "basis_threshold": 0.002,
+        "funding_threshold": 5e-05,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.09969188704560537,
+          "max_drawdown": -0.10325904872286795,
+          "maximum_gross_leverage": 1.0977117450183336,
+          "liquidated": false,
+          "fees": 8760.877787155181,
+          "rebalances": 92,
+          "forced_gap_flats": 0,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.4033361022421595
+        },
+        "validation": {
+          "net_return": -0.0016866450746684017,
+          "max_drawdown": -0.007250228546026255,
+          "maximum_gross_leverage": 1.0184825856555981,
+          "liquidated": false,
+          "fees": 200.85168978480567,
+          "rebalances": 2,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.6658568461982295
+        }
+      },
+      "development_min_excess": -4.6658568461982295
+    },
+    {
+      "id": "cash-carry-basis-ge-20p000bps-funding-ge-1p0000bps",
+      "candidate": {
+        "basis_threshold": 0.002,
+        "funding_threshold": 0.0001,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.09969188704560537,
+          "max_drawdown": -0.10325904872286795,
+          "maximum_gross_leverage": 1.0977117450183336,
+          "liquidated": false,
+          "fees": 8760.877787155181,
+          "rebalances": 92,
+          "forced_gap_flats": 0,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.4033361022421595
+        },
+        "validation": {
+          "net_return": -0.0016866450746684017,
+          "max_drawdown": -0.007250228546026255,
+          "maximum_gross_leverage": 1.0184825856555981,
+          "liquidated": false,
+          "fees": 200.85168978480567,
+          "rebalances": 2,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.6658568461982295
+        }
+      },
+      "development_min_excess": -4.6658568461982295
+    },
+    {
+      "id": "cash-carry-basis-ge-10p000bps-funding-ge-1p0000bps",
+      "candidate": {
+        "basis_threshold": 0.001,
+        "funding_threshold": 0.0001,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.4652244984707166,
+          "max_drawdown": -0.4718764803434953,
+          "maximum_gross_leverage": 1.2818004777684209,
+          "liquidated": false,
+          "fees": 40304.18874011854,
+          "rebalances": 544,
+          "forced_gap_flats": 1,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.7688687136672707
+        },
+        "validation": {
+          "net_return": -0.1097873800292831,
+          "max_drawdown": -0.11442107228154641,
+          "maximum_gross_leverage": 1.048046116317181,
+          "liquidated": false,
+          "fees": 8324.932722325118,
+          "rebalances": 88,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.773957581152844
+        }
+      },
+      "development_min_excess": -4.773957581152844
+    },
+    {
+      "id": "cash-carry-basis-ge-10p000bps-funding-ge-0bps",
+      "candidate": {
+        "basis_threshold": 0.001,
+        "funding_threshold": 0.0,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.4646902050392196,
+          "max_drawdown": -0.4713488328974835,
+          "maximum_gross_leverage": 1.2818004777684209,
+          "liquidated": false,
+          "fees": 40332.503942407784,
+          "rebalances": 544,
+          "forced_gap_flats": 1,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.7683344202357738
+        },
+        "validation": {
+          "net_return": -0.11232345705656296,
+          "max_drawdown": -0.11694394864169483,
+          "maximum_gross_leverage": 1.048046116317181,
+          "liquidated": false,
+          "fees": 8502.224207250294,
+          "rebalances": 90,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.776493658180124
+        }
+      },
+      "development_min_excess": -4.776493658180124
+    },
+    {
+      "id": "cash-carry-basis-ge-10p000bps-funding-ge-0p250000bps",
+      "candidate": {
+        "basis_threshold": 0.001,
+        "funding_threshold": 2.5e-05,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.4652244984707166,
+          "max_drawdown": -0.4718764803434953,
+          "maximum_gross_leverage": 1.2818004777684209,
+          "liquidated": false,
+          "fees": 40304.18874011854,
+          "rebalances": 544,
+          "forced_gap_flats": 1,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.7688687136672707
+        },
+        "validation": {
+          "net_return": -0.11232345705656296,
+          "max_drawdown": -0.11694394864169483,
+          "maximum_gross_leverage": 1.048046116317181,
+          "liquidated": false,
+          "fees": 8502.224207250294,
+          "rebalances": 90,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.776493658180124
+        }
+      },
+      "development_min_excess": -4.776493658180124
+    },
+    {
+      "id": "cash-carry-basis-ge-10p000bps-funding-ge-0p50000bps",
+      "candidate": {
+        "basis_threshold": 0.001,
+        "funding_threshold": 5e-05,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.4652244984707166,
+          "max_drawdown": -0.4718764803434953,
+          "maximum_gross_leverage": 1.2818004777684209,
+          "liquidated": false,
+          "fees": 40304.18874011854,
+          "rebalances": 544,
+          "forced_gap_flats": 1,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.7688687136672707
+        },
+        "validation": {
+          "net_return": -0.11232345705656296,
+          "max_drawdown": -0.11694394864169483,
+          "maximum_gross_leverage": 1.048046116317181,
+          "liquidated": false,
+          "fees": 8502.224207250294,
+          "rebalances": 90,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.776493658180124
+        }
+      },
+      "development_min_excess": -4.776493658180124
+    },
+    {
+      "id": "cash-carry-basis-ge-0bps-funding-ge-0p50000bps",
+      "candidate": {
+        "basis_threshold": 0.0,
+        "funding_threshold": 5e-05,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.339186707275139,
+          "max_drawdown": -0.3446829864128965,
+          "maximum_gross_leverage": 1.7647736564619179,
+          "liquidated": false,
+          "fees": 38972.60081637516,
+          "rebalances": 468,
+          "forced_gap_flats": 9,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.6428309224716933
+        },
+        "validation": {
+          "net_return": -0.16224764603490713,
+          "max_drawdown": -0.19781109281762585,
+          "maximum_gross_leverage": 1.46950722011929,
+          "liquidated": false,
+          "fees": 15172.294002216866,
+          "rebalances": 166,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.826417847158468
+        }
+      },
+      "development_min_excess": -4.826417847158468
+    },
+    {
+      "id": "cash-carry-basis-ge-0bps-funding-ge-0p250000bps",
+      "candidate": {
+        "basis_threshold": 0.0,
+        "funding_threshold": 2.5e-05,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.3391704248299819,
+          "max_drawdown": -0.34466683939610415,
+          "maximum_gross_leverage": 1.7647736564619179,
+          "liquidated": false,
+          "fees": 38971.62878074287,
+          "rebalances": 468,
+          "forced_gap_flats": 9,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.642814640026536
+        },
+        "validation": {
+          "net_return": -0.16232606767338853,
+          "max_drawdown": -0.19788618537710967,
+          "maximum_gross_leverage": 1.46950722011929,
+          "liquidated": false,
+          "fees": 15171.736059426019,
+          "rebalances": 166,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.82649626879695
+        }
+      },
+      "development_min_excess": -4.82649626879695
+    },
+    {
+      "id": "cash-carry-basis-ge-0bps-funding-ge-0bps",
+      "candidate": {
+        "basis_threshold": 0.0,
+        "funding_threshold": 0.0,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.3401922856603125,
+          "max_drawdown": -0.3456802009537578,
+          "maximum_gross_leverage": 1.7647736564619179,
+          "liquidated": false,
+          "fees": 39132.02024391424,
+          "rebalances": 470,
+          "forced_gap_flats": 9,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.6438365008568667
+        },
+        "validation": {
+          "net_return": -0.16238371925808967,
+          "max_drawdown": -0.19794138959290192,
+          "maximum_gross_leverage": 1.46950722011929,
+          "liquidated": false,
+          "fees": 15173.785873443143,
+          "rebalances": 166,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.8265539203816505
+        }
+      },
+      "development_min_excess": -4.8265539203816505
+    },
+    {
+      "id": "cash-carry-basis-ge-0bps-funding-ge-1p0000bps",
+      "candidate": {
+        "basis_threshold": 0.0,
+        "funding_threshold": 0.0001,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.3316756053195849,
+          "max_drawdown": -0.33914963251094815,
+          "maximum_gross_leverage": 1.7647736564619179,
+          "liquidated": false,
+          "fees": 38439.14405679997,
+          "rebalances": 460,
+          "forced_gap_flats": 9,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.635319820516139
+        },
+        "validation": {
+          "net_return": -0.16268177949411244,
+          "max_drawdown": -0.1981733424264318,
+          "maximum_gross_leverage": 1.46950722011929,
+          "liquidated": false,
+          "fees": 15162.505101010069,
+          "rebalances": 166,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.826851980617674
+        }
+      },
+      "development_min_excess": -4.826851980617674
+    },
+    {
+      "id": "cash-carry-basis-ge-5p0000bps-funding-ge-0bps",
+      "candidate": {
+        "basis_threshold": 0.0005,
+        "funding_threshold": 0.0,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.4065855372237142,
+          "max_drawdown": -0.4163488240322758,
+          "maximum_gross_leverage": 1.448641075897047,
+          "liquidated": false,
+          "fees": 41043.26792661321,
+          "rebalances": 522,
+          "forced_gap_flats": 5,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.7102297524202683
+        },
+        "validation": {
+          "net_return": -0.24833739959098305,
+          "max_drawdown": -0.27410673853726153,
+          "maximum_gross_leverage": 1.3410848012683751,
+          "liquidated": false,
+          "fees": 19861.05472035907,
+          "rebalances": 228,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.912507600714544
+        }
+      },
+      "development_min_excess": -4.912507600714544
+    },
+    {
+      "id": "cash-carry-basis-ge-5p0000bps-funding-ge-0p250000bps",
+      "candidate": {
+        "basis_threshold": 0.0005,
+        "funding_threshold": 2.5e-05,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.4071716711938577,
+          "max_drawdown": -0.4169253144995765,
+          "maximum_gross_leverage": 1.448641075897047,
+          "liquidated": false,
+          "fees": 41013.26842496157,
+          "rebalances": 522,
+          "forced_gap_flats": 5,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.710815886390412
+        },
+        "validation": {
+          "net_return": -0.24833739959098305,
+          "max_drawdown": -0.27410673853726153,
+          "maximum_gross_leverage": 1.3410848012683751,
+          "liquidated": false,
+          "fees": 19861.05472035907,
+          "rebalances": 228,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.912507600714544
+        }
+      },
+      "development_min_excess": -4.912507600714544
+    },
+    {
+      "id": "cash-carry-basis-ge-5p0000bps-funding-ge-0p50000bps",
+      "candidate": {
+        "basis_threshold": 0.0005,
+        "funding_threshold": 5e-05,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.4071716711938577,
+          "max_drawdown": -0.4169253144995765,
+          "maximum_gross_leverage": 1.448641075897047,
+          "liquidated": false,
+          "fees": 41013.26842496157,
+          "rebalances": 522,
+          "forced_gap_flats": 5,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.710815886390412
+        },
+        "validation": {
+          "net_return": -0.24833739959098305,
+          "max_drawdown": -0.27410673853726153,
+          "maximum_gross_leverage": 1.3410848012683751,
+          "liquidated": false,
+          "fees": 19861.05472035907,
+          "rebalances": 228,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.912507600714544
+        }
+      },
+      "development_min_excess": -4.912507600714544
+    },
+    {
+      "id": "cash-carry-basis-ge-5p0000bps-funding-ge-1p0000bps",
+      "candidate": {
+        "basis_threshold": 0.0005,
+        "funding_threshold": 0.0001,
+        "pair_notional_share": 0.5
+      },
+      "development": {
+        "research": {
+          "net_return": -0.4071716711938577,
+          "max_drawdown": -0.4169253144995765,
+          "maximum_gross_leverage": 1.448641075897047,
+          "liquidated": false,
+          "fees": 41013.26842496157,
+          "rebalances": 522,
+          "forced_gap_flats": 5,
+          "benchmark_return": 1.3036442151965542,
+          "benchmark_drawdown": -0.7747926698477421,
+          "excess": -1.710815886390412
+        },
+        "validation": {
+          "net_return": -0.24869432440163292,
+          "max_drawdown": -0.27445142685188384,
+          "maximum_gross_leverage": 1.3410848012683751,
+          "liquidated": false,
+          "fees": 19851.470150694728,
+          "rebalances": 228,
+          "forced_gap_flats": 0,
+          "benchmark_return": 4.664170201123561,
+          "benchmark_drawdown": -0.33430967913726534,
+          "excess": -4.912864525525194
+        }
+      },
+      "development_min_excess": -4.912864525525194
+    }
+  ]
+}

@@ -1,0 +1,583 @@
+{
+  "generated_at": "2026-09-02T07:18:27.988507+00:00",
+  "protocol": {
+    "symbol": "BTCUSDT",
+    "source": "Binance USD-M completed local 15m bars",
+    "core": "always 1x long unless variant explicitly says trend-only",
+    "dynamic_rule": "1h alignment adds 1x; simultaneous 4h alignment adds another 1x",
+    "maximum_exposure": "3x",
+    "timing": "completed aggregate candle; next 15m open rebalance",
+    "base_cost": "5 bps fee + 2 bps slippage per fill, historical funding",
+    "stress_cost": "10 bps fee + 5 bps slippage per fill, historical funding"
+  },
+  "data": {
+    "bars": 233455,
+    "funding_events": 7296,
+    "last": "2026-08-28T19:44:59.999000+00:00"
+  },
+  "buy_and_hold_price_baseline": {
+    "research": {
+      "net_return": 1.3044872956108056,
+      "max_drawdown": -0.7727231107978286
+    },
+    "validation": {
+      "net_return": 4.663657718527129,
+      "max_drawdown": -0.3253489953195883
+    },
+    "oos": {
+      "net_return": -0.17217658216491938,
+      "max_drawdown": -0.5385423777245091
+    },
+    "full": {
+      "net_return": 9.800904649497092,
+      "max_drawdown": -0.7727231107978286
+    }
+  },
+  "results": [
+    {
+      "id": "buy_and_hold_1x",
+      "periods": {
+        "research": {
+          "base": {
+            "net_return": 1.2976962116053816,
+            "max_drawdown": -0.772763491582614,
+            "completed_trades": 1,
+            "total_fees": 214.96729422738278,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 1.2946687239465435,
+            "max_drawdown": -0.7728039008154641,
+            "completed_trades": 1,
+            "total_fees": 429.79666906371807,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": -2.568571752976981,
+            "max_drawdown": -1.0040673866427632,
+            "completed_trades": 0,
+            "total_fees": 50.0,
+            "total_funding": -256807.17529769812,
+            "bankrupt": true
+          }
+        },
+        "validation": {
+          "base": {
+            "net_return": 4.651184485469648,
+            "max_drawdown": -0.32538551405922467,
+            "completed_trades": 1,
+            "total_fees": 382.7255870670159,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 4.644468931411845,
+            "max_drawdown": -0.3254220629121021,
+            "completed_trades": 1,
+            "total_fees": 765.1120051463308,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": 4.0077119642515395,
+            "max_drawdown": -0.39026477494451106,
+            "completed_trades": 1,
+            "total_fees": 382.7255870670159,
+            "total_funding": -64347.25212181084,
+            "bankrupt": false
+          }
+        },
+        "oos": {
+          "base": {
+            "net_return": -0.17269288105792588,
+            "max_drawdown": -0.5387424348262058,
+            "completed_trades": 1,
+            "total_fees": 141.41106147784262,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": -0.17410327864123884,
+            "max_drawdown": -0.538942760761213,
+            "completed_trades": 1,
+            "total_fees": 282.7724445804566,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": -0.24285141072293182,
+            "max_drawdown": -0.5701905320885696,
+            "completed_trades": 1,
+            "total_fees": 141.41106147784262,
+            "total_funding": -7015.852966500592,
+            "bankrupt": false
+          }
+        },
+        "full": {
+          "base": {
+            "net_return": 9.77091895929,
+            "max_drawdown": -0.772763491582614,
+            "completed_trades": 1,
+            "total_fees": 638.8403681485743,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 9.758572873933883,
+            "max_drawdown": -0.7728039008154641,
+            "completed_trades": 1,
+            "total_fees": 1277.0343217151035,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": -2.568571752976981,
+            "max_drawdown": -1.0040673866427632,
+            "completed_trades": 0,
+            "total_fees": 50.0,
+            "total_funding": -256807.17529769812,
+            "bankrupt": true
+          }
+        }
+      }
+    },
+    {
+      "id": "trend_1x_or_flat",
+      "periods": {
+        "research": {
+          "base": {
+            "net_return": 0.517421185780661,
+            "max_drawdown": -0.41080814108098984,
+            "completed_trades": 161,
+            "total_fees": 40520.28201599999,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 0.17266090788413954,
+            "max_drawdown": -0.47890190498015195,
+            "completed_trades": 161,
+            "total_fees": 70556.98845062895,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": 0.17740045425688186,
+            "max_drawdown": -0.46259357990961586,
+            "completed_trades": 161,
+            "total_fees": 34389.698107145996,
+            "total_funding": -40215.10727741648,
+            "bankrupt": false
+          }
+        },
+        "validation": {
+          "base": {
+            "net_return": 1.0716022033936028,
+            "max_drawdown": -0.20440559460875485,
+            "completed_trades": 117,
+            "total_fees": 24265.02086186586,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 0.7181387694876218,
+            "max_drawdown": -0.2453590152459979,
+            "completed_trades": 117,
+            "total_fees": 43808.119659201744,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": 0.9304453762833323,
+            "max_drawdown": -0.21019558176509295,
+            "completed_trades": 117,
+            "total_fees": 23436.980521034588,
+            "total_funding": -10687.662419122242,
+            "bankrupt": false
+          }
+        },
+        "oos": {
+          "base": {
+            "net_return": 0.23362930914218547,
+            "max_drawdown": -0.16935069117958876,
+            "completed_trades": 83,
+            "total_fees": 12972.467091505308,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 0.08016813329626415,
+            "max_drawdown": -0.19044055066803026,
+            "completed_trades": 83,
+            "total_fees": 24261.52932734534,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": 0.21267718479530456,
+            "max_drawdown": -0.1703582373877151,
+            "completed_trades": 83,
+            "total_fees": 12858.370114477699,
+            "total_funding": -1793.1579163792544,
+            "bankrupt": false
+          }
+        },
+        "full": {
+          "base": {
+            "net_return": 2.85761605993785,
+            "max_drawdown": -0.41575092919294354,
+            "completed_trades": 359,
+            "total_fees": 117282.51598186996,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 1.1718701600653245,
+            "max_drawdown": -0.5090236741337715,
+            "completed_trades": 359,
+            "total_fees": 169940.49808362263,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": 1.742428443696315,
+            "max_drawdown": -0.4696789731369062,
+            "completed_trades": 359,
+            "total_fees": 90604.93725578277,
+            "total_funding": -56846.37278629679,
+            "bankrupt": false
+          }
+        }
+      }
+    },
+    {
+      "id": "core_plus_1h",
+      "periods": {
+        "research": {
+          "base": {
+            "net_return": 0.4407018751298538,
+            "max_drawdown": -0.8911302806074828,
+            "completed_trades": 323,
+            "total_fees": 287268.29414461914,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": -0.33726842609698404,
+            "max_drawdown": -0.9248922691397958,
+            "completed_trades": 323,
+            "total_fees": 372869.0609530582,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": -0.33089415269870703,
+            "max_drawdown": -0.9119101970954074,
+            "completed_trades": 323,
+            "total_fees": 172403.5989477392,
+            "total_funding": -283219.0041758959,
+            "bankrupt": false
+          }
+        },
+        "validation": {
+          "base": {
+            "net_return": 5.8227457511236915,
+            "max_drawdown": -0.44974723815174855,
+            "completed_trades": 233,
+            "total_fees": 159112.25666334532,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 2.9081871034734212,
+            "max_drawdown": -0.49905995039343753,
+            "completed_trades": 233,
+            "total_fees": 225960.53191415768,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": 4.257545965701454,
+            "max_drawdown": -0.4767850944192359,
+            "completed_trades": 233,
+            "total_fees": 136794.94975066392,
+            "total_funding": -83768.1518659585,
+            "bankrupt": false
+          }
+        },
+        "oos": {
+          "base": {
+            "net_return": -0.24112354957011436,
+            "max_drawdown": -0.5658546218746422,
+            "completed_trades": 164,
+            "total_fees": 32375.330025626823,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": -0.4882989366978202,
+            "max_drawdown": -0.7010723961228178,
+            "completed_trades": 164,
+            "total_fees": 54363.381179246964,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": -0.3034048540669286,
+            "max_drawdown": -0.5971781239510452,
+            "completed_trades": 164,
+            "total_fees": 31103.267569848238,
+            "total_funding": -7705.894850885106,
+            "bankrupt": false
+          }
+        },
+        "full": {
+          "base": {
+            "net_return": 6.48030150776093,
+            "max_drawdown": -0.8911302806074828,
+            "completed_trades": 718,
+            "total_fees": 834252.8463925982,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 0.3333279142830903,
+            "max_drawdown": -0.9248922691397958,
+            "completed_trades": 718,
+            "total_fees": 663742.370414808,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": 1.4578454903778235,
+            "max_drawdown": -0.9119101970954074,
+            "completed_trades": 718,
+            "total_fees": 373177.60222439776,
+            "total_funding": -366538.4781856484,
+            "bankrupt": false
+          }
+        }
+      }
+    },
+    {
+      "id": "core_plus_1h_and_4h",
+      "periods": {
+        "research": {
+          "base": {
+            "net_return": 0.659614869285539,
+            "max_drawdown": -0.9348694700556269,
+            "completed_trades": 349,
+            "total_fees": 571396.5359654939,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": -0.38913174615876184,
+            "max_drawdown": -0.9594324373714068,
+            "completed_trades": 349,
+            "total_fees": 653585.4562431631,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": -0.3465870792797964,
+            "max_drawdown": -0.9496379845663688,
+            "completed_trades": 349,
+            "total_fees": 300778.42707893986,
+            "total_funding": -499759.48651764373,
+            "bankrupt": false
+          }
+        },
+        "validation": {
+          "base": {
+            "net_return": 7.993548086657331,
+            "max_drawdown": -0.5253261051797697,
+            "completed_trades": 250,
+            "total_fees": 252636.25259770648,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 3.3721671033931546,
+            "max_drawdown": -0.5820072250475998,
+            "completed_trades": 250,
+            "total_fees": 321087.99236847664,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": 5.62440799164084,
+            "max_drawdown": -0.549904879834497,
+            "completed_trades": 250,
+            "total_fees": 210084.7331952886,
+            "total_funding": -122890.42922886599,
+            "bankrupt": false
+          }
+        },
+        "oos": {
+          "base": {
+            "net_return": -0.2274632331535046,
+            "max_drawdown": -0.6233208701561503,
+            "completed_trades": 175,
+            "total_fees": 40731.16455674228,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": -0.5230469890922437,
+            "max_drawdown": -0.7368521316498402,
+            "completed_trades": 175,
+            "total_fees": 65822.1220914672,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": -0.2947277119528643,
+            "max_drawdown": -0.6421940873675145,
+            "completed_trades": 175,
+            "total_fees": 38995.305219924136,
+            "total_funding": -8498.518735403399,
+            "bankrupt": false
+          }
+        },
+        "full": {
+          "base": {
+            "net_return": 10.563046024359638,
+            "max_drawdown": -0.9348694700556269,
+            "completed_trades": 772,
+            "total_fees": 1598415.5760439925,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 0.2815263665305821,
+            "max_drawdown": -0.9594324373714068,
+            "completed_trades": 772,
+            "total_fees": 1026184.7417269265,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": 2.061877706878956,
+            "max_drawdown": -0.9496379845663688,
+            "completed_trades": 772,
+            "total_fees": 606790.2090604176,
+            "total_funding": -617068.2874316733,
+            "bankrupt": false
+          }
+        }
+      }
+    },
+    {
+      "id": "core_plus_4h",
+      "periods": {
+        "research": {
+          "base": {
+            "net_return": 1.3116107343395678,
+            "max_drawdown": -0.8889860856481331,
+            "completed_trades": 99,
+            "total_fees": 135787.01890174884,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 0.8230608195169777,
+            "max_drawdown": -0.9026543171470529,
+            "completed_trades": 99,
+            "total_fees": 237722.02557606646,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": 0.06870103187355517,
+            "max_drawdown": -0.9175455666738173,
+            "completed_trades": 99,
+            "total_fees": 79455.49020676898,
+            "total_funding": -416067.77960727696,
+            "bankrupt": false
+          }
+        },
+        "validation": {
+          "base": {
+            "net_return": 5.289680448256692,
+            "max_drawdown": -0.46098034148036765,
+            "completed_trades": 75,
+            "total_fees": 61857.716620457024,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 4.261756244660182,
+            "max_drawdown": -0.480496897457953,
+            "completed_trades": 75,
+            "total_fees": 110924.16963918971,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": 3.806877745618901,
+            "max_drawdown": -0.4902357284646583,
+            "completed_trades": 75,
+            "total_fees": 52723.07596902388,
+            "total_funding": -99269.6779322455,
+            "bankrupt": false
+          }
+        },
+        "oos": {
+          "base": {
+            "net_return": -0.1598879733648867,
+            "max_drawdown": -0.5892379671120489,
+            "completed_trades": 54,
+            "total_fees": 12276.334053796627,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": -0.2621164629687492,
+            "max_drawdown": -0.6171596196465273,
+            "completed_trades": 54,
+            "total_fees": 23164.46190749868,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": -0.22500092532178395,
+            "max_drawdown": -0.6041579287676581,
+            "completed_trades": 54,
+            "total_fees": 11813.411157623428,
+            "total_funding": -7980.254786284179,
+            "bankrupt": false
+          }
+        },
+        "full": {
+          "base": {
+            "net_return": 11.248848772075737,
+            "max_drawdown": -0.8889860856481331,
+            "completed_trades": 226,
+            "total_fees": 455432.8598285495,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "stress": {
+            "net_return": 6.120778619899693,
+            "max_drawdown": -0.9026543171470529,
+            "completed_trades": 226,
+            "total_fees": 660651.5028117938,
+            "total_funding": 0.0,
+            "bankrupt": false
+          },
+          "perp_with_funding": {
+            "net_return": 2.9943463755439064,
+            "max_drawdown": -0.9175455666738173,
+            "completed_trades": 226,
+            "total_fees": 195839.02109362127,
+            "total_funding": -563454.5354275608,
+            "bankrupt": false
+          }
+        }
+      }
+    }
+  ]
+}

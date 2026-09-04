@@ -1,0 +1,20 @@
+{
+  "frozen_at": "2026-09-02",
+  "forward_start": "2026-09-03T00:00:00Z",
+  "role": "challenger",
+  "symbol": "BTCUSDT",
+  "warmup_start": "2019-09-08T17:45:00Z",
+  "evaluation_start": "2020-01-01T00:00:00Z",
+  "signal_timeframe": "4h",
+  "sma_periods": [25, 50, 100, 200],
+  "bear_exposure": "0.5",
+  "neutral_exposure": "1",
+  "bull_exposure": "1.75",
+  "funding_threshold": "0.0001",
+  "maximum_exposure": "1.75",
+  "execution": "completed 4h signal; rebalance exposure delta at next 15m open",
+  "position_model": "fixed spot and futures quantities between sparse target changes",
+  "funding_model": "funding applies only to exposure above 1x",
+  "parameter_changes_during_forward": false,
+  "status": "FORWARD_OBSERVATION_CONTROL"
+}

@@ -26,7 +26,14 @@ Common commands:
 
 # Re-evaluate only post-lock observations with immutable parameters.
 /home/spaceaic/env/.venv/bin/python scripts/research/monitor_factor_stability_forward.py
+
+# Reproduce the current BTC-versus-B&H composite-control candidate.
+PYTHONPATH=scripts/research .venv/bin/python \
+  scripts/research/research_btc_composite_controls.py
 ```
+
+The authoritative definition and approval status for that BTC candidate is
+[`../strategies/candidates/btc_sma10_40_composite_controls_v1.md`](../strategies/candidates/btc_sma10_40_composite_controls_v1.md).
 
 ## Research Naming
 

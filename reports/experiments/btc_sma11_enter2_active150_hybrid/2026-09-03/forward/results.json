@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-09-03T05:37:42.077538+00:00",
+  "status": "FORWARD_OBSERVATION",
+  "frozen_config": {
+    "id": "stitched-daily-sma11-40-enter2-exit1-active1.5",
+    "signal": "completed UTC daily SMA11/40",
+    "bear_rule": "close<SMA40 and SMA11<SMA40 for 2 consecutive daily bars",
+    "recovery_rule": "1 consecutive non-bearish daily bar",
+    "active_exposure": "1.5",
+    "bear_exposure": "0",
+    "execution": "next 15m open",
+    "costs": "10 bps fee + 5 bps slippage per side; historical Funding",
+    "leverage_guard": "2X futures opening control and <=3X effective leverage"
+  },
+  "forward_start": "2026-09-03T01:15:00+00:00",
+  "latest_available_bar": "2026-09-03T05:29:59.999000+00:00",
+  "parameter_changes_allowed": false,
+  "source_bars": 17,
+  "strategy": {
+    "strategy_return": -0.008683055875623248,
+    "benchmark_return": -0.0028198500904626517,
+    "excess": -0.005863205785160596,
+    "strategy_cagr": -0.999999984577042,
+    "strategy_drawdown": -0.014160447819743882,
+    "benchmark_drawdown": -0.009533970473870612,
+    "maximum_intrabar_leverage": 2.0034156070158695,
+    "liquidated": false,
+    "fees": 298.9065696073326,
+    "funding": 0.0
+  },
+  "moderate_cost": {
+    "strategy_return": -0.013137162162446626,
+    "benchmark_return": -0.0028198500904626517,
+    "excess": -0.010317312071983975,
+    "strategy_cagr": -0.9999999999985731,
+    "strategy_drawdown": -0.01416067723243214,
+    "benchmark_drawdown": -0.009533970473870612,
+    "maximum_intrabar_leverage": 2.0034156070158695,
+    "liquidated": false,
+    "fees": 596.4740853936269,
+    "funding": 0.0
+  },
+  "latest_target": {
+    "signal_time": "2026-09-02T23:59:59.999000+00:00",
+    "target_exposure": "1.5"
+  },
+  "forward_target_changes": [],
+  "completed_forward_days": 0
+}

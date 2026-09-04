@@ -1,0 +1,269 @@
+{
+  "generated_at": "2026-09-02T22:57:10.428865+00:00",
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED",
+  "candidate": {
+    "base_signal": "SMA10/40 hysteresis, enter after 2 bearish days, exit after 1",
+    "active_exposure": "1.25",
+    "filters": {
+      "slope": "SMA40[t] < SMA40[t-5]",
+      "sma100": "close < SMA100",
+      "both": "slope and SMA100 condition"
+    },
+    "selection": "predefined causal variants; no OOS selection"
+  },
+  "protocol": {
+    "data": "Binance spot 2017-2019 stitched to USD-M 2020-latest",
+    "signal": "completed daily candle; next bar execution",
+    "costs": "10 bps fee + 5 bps slippage; historical Funding on futures segment",
+    "hard_effective_leverage_cap": "3X"
+  },
+  "data": {
+    "combined_bars": 3303,
+    "last": "2026-09-01T23:59:59.999000+00:00"
+  },
+  "periods": {
+    "spot_pre2020": [
+      "2017-10-01T00:00:00+00:00",
+      "2019-12-31T23:59:59.999000+00:00"
+    ],
+    "2020_2022": [
+      "2020-01-01T00:00:00+00:00",
+      "2022-12-31T23:59:59.999000+00:00"
+    ],
+    "2023_2024": [
+      "2023-01-01T00:00:00+00:00",
+      "2024-12-31T23:59:59.999000+00:00"
+    ],
+    "2025_latest": [
+      "2025-01-01T00:00:00+00:00",
+      "2026-09-01T23:59:59.999000+00:00"
+    ],
+    "stitched_full": [
+      "2017-10-01T00:00:00+00:00",
+      "2026-09-01T23:59:59.999000+00:00"
+    ]
+  },
+  "rows": [
+    {
+      "variant": "none",
+      "metrics": {
+        "spot_pre2020": {
+          "strategy_return": 3.0577656876259987,
+          "benchmark_return": 0.6433131056597138,
+          "excess": 2.4144525819662848,
+          "strategy_drawdown": -0.7010281666859128,
+          "benchmark_drawdown": -0.8347737959006756,
+          "maximum_open_leverage": 1.8169891833327414,
+          "maximum_intrabar_leverage": 1.9268793370527562,
+          "liquidated": false
+        },
+        "2020_2022": {
+          "strategy_return": 3.6401732289537523,
+          "benchmark_return": 1.3002658068859423,
+          "excess": 2.33990742206781,
+          "strategy_drawdown": -0.6319183696123627,
+          "benchmark_drawdown": -0.7715738142936763,
+          "maximum_open_leverage": 1.700602066916038,
+          "maximum_intrabar_leverage": 1.735387750220106,
+          "liquidated": false
+        },
+        "2023_2024": {
+          "strategy_return": 4.016487898964754,
+          "benchmark_return": 4.656773998488284,
+          "excess": -0.6402860995235304,
+          "strategy_drawdown": -0.449266827831933,
+          "benchmark_drawdown": -0.33146992380441853,
+          "maximum_open_leverage": 1.676698531774861,
+          "maximum_intrabar_leverage": 1.804468997357799,
+          "liquidated": false
+        },
+        "2025_latest": {
+          "strategy_return": 0.1830646995557126,
+          "benchmark_return": -0.1726232725593487,
+          "excess": 0.3556879721150613,
+          "strategy_drawdown": -0.36371488059550217,
+          "benchmark_drawdown": -0.5365538380065555,
+          "maximum_open_leverage": 1.5786365153624562,
+          "maximum_intrabar_leverage": 1.6240050230304313,
+          "liquidated": false
+        },
+        "stitched_full": {
+          "strategy_return": 111.03141558848947,
+          "benchmark_return": 16.67734995397957,
+          "excess": 94.3540656345099,
+          "strategy_drawdown": -0.7010281666859128,
+          "benchmark_drawdown": -0.8347737959006756,
+          "maximum_open_leverage": 1.8169891833327414,
+          "maximum_intrabar_leverage": 1.9268793370527562,
+          "liquidated": false
+        }
+      }
+    },
+    {
+      "variant": "slope",
+      "metrics": {
+        "spot_pre2020": {
+          "strategy_return": 1.4539774211829777,
+          "benchmark_return": 0.6433131056597138,
+          "excess": 0.8106643155232639,
+          "strategy_drawdown": -0.7901507929379462,
+          "benchmark_drawdown": -0.8347737959006756,
+          "maximum_open_leverage": 1.8169891833327414,
+          "maximum_intrabar_leverage": 1.9268793370527562,
+          "liquidated": false
+        },
+        "2020_2022": {
+          "strategy_return": 3.3141500354564344,
+          "benchmark_return": 1.3002658068859423,
+          "excess": 2.0138842285704923,
+          "strategy_drawdown": -0.6568355757298762,
+          "benchmark_drawdown": -0.7715738142936763,
+          "maximum_open_leverage": 1.700602066916038,
+          "maximum_intrabar_leverage": 1.735387750220106,
+          "liquidated": false
+        },
+        "2023_2024": {
+          "strategy_return": 3.767963555044617,
+          "benchmark_return": 4.656773998488284,
+          "excess": -0.8888104434436674,
+          "strategy_drawdown": -0.5102960540385334,
+          "benchmark_drawdown": -0.33146992380441853,
+          "maximum_open_leverage": 1.676698531774861,
+          "maximum_intrabar_leverage": 1.804468997357799,
+          "liquidated": false
+        },
+        "2025_latest": {
+          "strategy_return": -0.01666978869027976,
+          "benchmark_return": -0.1726232725593487,
+          "excess": 0.15595348386906893,
+          "strategy_drawdown": -0.4535684986298901,
+          "benchmark_drawdown": -0.5365538380065555,
+          "maximum_open_leverage": 1.6281409353749643,
+          "maximum_intrabar_leverage": 1.6727686194232914,
+          "liquidated": false
+        },
+        "stitched_full": {
+          "strategy_return": 49.32141544236836,
+          "benchmark_return": 16.67734995397957,
+          "excess": 32.64406548838879,
+          "strategy_drawdown": -0.7901507929379462,
+          "benchmark_drawdown": -0.8347737959006756,
+          "maximum_open_leverage": 1.8169891833327414,
+          "maximum_intrabar_leverage": 1.9268793370527562,
+          "liquidated": false
+        }
+      }
+    },
+    {
+      "variant": "sma100",
+      "metrics": {
+        "spot_pre2020": {
+          "strategy_return": 1.6222535003564589,
+          "benchmark_return": 0.6433131056597138,
+          "excess": 0.9789403946967451,
+          "strategy_drawdown": -0.8056944449933492,
+          "benchmark_drawdown": -0.8347737959006756,
+          "maximum_open_leverage": 1.8169891833327414,
+          "maximum_intrabar_leverage": 1.9268793370527562,
+          "liquidated": false
+        },
+        "2020_2022": {
+          "strategy_return": 3.1363890288629377,
+          "benchmark_return": 1.3002658068859423,
+          "excess": 1.8361232219769954,
+          "strategy_drawdown": -0.7187658933987773,
+          "benchmark_drawdown": -0.7715738142936763,
+          "maximum_open_leverage": 1.700602066916038,
+          "maximum_intrabar_leverage": 1.735387750220106,
+          "liquidated": false
+        },
+        "2023_2024": {
+          "strategy_return": 3.298938422348482,
+          "benchmark_return": 4.656773998488284,
+          "excess": -1.3578355761398022,
+          "strategy_drawdown": -0.4852305848383069,
+          "benchmark_drawdown": -0.33146992380441853,
+          "maximum_open_leverage": 1.676698531774861,
+          "maximum_intrabar_leverage": 1.804468997357799,
+          "liquidated": false
+        },
+        "2025_latest": {
+          "strategy_return": 0.08353246969974405,
+          "benchmark_return": -0.1726232725593487,
+          "excess": 0.25615574225909277,
+          "strategy_drawdown": -0.438972093916307,
+          "benchmark_drawdown": -0.5365538380065555,
+          "maximum_open_leverage": 1.5539022197781187,
+          "maximum_intrabar_leverage": 1.5966084195192618,
+          "liquidated": false
+        },
+        "stitched_full": {
+          "strategy_return": 49.77728185086203,
+          "benchmark_return": 16.67734995397957,
+          "excess": 33.09993189688247,
+          "strategy_drawdown": -0.8056944449933492,
+          "benchmark_drawdown": -0.8347737959006756,
+          "maximum_open_leverage": 1.8169891833327414,
+          "maximum_intrabar_leverage": 1.9268793370527562,
+          "liquidated": false
+        }
+      }
+    },
+    {
+      "variant": "both",
+      "metrics": {
+        "spot_pre2020": {
+          "strategy_return": 1.2994438248715166,
+          "benchmark_return": 0.6433131056597138,
+          "excess": 0.6561307192118028,
+          "strategy_drawdown": -0.8196564855882614,
+          "benchmark_drawdown": -0.8347737959006756,
+          "maximum_open_leverage": 1.8169891833327414,
+          "maximum_intrabar_leverage": 1.9268793370527562,
+          "liquidated": false
+        },
+        "2020_2022": {
+          "strategy_return": 3.11603056350228,
+          "benchmark_return": 1.3002658068859423,
+          "excess": 1.8157647566163375,
+          "strategy_drawdown": -0.7234046038979545,
+          "benchmark_drawdown": -0.7715738142936763,
+          "maximum_open_leverage": 1.700602066916038,
+          "maximum_intrabar_leverage": 1.735387750220106,
+          "liquidated": false
+        },
+        "2023_2024": {
+          "strategy_return": 3.6565755458444325,
+          "benchmark_return": 4.656773998488284,
+          "excess": -1.0001984526438519,
+          "strategy_drawdown": -0.5190337475925051,
+          "benchmark_drawdown": -0.33146992380441853,
+          "maximum_open_leverage": 1.676698531774861,
+          "maximum_intrabar_leverage": 1.804468997357799,
+          "liquidated": false
+        },
+        "2025_latest": {
+          "strategy_return": -0.08979135657178737,
+          "benchmark_return": -0.1726232725593487,
+          "excess": 0.08283191598756133,
+          "strategy_drawdown": -0.5026627778044133,
+          "benchmark_drawdown": -0.5365538380065555,
+          "maximum_open_leverage": 1.6281409353749643,
+          "maximum_intrabar_leverage": 1.6727686194232914,
+          "liquidated": false
+        },
+        "stitched_full": {
+          "strategy_return": 39.835297493746225,
+          "benchmark_return": 16.67734995397957,
+          "excess": 23.157947539766656,
+          "strategy_drawdown": -0.8196564855882614,
+          "benchmark_drawdown": -0.8347737959006756,
+          "maximum_open_leverage": 1.8169891833327414,
+          "maximum_intrabar_leverage": 1.9268793370527562,
+          "liquidated": false
+        }
+      }
+    }
+  ],
+  "hard_cap_passed": true
+}

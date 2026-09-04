@@ -1,0 +1,491 @@
+{
+  "generated_at": "2026-09-02T21:49:54.974305+00:00",
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED",
+  "protocol": {
+    "family": "macro-gated 4h SMA + realized-volatility scaling",
+    "selection": "development gates and ranking use Research/Validation only",
+    "oos": "2025 onward is evaluated only after selection",
+    "signal": "completed 4h inputs; next 15m open",
+    "costs": "10 bps fee + 5 bps slippage; 2% maintenance stress",
+    "open_leverage_cap": "2.5x futures-wallet equity",
+    "effective_leverage_cap": "<=3x including stressed intrabar-low audit"
+  },
+  "data": {
+    "bars": 244909,
+    "first": "2019-09-08T17:45:00+00:00",
+    "last": "2026-09-02T20:59:59.999000+00:00",
+    "evaluation_start": "2020-01-01T00:00:00+00:00",
+    "evaluation_end": "2026-09-02T20:59:59.999000+00:00"
+  },
+  "benchmarks": {
+    "research": {
+      "net_return": 1.3002658068859423,
+      "max_drawdown": -0.7755528264455603
+    },
+    "validation": {
+      "net_return": 4.656773998488284,
+      "max_drawdown": -0.3365730267702175
+    },
+    "oos": {
+      "net_return": -0.17300489156461654,
+      "max_drawdown": -0.5415474735288048
+    },
+    "full": {
+      "net_return": 9.76085308571055,
+      "max_drawdown": -0.7755528264455603
+    }
+  },
+  "candidate_count": 15,
+  "development_qualifying_count": 9,
+  "selected": {
+    "id": "4h-24-48-96-192-macro1200-vol360-target1-max2.5x-strict3x",
+    "volatility_lookback": 360,
+    "target_volatility": "1",
+    "open_cap": "2.5",
+    "development_score": 0.09436905491417469,
+    "development_cap_passed": true,
+    "development_qualifies": true,
+    "metrics": {
+      "research": {
+        "net_return": 1.82988698640725,
+        "max_drawdown": -0.7348350452204808,
+        "total_fees": 55772.43988591598,
+        "total_funding": -307584.97992761264,
+        "liquidated": false,
+        "maximum_controlled_open_futures_leverage": 2.5,
+        "maximum_observed_futures_leverage": 2.546318615517999,
+        "benchmark_return": 1.3002658068859423,
+        "excess": 0.5296211795213077
+      },
+      "validation": {
+        "net_return": 5.146307382738948,
+        "max_drawdown": -0.358083064987529,
+        "total_fees": 67473.29055193136,
+        "total_funding": -89201.96864866522,
+        "liquidated": false,
+        "maximum_controlled_open_futures_leverage": 2.5,
+        "maximum_observed_futures_leverage": 2.5901505083294722,
+        "benchmark_return": 4.656773998488284,
+        "excess": 0.48953338425066395
+      },
+      "oos": {
+        "net_return": -0.11175851640381428,
+        "max_drawdown": -0.5440804544711745,
+        "total_fees": 7896.893865633439,
+        "total_funding": -7047.379881391742,
+        "liquidated": false,
+        "maximum_controlled_open_futures_leverage": 2.5,
+        "maximum_observed_futures_leverage": 2.565289445921627,
+        "benchmark_return": -0.17300489156461654,
+        "excess": 0.061246375160802266
+      },
+      "full": {
+        "net_return": 14.499985050906174,
+        "max_drawdown": -0.7348350452204808,
+        "total_fees": 382801.26628971373,
+        "total_funding": -683395.7589938457,
+        "liquidated": false,
+        "maximum_controlled_open_futures_leverage": 2.5,
+        "maximum_observed_futures_leverage": 2.5901505083294722,
+        "benchmark_return": 9.76085308571055,
+        "excess": 4.739131965195623,
+        "cagr": 0.508025367866163
+      }
+    }
+  },
+  "development_ranking": [
+    {
+      "id": "4h-24-48-96-192-macro1200-vol360-target1-max2.5x-strict3x",
+      "volatility_lookback": 360,
+      "target_volatility": "1",
+      "open_cap": "2.5",
+      "development_score": 0.09436905491417469,
+      "development_cap_passed": true,
+      "development_qualifies": true,
+      "metrics": {
+        "research": {
+          "net_return": 1.82988698640725,
+          "max_drawdown": -0.7348350452204808,
+          "total_fees": 55772.43988591598,
+          "total_funding": -307584.97992761264,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.546318615517999,
+          "benchmark_return": 1.3002658068859423,
+          "excess": 0.5296211795213077
+        },
+        "validation": {
+          "net_return": 5.146307382738948,
+          "max_drawdown": -0.358083064987529,
+          "total_fees": 67473.29055193136,
+          "total_funding": -89201.96864866522,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.5901505083294722,
+          "benchmark_return": 4.656773998488284,
+          "excess": 0.48953338425066395
+        },
+        "oos": {
+          "net_return": -0.11175851640381428,
+          "max_drawdown": -0.5440804544711745,
+          "total_fees": 7896.893865633439,
+          "total_funding": -7047.379881391742,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.565289445921627,
+          "benchmark_return": -0.17300489156461654,
+          "excess": 0.061246375160802266
+        },
+        "full": {
+          "net_return": 14.499985050906174,
+          "max_drawdown": -0.7348350452204808,
+          "total_fees": 382801.26628971373,
+          "total_funding": -683395.7589938457,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.5901505083294722,
+          "benchmark_return": 9.76085308571055,
+          "excess": 4.739131965195623
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-macro1200-vol180-target1-max2.5x-strict3x",
+      "volatility_lookback": 180,
+      "target_volatility": "1",
+      "open_cap": "2.5",
+      "development_score": 0.05435528876964346,
+      "development_cap_passed": true,
+      "development_qualifies": true,
+      "metrics": {
+        "research": {
+          "net_return": 1.7246769738851546,
+          "max_drawdown": -0.7447585832721458,
+          "total_fees": 55113.61280529368,
+          "total_funding": -303824.69685706415,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.53321276144573,
+          "benchmark_return": 1.3002658068859423,
+          "excess": 0.42441116699921233
+        },
+        "validation": {
+          "net_return": 4.9186356174535595,
+          "max_drawdown": -0.3523049259068719,
+          "total_fees": 65989.41902728211,
+          "total_funding": -88689.91159170118,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.5676130759788465,
+          "benchmark_return": 4.656773998488284,
+          "excess": 0.26186161896527516
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-macro1200-vol360-target1.2-max2.5x-strict3x",
+      "volatility_lookback": 360,
+      "target_volatility": "1.2",
+      "open_cap": "2.5",
+      "development_score": 0.02826323151236121,
+      "development_cap_passed": true,
+      "development_qualifies": true,
+      "metrics": {
+        "research": {
+          "net_return": 1.609282214563779,
+          "max_drawdown": -0.7359661286382503,
+          "total_fees": 64357.37776196558,
+          "total_funding": -285351.51404789445,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.540448516577965,
+          "benchmark_return": 1.3002658068859423,
+          "excess": 0.3090164076778368
+        },
+        "validation": {
+          "net_return": 4.7921948030616806,
+          "max_drawdown": -0.3659869011059931,
+          "total_fees": 73832.05276611929,
+          "total_funding": -89267.71504497448,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.6319074679647567,
+          "benchmark_return": 4.656773998488284,
+          "excess": 0.13542080457339623
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-macro1200-vol360-target0.8-max2.5x-strict3x",
+      "volatility_lookback": 360,
+      "target_volatility": "0.8",
+      "open_cap": "2.5",
+      "development_score": 0.011579642037133908,
+      "development_cap_passed": true,
+      "development_qualifies": true,
+      "metrics": {
+        "research": {
+          "net_return": 1.3613523420379183,
+          "max_drawdown": -0.729818346252297,
+          "total_fees": 33915.582102809145,
+          "total_funding": -254392.78913400875,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.08164913670764,
+          "maximum_observed_futures_leverage": 2.0999103655435016,
+          "benchmark_return": 1.3002658068859423,
+          "excess": 0.06108653515197604
+        },
+        "validation": {
+          "net_return": 5.42912671585454,
+          "max_drawdown": -0.33882957620692117,
+          "total_fees": 50324.09175002303,
+          "total_funding": -86695.06947640366,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.524927918107156,
+          "benchmark_return": 4.656773998488284,
+          "excess": 0.7723527173662559
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-macro1200-vol720-target1.5-max2.5x-strict3x",
+      "volatility_lookback": 720,
+      "target_volatility": "1.5",
+      "open_cap": "2.5",
+      "development_score": 0.010557402819035389,
+      "development_cap_passed": true,
+      "development_qualifies": true,
+      "metrics": {
+        "research": {
+          "net_return": 2.2124235700080814,
+          "max_drawdown": -0.7231226629033504,
+          "total_fees": 89691.07757751195,
+          "total_funding": -334984.16902909265,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.603687660804209,
+          "benchmark_return": 1.3002658068859423,
+          "excess": 0.9121577631221391
+        },
+        "validation": {
+          "net_return": 4.707171318375781,
+          "max_drawdown": -0.37860317357241036,
+          "total_fees": 74718.53820363445,
+          "total_funding": -88796.05973537918,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.6319074679647567,
+          "benchmark_return": 4.656773998488284,
+          "excess": 0.050397319887496295
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-macro1200-vol720-target2-max2.5x-strict3x",
+      "volatility_lookback": 720,
+      "target_volatility": "2",
+      "open_cap": "2.5",
+      "development_score": 0.010557402819035389,
+      "development_cap_passed": true,
+      "development_qualifies": true,
+      "metrics": {
+        "research": {
+          "net_return": 2.202343883443317,
+          "max_drawdown": -0.741710592865477,
+          "total_fees": 113358.58510898167,
+          "total_funding": -353126.5595099629,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.982507824463085,
+          "benchmark_return": 1.3002658068859423,
+          "excess": 0.9020780765573748
+        },
+        "validation": {
+          "net_return": 4.707171318375781,
+          "max_drawdown": -0.37860317357241036,
+          "total_fees": 74718.53820363445,
+          "total_funding": -88796.05973537918,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.6319074679647567,
+          "benchmark_return": 4.656773998488284,
+          "excess": 0.050397319887496295
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-macro1200-vol180-target1.2-max2.5x-strict3x",
+      "volatility_lookback": 180,
+      "target_volatility": "1.2",
+      "open_cap": "2.5",
+      "development_score": 0.008868911276962432,
+      "development_cap_passed": true,
+      "development_qualifies": true,
+      "metrics": {
+        "research": {
+          "net_return": 1.7854531781203828,
+          "max_drawdown": -0.7524236307669148,
+          "total_fees": 73009.3876102242,
+          "total_funding": -320326.48175719974,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.8780205379476125,
+          "benchmark_return": 1.3002658068859423,
+          "excess": 0.48518737123444056
+        },
+        "validation": {
+          "net_return": 4.699096029738243,
+          "max_drawdown": -0.3763845067171186,
+          "total_fees": 71963.57120095672,
+          "total_funding": -89526.36646035308,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.6319074679647567,
+          "benchmark_return": 4.656773998488284,
+          "excess": 0.04232203124995859
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-macro1200-vol720-target0.8-max2.5x-strict3x",
+      "volatility_lookback": 720,
+      "target_volatility": "0.8",
+      "open_cap": "2.5",
+      "development_score": 0.0030263359585926963,
+      "development_cap_passed": true,
+      "development_qualifies": true,
+      "metrics": {
+        "research": {
+          "net_return": 1.316127788138578,
+          "max_drawdown": -0.7264519105141828,
+          "total_fees": 31160.310563352803,
+          "total_funding": -246378.8439567658,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.0263153399295732,
+          "maximum_observed_futures_leverage": 2.042547343282298,
+          "benchmark_return": 1.3002658068859423,
+          "excess": 0.015861981252635715
+        },
+        "validation": {
+          "net_return": 4.833710062539891,
+          "max_drawdown": -0.3309964328427589,
+          "total_fees": 44029.97051630112,
+          "total_funding": -80232.78601207421,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.555157335744778,
+          "benchmark_return": 4.656773998488284,
+          "excess": 0.1769360640516071
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-macro1200-vol180-target0.8-max2.5x-strict3x",
+      "volatility_lookback": 180,
+      "target_volatility": "0.8",
+      "open_cap": "2.5",
+      "development_score": 0.003023241044472602,
+      "development_cap_passed": true,
+      "development_qualifies": true,
+      "metrics": {
+        "research": {
+          "net_return": 1.3161115295786794,
+          "max_drawdown": -0.7406372089031681,
+          "total_fees": 34045.31111216495,
+          "total_funding": -258201.3650846407,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.5037155761175343,
+          "benchmark_return": 1.3002658068859423,
+          "excess": 0.015845722692737096
+        },
+        "validation": {
+          "net_return": 5.081058360282046,
+          "max_drawdown": -0.3232737976565232,
+          "total_fees": 47866.656515972885,
+          "total_funding": -84791.23026384547,
+          "liquidated": false,
+          "maximum_controlled_open_futures_leverage": 2.5,
+          "maximum_observed_futures_leverage": 2.52477140433354,
+          "benchmark_return": 4.656773998488284,
+          "excess": 0.4242843617937613
+        }
+      }
+    }
+  ],
+  "bootstrap": {
+    "7d": {
+      "samples": 10000,
+      "block_days": 7,
+      "probability_beats_bh_return": 0.6729,
+      "probability_drawdown_no_worse_than_bh": 0.689,
+      "probability_beats_return_and_drawdown": 0.5338,
+      "probability_cagr_above_20pct": 0.8371,
+      "probability_drawdown_at_least_70pct": 0.3074,
+      "strategy_cagr": {
+        "p05": 0.02999012452879747,
+        "median": 0.511152403586694,
+        "p95": 1.2268229939827437
+      },
+      "annualized_excess_vs_bh": {
+        "p05": -0.12764874616978805,
+        "median": 0.05400838433999611,
+        "p95": 0.2853043276735604
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8452324058242489,
+        "median": -0.6344497555039867,
+        "p95": -0.45508963107996697
+      }
+    },
+    "30d": {
+      "samples": 10000,
+      "block_days": 30,
+      "probability_beats_bh_return": 0.6589,
+      "probability_drawdown_no_worse_than_bh": 0.6536,
+      "probability_beats_return_and_drawdown": 0.5021,
+      "probability_cagr_above_20pct": 0.8016,
+      "probability_drawdown_at_least_70pct": 0.3966,
+      "strategy_cagr": {
+        "p05": -0.014681476948046156,
+        "median": 0.4932305523467422,
+        "p95": 1.3499154714579373
+      },
+      "annualized_excess_vs_bh": {
+        "p05": -0.13291699813185012,
+        "median": 0.05321051315268854,
+        "p95": 0.3025983327967871
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8723384858876218,
+        "median": -0.665943261920303,
+        "p95": -0.4846580590061857
+      }
+    },
+    "90d": {
+      "samples": 10000,
+      "block_days": 90,
+      "probability_beats_bh_return": 0.6625,
+      "probability_drawdown_no_worse_than_bh": 0.7165,
+      "probability_beats_return_and_drawdown": 0.5314,
+      "probability_cagr_above_20pct": 0.7727,
+      "probability_drawdown_at_least_70pct": 0.4294,
+      "strategy_cagr": {
+        "p05": -0.046380417729672385,
+        "median": 0.48808492312775786,
+        "p95": 1.4810535013445103
+      },
+      "annualized_excess_vs_bh": {
+        "p05": -0.12593039818661067,
+        "median": 0.048948606423731666,
+        "p95": 0.29445954480906894
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8844133658865793,
+        "median": -0.6774857639992555,
+        "p95": -0.4865243942124752
+      }
+    }
+  }
+}

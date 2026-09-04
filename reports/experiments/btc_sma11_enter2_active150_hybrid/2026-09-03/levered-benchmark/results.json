@@ -1,0 +1,155 @@
+{
+  "generated_at": "2026-09-03T05:27:28.076962+00:00",
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED",
+  "protocol": {
+    "strategy": "frozen SMA11/40 enter2-exit1 active1.5X, bear 0X",
+    "matched_benchmark": "continuous 1.5X BTC target under identical replay mechanics",
+    "shared_model": "50% spot plus 50% isolated USD-M collateral, 2X futures opening control, <=3X effective-leverage protection, 10+5 bps costs, and historical Funding",
+    "one_x_benchmark": "reported only for the original BTC B&H comparison"
+  },
+  "data": {
+    "last": "2026-09-03T05:14:59.999000+00:00",
+    "bars": 234840
+  },
+  "results": {
+    "spot_pre2020": {
+      "strategy": {
+        "strategy_return": 2.4769728927841723,
+        "benchmark_return": 0.6433131056597138,
+        "excess": 1.8336597871244584,
+        "strategy_cagr": 0.739698980600233,
+        "strategy_drawdown": -0.7562475262309408,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.6023914786631344,
+        "liquidated": false,
+        "fees": 14265.619301920606,
+        "funding": 0.0
+      },
+      "one_x_buy_and_hold": {
+        "net_return": 0.6433131056597138,
+        "max_drawdown": -0.8347737959006756
+      },
+      "matched_1p5x_buy_and_hold": {
+        "net_return": 0.7384828013159968,
+        "max_drawdown": -0.8949119272857353,
+        "maximum_intrabar_leverage": 2.1962173440597823,
+        "liquidated": false,
+        "fees": 373.73539856993847,
+        "funding": 0.0
+      },
+      "strategy_vs_matched_excess": 1.7384900914681756
+    },
+    "research": {
+      "strategy": {
+        "strategy_return": 3.7715437425632774,
+        "benchmark_return": 1.3002658068859423,
+        "excess": 2.4712779356773353,
+        "strategy_cagr": 0.68330723944294,
+        "strategy_drawdown": -0.7199520745584032,
+        "benchmark_drawdown": -0.7755528264455603,
+        "maximum_intrabar_leverage": 2.0854031385928056,
+        "liquidated": false,
+        "fees": 32175.843934014945,
+        "funding": -270685.13159472984
+      },
+      "one_x_buy_and_hold": {
+        "net_return": 1.3002658068859423,
+        "max_drawdown": -0.7755528264455603
+      },
+      "matched_1p5x_buy_and_hold": {
+        "net_return": 0.3324728209106417,
+        "max_drawdown": -0.8387931948148325,
+        "maximum_intrabar_leverage": 2.50029158525925,
+        "liquidated": false,
+        "fees": 444.2695785868617,
+        "funding": -111029.37678743333
+      },
+      "strategy_vs_matched_excess": 3.4390709216526356
+    },
+    "validation": {
+      "strategy": {
+        "strategy_return": 5.87118989950758,
+        "benchmark_return": 4.656773998488284,
+        "excess": 1.2144159010192954,
+        "strategy_cagr": 1.6195164203671375,
+        "strategy_drawdown": -0.487837574919292,
+        "benchmark_drawdown": -0.3365730267702175,
+        "maximum_intrabar_leverage": 2.161728042945372,
+        "liquidated": false,
+        "fees": 11441.226977863804,
+        "funding": -64218.70985445748
+      },
+      "one_x_buy_and_hold": {
+        "net_return": 4.656773998488284,
+        "max_drawdown": -0.3365730267702175
+      },
+      "matched_1p5x_buy_and_hold": {
+        "net_return": 6.266785322330652,
+        "max_drawdown": -0.41079886458176174,
+        "maximum_intrabar_leverage": 2.0028378179868804,
+        "liquidated": false,
+        "fees": 990.9750266016898,
+        "funding": -63483.51648823815
+      },
+      "strategy_vs_matched_excess": -0.3955954228230727
+    },
+    "oos": {
+      "strategy": {
+        "strategy_return": 0.26722917142587854,
+        "benchmark_return": -0.17054948860915373,
+        "excess": 0.4377786600350323,
+        "strategy_cagr": 0.1522939831739758,
+        "strategy_drawdown": -0.4141960205061998,
+        "benchmark_drawdown": -0.5415474735288048,
+        "maximum_intrabar_leverage": 2.1559594745652144,
+        "liquidated": false,
+        "fees": 4371.756592463562,
+        "funding": -4657.153564449167
+      },
+      "one_x_buy_and_hold": {
+        "net_return": -0.17054948860915373,
+        "max_drawdown": -0.5415474735288048
+      },
+      "matched_1p5x_buy_and_hold": {
+        "net_return": -0.31475197822701323,
+        "max_drawdown": -0.6570891188713642,
+        "maximum_intrabar_leverage": 2.0773397009220553,
+        "liquidated": false,
+        "fees": 273.73080961938297,
+        "funding": -5468.89588717128
+      },
+      "strategy_vs_matched_excess": 0.5819811496528917
+    },
+    "full": {
+      "strategy": {
+        "strategy_return": 143.93598631337878,
+        "benchmark_return": 16.721657466386812,
+        "excess": 127.21432884699196,
+        "strategy_cagr": 0.7465900753598802,
+        "strategy_drawdown": -0.7562475262309408,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.6023914786631344,
+        "liquidated": false,
+        "fees": 815913.6599846351,
+        "funding": -2545604.629950689
+      },
+      "one_x_buy_and_hold": {
+        "net_return": 16.721657466386812,
+        "max_drawdown": -0.8347737959006756
+      },
+      "matched_1p5x_buy_and_hold": {
+        "net_return": 10.434570339239734,
+        "max_drawdown": -0.8949119272857353,
+        "maximum_intrabar_leverage": 2.2862344244497512,
+        "liquidated": false,
+        "fees": 1679.9593649288572,
+        "funding": -334655.8766170066
+      },
+      "strategy_vs_matched_excess": 133.50141597413904
+    }
+  },
+  "decision": {
+    "beats_matched_all_splits": false,
+    "matched_benchmark_liquidated": false
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-09-02T18:17:44.519688+00:00",
+  "holdout": {
+    "start": "2019-10-18T00:00:00+00:00",
+    "end": "2019-12-31T23:59:59.999000+00:00",
+    "selection": "not used during parameter or mechanism selection"
+  },
+  "data": {
+    "bars": 244857,
+    "last": "2026-09-02T07:59:59.999000+00:00"
+  },
+  "results": {
+    "challenger_2x": {
+      "return": -0.17947390337922237,
+      "excess": -0.07036927243346548,
+      "drawdown": -0.29219061247194006,
+      "benchmark_return": -0.10910463094575688,
+      "benchmark_drawdown": -0.3760194174757282,
+      "observed_intrabar_leverage": 3.094231604723287,
+      "liquidated": false
+    },
+    "intrabar_safe_1_5x": {
+      "return": -0.1535618205753486,
+      "excess": -0.044457189629591706,
+      "drawdown": -0.26983810530060165,
+      "benchmark_return": -0.10910463094575688,
+      "benchmark_drawdown": -0.3760194174757282,
+      "observed_intrabar_leverage": 2.1209039210015566,
+      "liquidated": false
+    }
+  },
+  "status": "RESEARCH_ONLY"
+}

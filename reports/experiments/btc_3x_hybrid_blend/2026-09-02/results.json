@@ -1,0 +1,470 @@
+{
+  "generated_at": "2026-09-02T21:25:00.733022+00:00",
+  "status": "RESEARCH_ONLY",
+  "protocol": {
+    "components": [
+      "daily SMA 8/40, bear -0.1x, otherwise +1.5x, 50% spot cap",
+      "4h SMA 26/52/104/208, bear 0x, neutral 1x, bull 1.25x, funding-aware"
+    ],
+    "combination": "fixed initial capital weights; no free rebalancing between sleeves",
+    "execution": "completed signal candle, next 15m open",
+    "costs": "10 bps fee + 5 bps slippage; historical funding",
+    "maximum_futures_leverage": "3x with active effective-cap enforcement",
+    "selection": "weights are a predeclared diagnostic grid; OOS is not used for selection"
+  },
+  "data": {
+    "bars": 244909,
+    "first": "2019-09-08T17:45:00+00:00",
+    "last": "2026-09-02T20:59:59.999000+00:00"
+  },
+  "benchmarks": {
+    "research": {
+      "net_return": 1.3002658068859423,
+      "max_drawdown": -0.7755528264455603
+    },
+    "validation": {
+      "net_return": 4.656773998488284,
+      "max_drawdown": -0.3365730267702175
+    },
+    "oos": {
+      "net_return": -0.17300489156461654,
+      "max_drawdown": -0.5415474735288048
+    },
+    "full": {
+      "net_return": 9.76085308571055,
+      "max_drawdown": -0.7755528264455603
+    }
+  },
+  "component_full": {
+    "daily_sma": {
+      "return": 30.375016244314182,
+      "max_drawdown": -0.7238996927021165
+    },
+    "spot_core": {
+      "return": 10.170456522731167,
+      "max_drawdown": -0.6539664357096493
+    }
+  },
+  "blends": [
+    {
+      "daily_sma_weight": 0.0,
+      "return": 10.170456522731167,
+      "max_drawdown": -0.6538085979959454
+    },
+    {
+      "daily_sma_weight": 0.25,
+      "return": 15.22159645312692,
+      "max_drawdown": -0.6681017000139118
+    },
+    {
+      "daily_sma_weight": 0.5,
+      "return": 20.272736383522673,
+      "max_drawdown": -0.6839250590672485
+    },
+    {
+      "daily_sma_weight": 0.75,
+      "return": 25.32387631391843,
+      "max_drawdown": -0.7030096582975542
+    },
+    {
+      "daily_sma_weight": 1.0,
+      "return": 30.375016244314182,
+      "max_drawdown": -0.717328478428428
+    }
+  ],
+  "split_results": {
+    "0": {
+      "research": {
+        "daily_sma_weight": 0.0,
+        "return": 1.681823057973836,
+        "max_drawdown": -0.6523860282056566,
+        "benchmark_return": 1.3002658068859423,
+        "benchmark_drawdown": -0.7755528264455603,
+        "excess_return": 0.38155725108789373,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.861801614385107,
+        "spot_core_intrabar_leverage": 2.7280457944498075
+      },
+      "validation": {
+        "daily_sma_weight": 0.0,
+        "return": 3.0930250726053523,
+        "max_drawdown": -0.3167097344354205,
+        "benchmark_return": 4.656773998488284,
+        "benchmark_drawdown": -0.3365730267702175,
+        "excess_return": -1.563748925882932,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.9959174072981005,
+        "spot_core_intrabar_leverage": 2.2418945562038446
+      },
+      "oos": {
+        "daily_sma_weight": 0.0,
+        "return": 0.01764522017914137,
+        "max_drawdown": -0.3224281994598587,
+        "benchmark_return": -0.17300489156461654,
+        "benchmark_drawdown": -0.5415474735288048,
+        "excess_return": 0.1906501117437579,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.300911932854474,
+        "spot_core_intrabar_leverage": 2.5065062565942866
+      },
+      "full": {
+        "daily_sma_weight": 0.0,
+        "return": 10.170456522731167,
+        "max_drawdown": -0.6538085979959454,
+        "benchmark_return": 9.76085308571055,
+        "benchmark_drawdown": -0.7755528264455603,
+        "excess_return": 0.40960343702061586,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.9959174072981005,
+        "spot_core_intrabar_leverage": 2.7280457944498075
+      }
+    },
+    "0.25": {
+      "research": {
+        "daily_sma_weight": 0.25,
+        "return": 2.152378398651311,
+        "max_drawdown": -0.6668282067877108,
+        "benchmark_return": 1.3002658068859423,
+        "benchmark_drawdown": -0.7755528264455603,
+        "excess_return": 0.8521125917653689,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.861801614385107,
+        "spot_core_intrabar_leverage": 2.7280457944498075
+      },
+      "validation": {
+        "daily_sma_weight": 0.25,
+        "return": 3.498761276687592,
+        "max_drawdown": -0.3918643841813423,
+        "benchmark_return": 4.656773998488284,
+        "benchmark_drawdown": -0.3365730267702175,
+        "excess_return": -1.1580127218006924,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.9959174072981005,
+        "spot_core_intrabar_leverage": 2.2418945562038446
+      },
+      "oos": {
+        "daily_sma_weight": 0.25,
+        "return": 0.06368209630110933,
+        "max_drawdown": -0.3433893402813797,
+        "benchmark_return": -0.17300489156461654,
+        "benchmark_drawdown": -0.5415474735288048,
+        "excess_return": 0.23668698786572587,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.300911932854474,
+        "spot_core_intrabar_leverage": 2.5065062565942866
+      },
+      "full": {
+        "daily_sma_weight": 0.25,
+        "return": 15.22159645312692,
+        "max_drawdown": -0.6681017000139118,
+        "benchmark_return": 9.76085308571055,
+        "benchmark_drawdown": -0.7755528264455603,
+        "excess_return": 5.46074336741637,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.9959174072981005,
+        "spot_core_intrabar_leverage": 2.7280457944498075
+      }
+    },
+    "0.5": {
+      "research": {
+        "daily_sma_weight": 0.5,
+        "return": 2.622933739328786,
+        "max_drawdown": -0.6839250590672485,
+        "benchmark_return": 1.3002658068859423,
+        "benchmark_drawdown": -0.7755528264455603,
+        "excess_return": 1.3226679324428436,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.861801614385107,
+        "spot_core_intrabar_leverage": 2.7280457944498075
+      },
+      "validation": {
+        "daily_sma_weight": 0.5,
+        "return": 3.9044974807698316,
+        "max_drawdown": -0.45189965369049456,
+        "benchmark_return": 4.656773998488284,
+        "benchmark_drawdown": -0.3365730267702175,
+        "excess_return": -0.7522765177184527,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.9959174072981005,
+        "spot_core_intrabar_leverage": 2.2418945562038446
+      },
+      "oos": {
+        "daily_sma_weight": 0.5,
+        "return": 0.10971897242307727,
+        "max_drawdown": -0.3622292058873069,
+        "benchmark_return": -0.17300489156461654,
+        "benchmark_drawdown": -0.5415474735288048,
+        "excess_return": 0.2827238639876938,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.300911932854474,
+        "spot_core_intrabar_leverage": 2.5065062565942866
+      },
+      "full": {
+        "daily_sma_weight": 0.5,
+        "return": 20.272736383522673,
+        "max_drawdown": -0.6839250590672485,
+        "benchmark_return": 9.76085308571055,
+        "benchmark_drawdown": -0.7755528264455603,
+        "excess_return": 10.511883297812123,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.9959174072981005,
+        "spot_core_intrabar_leverage": 2.7280457944498075
+      }
+    },
+    "0.75": {
+      "research": {
+        "daily_sma_weight": 0.75,
+        "return": 3.093489080006261,
+        "max_drawdown": -0.7030096582975542,
+        "benchmark_return": 1.3002658068859423,
+        "benchmark_drawdown": -0.7755528264455603,
+        "excess_return": 1.7932232731203188,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.861801614385107,
+        "spot_core_intrabar_leverage": 2.7280457944498075
+      },
+      "validation": {
+        "daily_sma_weight": 0.75,
+        "return": 4.310233684852071,
+        "max_drawdown": -0.4975797644300821,
+        "benchmark_return": 4.656773998488284,
+        "benchmark_drawdown": -0.3365730267702175,
+        "excess_return": -0.34654031363621307,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.9959174072981005,
+        "spot_core_intrabar_leverage": 2.2418945562038446
+      },
+      "oos": {
+        "daily_sma_weight": 0.75,
+        "return": 0.15575584854504523,
+        "max_drawdown": -0.3809342842043534,
+        "benchmark_return": -0.17300489156461654,
+        "benchmark_drawdown": -0.5415474735288048,
+        "excess_return": 0.3287607401096618,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.300911932854474,
+        "spot_core_intrabar_leverage": 2.5065062565942866
+      },
+      "full": {
+        "daily_sma_weight": 0.75,
+        "return": 25.32387631391843,
+        "max_drawdown": -0.7030096582975542,
+        "benchmark_return": 9.76085308571055,
+        "benchmark_drawdown": -0.7755528264455603,
+        "excess_return": 15.563023228207879,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.9959174072981005,
+        "spot_core_intrabar_leverage": 2.7280457944498075
+      }
+    },
+    "1": {
+      "research": {
+        "daily_sma_weight": 1.0,
+        "return": 3.564044420683736,
+        "max_drawdown": -0.717328478428428,
+        "benchmark_return": 1.3002658068859423,
+        "benchmark_drawdown": -0.7755528264455603,
+        "excess_return": 2.2637786137977933,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.861801614385107,
+        "spot_core_intrabar_leverage": 2.7280457944498075
+      },
+      "validation": {
+        "daily_sma_weight": 1.0,
+        "return": 4.7159698889343105,
+        "max_drawdown": -0.5334994783487242,
+        "benchmark_return": 4.656773998488284,
+        "benchmark_drawdown": -0.3365730267702175,
+        "excess_return": 0.059195890446026134,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.9959174072981005,
+        "spot_core_intrabar_leverage": 2.2418945562038446
+      },
+      "oos": {
+        "daily_sma_weight": 1.0,
+        "return": 0.20179272466701317,
+        "max_drawdown": -0.4003326516715129,
+        "benchmark_return": -0.17300489156461654,
+        "benchmark_drawdown": -0.5415474735288048,
+        "excess_return": 0.3747976162316297,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.300911932854474,
+        "spot_core_intrabar_leverage": 2.5065062565942866
+      },
+      "full": {
+        "daily_sma_weight": 1.0,
+        "return": 30.375016244314182,
+        "max_drawdown": -0.717328478428428,
+        "benchmark_return": 9.76085308571055,
+        "benchmark_drawdown": -0.7755528264455603,
+        "excess_return": 20.61416315860363,
+        "liquidated": false,
+        "daily_sma_intrabar_leverage": 2.9959174072981005,
+        "spot_core_intrabar_leverage": 2.7280457944498075
+      }
+    }
+  },
+  "bootstrap": {
+    "0.25": {
+      "7d": {
+        "samples": 10000,
+        "block_days": 7,
+        "probability_beats_bh_return": 0.6427,
+        "probability_drawdown_no_worse_than_bh": 0.8169,
+        "probability_beats_return_and_drawdown": 0.5913,
+        "probability_cagr_above_20pct": 0.8786,
+        "probability_drawdown_at_least_70pct": 0.1411,
+        "strategy_cagr": {
+          "p05": 0.09268052520097113,
+          "median": 0.516105348825725,
+          "p95": 1.1209094798775079
+        },
+        "annualized_excess_vs_bh": {
+          "p05": -0.18046322407483428,
+          "median": 0.06199080072386909,
+          "p95": 0.3971586546467296
+        },
+        "strategy_max_drawdown": {
+          "p05": -0.7754564112187138,
+          "median": -0.5600608370191591,
+          "p95": -0.3989165392866447
+        }
+      },
+      "30d": {
+        "samples": 10000,
+        "block_days": 30,
+        "probability_beats_bh_return": 0.6569,
+        "probability_drawdown_no_worse_than_bh": 0.7979,
+        "probability_beats_return_and_drawdown": 0.5986,
+        "probability_cagr_above_20pct": 0.8513,
+        "probability_drawdown_at_least_70pct": 0.1902,
+        "strategy_cagr": {
+          "p05": 0.05445516811019543,
+          "median": 0.5182337295956599,
+          "p95": 1.205038667620894
+        },
+        "annualized_excess_vs_bh": {
+          "p05": -0.1594710984090823,
+          "median": 0.06025285102474265,
+          "p95": 0.3704128434719289
+        },
+        "strategy_max_drawdown": {
+          "p05": -0.8024832879409303,
+          "median": -0.5864747439772189,
+          "p95": -0.4180614888727619
+        }
+      },
+      "90d": {
+        "samples": 10000,
+        "block_days": 90,
+        "probability_beats_bh_return": 0.677,
+        "probability_drawdown_no_worse_than_bh": 0.8447,
+        "probability_beats_return_and_drawdown": 0.6375,
+        "probability_cagr_above_20pct": 0.8419,
+        "probability_drawdown_at_least_70pct": 0.1894,
+        "strategy_cagr": {
+          "p05": 0.04175297277922873,
+          "median": 0.5157638129615966,
+          "p95": 1.244840741690664
+        },
+        "annualized_excess_vs_bh": {
+          "p05": -0.13724356002078533,
+          "median": 0.06066723192807255,
+          "p95": 0.3315339213380522
+        },
+        "strategy_max_drawdown": {
+          "p05": -0.8013952660999357,
+          "median": -0.5857590849581573,
+          "p95": -0.4146892538032384
+        }
+      }
+    },
+    "0.5": {
+      "7d": {
+        "samples": 10000,
+        "block_days": 7,
+        "probability_beats_bh_return": 0.7305,
+        "probability_drawdown_no_worse_than_bh": 0.7823,
+        "probability_beats_return_and_drawdown": 0.6383,
+        "probability_cagr_above_20pct": 0.9054,
+        "probability_drawdown_at_least_70pct": 0.168,
+        "strategy_cagr": {
+          "p05": 0.12435381731628628,
+          "median": 0.5752767613427696,
+          "p95": 1.263646180171159
+        },
+        "annualized_excess_vs_bh": {
+          "p05": -0.15633732140845513,
+          "median": 0.10850070794677669,
+          "p95": 0.4750105430603497
+        },
+        "strategy_max_drawdown": {
+          "p05": -0.7899207801578768,
+          "median": -0.577502338662087,
+          "p95": -0.41221107632585513
+        }
+      },
+      "30d": {
+        "samples": 10000,
+        "block_days": 30,
+        "probability_beats_bh_return": 0.7443,
+        "probability_drawdown_no_worse_than_bh": 0.7583,
+        "probability_beats_return_and_drawdown": 0.6389,
+        "probability_cagr_above_20pct": 0.879,
+        "probability_drawdown_at_least_70pct": 0.2174,
+        "strategy_cagr": {
+          "p05": 0.07719828083634202,
+          "median": 0.5762327703870389,
+          "p95": 1.3510905483807096
+        },
+        "annualized_excess_vs_bh": {
+          "p05": -0.1382260359359924,
+          "median": 0.10419877906332953,
+          "p95": 0.4319153457680872
+        },
+        "strategy_max_drawdown": {
+          "p05": -0.811102206273419,
+          "median": -0.600437361337662,
+          "p95": -0.4274107337225502
+        }
+      },
+      "90d": {
+        "samples": 10000,
+        "block_days": 90,
+        "probability_beats_bh_return": 0.7692,
+        "probability_drawdown_no_worse_than_bh": 0.8024,
+        "probability_beats_return_and_drawdown": 0.6895,
+        "probability_cagr_above_20pct": 0.8626,
+        "probability_drawdown_at_least_70pct": 0.2289,
+        "strategy_cagr": {
+          "p05": 0.04977500906589541,
+          "median": 0.5691649278546854,
+          "p95": 1.4058236646490991
+        },
+        "annualized_excess_vs_bh": {
+          "p05": -0.11360940925878762,
+          "median": 0.1020061964476473,
+          "p95": 0.39759287563524126
+        },
+        "strategy_max_drawdown": {
+          "p05": -0.8163380810836723,
+          "median": -0.603417940783044,
+          "p95": -0.4331151542480618
+        }
+      }
+    }
+  },
+  "full_cagr": {
+    "0": 0.43577520962065797,
+    "0.25": 0.5183456608700263,
+    "0.5": 0.5813069051877691,
+    "0.75": 0.6326164807490899,
+    "1": 0.6761398858880667
+  },
+  "limitations": [
+    "The historical OOS interval was already visible during prior research.",
+    "Component blend reduces but does not eliminate roughly 65%+ historical drawdown.",
+    "Bootstrap is path sensitivity, not independent statistical significance.",
+    "A 3x opening/effective cap does not model exchange outages or liquidation slippage."
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-09-03T01:22:46.126363+00:00",
+  "freeze_timestamp": "2026-09-03T01:00:00+00:00",
+  "candidate": "SMA12/40: bear 0X, neutral 1.25X, bull 1.5X",
+  "data_last_complete": "2026-09-03T01:14:59.999000+00:00",
+  "forward_bars": 1,
+  "protocol": {
+    "signal": "completed UTC daily candle; next 15m open",
+    "wallets": "50% spot; 50% isolated USD-M collateral",
+    "costs": "10 bps fee + 5 bps slippage; historical funding",
+    "futures_opening_cap": "2.5X",
+    "hard_effective_leverage_cap": "3X"
+  },
+  "status": "FORWARD_OBSERVATION",
+  "period": [
+    "2026-09-03T01:00:00+00:00",
+    "2026-09-03T01:00:00+00:00"
+  ],
+  "strategy_return": 0.002395626198060068,
+  "benchmark_return": 0.00460758895476929,
+  "excess": -0.002211962756709222,
+  "strategy_drawdown": -0.008755445157106119,
+  "benchmark_drawdown": -0.0012697159757014687,
+  "maximum_intrabar_leverage": 2.0025458970838024,
+  "liquidated": false
+}

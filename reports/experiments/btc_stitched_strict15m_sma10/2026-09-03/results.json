@@ -1,0 +1,452 @@
+{
+  "generated_at": "2026-09-03T04:18:43.932695+00:00",
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED",
+  "candidate": {
+    "id": "stitched-daily-sma10-40-enter2-exit1-active1.5",
+    "fast_sma": 10,
+    "slow_sma": 40,
+    "enter_bear_after_days": 2,
+    "exit_bear_after_days": 1,
+    "active_exposure": "1.5",
+    "bear_exposure": "0"
+  },
+  "protocol": {
+    "spot_history": "Binance BTCUSDT spot daily 2017-08 through 2019-12",
+    "perpetual_history": "Binance USD-M BTCUSDT 15m from 2020-01 onward",
+    "signal": "completed UTC daily SMA; no incomplete periods",
+    "execution": "spot: next daily open; perpetual: next 15m open",
+    "costs": "10 bps fee + 5 bps slippage per side; historical Funding on perpetual",
+    "wallets": "50% spot and 50% isolated USD-M collateral",
+    "hard_cap": "2X futures opening control; observed effective leverage must be <=3X"
+  },
+  "data": {
+    "spot_daily_bars": 867,
+    "perpetual_15m_bars": 233957,
+    "signal_daily_bars": 3304,
+    "first": "2017-08-17T00:00:00+00:00",
+    "last": "2026-09-03T01:14:59.999000+00:00"
+  },
+  "periods": {
+    "spot_pre2020": [
+      "2017-10-01T00:00:00+00:00",
+      "2019-12-31T23:59:59.999000+00:00"
+    ],
+    "research": [
+      "2020-01-01T00:00:00+00:00",
+      "2022-12-31T23:59:59.999000+00:00"
+    ],
+    "validation": [
+      "2023-01-01T00:00:00+00:00",
+      "2024-12-31T23:59:59.999000+00:00"
+    ],
+    "oos": [
+      "2025-01-01T00:00:00+00:00",
+      "2026-09-03T01:14:59.999000+00:00"
+    ],
+    "full": [
+      "2017-10-01T00:00:00+00:00",
+      "2026-09-03T01:14:59.999000+00:00"
+    ]
+  },
+  "results": {
+    "spot_pre2020": {
+      "strategy_return": 3.1728850011550493,
+      "benchmark_return": 0.6433131056597138,
+      "excess": 2.5295718954953355,
+      "strategy_cagr": 0.8866049013425463,
+      "strategy_drawdown": -0.7464948653738394,
+      "benchmark_drawdown": -0.8347737959006756,
+      "maximum_intrabar_leverage": 2.225948084110025,
+      "liquidated": false,
+      "fees": 15412.94017030935,
+      "funding": 0.0
+    },
+    "research": {
+      "strategy_return": 3.8638983545870063,
+      "benchmark_return": 1.3002658068859423,
+      "excess": 2.563632547701064,
+      "strategy_cagr": 0.6940955234816724,
+      "strategy_drawdown": -0.699761860141766,
+      "benchmark_drawdown": -0.7755528264455603,
+      "maximum_intrabar_leverage": 2.0854031385928056,
+      "liquidated": false,
+      "fees": 32191.544706219207,
+      "funding": -253160.88682546208
+    },
+    "validation": {
+      "strategy_return": 5.11700677342168,
+      "benchmark_return": 4.656773998488284,
+      "excess": 0.4602327749333961,
+      "strategy_cagr": 1.471680986176263,
+      "strategy_drawdown": -0.506165576994763,
+      "benchmark_drawdown": -0.3365730267702175,
+      "maximum_intrabar_leverage": 2.161728042945372,
+      "liquidated": false,
+      "fees": 11117.361959138843,
+      "funding": -62001.8118720558
+    },
+    "oos": {
+      "strategy_return": 0.19531301946003263,
+      "benchmark_return": -0.17283813367996168,
+      "excess": 0.3681511531399943,
+      "strategy_cagr": 0.11272747650208692,
+      "strategy_drawdown": -0.4201276917107203,
+      "benchmark_drawdown": -0.5415474735288048,
+      "maximum_intrabar_leverage": 2.1559594745652144,
+      "liquidated": false,
+      "fees": 3956.982323409521,
+      "funding": -4585.062858625541
+    },
+    "full": {
+      "strategy_return": 147.91420739477684,
+      "benchmark_return": 16.672759330271393,
+      "excess": 131.24144806450545,
+      "strategy_cagr": 0.7519483886090725,
+      "strategy_drawdown": -0.7464948653738394,
+      "benchmark_drawdown": -0.8347737959006756,
+      "maximum_intrabar_leverage": 2.225948084110025,
+      "liquidated": false,
+      "fees": 868342.9898163971,
+      "funding": -2894026.6290755463
+    }
+  },
+  "cost_sensitivity": {
+    "spot_pre2020": {
+      "default": {
+        "strategy_return": 3.1728850011550493,
+        "benchmark_return": 0.6433131056597138,
+        "excess": 2.5295718954953355,
+        "strategy_cagr": 0.8866049013425463,
+        "strategy_drawdown": -0.7464948653738394,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.225948084110025,
+        "liquidated": false,
+        "fees": 15412.94017030935,
+        "funding": 0.0
+      },
+      "moderate": {
+        "strategy_return": 2.8659473469525176,
+        "benchmark_return": 0.6433131056597138,
+        "excess": 2.2226342412928037,
+        "strategy_cagr": 0.8236342670634147,
+        "strategy_drawdown": -0.7576896725221842,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.2262413964296357,
+        "liquidated": false,
+        "fees": 29511.739290221263,
+        "funding": 0.0
+      },
+      "stress": {
+        "strategy_return": 2.066084956546161,
+        "benchmark_return": 0.6433131056597138,
+        "excess": 1.422771850886447,
+        "strategy_cagr": 0.6451513892690706,
+        "strategy_drawdown": -0.7884148767779184,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.2271254397994413,
+        "liquidated": false,
+        "fees": 64876.750355697506,
+        "funding": 0.0
+      }
+    },
+    "research": {
+      "default": {
+        "strategy_return": 3.8638983545870063,
+        "benchmark_return": 1.3002658068859423,
+        "excess": 2.563632547701064,
+        "strategy_cagr": 0.6940955234816724,
+        "strategy_drawdown": -0.699761860141766,
+        "benchmark_drawdown": -0.7755528264455603,
+        "maximum_intrabar_leverage": 2.0854031385928056,
+        "liquidated": false,
+        "fees": 32191.544706219207,
+        "funding": -253160.88682546208
+      },
+      "moderate": {
+        "strategy_return": 3.464409869697065,
+        "benchmark_return": 1.3002658068859423,
+        "excess": 2.164144062811123,
+        "strategy_cagr": 0.6463954958118205,
+        "strategy_drawdown": -0.7105669986892034,
+        "benchmark_drawdown": -0.7755528264455603,
+        "maximum_intrabar_leverage": 2.0855031553111996,
+        "liquidated": false,
+        "fees": 60997.65633597341,
+        "funding": -243790.98646745933
+      },
+      "stress": {
+        "strategy_return": 2.4523528214949626,
+        "benchmark_return": 1.3002658068859423,
+        "excess": 1.1520870146090203,
+        "strategy_cagr": 0.5112180317657724,
+        "strategy_drawdown": -0.7407082511215284,
+        "benchmark_drawdown": -0.7755528264455603,
+        "maximum_intrabar_leverage": 2.0858070230247865,
+        "liquidated": false,
+        "fees": 129933.21716031703,
+        "funding": -217866.1506014156
+      }
+    },
+    "validation": {
+      "default": {
+        "strategy_return": 5.11700677342168,
+        "benchmark_return": 4.656773998488284,
+        "excess": 0.4602327749333961,
+        "strategy_cagr": 1.471680986176263,
+        "strategy_drawdown": -0.506165576994763,
+        "benchmark_drawdown": -0.3365730267702175,
+        "maximum_intrabar_leverage": 2.161728042945372,
+        "liquidated": false,
+        "fees": 11117.361959138843,
+        "funding": -62001.8118720558
+      },
+      "moderate": {
+        "strategy_return": 4.799959740716656,
+        "benchmark_return": 4.656773998488284,
+        "excess": 0.143185742228372,
+        "strategy_cagr": 1.4068197554683803,
+        "strategy_drawdown": -0.5150555487649111,
+        "benchmark_drawdown": -0.3365730267702175,
+        "maximum_intrabar_leverage": 2.16181713848441,
+        "liquidated": false,
+        "fees": 21530.23841932772,
+        "funding": -59947.018257061
+      },
+      "stress": {
+        "strategy_return": 3.944106689372617,
+        "benchmark_return": 4.656773998488284,
+        "excess": -0.7126673091156674,
+        "strategy_cagr": 1.2222832839818603,
+        "strategy_drawdown": -0.5407803760788472,
+        "benchmark_drawdown": -0.3365730267702175,
+        "maximum_intrabar_leverage": 2.162089266191944,
+        "liquidated": false,
+        "fees": 48927.09337133118,
+        "funding": -54240.736035623624
+      }
+    },
+    "oos": {
+      "default": {
+        "strategy_return": 0.19531301946003263,
+        "benchmark_return": -0.17283813367996168,
+        "excess": 0.3681511531399943,
+        "strategy_cagr": 0.11272747650208692,
+        "strategy_drawdown": -0.4201276917107203,
+        "benchmark_drawdown": -0.5415474735288048,
+        "maximum_intrabar_leverage": 2.1559594745652144,
+        "liquidated": false,
+        "fees": 3956.982323409521,
+        "funding": -4585.062858625541
+      },
+      "moderate": {
+        "strategy_return": 0.12774503309174398,
+        "benchmark_return": -0.17283813367996168,
+        "excess": 0.30058316677170566,
+        "strategy_cagr": 0.07463021952891324,
+        "strategy_drawdown": -0.4306032787662544,
+        "benchmark_drawdown": -0.5415474735288048,
+        "maximum_intrabar_leverage": 2.156053215177888,
+        "liquidated": false,
+        "fees": 7691.456190037974,
+        "funding": -4482.433427629956
+      },
+      "stress": {
+        "strategy_return": -0.05367232965333192,
+        "benchmark_return": -0.17283813367996168,
+        "excess": 0.11916580402662975,
+        "strategy_cagr": -0.03248902582982094,
+        "strategy_drawdown": -0.4658995669894677,
+        "benchmark_drawdown": -0.5415474735288048,
+        "maximum_intrabar_leverage": 2.156337451866466,
+        "liquidated": false,
+        "fees": 17667.994601420545,
+        "funding": -4191.912631830817
+      }
+    },
+    "full": {
+      "default": {
+        "strategy_return": 147.91420739477684,
+        "benchmark_return": 16.672759330271393,
+        "excess": 131.24144806450545,
+        "strategy_cagr": 0.7519483886090725,
+        "strategy_drawdown": -0.7464948653738394,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.225948084110025,
+        "liquidated": false,
+        "fees": 868342.9898163971,
+        "funding": -2894026.6290755463
+      },
+      "moderate": {
+        "strategy_return": 112.79019162957418,
+        "benchmark_return": 16.672759330271393,
+        "excess": 96.11743229930279,
+        "strategy_cagr": 0.6999181248293709,
+        "strategy_drawdown": -0.7576896725221842,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.2262413964296357,
+        "liquidated": false,
+        "fees": 1415506.9148194515,
+        "funding": -2445164.053462232
+      },
+      "stress": {
+        "strategy_return": 49.59881558897366,
+        "benchmark_return": 16.672759330271393,
+        "excess": 32.92605625870226,
+        "strategy_cagr": 0.5523272734954379,
+        "strategy_drawdown": -0.7884148767779184,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.2271254397994413,
+        "liquidated": false,
+        "fees": 1941059.3297840299,
+        "funding": -1493202.0701651596
+      }
+    }
+  },
+  "bootstrap": {
+    "7d": {
+      "samples": 10000,
+      "block_days": 7,
+      "probability_beats_bh_return": 0.9296,
+      "probability_drawdown_no_worse_than_bh": 0.8057,
+      "probability_beats_return_and_drawdown": 0.7748,
+      "probability_cagr_above_20pct": 0.9543,
+      "probability_drawdown_at_least_70pct": 0.4122,
+      "strategy_cagr": {
+        "p05": 0.21179199029290416,
+        "median": 0.7434850386765134,
+        "p95": 1.5238941767262812
+      },
+      "annualized_excess_vs_bh": {
+        "p05": -0.02816017409871524,
+        "median": 0.26888824779261467,
+        "p95": 0.6431686182990617
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8618221113702188,
+        "median": -0.675115742035099,
+        "p95": -0.5064939021649264
+      }
+    },
+    "30d": {
+      "samples": 10000,
+      "block_days": 30,
+      "probability_beats_bh_return": 0.9476,
+      "probability_drawdown_no_worse_than_bh": 0.8213,
+      "probability_beats_return_and_drawdown": 0.8022,
+      "probability_cagr_above_20pct": 0.9475,
+      "probability_drawdown_at_least_70pct": 0.4357,
+      "strategy_cagr": {
+        "p05": 0.19465654926487094,
+        "median": 0.7501666730296191,
+        "p95": 1.6107837157944265
+      },
+      "annualized_excess_vs_bh": {
+        "p05": -0.004128786483999402,
+        "median": 0.2694051823527528,
+        "p95": 0.6263310762016487
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8656757115406594,
+        "median": -0.6810724001520574,
+        "p95": -0.518356564076093
+      }
+    },
+    "90d": {
+      "samples": 10000,
+      "block_days": 90,
+      "probability_beats_bh_return": 0.963,
+      "probability_drawdown_no_worse_than_bh": 0.8278,
+      "probability_beats_return_and_drawdown": 0.8185,
+      "probability_cagr_above_20pct": 0.9119,
+      "probability_drawdown_at_least_70pct": 0.5314,
+      "strategy_cagr": {
+        "p05": 0.10926910410285073,
+        "median": 0.7248573137741441,
+        "p95": 1.8229718477856087
+      },
+      "annualized_excess_vs_bh": {
+        "p05": 0.020577235852176683,
+        "median": 0.2683076944713272,
+        "p95": 0.5923003558149764
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8941471722414657,
+        "median": -0.7093591949119749,
+        "p95": -0.531419372739429
+      }
+    },
+    "180d": {
+      "samples": 10000,
+      "block_days": 180,
+      "probability_beats_bh_return": 0.9889,
+      "probability_drawdown_no_worse_than_bh": 0.8707,
+      "probability_beats_return_and_drawdown": 0.8674,
+      "probability_cagr_above_20pct": 0.9174,
+      "probability_drawdown_at_least_70pct": 0.564,
+      "strategy_cagr": {
+        "p05": 0.13175955125713676,
+        "median": 0.7375283037567952,
+        "p95": 1.7980766849101901
+      },
+      "annualized_excess_vs_bh": {
+        "p05": 0.06996024748234078,
+        "median": 0.27336773403465797,
+        "p95": 0.5042739261394291
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8892464867011145,
+        "median": -0.7167239970016963,
+        "p95": -0.5545671347612938
+      }
+    },
+    "365d": {
+      "samples": 10000,
+      "block_days": 365,
+      "probability_beats_bh_return": 0.9932,
+      "probability_drawdown_no_worse_than_bh": 0.9212,
+      "probability_beats_return_and_drawdown": 0.9177,
+      "probability_cagr_above_20pct": 0.9425,
+      "probability_drawdown_at_least_70pct": 0.5952,
+      "strategy_cagr": {
+        "p05": 0.17760310134603285,
+        "median": 0.7473885758656957,
+        "p95": 1.6225252215876675
+      },
+      "annualized_excess_vs_bh": {
+        "p05": 0.08678188012945931,
+        "median": 0.2705767100361277,
+        "p95": 0.473730984653235
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8879498344737363,
+        "median": -0.7225196176593967,
+        "p95": -0.557496832552486
+      }
+    },
+    "730d": {
+      "samples": 10000,
+      "block_days": 730,
+      "probability_beats_bh_return": 0.9955,
+      "probability_drawdown_no_worse_than_bh": 0.9638,
+      "probability_beats_return_and_drawdown": 0.9614,
+      "probability_cagr_above_20pct": 0.9771,
+      "probability_drawdown_at_least_70pct": 0.6547,
+      "strategy_cagr": {
+        "p05": 0.2781739340877582,
+        "median": 0.7435164853321141,
+        "p95": 1.388266581800146
+      },
+      "annualized_excess_vs_bh": {
+        "p05": 0.09508370826262129,
+        "median": 0.27526469310582713,
+        "p95": 0.4637513414006127
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8486294415572365,
+        "median": -0.7425368925492556,
+        "p95": -0.5642411301108178
+      }
+    }
+  },
+  "hard_cap_passed": true
+}

@@ -7,6 +7,7 @@
 
 | 策略/部署 | 用途 | 状态 | 文档 |
 |---|---|---|---|
+| BTC SMA10/40 + 回撤/Funding 控制 v1 | 当前 BTC 对 B&H 历史研究主候选 | 历史分段超过 1X B&H；冻结前向观察，禁止实盘 | [candidates/btc_sma10_40_composite_controls_v1.md](candidates/btc_sma10_40_composite_controls_v1.md) |
 | BTC/ETH 扩展月历路由 v1 | 当前最佳跨品种研究策略 | 冻结模拟盘候选；禁止实盘 | [candidates/btc_eth_expanding_calendar_router_v1.md](candidates/btc_eth_expanding_calendar_router_v1.md) |
 | SOXL ATR32x3 仅做多 | 当前完整历史研究基线 | 冻结研究基线 | [current_research_baseline.md](current_research_baseline.md) |
 | SOXL True Range 波差 v1 | 冻结前向研究候选 | 证据不足，未批准 | [candidates/soxl_volatility_spread_true_range_v1.md](candidates/soxl_volatility_spread_true_range_v1.md) |
@@ -42,4 +43,5 @@
 - 冻结候选使用机器可读参数文件；锁定日及以前的数据不得重新标记为前向证据。
 - 从主分支同步策略时新增或更新带提交号的部署快照，不把生产开关复制到研究配置。
 - `reports/` 保存实验结果，`strategies/` 保存策略定义和批准状态；两者冲突时以本目录为准。
+- BTC 候选必须同时报告相对 1X B&H 和相同成本/抵押条件下的风险匹配基准，避免把静态杠杆误称为 Alpha。
 - 不在本目录保存 API 凭证、数据库、订单、成交或其他账户数据。

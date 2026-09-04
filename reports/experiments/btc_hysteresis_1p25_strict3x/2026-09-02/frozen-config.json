@@ -1,0 +1,36 @@
+{
+  "candidate_id": "daily-sma10-40-enter2-exit1-active1.25",
+  "symbol": "BTCUSDT",
+  "signal_timeframe": "1d",
+  "execution_timeframe": "15m",
+  "signal_rule": {
+    "fast_sma": 10,
+    "slow_sma": 40,
+    "bearish_condition": "close < SMA40 and SMA10 < SMA40",
+    "enter_bear_after_consecutive_days": 2,
+    "exit_bear_after_consecutive_non_bearish_days": 1,
+    "bear_target_exposure": "0",
+    "active_target_exposure": "1.25",
+    "shorting": false,
+    "signal_bar": "completed daily candle",
+    "execution": "next available 15m open"
+  },
+  "capital_and_risk": {
+    "spot_cap": "0.5",
+    "maximum_futures_leverage_order": "3",
+    "maximum_effective_leverage": "3",
+    "maintenance_rate": "0.02",
+    "effective_leverage_audit": "intrabar low and open equity"
+  },
+  "costs": {
+    "fee_bps_per_side": "10",
+    "slippage_bps_per_side": "5",
+    "funding": "historical funding events on futures sleeve"
+  },
+  "freeze": {
+    "timestamp": "2026-09-02T08:00:00Z",
+    "oos_after_freeze_is_observation_only": true,
+    "parameter_changes_allowed": false
+  },
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED"
+}

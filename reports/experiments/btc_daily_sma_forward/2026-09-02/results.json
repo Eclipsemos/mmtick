@@ -1,0 +1,30 @@
+{
+  "generated_at": "2026-09-02T23:21:05.057531+00:00",
+  "freeze": {
+    "timestamp": "2026-09-02T08:00:00+00:00",
+    "candidate": "daily SMA 8/40; bull +1.5X; bear -0.1X",
+    "spot_cap": "0.5",
+    "leverage_cap": "2.0X (below the allowed 3X maximum)",
+    "selection": "all parameters frozen before this timestamp"
+  },
+  "data": {
+    "last_complete_bar": "2026-09-02T23:14:59.999000+00:00",
+    "total_bars": 244918,
+    "forward_bars": 61
+  },
+  "status": "FORWARD_OBSERVATION",
+  "observation": {
+    "period": [
+      "2026-09-02T08:00:00+00:00",
+      "2026-09-02T23:00:00+00:00"
+    ],
+    "strategy_return": -0.009551180478916097,
+    "benchmark_return": -0.0032900853252897547,
+    "excess": -0.006261095153626342,
+    "strategy_drawdown": -0.027116192894221163,
+    "benchmark_drawdown": -0.01669447141706093,
+    "maximum_open_leverage": 2.0,
+    "maximum_intrabar_leverage": 2.003449430191312,
+    "liquidated": false
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "generated_at": "2026-09-02T11:49:22.199620+00:00",
+  "protocol": {
+    "training": "anchored from 2020 through prior calendar year",
+    "selection": "each component family independently selects using training only",
+    "ensemble": "50% selected primary + 50% selected partial-bear target",
+    "test": "next calendar year without parameter changes",
+    "engine": "fixed quantities between sparse target changes"
+  },
+  "years": [
+    {
+      "test_year": 2022,
+      "primary_id": "4h-26-52-104-208-bull1.5x-funding-le-0.0001",
+      "partial_id": "4h-26-52-104-208-bear0.5x-bull1.75x",
+      "primary_training": {
+        "eligible_candidates": 13,
+        "base_return": 9.204694050232831,
+        "stress_return": 8.081423279855938,
+        "max_drawdown": -0.4313925365553225,
+        "benchmark_return": 5.427569362244295
+      },
+      "partial_training": {
+        "eligible_candidates": 26,
+        "base_return": 12.9842070446235,
+        "stress_return": 11.488580874538943,
+        "benchmark_return": 5.427569362244295,
+        "max_drawdown": -0.48619333821997607
+      },
+      "test_return": -0.6206099476707632,
+      "stress_return": -0.6372169101475375,
+      "benchmark_return": -0.6421251674670968,
+      "excess_return": 0.02151521979633364,
+      "max_drawdown": -0.6501523237067699
+    },
+    {
+      "test_year": 2023,
+      "primary_id": "4h-26-52-104-208-bull1.5x-funding-le-0.0001",
+      "partial_id": "4h-26-52-104-208-bear0.25x-bull1.75x",
+      "primary_training": {
+        "eligible_candidates": 54,
+        "base_return": 3.2209688631259104,
+        "stress_return": 2.556599764155752,
+        "max_drawdown": -0.649234437706683,
+        "benchmark_return": 1.3002658068859423
+      },
+      "partial_training": {
+        "eligible_candidates": 27,
+        "base_return": 4.001448272432124,
+        "stress_return": 3.2010284255636243,
+        "benchmark_return": 1.3002658068859423,
+        "max_drawdown": -0.7078198431136105
+      },
+      "test_return": 1.7139706966988402,
+      "stress_return": 1.597449893497788,
+      "benchmark_return": 1.5586696900982615,
+      "excess_return": 0.15530100660057866,
+      "max_drawdown": -0.23666655926595223
+    },
+    {
+      "test_year": 2024,
+      "primary_id": "4h-26-52-104-208-bull1.5x-funding-le-0.0001",
+      "partial_id": "4h-26-52-104-208-bear0.5x-bull1.75x",
+      "primary_training": {
+        "eligible_candidates": 12,
+        "base_return": 9.80839364748208,
+        "stress_return": 7.7268987314769095,
+        "max_drawdown": -0.6500041112746243,
+        "benchmark_return": 4.885584809922344
+      },
+      "partial_training": {
+        "eligible_candidates": 27,
+        "base_return": 13.424671361826347,
+        "stress_return": 10.981985345226969,
+        "benchmark_return": 4.885584809922344,
+        "max_drawdown": -0.7418668222484189
+      },
+      "test_return": 0.9736570073689484,
+      "stress_return": 0.8739316451410525,
+      "benchmark_return": 1.2108262040932078,
+      "excess_return": -0.2371691967242594,
+      "max_drawdown": -0.31956685934903617
+    },
+    {
+      "test_year": 2025,
+      "primary_id": "4h-26-52-104-208-bull1.5x-funding-le-0.0001",
+      "partial_id": "4h-26-52-104-208-bear0.5x-bull1.75x",
+      "primary_training": {
+        "eligible_candidates": 12,
+        "base_return": 19.7126731443717,
+        "stress_return": 14.92116730188364,
+        "max_drawdown": -0.6500041112746243,
+        "benchmark_return": 12.012005124189262
+      },
+      "partial_training": {
+        "eligible_candidates": 24,
+        "base_return": 28.36058234029001,
+        "stress_return": 22.168178990535502,
+        "benchmark_return": 12.012005124189262,
+        "max_drawdown": -0.7418668222484189
+      },
+      "test_return": -0.03203468665366425,
+      "stress_return": -0.0671700529249655,
+      "benchmark_return": -0.06350268522952726,
+      "excess_return": 0.031467998575863014,
+      "max_drawdown": -0.3362517102883649
+    },
+    {
+      "test_year": 2026,
+      "primary_id": "4h-26-52-104-208-bull1.5x-funding-le-0.0001",
+      "partial_id": "4h-26-52-104-208-bear0.5x-bull1.75x",
+      "primary_training": {
+        "eligible_candidates": 11,
+        "base_return": 19.080081160087072,
+        "stress_return": 13.780351414946384,
+        "max_drawdown": -0.6500041112746243,
+        "benchmark_return": 11.18569483255279
+      },
+      "partial_training": {
+        "eligible_candidates": 22,
+        "base_return": 27.270287663462785,
+        "stress_return": 20.65224309983806,
+        "benchmark_return": 11.18569483255279,
+        "max_drawdown": -0.7418668222484189
+      },
+      "test_return": 0.07090152925123387,
+      "stress_return": 0.04702142847856036,
+      "benchmark_return": -0.11600955617218917,
+      "excess_return": 0.18691108542342305,
+      "max_drawdown": -0.24964503183178327
+    }
+  ],
+  "compound": {
+    "strategy_return": 1.1065516310877255,
+    "stress_return": 0.7246700006081847,
+    "benchmark_return": 0.675923120729833
+  },
+  "status": "WALK_FORWARD_PASS"
+}

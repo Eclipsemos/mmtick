@@ -12,6 +12,26 @@ inside its own directory. The authoritative strategy status remains in
 | [`btc_strategy_families/`](btc_strategy_families/) | Does the frozen BTC daily EMA survive forward data? | Observation only; not approved. |
 | [`soxl_volatility_spread/`](soxl_volatility_spread/) | Does the frozen SOXL true-range spread survive forward data? | Observation only; not approved. |
 
+## BTC B&H Challenge
+
+- Current strategy definition:
+  [`../../strategies/candidates/btc_sma10_40_composite_controls_v1.md`](../../strategies/candidates/btc_sma10_40_composite_controls_v1.md).
+- Current consolidated evidence: [`btc_composite_controls/`](btc_composite_controls/) and
+  [`btc_bh_challenger_selection/`](btc_bh_challenger_selection/).
+- Strict execution and parameter-neighborhood evidence:
+  [`btc_stitched_strict15m_sma10/`](btc_stitched_strict15m_sma10/),
+  [`btc_stitched_strict15m_sma_grid/`](btc_stitched_strict15m_sma_grid/), and
+  [`btc_stitched_strict15m_walk_forward/`](btc_stitched_strict15m_walk_forward/).
+- Risk attribution and negative evidence:
+  [`btc_sma_matched_benchmark_grid/`](btc_sma_matched_benchmark_grid/),
+  [`btc_metric_matched_benchmark/`](btc_metric_matched_benchmark/),
+  [`btc_funding_event_matched_benchmark/`](btc_funding_event_matched_benchmark/),
+  [`btc_donchian_matched_benchmark/`](btc_donchian_matched_benchmark/), and
+  [`btc_mean_reversion_matched_benchmark/`](btc_mean_reversion_matched_benchmark/).
+
+The historical lead beats 1X BTC B&H but remains research-only. Promotion requires frozen
+forward evidence; matched-leverage failures must remain visible alongside headline returns.
+
 ## Market And Strategy Baselines
 
 - BTC: [`btc_atr/`](btc_atr/), [`btc_non_atr_stability/`](btc_non_atr_stability/),

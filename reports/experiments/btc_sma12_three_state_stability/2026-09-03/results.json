@@ -1,0 +1,414 @@
+{
+  "generated_at": "2026-09-03T01:21:04.865443+00:00",
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED",
+  "protocol": {
+    "candidate": "SMA12/40: bear 0X, neutral 1.25X, bull 1.5X",
+    "signal": "completed UTC daily candle; next 15m open",
+    "wallets": "50% spot; 50% isolated USD-M collateral",
+    "costs": "10 bps fee + 5 bps slippage; historical funding",
+    "tail_test": "remove best relative UTC days from both paired paths",
+    "year_test": "independent calendar-year replays with exact one-sided sign test"
+  },
+  "data": {
+    "bars": 244926,
+    "records": 2438,
+    "last": "2026-09-03T01:14:59.999000+00:00"
+  },
+  "yearly": [
+    {
+      "year": 2020,
+      "strategy_return": 4.046269297172942,
+      "benchmark_return": 3.026978494818087,
+      "excess": 1.0192908023548548,
+      "strategy_drawdown": -0.3791408539309344,
+      "benchmark_drawdown": -0.6552315315015159
+    },
+    {
+      "year": 2021,
+      "strategy_return": 1.5369891362021488,
+      "benchmark_return": 0.596319493550374,
+      "excess": 0.9406696426517749,
+      "strategy_drawdown": -0.46620381855825327,
+      "benchmark_drawdown": -0.5573724761220595
+    },
+    {
+      "year": 2022,
+      "strategy_return": -0.6318612942169058,
+      "benchmark_return": -0.6421251674670968,
+      "excess": 0.010263873250190958,
+      "strategy_drawdown": -0.6743242092023709,
+      "benchmark_drawdown": -0.6788954963197074
+    },
+    {
+      "year": 2023,
+      "strategy_return": 2.1158413922256685,
+      "benchmark_return": 1.5586696900982615,
+      "excess": 0.557171702127407,
+      "strategy_drawdown": -0.21313609997609914,
+      "benchmark_drawdown": -0.22435881254102086
+    },
+    {
+      "year": 2024,
+      "strategy_return": 0.9918809480685079,
+      "benchmark_return": 1.2108262040932078,
+      "excess": -0.21894525602469994,
+      "strategy_drawdown": -0.48564486024604886,
+      "benchmark_drawdown": -0.3365730267702174
+    },
+    {
+      "year": 2025,
+      "strategy_return": 0.03638912335571611,
+      "benchmark_return": -0.06350268522952726,
+      "excess": 0.09989180858524338,
+      "strategy_drawdown": -0.28388588095461226,
+      "benchmark_drawdown": -0.3602463765815249
+    },
+    {
+      "year": 2026,
+      "strategy_return": 0.14345041229992325,
+      "benchmark_return": -0.11675035356239077,
+      "excess": 0.260200765862314,
+      "strategy_drawdown": -0.2531883366682684,
+      "benchmark_drawdown": -0.40824744380468414
+    }
+  ],
+  "yearly_summary": {
+    "years": 7,
+    "wins": 6,
+    "win_rate": 0.8571428571428571,
+    "one_sided_sign_pvalue": 0.0625
+  },
+  "tail_concentration": [
+    {
+      "removed_best_relative_days": 0,
+      "strategy_cagr": 0.7022738577508363,
+      "benchmark_cagr": 0.4275669780912785,
+      "annualized_excess": 0.27470687965955776
+    },
+    {
+      "removed_best_relative_days": 1,
+      "strategy_cagr": 0.7026454822152386,
+      "benchmark_cagr": 0.5412999721725946,
+      "annualized_excess": 0.16134551004264397
+    },
+    {
+      "removed_best_relative_days": 5,
+      "strategy_cagr": 0.7041358494167655,
+      "benchmark_cagr": 0.6899713510728924,
+      "annualized_excess": 0.014164498343873122
+    },
+    {
+      "removed_best_relative_days": 10,
+      "strategy_cagr": 0.7060075592097128,
+      "benchmark_cagr": 0.839382332997469,
+      "annualized_excess": -0.1333747737877562
+    },
+    {
+      "removed_best_relative_days": 20,
+      "strategy_cagr": 0.7102679008065225,
+      "benchmark_cagr": 1.0978200169047505,
+      "annualized_excess": -0.38755211609822804
+    }
+  ],
+  "concentration": {
+    "total_annualized_excess": 0.19243011632760884,
+    "positive_month_rate": 0.5308641975308642,
+    "positive_year_rate": 0.8571428571428571,
+    "top_day_removal": {
+      "5": {
+        "share_of_positive_excess": 0.06630548756530484,
+        "remaining_annualized_excess": 0.008364241063617555
+      },
+      "10": {
+        "share_of_positive_excess": 0.09924574947333721,
+        "remaining_annualized_excess": -0.07222422188791469
+      },
+      "20": {
+        "share_of_positive_excess": 0.14971045009910333,
+        "remaining_annualized_excess": -0.18337325580304584
+      }
+    },
+    "top_10_excess_days": [
+      {
+        "date": "2020-03-12",
+        "strategy_return": 0.0,
+        "benchmark_return": -0.3997964322740506,
+        "excess_log_return": 0.510486401765031
+      },
+      {
+        "date": "2022-06-13",
+        "strategy_return": 0.0,
+        "benchmark_return": -0.1540841793809078,
+        "excess_log_return": 0.16733542714095903
+      },
+      {
+        "date": "2021-05-19",
+        "strategy_return": 0.0,
+        "benchmark_return": -0.14442687966404966,
+        "excess_log_return": 0.15598371842452508
+      },
+      {
+        "date": "2026-02-05",
+        "strategy_return": 0.0,
+        "benchmark_return": -0.14041106191907282,
+        "excess_log_return": 0.15130098297861366
+      },
+      {
+        "date": "2021-05-12",
+        "strategy_return": 0.0,
+        "benchmark_return": -0.12545611098346454,
+        "excess_log_return": 0.1340527982281903
+      },
+      {
+        "date": "2022-05-09",
+        "strategy_return": 0.0,
+        "benchmark_return": -0.11681358721203572,
+        "excess_log_return": 0.12421898764924065
+      },
+      {
+        "date": "2021-06-21",
+        "strategy_return": 0.0,
+        "benchmark_return": -0.1119076199596275,
+        "excess_log_return": 0.11867950982388017
+      },
+      {
+        "date": "2022-01-21",
+        "strategy_return": 0.0,
+        "benchmark_return": -0.10416955124098382,
+        "excess_log_return": 0.11000411520944811
+      },
+      {
+        "date": "2022-06-16",
+        "strategy_return": 0.0,
+        "benchmark_return": -0.09660352276503814,
+        "excess_log_return": 0.10159375522134832
+      },
+      {
+        "date": "2020-03-08",
+        "strategy_return": 0.0,
+        "benchmark_return": -0.09651597472457563,
+        "excess_log_return": 0.10149685004094554
+      }
+    ]
+  },
+  "top_day_timing": [
+    {
+      "date": "2020-03-12",
+      "role": "crash_defense",
+      "strategy_return": 0.0,
+      "benchmark_return": -0.3997964322740506,
+      "excess_log_return": 0.510486401765031,
+      "opening_exposure": "0",
+      "average_exposure": "0",
+      "minimum_exposure": "0",
+      "maximum_exposure": "0",
+      "last_exposure_change_effective_at": "2020-03-01T00:00:00+00:00",
+      "establishing_signal_known_at": "2020-02-29T23:59:59.999000+00:00",
+      "lead_hours_before_day_open": 264.0,
+      "intraday_exposure_changes": [],
+      "all_changes_use_prior_completed_bar": true,
+      "complete_15m_day": true,
+      "bar_count": 96
+    },
+    {
+      "date": "2022-06-13",
+      "role": "crash_defense",
+      "strategy_return": 0.0,
+      "benchmark_return": -0.1540841793809078,
+      "excess_log_return": 0.16733542714095903,
+      "opening_exposure": "0",
+      "average_exposure": "0",
+      "minimum_exposure": "0",
+      "maximum_exposure": "0",
+      "last_exposure_change_effective_at": "2022-04-16T00:00:00+00:00",
+      "establishing_signal_known_at": "2022-04-15T23:59:59.999000+00:00",
+      "lead_hours_before_day_open": 1392.0,
+      "intraday_exposure_changes": [],
+      "all_changes_use_prior_completed_bar": true,
+      "complete_15m_day": true,
+      "bar_count": 96
+    },
+    {
+      "date": "2021-05-19",
+      "role": "crash_defense",
+      "strategy_return": 0.0,
+      "benchmark_return": -0.14442687966404966,
+      "excess_log_return": 0.15598371842452508,
+      "opening_exposure": "0",
+      "average_exposure": "0",
+      "minimum_exposure": "0",
+      "maximum_exposure": "0",
+      "last_exposure_change_effective_at": "2021-05-11T00:00:00+00:00",
+      "establishing_signal_known_at": "2021-05-10T23:59:59.999000+00:00",
+      "lead_hours_before_day_open": 192.0,
+      "intraday_exposure_changes": [],
+      "all_changes_use_prior_completed_bar": true,
+      "complete_15m_day": true,
+      "bar_count": 96
+    },
+    {
+      "date": "2026-02-05",
+      "role": "crash_defense",
+      "strategy_return": 0.0,
+      "benchmark_return": -0.14041106191907282,
+      "excess_log_return": 0.15130098297861366,
+      "opening_exposure": "0",
+      "average_exposure": "0",
+      "minimum_exposure": "0",
+      "maximum_exposure": "0",
+      "last_exposure_change_effective_at": "2026-01-29T00:00:00+00:00",
+      "establishing_signal_known_at": "2026-01-28T23:59:59.999000+00:00",
+      "lead_hours_before_day_open": 168.0,
+      "intraday_exposure_changes": [],
+      "all_changes_use_prior_completed_bar": true,
+      "complete_15m_day": true,
+      "bar_count": 96
+    },
+    {
+      "date": "2021-05-12",
+      "role": "crash_defense",
+      "strategy_return": 0.0,
+      "benchmark_return": -0.12545611098346454,
+      "excess_log_return": 0.1340527982281903,
+      "opening_exposure": "0",
+      "average_exposure": "0",
+      "minimum_exposure": "0",
+      "maximum_exposure": "0",
+      "last_exposure_change_effective_at": "2021-05-11T00:00:00+00:00",
+      "establishing_signal_known_at": "2021-05-10T23:59:59.999000+00:00",
+      "lead_hours_before_day_open": 24.0,
+      "intraday_exposure_changes": [],
+      "all_changes_use_prior_completed_bar": true,
+      "complete_15m_day": true,
+      "bar_count": 96
+    },
+    {
+      "date": "2022-05-09",
+      "role": "crash_defense",
+      "strategy_return": 0.0,
+      "benchmark_return": -0.11681358721203572,
+      "excess_log_return": 0.12421898764924065,
+      "opening_exposure": "0",
+      "average_exposure": "0",
+      "minimum_exposure": "0",
+      "maximum_exposure": "0",
+      "last_exposure_change_effective_at": "2022-04-16T00:00:00+00:00",
+      "establishing_signal_known_at": "2022-04-15T23:59:59.999000+00:00",
+      "lead_hours_before_day_open": 552.0,
+      "intraday_exposure_changes": [],
+      "all_changes_use_prior_completed_bar": true,
+      "complete_15m_day": true,
+      "bar_count": 96
+    },
+    {
+      "date": "2021-06-21",
+      "role": "crash_defense",
+      "strategy_return": 0.0,
+      "benchmark_return": -0.1119076199596275,
+      "excess_log_return": 0.11867950982388017,
+      "opening_exposure": "0",
+      "average_exposure": "0",
+      "minimum_exposure": "0",
+      "maximum_exposure": "0",
+      "last_exposure_change_effective_at": "2021-05-11T00:00:00+00:00",
+      "establishing_signal_known_at": "2021-05-10T23:59:59.999000+00:00",
+      "lead_hours_before_day_open": 984.0,
+      "intraday_exposure_changes": [],
+      "all_changes_use_prior_completed_bar": true,
+      "complete_15m_day": true,
+      "bar_count": 96
+    },
+    {
+      "date": "2022-01-21",
+      "role": "crash_defense",
+      "strategy_return": 0.0,
+      "benchmark_return": -0.10416955124098382,
+      "excess_log_return": 0.11000411520944811,
+      "opening_exposure": "0",
+      "average_exposure": "0",
+      "minimum_exposure": "0",
+      "maximum_exposure": "0",
+      "last_exposure_change_effective_at": "2021-11-22T00:00:00+00:00",
+      "establishing_signal_known_at": "2021-11-21T23:59:59.999000+00:00",
+      "lead_hours_before_day_open": 1440.0,
+      "intraday_exposure_changes": [],
+      "all_changes_use_prior_completed_bar": true,
+      "complete_15m_day": true,
+      "bar_count": 96
+    },
+    {
+      "date": "2022-06-16",
+      "role": "crash_defense",
+      "strategy_return": 0.0,
+      "benchmark_return": -0.09660352276503814,
+      "excess_log_return": 0.10159375522134832,
+      "opening_exposure": "0",
+      "average_exposure": "0",
+      "minimum_exposure": "0",
+      "maximum_exposure": "0",
+      "last_exposure_change_effective_at": "2022-04-16T00:00:00+00:00",
+      "establishing_signal_known_at": "2022-04-15T23:59:59.999000+00:00",
+      "lead_hours_before_day_open": 1464.0,
+      "intraday_exposure_changes": [],
+      "all_changes_use_prior_completed_bar": true,
+      "complete_15m_day": true,
+      "bar_count": 96
+    },
+    {
+      "date": "2020-03-08",
+      "role": "crash_defense",
+      "strategy_return": 0.0,
+      "benchmark_return": -0.09651597472457563,
+      "excess_log_return": 0.10149685004094554,
+      "opening_exposure": "0",
+      "average_exposure": "0",
+      "minimum_exposure": "0",
+      "maximum_exposure": "0",
+      "last_exposure_change_effective_at": "2020-03-01T00:00:00+00:00",
+      "establishing_signal_known_at": "2020-02-29T23:59:59.999000+00:00",
+      "lead_hours_before_day_open": 168.0,
+      "intraday_exposure_changes": [],
+      "all_changes_use_prior_completed_bar": true,
+      "complete_15m_day": true,
+      "bar_count": 96
+    }
+  ],
+  "leave_one_year_out": [
+    {
+      "omitted_year": 2020,
+      "remaining_annualized_excess": 0.18175114460291295,
+      "still_beats_buy_and_hold": true
+    },
+    {
+      "omitted_year": 2021,
+      "remaining_annualized_excess": 0.13340828122783044,
+      "still_beats_buy_and_hold": true
+    },
+    {
+      "omitted_year": 2022,
+      "remaining_annualized_excess": 0.22384686559414194,
+      "still_beats_buy_and_hold": true
+    },
+    {
+      "omitted_year": 2023,
+      "remaining_annualized_excess": 0.18759037121793876,
+      "still_beats_buy_and_hold": true
+    },
+    {
+      "omitted_year": 2024,
+      "remaining_annualized_excess": 0.25271165461236506,
+      "still_beats_buy_and_hold": true
+    },
+    {
+      "omitted_year": 2025,
+      "remaining_annualized_excess": 0.20819047737902602,
+      "still_beats_buy_and_hold": true
+    },
+    {
+      "omitted_year": 2026,
+      "remaining_annualized_excess": 0.16500146668649043,
+      "still_beats_buy_and_hold": true
+    }
+  ],
+  "decision": "historical superiority remains economically concentrated unless both tail-day removal and independent forward evidence remain positive"
+}

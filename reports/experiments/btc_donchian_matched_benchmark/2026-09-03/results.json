@@ -1,0 +1,110 @@
+{
+  "generated_at": "2026-09-03T05:33:24.341670+00:00",
+  "status": "RESEARCH_ONLY / NOT_PROMOTED",
+  "protocol": {
+    "family": "daily long-only Donchian breakout with channel exit and 1.5X active target",
+    "windows": [
+      [
+        20,
+        10
+      ],
+      [
+        55,
+        20
+      ],
+      [
+        100,
+        50
+      ]
+    ],
+    "benchmark": "continuous 1.5X BTC using identical wallets, costs, Funding, and controls",
+    "selection": "Research and Validation only; OOS unread unless development passes",
+    "execution": "completed daily signal; next 15m open",
+    "hard_cap": "2X futures opening control and <=3X observed effective leverage"
+  },
+  "data": {
+    "last": "2026-09-03T05:14:59.999000+00:00",
+    "candidate_count": 3
+  },
+  "results": [
+    {
+      "id": "daily-donchian-20-10-long-only-active1.5x",
+      "entry_window": 20,
+      "exit_window": 10,
+      "metrics": {
+        "research": {
+          "net_return": 2.166654437830984,
+          "matched_return": 0.3324728209106417,
+          "matched_excess": 1.8341816169203424,
+          "max_drawdown": -0.7087207636241522,
+          "matched_drawdown": -0.8387931948148325,
+          "maximum_intrabar_leverage": 2.261239058061074,
+          "liquidated": false
+        },
+        "validation": {
+          "net_return": 1.8886440586458162,
+          "matched_return": 6.266785322330652,
+          "matched_excess": -4.378141263684836,
+          "max_drawdown": -0.47599932430129016,
+          "matched_drawdown": -0.41079886458176174,
+          "maximum_intrabar_leverage": 2.0628603845419593,
+          "liquidated": false
+        }
+      },
+      "development_min_matched_excess": -4.378141263684836
+    },
+    {
+      "id": "daily-donchian-100-50-long-only-active1.5x",
+      "entry_window": 100,
+      "exit_window": 50,
+      "metrics": {
+        "research": {
+          "net_return": 1.6112938936393102,
+          "matched_return": 0.3324728209106417,
+          "matched_excess": 1.2788210727286686,
+          "max_drawdown": -0.6087348882674998,
+          "matched_drawdown": -0.8387931948148325,
+          "maximum_intrabar_leverage": 2.2580504751578956,
+          "liquidated": false
+        },
+        "validation": {
+          "net_return": 1.0205071830125059,
+          "matched_return": 6.266785322330652,
+          "matched_excess": -5.246278139318147,
+          "max_drawdown": -0.3609482414532996,
+          "matched_drawdown": -0.41079886458176174,
+          "maximum_intrabar_leverage": 2.0431763198851924,
+          "liquidated": false
+        }
+      },
+      "development_min_matched_excess": -5.246278139318147
+    },
+    {
+      "id": "daily-donchian-55-20-long-only-active1.5x",
+      "entry_window": 55,
+      "exit_window": 20,
+      "metrics": {
+        "research": {
+          "net_return": 0.8118975199425568,
+          "matched_return": 0.3324728209106417,
+          "matched_excess": 0.4794246990319151,
+          "max_drawdown": -0.6733495283089613,
+          "matched_drawdown": -0.8387931948148325,
+          "maximum_intrabar_leverage": 2.3959332293894877,
+          "liquidated": false
+        },
+        "validation": {
+          "net_return": 0.9108128511310476,
+          "matched_return": 6.266785322330652,
+          "matched_excess": -5.355972471199605,
+          "max_drawdown": -0.4047171712897143,
+          "matched_drawdown": -0.41079886458176174,
+          "maximum_intrabar_leverage": 2.0625841827776443,
+          "liquidated": false
+        }
+      },
+      "development_min_matched_excess": -5.355972471199605
+    }
+  ],
+  "development_qualifying_count": 0
+}

@@ -1,0 +1,2 @@
+generated_at,period_end,forward_bars,strategy_return,benchmark_return,excess,strategy_drawdown,benchmark_drawdown,maximum_intrabar_leverage,liquidated
+2026-09-03T01:16:34.825369+00:00,2026-09-03T01:00:00+00:00,1,0.002395626198060068,0.00460758895476929,-0.002211962756709222,-0.008755445157106119,-0.0012697159757014687,2.0025458970838024,False

@@ -1,0 +1,55 @@
+{
+  "generated_at": "2026-09-03T05:01:59.521869+00:00",
+  "status": "SIGNAL_SANITY_CHECK_ONLY",
+  "protocol": {
+    "provider": "Coinbase BTC-USD daily candles",
+    "signal": "frozen completed daily SMA11/40, bear after 2 days, recover after 1 day",
+    "execution": "following completed daily candle, next daily open",
+    "exposure": "1.5x active, 0x bear; simplified spot-margin proxy",
+    "costs": "15 bps per changed notional",
+    "not_modeled": "perpetual funding, isolated collateral, intraday 15m execution, and liquidation"
+  },
+  "data": {
+    "first": "2017-10-01T00:00:00+00:00",
+    "last": "2026-09-02T23:59:59.999000+00:00",
+    "bars": 3259
+  },
+  "results": {
+    "research": {
+      "strategy_return": 6.224132939133342,
+      "benchmark_return": 1.3068651859129299,
+      "excess": 4.917267753220412,
+      "strategy_cagr": 0.9328169968902098,
+      "strategy_drawdown": -0.7093494623322523,
+      "benchmark_drawdown": -0.7711488917744458,
+      "rebalances": 36
+    },
+    "validation": {
+      "strategy_return": 7.436910867760866,
+      "benchmark_return": 4.64693805827909,
+      "excess": 2.7899728094817764,
+      "strategy_cagr": 1.9024548704921336,
+      "strategy_drawdown": -0.48622952327228036,
+      "benchmark_drawdown": -0.32932271589651146,
+      "rebalances": 22
+    },
+    "oos": {
+      "strategy_return": 0.34784732136179547,
+      "benchmark_return": -0.1718333595971787,
+      "excess": 0.5196806809589741,
+      "strategy_cagr": 0.19570331056143542,
+      "strategy_drawdown": -0.3886502110540037,
+      "benchmark_drawdown": -0.537223313421278,
+      "rebalances": 27
+    },
+    "full": {
+      "strategy_return": 134.29109479218292,
+      "benchmark_return": 16.816819965844743,
+      "excess": 117.47427482633816,
+      "strategy_cagr": 0.733227241231408,
+      "strategy_drawdown": -0.7891432434431185,
+      "benchmark_drawdown": -0.8407690377765711,
+      "rebalances": 123
+    }
+  }
+}

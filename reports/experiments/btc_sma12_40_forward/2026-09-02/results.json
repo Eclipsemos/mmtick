@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-09-03T00:30:29.754693+00:00",
+  "freeze_timestamp": "2026-09-02T08:00:00+00:00",
+  "candidate": "daily SMA12/40 bear-flat; active 1.5X; bear 0X",
+  "protocol": {
+    "signal": "completed UTC daily candle; next 15m open",
+    "costs": "10 bps fee + 5 bps slippage; historical funding above 1X",
+    "collateral": "50% spot; 50% isolated USD-M margin",
+    "futures_opening_cap": "2.5X",
+    "hard_effective_leverage_cap": "3X",
+    "selection": "parameters frozen before the observation start"
+  },
+  "data_last_complete": "2026-09-03T00:14:59.999000+00:00",
+  "forward_bars": 65,
+  "status": "FORWARD_OBSERVATION",
+  "period": [
+    "2026-09-02T08:00:00+00:00",
+    "2026-09-03T00:00:00+00:00"
+  ],
+  "strategy_return": -0.010588171996867552,
+  "benchmark_return": -0.0040273846662396955,
+  "excess": -0.006560787330627857,
+  "strategy_drawdown": -0.02731023908764419,
+  "benchmark_drawdown": -0.01669447141706093,
+  "maximum_intrabar_leverage": 2.0348790155373337,
+  "liquidated": false
+}

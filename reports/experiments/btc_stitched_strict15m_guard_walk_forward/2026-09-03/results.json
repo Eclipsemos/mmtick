@@ -1,0 +1,91 @@
+{
+  "generated_at": "2026-09-03T04:48:10.374267+00:00",
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED",
+  "protocol": {
+    "base": "daily SMA11/40 enter2 bear-flat, active 1.5X",
+    "guard": "completed-daily trailing-high drawdown reduces active exposure",
+    "selection": "before each year, maximize worst cumulative excess under 10+5 and 20+10 bps",
+    "execution": "spot daily pre-2020; perpetual next 15m open thereafter",
+    "oos": "each annual return is generated after its parameter selection"
+  },
+  "data": {
+    "first": "2017-08-17T00:00:00+00:00",
+    "last": "2026-09-03T01:14:59.999000+00:00",
+    "candidate_count": 24
+  },
+  "selections": {
+    "2020": {
+      "candidate": "look90-dd0.15-guard0.5x",
+      "training_worst_excess": 4.736115106727865
+    },
+    "2021": {
+      "candidate": "look90-dd0.15-guard0.5x",
+      "training_worst_excess": 16.67340679909686
+    },
+    "2022": {
+      "candidate": "look180-dd0.15-guard1.25x",
+      "training_worst_excess": 30.321325303972507
+    },
+    "2023": {
+      "candidate": "look180-dd0.15-guard1x",
+      "training_worst_excess": 14.47439990054348
+    },
+    "2024": {
+      "candidate": "look180-dd0.20-guard1.25x",
+      "training_worst_excess": 47.65737940740938
+    },
+    "2025": {
+      "candidate": "look180-dd0.20-guard1.25x",
+      "training_worst_excess": 90.94146648696729
+    },
+    "2026": {
+      "candidate": "look180-dd0.20-guard1.25x",
+      "training_worst_excess": 96.72866797228374
+    }
+  },
+  "yearly": {
+    "2020": {
+      "strategy_return": 2.8109234270785577,
+      "benchmark_return": 3.0269784948180893,
+      "excess": -0.21605506773953165
+    },
+    "2021": {
+      "strategy_return": 0.30802755590980335,
+      "benchmark_return": 0.5961270641289225,
+      "excess": -0.2880995082191191
+    },
+    "2022": {
+      "strategy_return": -0.5532362688478465,
+      "benchmark_return": -0.6421250900227136,
+      "excess": 0.08888882117486707
+    },
+    "2023": {
+      "strategy_return": 2.108309296043124,
+      "benchmark_return": 1.5586542182662528,
+      "excess": 0.5496550777768712
+    },
+    "2024": {
+      "strategy_return": 1.0171688167806296,
+      "benchmark_return": 1.210826204093208,
+      "excess": -0.19365738731257842
+    },
+    "2025": {
+      "strategy_return": 0.06924885960410743,
+      "benchmark_return": -0.06350368630737457,
+      "excess": 0.132752545911482
+    },
+    "2026": {
+      "strategy_return": 0.1542782906517639,
+      "benchmark_return": -0.11674934538091009,
+      "excess": 0.271027636032674
+    }
+  },
+  "full": {
+    "strategy_return": 16.23379099236958,
+    "benchmark_return": 9.763022937840692,
+    "excess": 6.4707680545288895,
+    "max_drawdown": -0.6895702735976332,
+    "maximum_intrabar_leverage": 2.2704939168886664,
+    "liquidated": false
+  }
+}

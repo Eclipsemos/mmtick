@@ -1,0 +1,488 @@
+{
+  "generated_at": "2026-09-02T16:27:11.331961+00:00",
+  "status": "RESEARCH_ONLY",
+  "protocol": {
+    "selection": "each year selected only from 2020 through the prior year",
+    "candidate_grid": {
+      "sma_pairs": [
+        [
+          7,
+          35
+        ],
+        [
+          8,
+          40
+        ],
+        [
+          9,
+          45
+        ],
+        [
+          10,
+          50
+        ]
+      ],
+      "bear_exposures": [
+        "-0.1",
+        "0",
+        "0.2"
+      ],
+      "bull_exposure": "1.5"
+    },
+    "signal": "completed UTC daily close; next 15m open",
+    "costs": "10 bps fee + 5 bps slippage",
+    "funding": "historical funding on actual futures notional",
+    "leverage": "3x maximum futures-wallet leverage with active open control"
+  },
+  "data": {
+    "bars": 244857,
+    "daily_bars": 2550,
+    "last": 1788335999999
+  },
+  "years": [
+    {
+      "year": 2022,
+      "training_end": "2021-12-31T23:59:59.999000+00:00",
+      "selected": {
+        "id": "daily-sma-9-45-bear-0.1x-bull1.5x",
+        "pair": [
+          9,
+          45
+        ],
+        "bear_exposure": "-0.1",
+        "stress_return": 12.609601815165867,
+        "stress_excess": 7.182032452921572,
+        "max_drawdown": -0.4699523331086992,
+        "liquidated": false
+      },
+      "test": {
+        "strategy_return": -0.6262020949730549,
+        "benchmark_return": -0.6421251674670968,
+        "excess": 0.0159230724940419,
+        "strategy_drawdown": -0.7149473042210516,
+        "benchmark_drawdown": -0.6788954963197074,
+        "liquidated": false,
+        "maximum_open_leverage": 2.792626041657937,
+        "maximum_intrabar_leverage": 2.861801614385107
+      },
+      "top_training_candidates": [
+        {
+          "id": "daily-sma-9-45-bear-0.1x-bull1.5x",
+          "pair": [
+            9,
+            45
+          ],
+          "bear_exposure": "-0.1",
+          "stress_return": 12.609601815165867,
+          "stress_excess": 7.182032452921572,
+          "max_drawdown": -0.4699523331086992,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-9-45-bear0x-bull1.5x",
+          "pair": [
+            9,
+            45
+          ],
+          "bear_exposure": "0",
+          "stress_return": 12.181741632130896,
+          "stress_excess": 6.754172269886601,
+          "max_drawdown": -0.45699309973039515,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-9-45-bear0.2x-bull1.5x",
+          "pair": [
+            9,
+            45
+          ],
+          "bear_exposure": "0.2",
+          "stress_return": 11.35933033067488,
+          "stress_excess": 5.931760968430584,
+          "max_drawdown": -0.4466324326933456,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-8-40-bear-0.1x-bull1.5x",
+          "pair": [
+            8,
+            40
+          ],
+          "bear_exposure": "-0.1",
+          "stress_return": 11.121030105382054,
+          "stress_excess": 5.693460743137759,
+          "max_drawdown": -0.4611350942221134,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-8-40-bear0x-bull1.5x",
+          "pair": [
+            8,
+            40
+          ],
+          "bear_exposure": "0",
+          "stress_return": 10.838155319771955,
+          "stress_excess": 5.41058595752766,
+          "max_drawdown": -0.44871663486753893,
+          "liquidated": false
+        }
+      ]
+    },
+    {
+      "year": 2023,
+      "training_end": "2022-12-31T23:59:59.999000+00:00",
+      "selected": {
+        "id": "daily-sma-9-45-bear-0.1x-bull1.5x",
+        "pair": [
+          9,
+          45
+        ],
+        "bear_exposure": "-0.1",
+        "stress_return": 4.078519195592478,
+        "stress_excess": 2.7782533887065357,
+        "max_drawdown": -0.7400667252238632,
+        "liquidated": false
+      },
+      "test": {
+        "strategy_return": 2.1514357657320557,
+        "benchmark_return": 1.5586696900982615,
+        "excess": 0.5927660756337942,
+        "strategy_drawdown": -0.18194862041630613,
+        "benchmark_drawdown": -0.22435881254102086,
+        "liquidated": false,
+        "maximum_open_leverage": 2.06181711470941,
+        "maximum_intrabar_leverage": 2.0653528998514052
+      },
+      "top_training_candidates": [
+        {
+          "id": "daily-sma-9-45-bear-0.1x-bull1.5x",
+          "pair": [
+            9,
+            45
+          ],
+          "bear_exposure": "-0.1",
+          "stress_return": 4.078519195592478,
+          "stress_excess": 2.7782533887065357,
+          "max_drawdown": -0.7400667252238632,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-9-45-bear0x-bull1.5x",
+          "pair": [
+            9,
+            45
+          ],
+          "bear_exposure": "0",
+          "stress_return": 3.80951158148957,
+          "stress_excess": 2.5092457746036274,
+          "max_drawdown": -0.7508505209825874,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-8-40-bear-0.1x-bull1.5x",
+          "pair": [
+            8,
+            40
+          ],
+          "bear_exposure": "-0.1",
+          "stress_return": 3.564044420683736,
+          "stress_excess": 2.2637786137977933,
+          "max_drawdown": -0.7238996927021165,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-8-40-bear0x-bull1.5x",
+          "pair": [
+            8,
+            40
+          ],
+          "bear_exposure": "0",
+          "stress_return": 3.3642595753414293,
+          "stress_excess": 2.0639937684554868,
+          "max_drawdown": -0.7358747989179466,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-9-45-bear0.2x-bull1.5x",
+          "pair": [
+            9,
+            45
+          ],
+          "bear_exposure": "0.2",
+          "stress_return": 3.295047059678895,
+          "stress_excess": 1.9947812527929527,
+          "max_drawdown": -0.7718505453037827,
+          "liquidated": false
+        }
+      ]
+    },
+    {
+      "year": 2024,
+      "training_end": "2023-12-31T23:59:59.999000+00:00",
+      "selected": {
+        "id": "daily-sma-9-45-bear-0.1x-bull1.5x",
+        "pair": [
+          9,
+          45
+        ],
+        "bear_exposure": "-0.1",
+        "stress_return": 15.009745352341316,
+        "stress_excess": 10.124160542418972,
+        "max_drawdown": -0.7400667252238632,
+        "liquidated": false
+      },
+      "test": {
+        "strategy_return": 0.6449132586149857,
+        "benchmark_return": 1.2108262040932078,
+        "excess": -0.5659129454782221,
+        "strategy_drawdown": -0.5194947319215931,
+        "benchmark_drawdown": -0.3365730267702174,
+        "liquidated": false,
+        "maximum_open_leverage": 2.9000387214649996,
+        "maximum_intrabar_leverage": 2.9959174072981005
+      },
+      "top_training_candidates": [
+        {
+          "id": "daily-sma-9-45-bear-0.1x-bull1.5x",
+          "pair": [
+            9,
+            45
+          ],
+          "bear_exposure": "-0.1",
+          "stress_return": 15.009745352341316,
+          "stress_excess": 10.124160542418972,
+          "max_drawdown": -0.7400667252238632,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-8-40-bear-0.1x-bull1.5x",
+          "pair": [
+            8,
+            40
+          ],
+          "bear_exposure": "-0.1",
+          "stress_return": 14.685759721440878,
+          "stress_excess": 9.800174911518534,
+          "max_drawdown": -0.7238996927021165,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-9-45-bear0x-bull1.5x",
+          "pair": [
+            9,
+            45
+          ],
+          "bear_exposure": "0",
+          "stress_return": 14.249872466234379,
+          "stress_excess": 9.364287656312035,
+          "max_drawdown": -0.7508505209825874,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-8-40-bear0x-bull1.5x",
+          "pair": [
+            8,
+            40
+          ],
+          "bear_exposure": "0",
+          "stress_return": 14.008345250431766,
+          "stress_excess": 9.122760440509422,
+          "max_drawdown": -0.7358747989179466,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-9-45-bear0.2x-bull1.5x",
+          "pair": [
+            9,
+            45
+          ],
+          "bear_exposure": "0.2",
+          "stress_return": 12.821283715541488,
+          "stress_excess": 7.9356989056191445,
+          "max_drawdown": -0.7718505453037827,
+          "liquidated": false
+        }
+      ]
+    },
+    {
+      "year": 2025,
+      "training_end": "2024-12-31T23:59:59.999000+00:00",
+      "selected": {
+        "id": "daily-sma-9-45-bear-0.1x-bull1.5x",
+        "pair": [
+          9,
+          45
+        ],
+        "bear_exposure": "-0.1",
+        "stress_return": 25.618779353458624,
+        "stress_excess": 13.606774229269362,
+        "max_drawdown": -0.7400667252238632,
+        "liquidated": false
+      },
+      "test": {
+        "strategy_return": 0.02755692631747125,
+        "benchmark_return": -0.06350268522952726,
+        "excess": 0.09105961154699851,
+        "strategy_drawdown": -0.34854807672573185,
+        "benchmark_drawdown": -0.3602463765815249,
+        "liquidated": false,
+        "maximum_open_leverage": 2.2035734596751357,
+        "maximum_intrabar_leverage": 2.300911932854474
+      },
+      "top_training_candidates": [
+        {
+          "id": "daily-sma-9-45-bear-0.1x-bull1.5x",
+          "pair": [
+            9,
+            45
+          ],
+          "bear_exposure": "-0.1",
+          "stress_return": 25.618779353458624,
+          "stress_excess": 13.606774229269362,
+          "max_drawdown": -0.7400667252238632,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-9-45-bear0x-bull1.5x",
+          "pair": [
+            9,
+            45
+          ],
+          "bear_exposure": "0",
+          "stress_return": 25.130419522185715,
+          "stress_excess": 13.118414397996453,
+          "max_drawdown": -0.7508505209825874,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-8-40-bear-0.1x-bull1.5x",
+          "pair": [
+            8,
+            40
+          ],
+          "bear_exposure": "-0.1",
+          "stress_return": 25.095794921109587,
+          "stress_excess": 13.083789796920325,
+          "max_drawdown": -0.7238996927021165,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-8-40-bear0x-bull1.5x",
+          "pair": [
+            8,
+            40
+          ],
+          "bear_exposure": "0",
+          "stress_return": 24.734134856576176,
+          "stress_excess": 12.722129732386914,
+          "max_drawdown": -0.7358747989179466,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-9-45-bear0.2x-bull1.5x",
+          "pair": [
+            9,
+            45
+          ],
+          "bear_exposure": "0.2",
+          "stress_return": 24.19066682242694,
+          "stress_excess": 12.17866169823768,
+          "max_drawdown": -0.7718505453037827,
+          "liquidated": false
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "training_end": "2025-12-31T23:59:59.999000+00:00",
+      "selected": {
+        "id": "daily-sma-8-40-bear-0.1x-bull1.5x",
+        "pair": [
+          8,
+          40
+        ],
+        "bear_exposure": "-0.1",
+        "stress_return": 28.122061261526255,
+        "stress_excess": 16.936366428973464,
+        "max_drawdown": -0.7238996927021165,
+        "liquidated": false
+      },
+      "test": {
+        "strategy_return": 0.0779891416464658,
+        "benchmark_return": -0.11600955617218917,
+        "excess": 0.19399869781865497,
+        "strategy_drawdown": -0.29536176084711424,
+        "benchmark_drawdown": -0.40824744380468414,
+        "liquidated": false,
+        "maximum_open_leverage": 2.137634767921916,
+        "maximum_intrabar_leverage": 2.162288754637479
+      },
+      "top_training_candidates": [
+        {
+          "id": "daily-sma-8-40-bear-0.1x-bull1.5x",
+          "pair": [
+            8,
+            40
+          ],
+          "bear_exposure": "-0.1",
+          "stress_return": 28.122061261526255,
+          "stress_excess": 16.936366428973464,
+          "max_drawdown": -0.7238996927021165,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-8-40-bear0x-bull1.5x",
+          "pair": [
+            8,
+            40
+          ],
+          "bear_exposure": "0",
+          "stress_return": 27.319820165973713,
+          "stress_excess": 16.134125333420926,
+          "max_drawdown": -0.7358747989179466,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-9-45-bear-0.1x-bull1.5x",
+          "pair": [
+            9,
+            45
+          ],
+          "bear_exposure": "-0.1",
+          "stress_return": 26.361634949478393,
+          "stress_excess": 15.175940116925604,
+          "max_drawdown": -0.7400667252238632,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-8-40-bear0.2x-bull1.5x",
+          "pair": [
+            8,
+            40
+          ],
+          "bear_exposure": "0.2",
+          "stress_return": 25.832623197471467,
+          "stress_excess": 14.646928364918677,
+          "max_drawdown": -0.7592122779764658,
+          "liquidated": false
+        },
+        {
+          "id": "daily-sma-9-45-bear0x-bull1.5x",
+          "pair": [
+            9,
+            45
+          ],
+          "bear_exposure": "0",
+          "stress_return": 25.637489445679922,
+          "stress_excess": 14.451794613127133,
+          "max_drawdown": -0.7508505209825874,
+          "liquidated": false
+        }
+      ]
+    }
+  ],
+  "compound_strategy_return": 1.146389825771263,
+  "compound_benchmark_return": 0.6759231207298328,
+  "years_beating_bh": 4,
+  "years_with_better_drawdown": 3
+}

@@ -1,0 +1,257 @@
+{
+  "generated_at": "2026-09-02T19:20:38.093969+00:00",
+  "data": {
+    "spot_bars": 867,
+    "futures_15m_bars": 244857,
+    "futures_daily_bars": 2436,
+    "combined_daily_bars": 3303,
+    "first": "2017-08-17T00:00:00+00:00",
+    "last": "2026-09-01T23:59:59.999000+00:00",
+    "futures_funding_events": 7647,
+    "continuity": "combined daily sequence has no missing or duplicate dates"
+  },
+  "protocol": {
+    "signal": "completed daily SMA; next daily open execution",
+    "costs": "10 bps fee + 5 bps slippage",
+    "funding": "historical futures funding only from 2020-01-01 onward",
+    "capital": "50% spot and 50% futures collateral",
+    "leverage": "2x order cap as buffer; observed effective leverage must stay below 3x",
+    "variants": "bear-flat avoids pre-perpetual synthetic short funding; three-state adds neutral 1x"
+  },
+  "periods": {
+    "stitched_full": [
+      "2017-10-01T00:00:00+00:00",
+      "2026-09-01T23:59:59.999000+00:00"
+    ],
+    "spot_pre2020": [
+      "2017-10-01T00:00:00+00:00",
+      "2019-12-31T23:59:59.999000+00:00"
+    ],
+    "futures_2020_latest": [
+      "2020-01-01T00:00:00+00:00",
+      "2026-09-01T23:59:59.999000+00:00"
+    ],
+    "2020_2022": [
+      "2020-01-01T00:00:00+00:00",
+      "2022-12-31T23:59:59.999000+00:00"
+    ],
+    "2023_2024": [
+      "2023-01-01T00:00:00+00:00",
+      "2024-12-31T23:59:59.999000+00:00"
+    ],
+    "2025_latest": [
+      "2025-01-01T00:00:00+00:00",
+      "2026-09-01T23:59:59.999000+00:00"
+    ]
+  },
+  "results": {
+    "sma8-40-bear-flat": {
+      "stitched_full": {
+        "strategy_return": 102.58391393234305,
+        "benchmark_return": 16.67734995397957,
+        "excess": 85.90656397836348,
+        "strategy_drawdown": -0.8021191311839595,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.488322956125754,
+        "liquidated": false,
+        "fees": 798787.2477551119,
+        "funding": -2200380.916130106
+      },
+      "spot_pre2020": {
+        "strategy_return": 2.5307166472597222,
+        "benchmark_return": 0.6433131056597138,
+        "excess": 1.8874035416000083,
+        "strategy_drawdown": -0.8021191311839595,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.2259480841118906,
+        "liquidated": false,
+        "fees": 15031.215149448175,
+        "funding": 0.0
+      },
+      "futures_2020_latest": {
+        "strategy_return": 28.26671500599762,
+        "benchmark_return": 9.765818708854527,
+        "excess": 18.500896297143093,
+        "strategy_drawdown": -0.7214111989728982,
+        "benchmark_drawdown": -0.7715738142936763,
+        "maximum_intrabar_leverage": 2.488322956125754,
+        "liquidated": false,
+        "fees": 221612.62553074208,
+        "funding": -621729.856657328
+      },
+      "2020_2022": {
+        "strategy_return": 3.2407768711032645,
+        "benchmark_return": 1.3002658068859423,
+        "excess": 1.9405110642173222,
+        "strategy_drawdown": -0.7214111989728982,
+        "benchmark_drawdown": -0.7715738142936763,
+        "maximum_intrabar_leverage": 2.488322956125754,
+        "liquidated": false,
+        "fees": 45405.427082541566,
+        "funding": -254252.17671788487
+      },
+      "2023_2024": {
+        "strategy_return": 4.92836804689593,
+        "benchmark_return": 4.656773998488284,
+        "excess": 0.27159404840764534,
+        "strategy_drawdown": -0.5087427094343272,
+        "benchmark_drawdown": -0.33146992380441853,
+        "maximum_intrabar_leverage": 2.4329567127726492,
+        "liquidated": false,
+        "fees": 12578.847398717238,
+        "funding": -60918.288972489216
+      },
+      "2025_latest": {
+        "strategy_return": 0.16694092556707416,
+        "benchmark_return": -0.1726232725593487,
+        "excess": 0.33956419812642286,
+        "strategy_drawdown": -0.40346464641332763,
+        "benchmark_drawdown": -0.5365538380065555,
+        "maximum_intrabar_leverage": 2.2639642386231005,
+        "liquidated": false,
+        "fees": 4901.681908078762,
+        "funding": -4399.9165364505625
+      }
+    },
+    "sma8-40-slope5-bear-flat": {
+      "stitched_full": {
+        "strategy_return": 57.455011006952226,
+        "benchmark_return": 16.67734995397957,
+        "excess": 40.77766105297266,
+        "strategy_drawdown": -0.8577757179038219,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.488322956125754,
+        "liquidated": false,
+        "fees": 439701.74144117354,
+        "funding": -1417273.4637093737
+      },
+      "spot_pre2020": {
+        "strategy_return": 1.2900710130412811,
+        "benchmark_return": 0.6433131056597138,
+        "excess": 0.6467579073815674,
+        "strategy_drawdown": -0.8577757179038219,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.2259480841118906,
+        "liquidated": false,
+        "fees": 12583.407619855343,
+        "funding": 0.0
+      },
+      "futures_2020_latest": {
+        "strategy_return": 24.525414135224683,
+        "benchmark_return": 9.765818708854527,
+        "excess": 14.759595426370156,
+        "strategy_drawdown": -0.7589242757262656,
+        "benchmark_drawdown": -0.7715738142936763,
+        "maximum_intrabar_leverage": 2.488322956125754,
+        "liquidated": false,
+        "fees": 186508.77260530562,
+        "funding": -618877.5176133919
+      },
+      "2020_2022": {
+        "strategy_return": 2.9810148235852365,
+        "benchmark_return": 1.3002658068859423,
+        "excess": 1.6807490166992942,
+        "strategy_drawdown": -0.7589242757262656,
+        "benchmark_drawdown": -0.7715738142936763,
+        "maximum_intrabar_leverage": 2.488322956125754,
+        "liquidated": false,
+        "fees": 33711.182674532836,
+        "funding": -250270.8796112269
+      },
+      "2023_2024": {
+        "strategy_return": 5.434440811302505,
+        "benchmark_return": 4.656773998488284,
+        "excess": 0.7776668128142203,
+        "strategy_drawdown": -0.5263478855232965,
+        "benchmark_drawdown": -0.33146992380441853,
+        "maximum_intrabar_leverage": 2.4329567127726492,
+        "liquidated": false,
+        "fees": 11027.797639353066,
+        "funding": -64704.58882358493
+      },
+      "2025_latest": {
+        "strategy_return": -0.003459716826195155,
+        "benchmark_return": -0.1726232725593487,
+        "excess": 0.16916355573315356,
+        "strategy_drawdown": -0.4318985492667746,
+        "benchmark_drawdown": -0.5365538380065555,
+        "maximum_intrabar_leverage": 2.2639642386231005,
+        "liquidated": false,
+        "fees": 4601.3977361849165,
+        "funding": -4376.558095387278
+      }
+    },
+    "three-state-bull1.5-neutral1-bear0": {
+      "stitched_full": {
+        "strategy_return": 98.49528068357421,
+        "benchmark_return": 16.67734995397957,
+        "excess": 81.81793072959464,
+        "strategy_drawdown": -0.7948042858765308,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.6786170130012383,
+        "liquidated": false,
+        "fees": 898003.298896322,
+        "funding": -2281054.7658057804
+      },
+      "spot_pre2020": {
+        "strategy_return": 2.438392279441397,
+        "benchmark_return": 0.6433131056597138,
+        "excess": 1.7950791737816831,
+        "strategy_drawdown": -0.7948042858765308,
+        "benchmark_drawdown": -0.8347737959006756,
+        "maximum_intrabar_leverage": 2.6786170130012383,
+        "liquidated": false,
+        "fees": 17396.30976169739,
+        "funding": 0.0
+      },
+      "futures_2020_latest": {
+        "strategy_return": 27.93657052409921,
+        "benchmark_return": 9.765818708854527,
+        "excess": 18.170751815244685,
+        "strategy_drawdown": -0.676908491943179,
+        "benchmark_drawdown": -0.7715738142936763,
+        "maximum_intrabar_leverage": 2.4899958921349636,
+        "liquidated": false,
+        "fees": 256110.0995950609,
+        "funding": -663407.3661241357
+      },
+      "2020_2022": {
+        "strategy_return": 4.118690346837777,
+        "benchmark_return": 1.3002658068859423,
+        "excess": 2.8184245399518346,
+        "strategy_drawdown": -0.676908491943179,
+        "benchmark_drawdown": -0.7715738142936763,
+        "maximum_intrabar_leverage": 2.4899958921349636,
+        "liquidated": false,
+        "fees": 47159.068857408754,
+        "funding": -287939.97590288974
+      },
+      "2023_2024": {
+        "strategy_return": 4.488369477710805,
+        "benchmark_return": 4.656773998488284,
+        "excess": -0.16840452077747958,
+        "strategy_drawdown": -0.4597374373819363,
+        "benchmark_drawdown": -0.33146992380441853,
+        "maximum_intrabar_leverage": 2.1305509310538038,
+        "liquidated": false,
+        "fees": 12138.141192648227,
+        "funding": -53106.52509498
+      },
+      "2025_latest": {
+        "strategy_return": 0.030018109063479875,
+        "benchmark_return": -0.1726232725593487,
+        "excess": 0.20264138162282858,
+        "strategy_drawdown": -0.4007030762723429,
+        "benchmark_drawdown": -0.5365538380065555,
+        "maximum_intrabar_leverage": 2.4716503490447894,
+        "liquidated": false,
+        "fees": 5226.151197295345,
+        "funding": -3688.839195041684
+      }
+    }
+  },
+  "conclusion": {
+    "status": "RESEARCH_ONLY",
+    "reason": "Stitching is a cross-provider path check, not a substitute for a single venue's full-history execution data."
+  }
+}

@@ -1,0 +1,234 @@
+{
+  "generated_at": "2026-09-02T23:06:36.179842+00:00",
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED",
+  "candidate": "SMA10/40 hysteresis, enter bear after 2 days, exit after 1, active 1.25X",
+  "protocol": {
+    "signal": "completed daily candle; next bar execution",
+    "costs": "10 bps fee + 5 bps slippage",
+    "funding": "historical Funding on actual futures notional",
+    "hard_effective_leverage_cap": "3X",
+    "benchmark_note": "B&H baselines use the same segregated collateral and costs"
+  },
+  "data": {
+    "combined_bars": 3303,
+    "last": "2026-09-01T23:59:59.999000+00:00"
+  },
+  "periods": {
+    "spot_pre2020": [
+      "2017-10-01T00:00:00+00:00",
+      "2019-12-31T23:59:59.999000+00:00"
+    ],
+    "2020_2022": [
+      "2020-01-01T00:00:00+00:00",
+      "2022-12-31T23:59:59.999000+00:00"
+    ],
+    "2023_2024": [
+      "2023-01-01T00:00:00+00:00",
+      "2024-12-31T23:59:59.999000+00:00"
+    ],
+    "2025_latest": [
+      "2025-01-01T00:00:00+00:00",
+      "2026-09-01T23:59:59.999000+00:00"
+    ],
+    "stitched_full": [
+      "2017-10-01T00:00:00+00:00",
+      "2026-09-01T23:59:59.999000+00:00"
+    ]
+  },
+  "rows": {
+    "hysteresis_1.25x": {
+      "spot_pre2020": {
+        "return": 3.0577656876259987,
+        "drawdown": -0.7010281666859128,
+        "maximum_open_leverage": 1.8169891833327414,
+        "maximum_intrabar_leverage": 1.9268793370527562,
+        "fees": 12379.940151374169,
+        "funding": 0.0,
+        "liquidated": false
+      },
+      "2020_2022": {
+        "return": 3.6401732289537523,
+        "drawdown": -0.6319183696123627,
+        "maximum_open_leverage": 1.700602066916038,
+        "maximum_intrabar_leverage": 1.735387750220106,
+        "fees": 23610.43310572096,
+        "funding": -180753.2667585449,
+        "liquidated": false
+      },
+      "2023_2024": {
+        "return": 4.016487898964754,
+        "drawdown": -0.449266827831933,
+        "maximum_open_leverage": 1.676698531774861,
+        "maximum_intrabar_leverage": 1.804468997357799,
+        "fees": 8060.582563363508,
+        "funding": -42006.2775738301,
+        "liquidated": false
+      },
+      "2025_latest": {
+        "return": 0.1830646995557126,
+        "drawdown": -0.36371488059550217,
+        "maximum_open_leverage": 1.5786365153624562,
+        "maximum_intrabar_leverage": 1.6240050230304313,
+        "fees": 3321.0078274000757,
+        "funding": -3524.0988050035126,
+        "liquidated": false
+      },
+      "stitched_full": {
+        "return": 111.03141558848947,
+        "drawdown": -0.7010281666859128,
+        "maximum_open_leverage": 1.8169891833327414,
+        "maximum_intrabar_leverage": 1.9268793370527562,
+        "fees": 574060.2489805793,
+        "funding": -1861999.5396571718,
+        "liquidated": false
+      }
+    },
+    "buy_hold_1x": {
+      "spot_pre2020": {
+        "return": 0.6383905501759602,
+        "drawdown": -0.8347737959006756,
+        "maximum_open_leverage": 1.0,
+        "maximum_intrabar_leverage": 1.0,
+        "fees": 263.9354074547892,
+        "funding": 0.0,
+        "liquidated": false
+      },
+      "2020_2022": {
+        "return": 0.2451954453011395,
+        "drawdown": -0.8603753981571929,
+        "maximum_open_leverage": 2.995116979701523,
+        "maximum_intrabar_leverage": 5.122932316930222,
+        "fees": 354.08694075560135,
+        "funding": -129335.816488343,
+        "liquidated": false
+      },
+      "2023_2024": {
+        "return": 4.3185104639334755,
+        "drawdown": -0.3631286593991586,
+        "maximum_open_leverage": 1.1684524946553998,
+        "maximum_intrabar_leverage": 1.188636232698741,
+        "fees": 664.6803792799086,
+        "funding": -32131.862991630154,
+        "liquidated": false
+      },
+      "2025_latest": {
+        "return": -0.2105730488628747,
+        "drawdown": -0.5521490665877119,
+        "maximum_open_leverage": 1.1124402335813262,
+        "maximum_intrabar_leverage": 1.1129970268278382,
+        "fees": 182.46397677889678,
+        "funding": -3547.136374004925,
+        "liquidated": false
+      },
+      "stitched_full": {
+        "return": 9.161538381416833,
+        "drawdown": -0.8603753981571929,
+        "maximum_open_leverage": 2.995116979701523,
+        "maximum_intrabar_leverage": 5.122932316930222,
+        "fees": 1377.51265559511,
+        "funding": -259592.0991440231,
+        "liquidated": false
+      }
+    },
+    "buy_hold_1.25x": {
+      "spot_pre2020": {
+        "return": 0.7976895021849335,
+        "drawdown": -0.8748797523141816,
+        "maximum_open_leverage": 1.8329446186156937,
+        "maximum_intrabar_leverage": 1.8601651379390958,
+        "fees": 329.79577113658314,
+        "funding": 0.0,
+        "liquidated": false
+      },
+      "2020_2022": {
+        "return": 0.26008240357370105,
+        "drawdown": -0.8809486943098834,
+        "maximum_open_leverage": 2.999688316525041,
+        "maximum_intrabar_leverage": 6.264742268469786,
+        "fees": 469.5632141616411,
+        "funding": -193318.50172164364,
+        "liquidated": false
+      },
+      "2023_2024": {
+        "return": 5.31581797636574,
+        "drawdown": -0.3880127637518181,
+        "maximum_open_leverage": 1.5,
+        "maximum_intrabar_leverage": 1.5027228887144655,
+        "fees": 830.5394882705283,
+        "funding": -48179.7541401636,
+        "liquidated": false
+      },
+      "2025_latest": {
+        "return": -0.2719823114077366,
+        "drawdown": -0.6559152325468068,
+        "maximum_open_leverage": 2.7143466534580636,
+        "maximum_intrabar_leverage": 2.785480650295256,
+        "fees": 227.99460105310683,
+        "funding": -5318.713030915931,
+        "liquidated": false
+      },
+      "stitched_full": {
+        "return": 9.52815253276565,
+        "drawdown": -0.8811854420557508,
+        "maximum_open_leverage": 2.999687123812871,
+        "maximum_intrabar_leverage": 5.1255579562972695,
+        "fees": 1582.7463672208603,
+        "funding": -378024.86713207903,
+        "liquidated": false
+      }
+    },
+    "buy_hold_1.5x": {
+      "spot_pre2020": {
+        "return": 0.9152955451850617,
+        "drawdown": -0.9037173898872409,
+        "maximum_open_leverage": 2.9954136724186498,
+        "maximum_intrabar_leverage": 3.2163846297918006,
+        "fees": 391.4432347110567,
+        "funding": 0.0,
+        "liquidated": false
+      },
+      "2020_2022": {
+        "return": -1.0,
+        "drawdown": -1.0,
+        "maximum_open_leverage": 2.169643833605594,
+        "maximum_intrabar_leverage": 2.278868215963749,
+        "fees": 149.66325767024196,
+        "funding": -9259.293153196793,
+        "liquidated": true
+      },
+      "2023_2024": {
+        "return": 6.312379187341956,
+        "drawdown": -0.4062345762662368,
+        "maximum_open_leverage": 2.0,
+        "maximum_intrabar_leverage": 2.006856803020072,
+        "fees": 996.2744821883189,
+        "funding": -64215.6363903569,
+        "liquidated": false
+      },
+      "2025_latest": {
+        "return": -0.3892598366687587,
+        "drawdown": -0.718515528752256,
+        "maximum_open_leverage": 2.9963555220286673,
+        "maximum_intrabar_leverage": 4.53947903693553,
+        "fees": 267.4209035548908,
+        "funding": -6619.240525950442,
+        "liquidated": false
+      },
+      "stitched_full": {
+        "return": 9.842878490280185,
+        "drawdown": -0.9037173898872409,
+        "maximum_open_leverage": 2.999688306611008,
+        "maximum_intrabar_leverage": 5.1255579564262685,
+        "fees": 1761.3105848498685,
+        "funding": -475054.25460409134,
+        "liquidated": false
+      }
+    }
+  },
+  "candidate_hard_cap_passed": true,
+  "passive_baseline_hard_cap_passed": {
+    "buy_hold_1x": false,
+    "buy_hold_1.25x": false,
+    "buy_hold_1.5x": false
+  }
+}

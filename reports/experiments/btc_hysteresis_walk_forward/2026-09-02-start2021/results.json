@@ -1,0 +1,509 @@
+{
+  "generated_at": "2026-09-02T23:01:42.796640+00:00",
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED",
+  "protocol": {
+    "selection": "each year selected only from prior complete years",
+    "candidate_grid": {
+      "fast": [
+        6,
+        8,
+        10,
+        12,
+        15,
+        20
+      ],
+      "slow": 40,
+      "enter_bear_days": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "exit_bear_days": [
+        1,
+        2,
+        3
+      ],
+      "active_exposures": [
+        "1.0",
+        "1.25"
+      ]
+    },
+    "signal": "completed daily candle; next bar execution",
+    "costs": "10 bps fee + 5 bps slippage; historical Funding",
+    "hard_effective_leverage_cap": "3X"
+  },
+  "data": {
+    "combined_bars": 3303,
+    "last": "2026-09-01T23:59:59.999000+00:00"
+  },
+  "candidate_count": 144,
+  "test_years": [
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "years": [
+    {
+      "year": 2021,
+      "training_years": [
+        2018,
+        2019,
+        2020
+      ],
+      "selected": {
+        "id": "sma6-40-enter1-exit3-active1.25",
+        "fast": 6,
+        "enter": 1,
+        "exit": 3,
+        "active": "1.25",
+        "development_score": 0.26025931070901753,
+        "development_median_excess": 0.3005104227800032,
+        "development_rows": [
+          {
+            "year": 2018,
+            "excess": 0.26025931070901753,
+            "strategy_return": -0.4697644213051415,
+            "benchmark_return": -0.730023732014159,
+            "drawdown": -0.5957334593501058,
+            "liquidated": false
+          },
+          {
+            "year": 2019,
+            "excess": 0.3005104227800032,
+            "strategy_return": 1.2445209273960363,
+            "benchmark_return": 0.9440105046160331,
+            "drawdown": -0.4478322053431277,
+            "liquidated": false
+          },
+          {
+            "year": 2020,
+            "excess": 0.5982194214958874,
+            "strategy_return": 3.6251979163139745,
+            "benchmark_return": 3.026978494818087,
+            "drawdown": -0.31325723541688755,
+            "liquidated": false
+          }
+        ]
+      },
+      "test": {
+        "strategy_return": 1.2646774473676479,
+        "benchmark_return": 0.596319493550374,
+        "excess": 0.6683579538172739,
+        "strategy_drawdown": -0.37266481638804366,
+        "benchmark_drawdown": -0.5492830996402026,
+        "maximum_open_leverage": 1.6576011293115573,
+        "maximum_intrabar_leverage": 1.6825341761554284,
+        "liquidated": false
+      }
+    },
+    {
+      "year": 2022,
+      "training_years": [
+        2018,
+        2019,
+        2020,
+        2021
+      ],
+      "selected": {
+        "id": "sma6-40-enter1-exit3-active1.25",
+        "fast": 6,
+        "enter": 1,
+        "exit": 3,
+        "active": "1.25",
+        "development_score": 0.26025931070901753,
+        "development_median_excess": 0.5982194214958874,
+        "development_rows": [
+          {
+            "year": 2018,
+            "excess": 0.26025931070901753,
+            "strategy_return": -0.4697644213051415,
+            "benchmark_return": -0.730023732014159,
+            "drawdown": -0.5957334593501058,
+            "liquidated": false
+          },
+          {
+            "year": 2019,
+            "excess": 0.3005104227800032,
+            "strategy_return": 1.2445209273960363,
+            "benchmark_return": 0.9440105046160331,
+            "drawdown": -0.4478322053431277,
+            "liquidated": false
+          },
+          {
+            "year": 2020,
+            "excess": 0.5982194214958874,
+            "strategy_return": 3.6251979163139745,
+            "benchmark_return": 3.026978494818087,
+            "drawdown": -0.31325723541688755,
+            "liquidated": false
+          },
+          {
+            "year": 2021,
+            "excess": 0.6683579538172739,
+            "strategy_return": 1.2646774473676479,
+            "benchmark_return": 0.596319493550374,
+            "drawdown": -0.37266481638804366,
+            "liquidated": false
+          }
+        ]
+      },
+      "test": {
+        "strategy_return": -0.5868003775425136,
+        "benchmark_return": -0.6421251674670968,
+        "excess": 0.05532478992458323,
+        "strategy_drawdown": -0.6319502667948873,
+        "benchmark_drawdown": -0.6762727088829426,
+        "maximum_open_leverage": 1.7438781421769354,
+        "maximum_intrabar_leverage": 1.7818003340034254,
+        "liquidated": false
+      }
+    },
+    {
+      "year": 2023,
+      "training_years": [
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "selected": {
+        "id": "sma12-40-enter1-exit3-active1.25",
+        "fast": 12,
+        "enter": 1,
+        "exit": 3,
+        "active": "1.25",
+        "development_score": 0.10314538910401239,
+        "development_median_excess": 0.19338206522386125,
+        "development_rows": [
+          {
+            "year": 2018,
+            "excess": 0.180338549049898,
+            "strategy_return": -0.549685182964261,
+            "benchmark_return": -0.730023732014159,
+            "drawdown": -0.6634323694805336,
+            "liquidated": false
+          },
+          {
+            "year": 2019,
+            "excess": 0.19338206522386125,
+            "strategy_return": 1.1373925698398943,
+            "benchmark_return": 0.9440105046160331,
+            "drawdown": -0.4751513850003836,
+            "liquidated": false
+          },
+          {
+            "year": 2020,
+            "excess": 0.3870909785988972,
+            "strategy_return": 3.4140694734169843,
+            "benchmark_return": 3.026978494818087,
+            "drawdown": -0.34332400843405375,
+            "liquidated": false
+          },
+          {
+            "year": 2021,
+            "excess": 0.919563461685382,
+            "strategy_return": 1.515882955235756,
+            "benchmark_return": 0.596319493550374,
+            "drawdown": -0.35920112534310744,
+            "liquidated": false
+          },
+          {
+            "year": 2022,
+            "excess": 0.10314538910401239,
+            "strategy_return": -0.5389797783630844,
+            "benchmark_return": -0.6421251674670968,
+            "drawdown": -0.5785334472435041,
+            "liquidated": false
+          }
+        ]
+      },
+      "test": {
+        "strategy_return": 1.4393688099831878,
+        "benchmark_return": 1.5586696900982615,
+        "excess": -0.11930088011507367,
+        "strategy_drawdown": -0.2247588581035223,
+        "benchmark_drawdown": -0.21820385030071532,
+        "maximum_open_leverage": 1.5381911279004055,
+        "maximum_intrabar_leverage": 1.5478361496083388,
+        "liquidated": false
+      }
+    },
+    {
+      "year": 2024,
+      "training_years": [
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "selected": {
+        "id": "sma10-40-enter2-exit1-active1.25",
+        "fast": 10,
+        "enter": 2,
+        "exit": 1,
+        "active": "1.25",
+        "development_score": 0.09294561485888975,
+        "development_median_excess": 0.3928386758659346,
+        "development_rows": [
+          {
+            "year": 2018,
+            "excess": 0.19658222794229685,
+            "strategy_return": -0.5334415040718622,
+            "benchmark_return": -0.730023732014159,
+            "drawdown": -0.6501123188097361,
+            "liquidated": false
+          },
+          {
+            "year": 2019,
+            "excess": 0.4353569378718535,
+            "strategy_return": 1.3793674424878866,
+            "benchmark_return": 0.9440105046160331,
+            "drawdown": -0.41612886516493114,
+            "liquidated": false
+          },
+          {
+            "year": 2020,
+            "excess": 0.21122950729969858,
+            "strategy_return": 3.2382080021177857,
+            "benchmark_return": 3.026978494818087,
+            "drawdown": -0.3396628611850704,
+            "liquidated": false
+          },
+          {
+            "year": 2021,
+            "excess": 0.9411568403979755,
+            "strategy_return": 1.5374763339483495,
+            "benchmark_return": 0.596319493550374,
+            "drawdown": -0.35920112534310744,
+            "liquidated": false
+          },
+          {
+            "year": 2022,
+            "excess": 0.09294561485888975,
+            "strategy_return": -0.5491795526082071,
+            "benchmark_return": -0.6421251674670968,
+            "drawdown": -0.584641997202,
+            "liquidated": false
+          },
+          {
+            "year": 2023,
+            "excess": 0.3928386758659346,
+            "strategy_return": 1.951508365964196,
+            "benchmark_return": 1.5586696900982615,
+            "drawdown": -0.14357697315073426,
+            "liquidated": false
+          }
+        ]
+      },
+      "test": {
+        "strategy_return": 0.6904556519128016,
+        "benchmark_return": 1.2108262040932078,
+        "excess": -0.5203705521804063,
+        "strategy_drawdown": -0.449266827831933,
+        "benchmark_drawdown": -0.33146992380441853,
+        "maximum_open_leverage": 1.676698531774861,
+        "maximum_intrabar_leverage": 1.804468997357799,
+        "liquidated": false
+      }
+    },
+    {
+      "year": 2025,
+      "training_years": [
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "selected": {
+        "id": "sma6-40-enter5-exit3-active1.25",
+        "fast": 6,
+        "enter": 5,
+        "exit": 3,
+        "active": "1.25",
+        "development_score": -0.24108686493584985,
+        "development_median_excess": 0.057845112424904865,
+        "development_rows": [
+          {
+            "year": 2018,
+            "excess": 0.09745126981043861,
+            "strategy_return": -0.6325724622037204,
+            "benchmark_return": -0.730023732014159,
+            "drawdown": -0.7267456286721319,
+            "liquidated": false
+          },
+          {
+            "year": 2019,
+            "excess": -0.2018892125931414,
+            "strategy_return": 0.7421212920228917,
+            "benchmark_return": 0.9440105046160331,
+            "drawdown": -0.5663613963554178,
+            "liquidated": false
+          },
+          {
+            "year": 2020,
+            "excess": 0.6540864830620308,
+            "strategy_return": 3.681064977880118,
+            "benchmark_return": 3.026978494818087,
+            "drawdown": -0.3061028886538787,
+            "liquidated": false
+          },
+          {
+            "year": 2021,
+            "excess": 0.057845112424904865,
+            "strategy_return": 0.6541646059752788,
+            "benchmark_return": 0.596319493550374,
+            "drawdown": -0.5141280627288799,
+            "liquidated": false
+          },
+          {
+            "year": 2022,
+            "excess": 0.08475473317948945,
+            "strategy_return": -0.5573704342876074,
+            "benchmark_return": -0.6421251674670968,
+            "drawdown": -0.5752778926966978,
+            "liquidated": false
+          },
+          {
+            "year": 2023,
+            "excess": -0.21004115238952914,
+            "strategy_return": 1.3486285377087324,
+            "benchmark_return": 1.5586696900982615,
+            "drawdown": -0.22446330460314468,
+            "liquidated": false
+          },
+          {
+            "year": 2024,
+            "excess": -0.24108686493584985,
+            "strategy_return": 0.969739339157358,
+            "benchmark_return": 1.2108262040932078,
+            "drawdown": -0.4463597877813781,
+            "liquidated": false
+          }
+        ]
+      },
+      "test": {
+        "strategy_return": 0.06075311076712105,
+        "benchmark_return": -0.06350268522952726,
+        "excess": 0.12425579599664832,
+        "strategy_drawdown": -0.24031655049553194,
+        "benchmark_drawdown": -0.35327794204375407,
+        "maximum_open_leverage": 1.5814868843122178,
+        "maximum_intrabar_leverage": 1.6271664993138055,
+        "liquidated": false
+      }
+    },
+    {
+      "year": 2026,
+      "training_years": [
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "selected": {
+        "id": "sma6-40-enter5-exit3-active1.25",
+        "fast": 6,
+        "enter": 5,
+        "exit": 3,
+        "active": "1.25",
+        "development_score": -0.24108686493584985,
+        "development_median_excess": 0.08475473317948945,
+        "development_rows": [
+          {
+            "year": 2018,
+            "excess": 0.09745126981043861,
+            "strategy_return": -0.6325724622037204,
+            "benchmark_return": -0.730023732014159,
+            "drawdown": -0.7267456286721319,
+            "liquidated": false
+          },
+          {
+            "year": 2019,
+            "excess": -0.2018892125931414,
+            "strategy_return": 0.7421212920228917,
+            "benchmark_return": 0.9440105046160331,
+            "drawdown": -0.5663613963554178,
+            "liquidated": false
+          },
+          {
+            "year": 2020,
+            "excess": 0.6540864830620308,
+            "strategy_return": 3.681064977880118,
+            "benchmark_return": 3.026978494818087,
+            "drawdown": -0.3061028886538787,
+            "liquidated": false
+          },
+          {
+            "year": 2021,
+            "excess": 0.057845112424904865,
+            "strategy_return": 0.6541646059752788,
+            "benchmark_return": 0.596319493550374,
+            "drawdown": -0.5141280627288799,
+            "liquidated": false
+          },
+          {
+            "year": 2022,
+            "excess": 0.08475473317948945,
+            "strategy_return": -0.5573704342876074,
+            "benchmark_return": -0.6421251674670968,
+            "drawdown": -0.5752778926966978,
+            "liquidated": false
+          },
+          {
+            "year": 2023,
+            "excess": -0.21004115238952914,
+            "strategy_return": 1.3486285377087324,
+            "benchmark_return": 1.5586696900982615,
+            "drawdown": -0.22446330460314468,
+            "liquidated": false
+          },
+          {
+            "year": 2024,
+            "excess": -0.24108686493584985,
+            "strategy_return": 0.969739339157358,
+            "benchmark_return": 1.2108262040932078,
+            "drawdown": -0.4463597877813781,
+            "liquidated": false
+          },
+          {
+            "year": 2025,
+            "excess": 0.12425579599664832,
+            "strategy_return": 0.06075311076712105,
+            "benchmark_return": -0.06350268522952726,
+            "drawdown": -0.24031655049553194,
+            "liquidated": false
+          }
+        ]
+      },
+      "test": {
+        "strategy_return": 0.2320426725767382,
+        "benchmark_return": -0.11652092324585685,
+        "excess": 0.34856359582259505,
+        "strategy_drawdown": -0.1904981474530717,
+        "benchmark_drawdown": -0.4039846080660091,
+        "maximum_open_leverage": 1.552045613151902,
+        "maximum_intrabar_leverage": 1.5661602138292876,
+        "liquidated": false
+      }
+    }
+  ],
+  "compound_strategy_return": 4.042983925383868,
+  "compound_benchmark_return": 1.6737611459616604,
+  "years_beating_bh": 4,
+  "years_with_better_drawdown": 4,
+  "hard_cap_passed": true
+}

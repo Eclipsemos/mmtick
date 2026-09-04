@@ -1,0 +1,48 @@
+{
+  "id": "btc_sma10_40_composite_controls_v1",
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED",
+  "symbol": "BTCUSDT",
+  "direction": "long_only",
+  "signal_timeframe": "1d_utc_completed",
+  "execution": "next_tradable_open",
+  "trend": {
+    "fast_sma": 10,
+    "slow_sma": 40,
+    "bear_condition": "close < SMA40 and SMA10 < SMA40",
+    "bear_confirmation_days": 2,
+    "recovery_confirmation_days": 1
+  },
+  "exposure": {
+    "active": "1.5",
+    "guarded": "1.0",
+    "bear": "0",
+    "maximum_effective_leverage": "3.0"
+  },
+  "drawdown_control": {
+    "lookback_completed_days": 90,
+    "trigger_from_completed_close_high": "0.15"
+  },
+  "funding_control": {
+    "threshold": "0.0001",
+    "input": "latest_settled_rate_known_at_execution"
+  },
+  "capital": {
+    "spot_share": "0.5",
+    "isolated_usdm_collateral_share": "0.5",
+    "futures_opening_leverage_cap": "2.0"
+  },
+  "costs_bps_per_side": {
+    "fee": "10",
+    "slippage": "5"
+  },
+  "evidence": {
+    "full_cagr": 0.8432372309766922,
+    "full_max_drawdown": -0.6775046113811839,
+    "peak_observed_leverage": 2.258050475146207,
+    "oos_excess_vs_1x_bh": 0.3489774510737441,
+    "bootstrap_90d_annualized_excess_p05": 0.0781794745305045,
+    "validation_excess_vs_matched_1p5x": -1.281255706045993
+  },
+  "report": "reports/experiments/btc_composite_controls/2026-09-03/README.md",
+  "implementation": "scripts/research/research_btc_composite_controls.py"
+}

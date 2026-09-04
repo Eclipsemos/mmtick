@@ -1,0 +1,1507 @@
+{
+  "generated_at": "2026-09-02T09:10:14.585226+00:00",
+  "protocol": {
+    "bear_entry": "close below slow SMA and fast SMA below slow SMA",
+    "bear_exit": "stateful exit when close exceeds selected faster SMA",
+    "neutral": "1x",
+    "bull": "strict four-SMA ordering with configured exposure",
+    "funding": "last known rate <=0.01%; charged only above 1x",
+    "ranking": "research and validation stress excess only; OOS excluded"
+  },
+  "benchmark": {
+    "research": {
+      "net_return": 1.3044872956108056,
+      "max_drawdown": -0.7727231107978286
+    },
+    "validation": {
+      "net_return": 4.663657718527129,
+      "max_drawdown": -0.3253489953195883
+    },
+    "oos": {
+      "net_return": -0.17287293124514047,
+      "max_drawdown": -0.5385423777245091
+    },
+    "full": {
+      "net_return": 9.79181913698779,
+      "max_drawdown": -0.7727231107978286
+    }
+  },
+  "results": [
+    {
+      "id": "4h-26-52-104-208-bear-exit-sma208-bull1.75x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exit_period": 208,
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 4.195598629584407,
+          "stress_return": 3.3164330948695326,
+          "max_drawdown": -0.6596238317154155,
+          "excess_return": 2.8911113339736016,
+          "stress_excess": 2.011945799258727
+        },
+        "validation": {
+          "base_return": 4.276146058400815,
+          "stress_return": 3.7128345920444605,
+          "max_drawdown": -0.3442934421281402,
+          "excess_return": -0.38751166012631444,
+          "stress_excess": -0.9508231264826685
+        },
+        "oos": {
+          "base_return": 0.0750357352876526,
+          "stress_return": -0.002918032916537107,
+          "max_drawdown": -0.39253119480419224,
+          "excess_return": 0.2479086665327931,
+          "stress_excess": 0.16995489832860336
+        },
+        "full": {
+          "base_return": 28.469672124853304,
+          "stress_return": 19.283274724613022,
+          "max_drawdown": -0.6603708745892933,
+          "excess_return": 18.677852987865514,
+          "stress_excess": 9.491455587625232
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear-exit-sma200-bull1.75x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exit_period": 200,
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 3.776127949194929,
+          "stress_return": 2.945762423777729,
+          "max_drawdown": -0.6525687266129817,
+          "excess_return": 2.4716406535841235,
+          "stress_excess": 1.6412751281669236
+        },
+        "validation": {
+          "base_return": 4.4571141782508175,
+          "stress_return": 3.8550043645150534,
+          "max_drawdown": -0.32097529021270627,
+          "excess_return": -0.2065435402763116,
+          "stress_excess": -0.8086533540120757
+        },
+        "oos": {
+          "base_return": 0.08991221100986099,
+          "stress_return": 0.005630686627745597,
+          "max_drawdown": -0.3884639273897314,
+          "excess_return": 0.2627851422550015,
+          "stress_excess": 0.17850361787288607
+        },
+        "full": {
+          "base_return": 27.407336226760368,
+          "stress_return": 18.264559128328674,
+          "max_drawdown": -0.6533312537260111,
+          "excess_return": 17.615517089772577,
+          "stress_excess": 8.472739991340884
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear-exit-sma208-bull1.5x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exit_period": 208,
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 3.380303191921746,
+          "stress_return": 2.735087599041384,
+          "max_drawdown": -0.6342068741618565,
+          "excess_return": 2.0758158963109405,
+          "stress_excess": 1.4306003034305785
+        },
+        "validation": {
+          "base_return": 3.932992650178889,
+          "stress_return": 3.5026638934815915,
+          "max_drawdown": -0.3187198100189366,
+          "excess_return": -0.7306650683482401,
+          "stress_excess": -1.1609938250455376
+        },
+        "oos": {
+          "base_return": 0.08273964519752038,
+          "stress_return": 0.012304432060833566,
+          "max_drawdown": -0.3509155918085636,
+          "excess_return": 0.25561257644266083,
+          "stress_excess": 0.18517736330597404
+        },
+        "full": {
+          "base_return": 22.39584199029288,
+          "stress_return": 16.024778090978195,
+          "max_drawdown": -0.6350097010734704,
+          "excess_return": 12.60402285330509,
+          "stress_excess": 6.232958953990405
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear-exit-sma192-bull1.75x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exit_period": 192,
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 2.960043957249454,
+          "stress_return": 2.3111019030161954,
+          "max_drawdown": -0.687015058259095,
+          "excess_return": 1.6555566616386486,
+          "stress_excess": 1.0066146074053899
+        },
+        "validation": {
+          "base_return": 4.501818627107098,
+          "stress_return": 3.8889013022245225,
+          "max_drawdown": -0.3091711623816662,
+          "excess_return": -0.16183909142003117,
+          "stress_excess": -0.7747564163026066
+        },
+        "oos": {
+          "base_return": 0.045297680334001944,
+          "stress_return": -0.03977252316923416,
+          "max_drawdown": -0.42047971695781317,
+          "excess_return": 0.21817061157914241,
+          "stress_excess": 0.1331004080759063
+        },
+        "full": {
+          "base_return": 21.774364264015386,
+          "stress_return": 14.543826704647591,
+          "max_drawdown": -0.6876273689983914,
+          "excess_return": 11.982545127027596,
+          "stress_excess": 4.752007567659801
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear-exit-sma200-bull1.5x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exit_period": 200,
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 3.112737497901049,
+          "stress_return": 2.4901258233356236,
+          "max_drawdown": -0.6263177530405414,
+          "excess_return": 1.8082502022902434,
+          "stress_excess": 1.185638527724818
+        },
+        "validation": {
+          "base_return": 3.9770828281627466,
+          "stress_return": 3.528381835758098,
+          "max_drawdown": -0.30874286187969624,
+          "excess_return": -0.6865748903643825,
+          "stress_excess": -1.1352758827690312
+        },
+        "oos": {
+          "base_return": 0.08208501156331281,
+          "stress_return": 0.0060360928233458904,
+          "max_drawdown": -0.35288371498136484,
+          "excess_return": 0.2549579428084533,
+          "stress_excess": 0.17890902406848636
+        },
+        "full": {
+          "base_return": 21.14966900078754,
+          "stress_return": 14.900020550644449,
+          "max_drawdown": -0.6271378946535473,
+          "excess_return": 11.35784986379975,
+          "stress_excess": 5.1082014136566585
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear-exit-sma192-bull1.5x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exit_period": 192,
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 2.608273276978908,
+          "stress_return": 2.1015228798135106,
+          "max_drawdown": -0.6611105829753078,
+          "excess_return": 1.3037859813681023,
+          "stress_excess": 0.797035584202705
+        },
+        "validation": {
+          "base_return": 3.980670468436703,
+          "stress_return": 3.5280201774605233,
+          "max_drawdown": -0.3019070516715279,
+          "excess_return": -0.6829872500904259,
+          "stress_excess": -1.1356375410666057
+        },
+        "oos": {
+          "base_return": 0.045364282117695665,
+          "stress_return": -0.03198756136568101,
+          "max_drawdown": -0.3839997404969316,
+          "excess_return": 0.21823721336283614,
+          "stress_excess": 0.14088536987945946
+        },
+        "full": {
+          "base_return": 17.78688979941724,
+          "stress_return": 12.594532604042685,
+          "max_drawdown": -0.6617735721540327,
+          "excess_return": 7.995070662429448,
+          "stress_excess": 2.802713467054895
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear-exit-sma208-bull1.25x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exit_period": 208,
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 2.6557965838655027,
+          "stress_return": 2.1994816279335936,
+          "max_drawdown": -0.6079587658112471,
+          "excess_return": 1.351309288254697,
+          "stress_excess": 0.894994332322788
+        },
+        "validation": {
+          "base_return": 3.578921710050662,
+          "stress_return": 3.2708152475512993,
+          "max_drawdown": -0.3007287476521508,
+          "excess_return": -1.084736008476467,
+          "stress_excess": -1.3928424709758298
+        },
+        "oos": {
+          "base_return": 0.08661787296528585,
+          "stress_return": 0.024097173520834066,
+          "max_drawdown": -0.30710396855368705,
+          "excess_return": 0.2594908042104263,
+          "stress_excess": 0.19697010476597454
+        },
+        "full": {
+          "base_return": 17.189555441304748,
+          "stress_return": 12.993668216303707,
+          "max_drawdown": -0.6088192009343727,
+          "excess_return": 7.3977363043169575,
+          "stress_excess": 3.2018490793159167
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear-exit-sma200-bull1.25x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exit_period": 200,
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 2.50595291034956,
+          "stress_return": 2.0560810834430536,
+          "max_drawdown": -0.5992365009359737,
+          "excess_return": 1.2014656147387544,
+          "stress_excess": 0.7515937878322481
+        },
+        "validation": {
+          "base_return": 3.506761787339826,
+          "stress_return": 3.1934261800978883,
+          "max_drawdown": -0.29720093652043966,
+          "excess_return": -1.1568959311873033,
+          "stress_excess": -1.4702315384292408
+        },
+        "oos": {
+          "base_return": 0.07061851275137386,
+          "stress_return": 0.0029754251291147656,
+          "max_drawdown": -0.3157682334290671,
+          "excess_return": 0.24349144399651435,
+          "stress_excess": 0.17584835637425525
+        },
+        "full": {
+          "base_return": 15.91630203428753,
+          "stress_return": 11.853581837043954,
+          "max_drawdown": -0.6001160793083226,
+          "excess_return": 6.124482897299739,
+          "stress_excess": 2.061762700056164
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear-exit-sma192-bull1.25x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exit_period": 192,
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 2.2544364535681742,
+          "stress_return": 1.8757278704075286,
+          "max_drawdown": -0.6350325248105048,
+          "excess_return": 0.9499491579573687,
+          "stress_excess": 0.5712405747967231
+        },
+        "validation": {
+          "base_return": 3.477427456966473,
+          "stress_return": 3.1644647610193632,
+          "max_drawdown": -0.294937229010475,
+          "excess_return": -1.186230261560656,
+          "stress_excess": -1.4991929575077658
+        },
+        "oos": {
+          "base_return": 0.0418560416616718,
+          "stress_return": -0.027480721020334792,
+          "max_drawdown": -0.3457474460089848,
+          "excess_return": 0.21472897290681225,
+          "stress_excess": 0.14539221022480567
+        },
+        "full": {
+          "base_return": 14.181408576415267,
+          "stress_return": 10.646761908185757,
+          "max_drawdown": -0.6357465320189964,
+          "excess_return": 4.389589439427477,
+          "stress_excess": 0.8549427711979671
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear-exit-sma100-bull1.75x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exit_period": 100,
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 3.6489049190669762,
+          "stress_return": 1.708675046455132,
+          "max_drawdown": -0.7200098187506623,
+          "excess_return": 2.3444176234561707,
+          "stress_excess": 0.40418775084432634
+        },
+        "validation": {
+          "base_return": 3.455727949875213,
+          "stress_return": 2.265677133533564,
+          "max_drawdown": -0.3740847991256049,
+          "excess_return": -1.207929768651916,
+          "stress_excess": -2.397980584993565
+        },
+        "oos": {
+          "base_return": -0.1506067431606648,
+          "stress_return": -0.3625902368724129,
+          "max_drawdown": -0.48740314876610175,
+          "excess_return": 0.02226618808447567,
+          "stress_excess": -0.1897173056272724
+        },
+        "full": {
+          "base_return": 16.59454901366525,
+          "stress_return": 4.6383088733537825,
+          "max_drawdown": -0.7234188058142497,
+          "excess_return": 6.802729876677461,
+          "stress_excess": -5.153510263634008
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear-exit-sma104-bull1.75x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exit_period": 104,
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 3.2346811782602494,
+          "stress_return": 1.4261770597891361,
+          "max_drawdown": -0.7314100172487223,
+          "excess_return": 1.9301938826494438,
+          "stress_excess": 0.12168976417833055
+        },
+        "validation": {
+          "base_return": 3.2049035740560434,
+          "stress_return": 2.0991675781384695,
+          "max_drawdown": -0.3696634791661981,
+          "excess_return": -1.4587541444710856,
+          "stress_excess": -2.5644901403886595
+        },
+        "oos": {
+          "base_return": -0.08947873129382897,
+          "stress_return": -0.3009424032437021,
+          "max_drawdown": -0.48332785592620364,
+          "excess_return": 0.0833941999513115,
+          "stress_excess": -0.1280694719985616
+        },
+        "full": {
+          "base_return": 15.213129612177218,
+          "stress_return": 4.2563044459396036,
+          "max_drawdown": -0.7314100172487223,
+          "excess_return": 5.421310475189427,
+          "stress_excess": -5.535514691048187
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear-exit-sma100-bull1.5x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exit_period": 100,
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 3.0031853811718427,
+          "stress_return": 1.3958910120105124,
+          "max_drawdown": -0.6988545129059531,
+          "excess_return": 1.6986980855610372,
+          "stress_excess": 0.09140371639970679
+        },
+        "validation": {
+          "base_return": 3.0637828606688635,
+          "stress_return": 2.04597728501138,
+          "max_drawdown": -0.3517330320260532,
+          "excess_return": -1.5998748578582656,
+          "stress_excess": -2.617680433515749
+        },
+        "oos": {
+          "base_return": -0.15670665686258997,
+          "stress_return": -0.36233327388337105,
+          "max_drawdown": -0.4606436774399931,
+          "excess_return": 0.0161662743825505,
+          "stress_excess": -0.18946034263823058
+        },
+        "full": {
+          "base_return": 12.718760314587298,
+          "stress_return": 3.6535831087551984,
+          "max_drawdown": -0.702521073873129,
+          "excess_return": 2.926941177599508,
+          "stress_excess": -6.138236028232592
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear-exit-sma96-bull1.75x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exit_period": 96,
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 2.405647140984554,
+          "stress_return": 0.9890680132754187,
+          "max_drawdown": -0.746964546748078,
+          "excess_return": 1.1011598453737483,
+          "stress_excess": -0.31541928233538685
+        },
+        "validation": {
+          "base_return": 3.616549436689425,
+          "stress_return": 2.368675770025592,
+          "max_drawdown": -0.3621025869549564,
+          "excess_return": -1.047108281837704,
+          "stress_excess": -2.2949819485015372
+        },
+        "oos": {
+          "base_return": -0.12869517763547397,
+          "stress_return": -0.35214136104581156,
+          "max_drawdown": -0.44008516649009016,
+          "excess_return": 0.0441777536096665,
+          "stress_excess": -0.1792684298006711
+        },
+        "full": {
+          "base_return": 12.698949258293695,
+          "stress_return": 3.3409931501197283,
+          "max_drawdown": -0.7507052084636173,
+          "excess_return": 2.9071301213059044,
+          "stress_excess": -6.450825986868062
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear-exit-sma104-bull1.5x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exit_period": 104,
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 2.5701732955819274,
+          "stress_return": 1.099414875645372,
+          "max_drawdown": -0.7113535596379985,
+          "excess_return": 1.2656859999711219,
+          "stress_excess": -0.20507241996543346
+        },
+        "validation": {
+          "base_return": 2.931422329088531,
+          "stress_return": 1.960958990050044,
+          "max_drawdown": -0.345079320146777,
+          "excess_return": -1.732235389438598,
+          "stress_excess": -2.702698728477085
+        },
+        "oos": {
+          "base_return": -0.08295376324404231,
+          "stress_return": -0.2902698806877938,
+          "max_drawdown": -0.44791744816112,
+          "excess_return": 0.08991916800109816,
+          "stress_excess": -0.11739694944265333
+        },
+        "full": {
+          "base_return": 11.871531687478008,
+          "stress_return": 3.411882104133514,
+          "max_drawdown": -0.7113535596379985,
+          "excess_return": 2.0797125504902176,
+          "stress_excess": -6.379937032854276
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear-exit-sma96-bull1.5x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exit_period": 96,
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 2.103123526479607,
+          "stress_return": 0.8631682543685036,
+          "max_drawdown": -0.7253825669138911,
+          "excess_return": 0.7986362308688015,
+          "stress_excess": -0.4413190412423019
+        },
+        "validation": {
+          "base_return": 3.179256533850389,
+          "stress_return": 2.120012230776209,
+          "max_drawdown": -0.343334660754446,
+          "excess_return": -1.4844011846767402,
+          "stress_excess": -2.5436454877509203
+        },
+        "oos": {
+          "base_return": -0.1286396619135871,
+          "stress_return": -0.3468889027689389,
+          "max_drawdown": -0.4048393251550544,
+          "excess_return": 0.04423326933155336,
+          "stress_excess": -0.17401597152379844
+        },
+        "full": {
+          "base_return": 10.300453751414464,
+          "stress_return": 2.7966051754542236,
+          "max_drawdown": -0.7302585044639227,
+          "excess_return": 0.5086346144266738,
+          "stress_excess": -6.995213961533567
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear-exit-sma100-bull1.25x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exit_period": 100,
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 2.4125638811013443,
+          "stress_return": 1.0979292926461484,
+          "max_drawdown": -0.6770300967810107,
+          "excess_return": 1.1080765854905388,
+          "stress_excess": -0.2065580029646572
+        },
+        "validation": {
+          "base_return": 2.6797662286985933,
+          "stress_return": 1.820672229997995,
+          "max_drawdown": -0.33500335945457366,
+          "excess_return": -1.9838914898285358,
+          "stress_excess": -2.842985488529134
+        },
+        "oos": {
+          "base_return": -0.16564275893763045,
+          "stress_return": -0.3642732499560327,
+          "max_drawdown": -0.4333987410491615,
+          "excess_return": 0.007230172307510024,
+          "stress_excess": -0.19140031871089225
+        },
+        "full": {
+          "base_return": 9.477388759592966,
+          "stress_return": 2.7619581140381593,
+          "max_drawdown": -0.6809623783242021,
+          "excess_return": -0.3144303773948245,
+          "stress_excess": -7.029861022949631
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear-exit-sma104-bull1.25x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exit_period": 104,
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 1.9796629972707662,
+          "stress_return": 0.7983619248345866,
+          "max_drawdown": -0.6906412430129125,
+          "excess_return": 0.6751757016599607,
+          "stress_excess": -0.506125370776219
+        },
+        "validation": {
+          "base_return": 2.6492401936557934,
+          "stress_return": 1.8084949490426636,
+          "max_drawdown": -0.3282987618518113,
+          "excess_return": -2.0144175248713356,
+          "stress_excess": -2.8551627694844655
+        },
+        "oos": {
+          "base_return": -0.07966902697758466,
+          "stress_return": -0.2820019490870348,
+          "max_drawdown": -0.41098124294825206,
+          "excess_return": 0.09320390426755581,
+          "stress_excess": -0.10912901784189433
+        },
+        "full": {
+          "base_return": 9.007224332470422,
+          "stress_return": 2.6263858503629383,
+          "max_drawdown": -0.6906412430129125,
+          "excess_return": -0.7845948045173685,
+          "stress_excess": -7.165433286624852
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear-exit-sma96-bull1.25x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exit_period": 96,
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 1.7988230240021514,
+          "stress_return": 0.7275271161850061,
+          "max_drawdown": -0.7028808602245901,
+          "excess_return": 0.4943357283913459,
+          "stress_excess": -0.5769601794257995
+        },
+        "validation": {
+          "base_return": 2.7569877535466727,
+          "stress_return": 1.8695059827016889,
+          "max_drawdown": -0.330437004972161,
+          "excess_return": -1.9066699649804564,
+          "stress_excess": -2.79415173582544
+        },
+        "oos": {
+          "base_return": -0.13156394547879238,
+          "stress_return": -0.34384816968998494,
+          "max_drawdown": -0.36931835013550607,
+          "excess_return": 0.04130898576634809,
+          "stress_excess": -0.17097523844484447
+        },
+        "full": {
+          "base_return": 8.131730016558102,
+          "stress_return": 2.25264264876247,
+          "max_drawdown": -0.7090385973741431,
+          "excess_return": -1.6600891204296886,
+          "stress_excess": -7.539176488225321
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear-exit-sma48-bull1.75x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exit_period": 48,
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 0.7695411915038352,
+          "stress_return": -0.2652491343666052,
+          "max_drawdown": -0.8407038267147691,
+          "excess_return": -0.5349461041069704,
+          "stress_excess": -1.5697364299774108
+        },
+        "validation": {
+          "base_return": 3.5166765662651316,
+          "stress_return": 1.9040590194693825,
+          "max_drawdown": -0.35719975852095387,
+          "excess_return": -1.1469811522619975,
+          "stress_excess": -2.7595986990577464
+        },
+        "oos": {
+          "base_return": -0.3427527785948893,
+          "stress_return": -0.6057028693813689,
+          "max_drawdown": -0.5531457277109235,
+          "excess_return": -0.1698798473497488,
+          "stress_excess": -0.4328299381362284
+        },
+        "full": {
+          "base_return": 4.253012421428707,
+          "stress_return": -0.15866460251551398,
+          "max_drawdown": -0.8426255946055845,
+          "excess_return": -5.538806715559083,
+          "stress_excess": -9.950483739503305
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear-exit-sma50-bull1.75x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exit_period": 50,
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 0.7943113077513798,
+          "stress_return": -0.25675245732763746,
+          "max_drawdown": -0.8626997371743879,
+          "excess_return": -0.5101759878594258,
+          "stress_excess": -1.561239752938443
+        },
+        "validation": {
+          "base_return": 3.3965861083205575,
+          "stress_return": 1.8393235580426057,
+          "max_drawdown": -0.36475725971424927,
+          "excess_return": -1.2670716102065716,
+          "stress_excess": -2.8243341604845233
+        },
+        "oos": {
+          "base_return": -0.3211204750444545,
+          "stress_return": -0.5896147928029438,
+          "max_drawdown": -0.5387417661625599,
+          "excess_return": -0.14824754379931404,
+          "stress_excess": -0.41674186155780335
+        },
+        "full": {
+          "base_return": 4.355574782348605,
+          "stress_return": -0.13395578392833335,
+          "max_drawdown": -0.8647164935444115,
+          "excess_return": -5.436244354639185,
+          "stress_excess": -9.925774920916124
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear-exit-sma48-bull1.5x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exit_period": 48,
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 0.6123528583888637,
+          "stress_return": -0.3117558180106515,
+          "max_drawdown": -0.827519538164922,
+          "excess_return": -0.6921344372219419,
+          "stress_excess": -1.616243113621457
+        },
+        "validation": {
+          "base_return": 3.0888439103099725,
+          "stress_return": 1.6896918190412857,
+          "max_drawdown": -0.35044067166131243,
+          "excess_return": -1.5748138082171566,
+          "stress_excess": -2.9739658994858433
+        },
+        "oos": {
+          "base_return": -0.34271090168451546,
+          "stress_return": -0.602506139257328,
+          "max_drawdown": -0.5390568983288907,
+          "excess_return": -0.16983797043937499,
+          "stress_excess": -0.4296332080121875
+        },
+        "full": {
+          "base_return": 3.333282998914817,
+          "stress_return": -0.26417337832142473,
+          "max_drawdown": -0.8296003628734614,
+          "excess_return": -6.458536138072973,
+          "stress_excess": -10.055992515309216
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear-exit-sma50-bull1.5x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exit_period": 50,
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 0.5450866217980767,
+          "stress_return": -0.3425789078988695,
+          "max_drawdown": -0.8535907587483039,
+          "excess_return": -0.7594006738127289,
+          "stress_excess": -1.647066203509675
+        },
+        "validation": {
+          "base_return": 3.0098433911227183,
+          "stress_return": 1.6483068316179519,
+          "max_drawdown": -0.35379967043679045,
+          "excess_return": -1.6538143274044108,
+          "stress_excess": -3.015350886909177
+        },
+        "oos": {
+          "base_return": -0.32599584517823943,
+          "stress_return": -0.5894493516446809,
+          "max_drawdown": -0.5153350404711959,
+          "excess_return": -0.15312291393309896,
+          "stress_excess": -0.41657642039954046
+        },
+        "full": {
+          "base_return": 3.1758300669613515,
+          "stress_return": -0.2852096566768975,
+          "max_drawdown": -0.8557413137716379,
+          "excess_return": -6.615989070026439,
+          "stress_excess": -10.077028793664688
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear-exit-sma52-bull1.75x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exit_period": 52,
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 0.8713000115991091,
+          "stress_return": -0.2167499023941492,
+          "max_drawdown": -0.8673364999671394,
+          "excess_return": -0.4331872840116965,
+          "stress_excess": -1.5212371980049548
+        },
+        "validation": {
+          "base_return": 2.9161127614702913,
+          "stress_return": 1.5148927930454954,
+          "max_drawdown": -0.4232409270483339,
+          "excess_return": -1.7475449570568378,
+          "stress_excess": -3.1487649254816334
+        },
+        "oos": {
+          "base_return": -0.25567077449537084,
+          "stress_return": -0.5426017743278744,
+          "max_drawdown": -0.5254931545041645,
+          "excess_return": -0.08279784325023037,
+          "stress_excess": -0.3697288430827339
+        },
+        "full": {
+          "base_return": 4.454609698374869,
+          "stress_return": -0.09902153733424197,
+          "max_drawdown": -0.8675136779199389,
+          "excess_return": -5.337209438612922,
+          "stress_excess": -9.890840674322032
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear-exit-sma48-bull1.25x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exit_period": 48,
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 0.4542412715338898,
+          "stress_return": -0.36186091398055176,
+          "max_drawdown": -0.8142469032283771,
+          "excess_return": -0.8502460240769157,
+          "stress_excess": -1.6663482095913573
+        },
+        "validation": {
+          "base_return": 2.6757103501003665,
+          "stress_return": 1.47373606110596,
+          "max_drawdown": -0.3439554130189016,
+          "excess_return": -1.9879473684267626,
+          "stress_excess": -3.189921657421169
+        },
+        "oos": {
+          "base_return": -0.34491676259392257,
+          "stress_return": -0.6006555004668287,
+          "max_drawdown": -0.5255646838705763,
+          "excess_return": -0.1720438313487821,
+          "stress_excess": -0.4277825692216882
+        },
+        "full": {
+          "base_return": 2.5016620838325516,
+          "stress_return": -0.369599697319014,
+          "max_drawdown": -0.8164878505759073,
+          "excess_return": -7.290157053155239,
+          "stress_excess": -10.161418834306804
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear-exit-sma52-bull1.5x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exit_period": 52,
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 0.5776548571663703,
+          "stress_return": -0.32223952920924576,
+          "max_drawdown": -0.859893281272106,
+          "excess_return": -0.7268324384444352,
+          "stress_excess": -1.6267268248200513
+        },
+        "validation": {
+          "base_return": 2.661414080613981,
+          "stress_return": 1.4027401671041286,
+          "max_drawdown": -0.4007463764445046,
+          "excess_return": -2.002243637913148,
+          "stress_excess": -3.2609175514230007
+        },
+        "oos": {
+          "base_return": -0.2503367701377994,
+          "stress_return": -0.5356186689254451,
+          "max_drawdown": -0.49298631903876516,
+          "excess_return": -0.07746383889265895,
+          "stress_excess": -0.3627457376803046
+        },
+        "full": {
+          "base_return": 3.3303904461927494,
+          "stress_return": -0.24376321871625894,
+          "max_drawdown": -0.8600803999716091,
+          "excess_return": -6.4614286907950405,
+          "stress_excess": -10.035582355704049
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear-exit-sma50-bull1.25x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exit_period": 50,
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 0.31712781114761723,
+          "stress_return": -0.4243381857486882,
+          "max_drawdown": -0.8446800283774449,
+          "excess_return": -0.9873594844631883,
+          "stress_excess": -1.7288254813594937
+        },
+        "validation": {
+          "base_return": 2.630923895031889,
+          "stress_return": 1.4524166917517982,
+          "max_drawdown": -0.34301005893096675,
+          "excess_return": -2.03273382349524,
+          "stress_excess": -3.2112410267753306
+        },
+        "oos": {
+          "base_return": -0.3331380454286062,
+          "stress_return": -0.5906983715508558,
+          "max_drawdown": -0.5068045786928591,
+          "excess_return": -0.16026511418346573,
+          "stress_excess": -0.41782544030571533
+        },
+        "full": {
+          "base_return": 2.1891945046251355,
+          "stress_return": -0.42216325161542906,
+          "max_drawdown": -0.8469614700565445,
+          "excess_return": -7.602624632362655,
+          "stress_excess": -10.213982388603219
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear-exit-sma25-bull1.75x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exit_period": 25,
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 1.3277036170568548,
+          "stress_return": -0.23319071487063842,
+          "max_drawdown": -0.8088733218289786,
+          "excess_return": 0.023216321446049237,
+          "stress_excess": -1.537678010481444
+        },
+        "validation": {
+          "base_return": 2.8569359473106233,
+          "stress_return": 1.2053288655085033,
+          "max_drawdown": -0.4404324905369985,
+          "excess_return": -1.8067217712165058,
+          "stress_excess": -3.458328853018626
+        },
+        "oos": {
+          "base_return": -0.3963980163215776,
+          "stress_return": -0.6861227613572054,
+          "max_drawdown": -0.5831444874125872,
+          "excess_return": -0.22352508507643715,
+          "stress_excess": -0.5132498301120649
+        },
+        "full": {
+          "base_return": 4.419020155781638,
+          "stress_return": -0.4692126692747649,
+          "max_drawdown": -0.8124402393980166,
+          "excess_return": -5.372798981206152,
+          "stress_excess": -10.261031806262555
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear-exit-sma52-bull1.25x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exit_period": 52,
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 0.3167091373912987,
+          "stress_return": -0.4194293662640776,
+          "max_drawdown": -0.8527722821663678,
+          "excess_return": -0.9877781582195069,
+          "stress_excess": -1.7239166618748831
+        },
+        "validation": {
+          "base_return": 2.398612082383818,
+          "stress_return": 1.2790196169045285,
+          "max_drawdown": -0.385392134819708,
+          "excess_return": -2.265045636143311,
+          "stress_excess": -3.384638101622601
+        },
+        "oos": {
+          "base_return": -0.2476515772870343,
+          "stress_return": -0.5302089040338062,
+          "max_drawdown": -0.47122063154273136,
+          "excess_return": -0.07477864604189383,
+          "stress_excess": -0.3573359727886657
+        },
+        "full": {
+          "base_return": 2.366746840579657,
+          "stress_return": -0.37840443184055245,
+          "max_drawdown": -0.8529689112741078,
+          "excess_return": -7.425072296408134,
+          "stress_excess": -10.170223568828343
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear-exit-sma24-bull1.75x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exit_period": 24,
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 0.40820203208339956,
+          "stress_return": -0.5401682706205865,
+          "max_drawdown": -0.8635600974867483,
+          "excess_return": -0.896285263527406,
+          "stress_excess": -1.844655566231392
+        },
+        "validation": {
+          "base_return": 3.1167883448560905,
+          "stress_return": 1.3248687302014788,
+          "max_drawdown": -0.43090185942302395,
+          "excess_return": -1.5468693736710386,
+          "stress_excess": -3.3387889883256503
+        },
+        "oos": {
+          "base_return": -0.364264131019279,
+          "stress_return": -0.6713925634898266,
+          "max_drawdown": -0.5668059924692675,
+          "excess_return": -0.19139119977413854,
+          "stress_excess": -0.4985196322446861
+        },
+        "full": {
+          "base_return": 2.6855283589503314,
+          "stress_return": -0.6487031184052715,
+          "max_drawdown": -0.8655321264935018,
+          "excess_return": -7.106290778037459,
+          "stress_excess": -10.440522255393061
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear-exit-sma25-bull1.5x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exit_period": 25,
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 1.0043922716692102,
+          "stress_return": -0.32173795576845104,
+          "max_drawdown": -0.7944323035270169,
+          "excess_return": -0.3000950239415954,
+          "stress_excess": -1.6262252513792566
+        },
+        "validation": {
+          "base_return": 2.5176631907739107,
+          "stress_return": 1.0569644075776723,
+          "max_drawdown": -0.43078025753556665,
+          "excess_return": -2.1459945277532184,
+          "stress_excess": -3.6066933109494568
+        },
+        "oos": {
+          "base_return": -0.40073278114470556,
+          "stress_return": -0.6859962260606043,
+          "max_drawdown": -0.5685877711265447,
+          "excess_return": -0.2278598498995651,
+          "stress_excess": -0.5131232948154638
+        },
+        "full": {
+          "base_return": 3.225299471975441,
+          "stress_return": -0.5619142171728934,
+          "max_drawdown": -0.7982687278043229,
+          "excess_return": -6.566519665012349,
+          "stress_excess": -10.353733354160683
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear-exit-sma26-bull1.75x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exit_period": 26,
+      "bull_exposure": "1.75",
+      "metrics": {
+        "research": {
+          "base_return": 0.9203989275669738,
+          "stress_return": -0.3759233413474914,
+          "max_drawdown": -0.8379820915428938,
+          "excess_return": -0.38408836804383173,
+          "stress_excess": -1.680410636958297
+        },
+        "validation": {
+          "base_return": 2.6056994638432984,
+          "stress_return": 1.0765889436950604,
+          "max_drawdown": -0.48832122411447393,
+          "excess_return": -2.0579582546838306,
+          "stress_excess": -3.5870687748320687
+        },
+        "oos": {
+          "base_return": -0.4500312091166084,
+          "stress_return": -0.7125196452965784,
+          "max_drawdown": -0.6277010647235114,
+          "excess_return": -0.2771582778714679,
+          "stress_excess": -0.5396467140514379
+        },
+        "full": {
+          "base_return": 2.808193657095377,
+          "stress_return": -0.6274396361400566,
+          "max_drawdown": -0.8414256715526717,
+          "excess_return": -6.983625479892414,
+          "stress_excess": -10.419258773127847
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear-exit-sma24-bull1.5x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exit_period": 24,
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 0.2831114542685991,
+          "stress_return": -0.5692737127071472,
+          "max_drawdown": -0.8522675283851245,
+          "excess_return": -1.0213758413422065,
+          "stress_excess": -1.8737610083179528
+        },
+        "validation": {
+          "base_return": 2.726834256768386,
+          "stress_return": 1.1532552754765895,
+          "max_drawdown": -0.42491775500674456,
+          "excess_return": -1.9368234617587432,
+          "stress_excess": -3.5104024430505394
+        },
+        "oos": {
+          "base_return": -0.36422362471793657,
+          "stress_return": -0.6687284069193038,
+          "max_drawdown": -0.5501504679467184,
+          "excess_return": -0.1913506934727961,
+          "stress_excess": -0.4958554756741633
+        },
+        "full": {
+          "base_return": 2.040243597123321,
+          "stress_return": -0.6927579674373155,
+          "max_drawdown": -0.8544027741152774,
+          "excess_return": -7.7515755398644695,
+          "stress_excess": -10.484577104425107
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear-exit-sma26-bull1.5x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exit_period": 26,
+      "bull_exposure": "1.5",
+      "metrics": {
+        "research": {
+          "base_return": 0.6190491513886588,
+          "stress_return": -0.45997518382602814,
+          "max_drawdown": -0.8288919143286683,
+          "excess_return": -0.6854381442221468,
+          "stress_excess": -1.7644624794368338
+        },
+        "validation": {
+          "base_return": 2.371189644299595,
+          "stress_return": 0.9839826490330212,
+          "max_drawdown": -0.468364911926513,
+          "excess_return": -2.2924680742275343,
+          "stress_excess": -3.679675069494108
+        },
+        "oos": {
+          "base_return": -0.4460900284849982,
+          "stress_return": -0.7081306785158878,
+          "max_drawdown": -0.6092049701002273,
+          "excess_return": -0.2732170972398577,
+          "stress_excess": -0.5352577472707474
+        },
+        "full": {
+          "base_return": 2.0233080535259784,
+          "stress_return": -0.6872912482660938,
+          "max_drawdown": -0.8325286998478761,
+          "excess_return": -7.768511083461812,
+          "stress_excess": -10.479110385253884
+        }
+      }
+    },
+    {
+      "id": "4h-25-50-100-200-bear-exit-sma25-bull1.25x",
+      "periods": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "bear_exit_period": 25,
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 0.708668477365075,
+          "stress_return": -0.4060890902172721,
+          "max_drawdown": -0.7795345376897651,
+          "excess_return": -0.5958188182457306,
+          "stress_excess": -1.7105763858280776
+        },
+        "validation": {
+          "base_return": 2.1852534097295426,
+          "stress_return": 0.9048147243576508,
+          "max_drawdown": -0.42127599144089034,
+          "excess_return": -2.4784043087975864,
+          "stress_excess": -3.7588429941694783
+        },
+        "oos": {
+          "base_return": -0.40708301867651536,
+          "stress_return": -0.6869515210183287,
+          "max_drawdown": -0.5609945967970245,
+          "excess_return": -0.2342100874313749,
+          "stress_excess": -0.5140785897731882
+        },
+        "full": {
+          "base_return": 2.2269756288778315,
+          "stress_return": -0.6458513092308268,
+          "max_drawdown": -0.7836489927643037,
+          "excess_return": -7.564843508109959,
+          "stress_excess": -10.437670446218617
+        }
+      }
+    },
+    {
+      "id": "4h-24-48-96-192-bear-exit-sma24-bull1.25x",
+      "periods": [
+        24,
+        48,
+        96,
+        192
+      ],
+      "bear_exit_period": 24,
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 0.15728615052651182,
+          "stress_return": -0.6006311618891894,
+          "max_drawdown": -0.8408992890891711,
+          "excess_return": -1.1472011450842938,
+          "stress_excess": -1.905118457499995
+        },
+        "validation": {
+          "base_return": 2.35027786611538,
+          "stress_return": 0.9803700877566324,
+          "max_drawdown": -0.4191760822499569,
+          "excess_return": -2.313379852411749,
+          "stress_excess": -3.6832876307704967
+        },
+        "oos": {
+          "base_return": -0.3663572889715404,
+          "stress_return": -0.6671860835757427,
+          "max_drawdown": -0.53883454211461,
+          "excess_return": -0.19348435772639994,
+          "stress_excess": -0.49431315233060225
+        },
+        "full": {
+          "base_return": 1.4567760130892604,
+          "stress_return": -0.7367783868949993,
+          "max_drawdown": -0.8431988452390355,
+          "excess_return": -8.33504312389853,
+          "stress_excess": -10.52859752388279
+        }
+      }
+    },
+    {
+      "id": "4h-26-52-104-208-bear-exit-sma26-bull1.25x",
+      "periods": [
+        26,
+        52,
+        104,
+        208
+      ],
+      "bear_exit_period": 26,
+      "bull_exposure": "1.25",
+      "metrics": {
+        "research": {
+          "base_return": 0.3512567732007217,
+          "stress_return": -0.5374139341684299,
+          "max_drawdown": -0.8201952541248378,
+          "excess_return": -0.9532305224100839,
+          "stress_excess": -1.8419012297792354
+        },
+        "validation": {
+          "base_return": 2.1292188222541952,
+          "stress_return": 0.8818245262840839,
+          "max_drawdown": -0.45474321106792087,
+          "excess_return": -2.534438896272934,
+          "stress_excess": -3.7818331922430453
+        },
+        "oos": {
+          "base_return": -0.4441059974744963,
+          "stress_return": -0.7047305754052448,
+          "max_drawdown": -0.5968222741492943,
+          "excess_return": -0.27123306622935583,
+          "stress_excess": -0.5318576441601043
+        },
+        "full": {
+          "base_return": 1.350530041986555,
+          "stress_return": -0.7429662520877334,
+          "max_drawdown": -0.8240168812181342,
+          "excess_return": -8.441289095001235,
+          "stress_excess": -10.534785389075523
+        }
+      }
+    }
+  ]
+}

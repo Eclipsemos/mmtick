@@ -1,0 +1,262 @@
+{
+  "generated_at": "2026-09-03T05:06:22.261164+00:00",
+  "status": "RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED",
+  "protocol": {
+    "candidate": "frozen SMA11/40 enter2-exit1 active1.5X",
+    "source": "strict stitched spot/15m perpetual replay, default costs and Funding",
+    "pairing": "UTC daily strategy and B&H log returns from the same strict path",
+    "tail_test": "remove the top strategy-minus-B&H daily log returns without retuning",
+    "leave_one_year_out": "recalculate the aggregate path after excluding each UTC calendar year"
+  },
+  "data": {
+    "first": "2017-10-01",
+    "last": "2026-09-02",
+    "daily_observations": 3259,
+    "strict_return": 143.7508118959192,
+    "strict_drawdown": -0.7562475262309408
+  },
+  "concentration": {
+    "5": 0.05136356514057945,
+    "10": 0.07961422867323167,
+    "20": 0.12534935703840028
+  },
+  "tail_removal": {
+    "5": {
+      "days": 3254,
+      "strategy_return": 143.476981193217,
+      "benchmark_return": 58.54042889066055,
+      "excess": 84.93655230255645,
+      "strategy_cagr": 0.7475305970606312,
+      "benchmark_cagr": 0.5820211282252525,
+      "annualized_excess": 0.10461900026648241,
+      "removed_days": [
+        "2018-01-16",
+        "2018-02-05",
+        "2020-03-12",
+        "2021-05-19",
+        "2022-06-13"
+      ]
+    },
+    "10": {
+      "days": 3249,
+      "strategy_return": 143.7831262198642,
+      "benchmark_return": 115.4433597721658,
+      "excess": 28.33976644769838,
+      "strategy_cagr": 0.7494486852987408,
+      "benchmark_cagr": 0.7071284794377704,
+      "annualized_excess": 0.024790287532961974,
+      "removed_days": [
+        "2018-01-16",
+        "2018-02-05",
+        "2018-11-19",
+        "2020-03-12",
+        "2021-05-12",
+        "2021-05-19",
+        "2021-06-21",
+        "2022-05-09",
+        "2022-06-13",
+        "2026-02-05"
+      ]
+    },
+    "20": {
+      "days": 3239,
+      "strategy_return": 143.7831262198642,
+      "benchmark_return": 342.73034005590597,
+      "excess": -198.94721383604178,
+      "strategy_cagr": 0.7524721899527245,
+      "benchmark_cagr": 0.9319416103444951,
+      "annualized_excess": -0.09289588227242973,
+      "removed_days": [
+        "2018-01-16",
+        "2018-01-21",
+        "2018-02-01",
+        "2018-02-04",
+        "2018-02-05",
+        "2018-03-29",
+        "2018-06-10",
+        "2018-06-22",
+        "2018-11-19",
+        "2018-11-24",
+        "2020-03-08",
+        "2020-03-12",
+        "2021-05-12",
+        "2021-05-19",
+        "2021-06-21",
+        "2022-01-21",
+        "2022-05-09",
+        "2022-06-13",
+        "2022-06-16",
+        "2026-02-05"
+      ]
+    }
+  },
+  "leave_one_year_out": [
+    {
+      "excluded_year": "2017",
+      "days": 3167,
+      "strategy_return": 34.37333201495067,
+      "benchmark_return": 4.635605947933725,
+      "excess": 29.737726067016943,
+      "strategy_cagr": 0.5087076009517608,
+      "benchmark_cagr": 0.22068659990751316,
+      "annualized_excess": 0.2359499981945159
+    },
+    {
+      "excluded_year": "2018",
+      "days": 2894,
+      "strategy_return": 368.65620097997595,
+      "benchmark_return": 64.39612618362595,
+      "excess": 304.26007479635,
+      "strategy_cagr": 1.1089854647257789,
+      "benchmark_cagr": 0.6948646596475965,
+      "annualized_excess": 0.24433856869980874
+    },
+    {
+      "excluded_year": "2019",
+      "days": 2894,
+      "strategy_return": 65.18310315203954,
+      "benchmark_return": 8.085575349634656,
+      "excess": 57.09752780240488,
+      "strategy_cagr": 0.697425340962752,
+      "benchmark_cagr": 0.3211453511758633,
+      "annualized_excess": 0.28481346844386723
+    },
+    {
+      "excluded_year": "2020",
+      "days": 2893,
+      "strategy_return": 26.485887306892966,
+      "benchmark_return": 3.3875900489193063,
+      "excess": 23.09829725797366,
+      "strategy_cagr": 0.5194563526198803,
+      "benchmark_cagr": 0.2052615871526906,
+      "annualized_excess": 0.26068595300497654
+    },
+    {
+      "excluded_year": "2021",
+      "days": 2894,
+      "strategy_return": 59.814315458262,
+      "benchmark_return": 10.060828794836125,
+      "excess": 49.753486663425875,
+      "strategy_cagr": 0.6793981826095781,
+      "benchmark_cagr": 0.3543568518480915,
+      "annualized_excess": 0.23999681495903413
+    },
+    {
+      "excluded_year": "2022",
+      "days": 2894,
+      "strategy_return": 376.7166747971464,
+      "benchmark_return": 48.3314498975492,
+      "excess": 328.38522489959723,
+      "strategy_cagr": 1.1147348013629284,
+      "benchmark_cagr": 0.6356250718577101,
+      "annualized_excess": 0.2929214877839057
+    },
+    {
+      "excluded_year": "2023",
+      "days": 2894,
+      "strategy_return": 41.17828720295547,
+      "benchmark_return": 5.899911705575103,
+      "excess": 35.27837549738037,
+      "strategy_cagr": 0.6036045745454388,
+      "benchmark_cagr": 0.2760502121749464,
+      "annualized_excess": 0.25669394452134986
+    },
+    {
+      "excluded_year": "2024",
+      "days": 2893,
+      "strategy_return": 71.02386550615215,
+      "benchmark_return": 6.985470842732114,
+      "excess": 64.03839466342004,
+      "strategy_cagr": 0.715960163560567,
+      "benchmark_cagr": 0.29991762308951264,
+      "annualized_excess": 0.3200530041913323
+    },
+    {
+      "excluded_year": "2025",
+      "days": 2894,
+      "strategy_return": 133.40094105754778,
+      "benchmark_return": 17.851636608714877,
+      "excess": 115.54930444883291,
+      "strategy_cagr": 0.8561747471918368,
+      "benchmark_cagr": 0.4486308605691025,
+      "annualized_excess": 0.2813303911409344
+    },
+    {
+      "excluded_year": "2026",
+      "days": 3014,
+      "strategy_return": 121.94685320475843,
+      "benchmark_return": 19.00877014678578,
+      "excess": 102.93808305797265,
+      "strategy_cagr": 0.7915795758693125,
+      "benchmark_cagr": 0.4377536182388244,
+      "annualized_excess": 0.2460963778090901
+    }
+  ],
+  "top_excess_days": [
+    {
+      "date": "2020-03-12",
+      "strategy_log_return": 0.0,
+      "benchmark_log_return": -0.510486401765031,
+      "excess_log_return": 0.510486401765031
+    },
+    {
+      "date": "2018-01-16",
+      "strategy_log_return": 0.0,
+      "benchmark_log_return": -0.21688030836860656,
+      "excess_log_return": 0.21688030836860656
+    },
+    {
+      "date": "2022-06-13",
+      "strategy_log_return": 0.0,
+      "benchmark_log_return": -0.16733542714095903,
+      "excess_log_return": 0.16733542714095903
+    },
+    {
+      "date": "2018-02-05",
+      "strategy_log_return": 0.0,
+      "benchmark_log_return": -0.1649796637633145,
+      "excess_log_return": 0.1649796637633145
+    },
+    {
+      "date": "2021-05-19",
+      "strategy_log_return": 0.0,
+      "benchmark_log_return": -0.15598371842452508,
+      "excess_log_return": 0.15598371842452508
+    },
+    {
+      "date": "2026-02-05",
+      "strategy_log_return": 0.0,
+      "benchmark_log_return": -0.15130098297861366,
+      "excess_log_return": 0.15130098297861366
+    },
+    {
+      "date": "2018-11-19",
+      "strategy_log_return": 0.0,
+      "benchmark_log_return": -0.14249713492231114,
+      "excess_log_return": 0.14249713492231114
+    },
+    {
+      "date": "2021-05-12",
+      "strategy_log_return": -0.002116746368484432,
+      "benchmark_log_return": -0.1340527982281903,
+      "excess_log_return": 0.13193605185970586
+    },
+    {
+      "date": "2022-05-09",
+      "strategy_log_return": 0.0,
+      "benchmark_log_return": -0.12421898764924065,
+      "excess_log_return": 0.12421898764924065
+    },
+    {
+      "date": "2021-06-21",
+      "strategy_log_return": 0.0,
+      "benchmark_log_return": -0.11867950982388017,
+      "excess_log_return": 0.11867950982388017
+    }
+  ],
+  "conclusion": {
+    "top_10_removal_still_beats_bh": true,
+    "all_leave_one_year_out_still_beats_bh": true,
+    "interpretation": "Tail removal is a concentration stress test, not an attainable trading path. It cannot replace independent forward observation."
+  }
+}

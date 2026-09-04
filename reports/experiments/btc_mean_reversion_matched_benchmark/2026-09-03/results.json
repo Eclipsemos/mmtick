@@ -1,0 +1,218 @@
+{
+  "generated_at": "2026-09-03T05:36:16.171021+00:00",
+  "status": "RESEARCH_ONLY / NOT_PROMOTED",
+  "protocol": {
+    "families": "daily long-only Bollinger and RSI mean reversion; exit to cash at center",
+    "benchmark": "continuous 1.5X BTC with identical wallets, costs, Funding, and controls",
+    "selection": "Research and Validation only; OOS remains unread without a qualifying rule",
+    "execution": "completed daily signal; next 15m open",
+    "hard_cap": "2X futures opening control and <=3X observed effective leverage"
+  },
+  "data": {
+    "last": "2026-09-03T05:14:59.999000+00:00",
+    "candidate_count": 8
+  },
+  "results": [
+    {
+      "id": "daily-bollinger-50-2-long-only-active1.5x",
+      "family": "bollinger",
+      "metrics": {
+        "research": {
+          "net_return": -0.6283970592328668,
+          "matched_return": 0.3324728209106417,
+          "matched_excess": -0.9608698801435085,
+          "max_drawdown": -0.8232290027314672,
+          "matched_drawdown": -0.8387931948148325,
+          "maximum_intrabar_leverage": 2.5314231745994085,
+          "liquidated": false
+        },
+        "validation": {
+          "net_return": 1.6761106572745978,
+          "matched_return": 6.266785322330652,
+          "matched_excess": -4.590674665056055,
+          "max_drawdown": -0.23189816060709637,
+          "matched_drawdown": -0.41079886458176174,
+          "maximum_intrabar_leverage": 2.059295979898599,
+          "liquidated": false
+        }
+      },
+      "development_min_matched_excess": -4.590674665056055
+    },
+    {
+      "id": "daily-bollinger-50-1.5-long-only-active1.5x",
+      "family": "bollinger",
+      "metrics": {
+        "research": {
+          "net_return": -0.7214513737225797,
+          "matched_return": 0.3324728209106417,
+          "matched_excess": -1.0539241946332214,
+          "max_drawdown": -0.8363198214307549,
+          "matched_drawdown": -0.8387931948148325,
+          "maximum_intrabar_leverage": 2.5314231745994085,
+          "liquidated": false
+        },
+        "validation": {
+          "net_return": 1.4475797566158246,
+          "matched_return": 6.266785322330652,
+          "matched_excess": -4.819205565714828,
+          "max_drawdown": -0.23189816060709637,
+          "matched_drawdown": -0.41079886458176174,
+          "maximum_intrabar_leverage": 2.263397091886638,
+          "liquidated": false
+        }
+      },
+      "development_min_matched_excess": -4.819205565714828
+    },
+    {
+      "id": "daily-bollinger-20-2-long-only-active1.5x",
+      "family": "bollinger",
+      "metrics": {
+        "research": {
+          "net_return": -0.666972402388895,
+          "matched_return": 0.3324728209106417,
+          "matched_excess": -0.9994452232995367,
+          "max_drawdown": -0.73710593534076,
+          "matched_drawdown": -0.8387931948148325,
+          "maximum_intrabar_leverage": 2.5314231745994085,
+          "liquidated": false
+        },
+        "validation": {
+          "net_return": 0.9324469391994413,
+          "matched_return": 6.266785322330652,
+          "matched_excess": -5.334338383131211,
+          "max_drawdown": -0.39557485589186736,
+          "matched_drawdown": -0.41079886458176174,
+          "maximum_intrabar_leverage": 2.263397091886638,
+          "liquidated": false
+        }
+      },
+      "development_min_matched_excess": -5.334338383131211
+    },
+    {
+      "id": "daily-rsi-14-35-long-only-active1.5x",
+      "family": "rsi",
+      "metrics": {
+        "research": {
+          "net_return": -0.2591436270578185,
+          "matched_return": 0.3324728209106417,
+          "matched_excess": -0.5916164479684602,
+          "max_drawdown": -0.7316555425853504,
+          "matched_drawdown": -0.8387931948148325,
+          "maximum_intrabar_leverage": 2.5314231745994085,
+          "liquidated": false
+        },
+        "validation": {
+          "net_return": 0.8695490468297569,
+          "matched_return": 6.266785322330652,
+          "matched_excess": -5.397236275500895,
+          "max_drawdown": -0.2947623771576647,
+          "matched_drawdown": -0.41079886458176174,
+          "maximum_intrabar_leverage": 2.1617410491555513,
+          "liquidated": false
+        }
+      },
+      "development_min_matched_excess": -5.397236275500895
+    },
+    {
+      "id": "daily-bollinger-20-1.5-long-only-active1.5x",
+      "family": "bollinger",
+      "metrics": {
+        "research": {
+          "net_return": -0.5604889642226235,
+          "matched_return": 0.3324728209106417,
+          "matched_excess": -0.8929617851332652,
+          "max_drawdown": -0.73710593534076,
+          "matched_drawdown": -0.8387931948148325,
+          "maximum_intrabar_leverage": 2.5314231745994085,
+          "liquidated": false
+        },
+        "validation": {
+          "net_return": 0.748155045864661,
+          "matched_return": 6.266785322330652,
+          "matched_excess": -5.518630276465991,
+          "max_drawdown": -0.402210526801538,
+          "matched_drawdown": -0.41079886458176174,
+          "maximum_intrabar_leverage": 2.263397091886638,
+          "liquidated": false
+        }
+      },
+      "development_min_matched_excess": -5.518630276465991
+    },
+    {
+      "id": "daily-rsi-14-30-long-only-active1.5x",
+      "family": "rsi",
+      "metrics": {
+        "research": {
+          "net_return": 0.5642545114513743,
+          "matched_return": 0.3324728209106417,
+          "matched_excess": 0.2317816905407326,
+          "max_drawdown": -0.5013824340115993,
+          "matched_drawdown": -0.8387931948148325,
+          "maximum_intrabar_leverage": 2.5314231745994085,
+          "liquidated": false
+        },
+        "validation": {
+          "net_return": 0.5807569934664877,
+          "matched_return": 6.266785322330652,
+          "matched_excess": -5.686028328864165,
+          "max_drawdown": -0.23189816060709637,
+          "matched_drawdown": -0.41079886458176174,
+          "maximum_intrabar_leverage": 2.043567408005273,
+          "liquidated": false
+        }
+      },
+      "development_min_matched_excess": -5.686028328864165
+    },
+    {
+      "id": "daily-rsi-21-35-long-only-active1.5x",
+      "family": "rsi",
+      "metrics": {
+        "research": {
+          "net_return": 0.24997767676709495,
+          "matched_return": 0.3324728209106417,
+          "matched_excess": -0.08249514414354672,
+          "max_drawdown": -0.6692005640919473,
+          "matched_drawdown": -0.8387931948148325,
+          "maximum_intrabar_leverage": 2.5314231745994085,
+          "liquidated": false
+        },
+        "validation": {
+          "net_return": 0.3243447625223575,
+          "matched_return": 6.266785322330652,
+          "matched_excess": -5.942440559808295,
+          "max_drawdown": -0.23189816060709637,
+          "matched_drawdown": -0.41079886458176174,
+          "maximum_intrabar_leverage": 2.043567408005273,
+          "liquidated": false
+        }
+      },
+      "development_min_matched_excess": -5.942440559808295
+    },
+    {
+      "id": "daily-rsi-21-30-long-only-active1.5x",
+      "family": "rsi",
+      "metrics": {
+        "research": {
+          "net_return": 0.3721449781787629,
+          "matched_return": 0.3324728209106417,
+          "matched_excess": 0.03967215726812123,
+          "max_drawdown": -0.5897175092334673,
+          "matched_drawdown": -0.8387931948148325,
+          "maximum_intrabar_leverage": 2.286209626043325,
+          "liquidated": false
+        },
+        "validation": {
+          "net_return": 0.023647834491572855,
+          "matched_return": 6.266785322330652,
+          "matched_excess": -6.243137487839079,
+          "max_drawdown": -0.15820154951759835,
+          "matched_drawdown": -0.41079886458176174,
+          "maximum_intrabar_leverage": 2.0272982897581406,
+          "liquidated": false
+        }
+      },
+      "development_min_matched_excess": -6.243137487839079
+    }
+  ],
+  "development_qualifying_count": 0
+}

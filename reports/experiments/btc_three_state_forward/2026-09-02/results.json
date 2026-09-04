@@ -1,0 +1,47 @@
+{
+  "generated_at": "2026-09-02T08:32:49.457733+00:00",
+  "frozen_before_data_start": true,
+  "frozen_config": {
+    "timeframe": "4h",
+    "sma_periods": [
+      16,
+      32,
+      64,
+      128
+    ],
+    "bear_exposure": "0",
+    "neutral_exposure": "1",
+    "bull_exposure": "2.5",
+    "bear_rule": "close below SMA128 and SMA16 below SMA128",
+    "bull_rule": "SMA16>SMA32>SMA64>SMA128",
+    "neutral_rule": "all other states"
+  },
+  "forward_period": {
+    "start": "2026-08-29T00:00:00+00:00",
+    "end": "2026-09-02T07:59:59.999000+00:00",
+    "source_bars": 416
+  },
+  "strategy": {
+    "net_return": -0.009164629452150864,
+    "max_drawdown": -0.037051203981715596,
+    "completed_trades": 2,
+    "total_fees": 349.4249772431341,
+    "total_funding": 0.0,
+    "bankrupt": false
+  },
+  "stress": {
+    "net_return": -0.014719579450112596,
+    "max_drawdown": -0.037069416093986784,
+    "completed_trades": 2,
+    "total_fees": 697.8433590105459,
+    "total_funding": 0.0,
+    "bankrupt": false
+  },
+  "buy_and_hold": {
+    "net_return": -0.004309585613801015,
+    "max_drawdown": -0.03479482352288443
+  },
+  "excess_return": -0.0048550438383498495,
+  "latest_completed_4h": "2026-09-02T07:59:59.999000+00:00",
+  "current_target_exposure": "1"
+}

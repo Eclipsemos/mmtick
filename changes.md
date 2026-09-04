@@ -1,5 +1,149 @@
 # 系统与策略变更记录
 
+- 2026-09-03：新增 BTC 现货-永续现金套利筛选
+  (`scripts/research/research_btc_cash_carry.py`)。下载并规范化 Binance 现货 15m 归档（2020-01
+  至 2026-07，2025 后微秒时间戳转毫秒），按已完成 4h basis 与已结算 Funding 在下一根 15m
+  开盘决定是否买现货/等量做空永续。16 个 basis/Funding 阈值组合均未在 Research 与 Validation
+  同时超过 BTC 现货 B&H（最佳开发期超额 `-140.51pp/-466.59pp`）；最大总名义杠杆约 `1.10X`，
+  但不具备收益优势。共同数据中的 16 段永续缺口采用强制平仓并记录，结果见
+  `reports/experiments/btc_cash_carry/2026-09-03/README.md`，保持研究状态。
+- 2026-09-03：新增 BTC 极端 Funding 事件的严格等风险筛选
+  (`scripts/research/research_btc_funding_event_matched_benchmark.py`)。每个 Funding 结算只用此前
+  事件计算 z-score，在完成 4h K 线后于下一根 15m 开盘执行；测试 30/90/180 个事件窗口、
+  1–3σ 阈值、1–12 个 4h 持有期和延续/反转（共 150 个 long-only `0X/1.5X` 配置）。统一按
+  历史 Funding、每边 10+5bps、50/50 隔离钱包及盘中 `<=3X` 约束回放，开发期合格 `0/150`；
+  最佳反转配置 Validation 落后连续 1.5X BTC `409.27pp`，OOS 未读取，拒绝该独立因子族。
+- 2026-09-03：新增 BTC 期货市场指标的严格等风险筛选
+  (`scripts/research/research_btc_metric_matched_benchmark.py`)。使用已完成 4h OI、主动买卖、
+  全局/大户拥挤度指标，下一根 15m 开盘执行，统一按 50% 现货、50% 隔离 USD-M、历史 Funding、
+  每边 10+5bps 成本和盘中 `<=3X` 有效杠杆回放。144 个预定义 long-only `0X/1.5X` 配置均未在
+  2021-2022 Research 与 2023-2024 Validation 同时超过连续 1.5X BTC；最佳配置 Validation
+  落后 `261.02pp`，因此 OOS 未读取，拒绝该独立信号族。
+- 2026-09-03：用 Coinbase BTC-USD 独立完成日线对冻结 `SMA11/40-enter2-exit1-active1.5X`
+  做信号稳健性复核（次日开盘、每次变更 15bps 的简化现货保证金代理）。Research/Validation/OOS
+  分别超过本地 B&H `+491.73/+279.00/+51.97pp`，支持信号并非 Binance 单一收盘价伪影；该复核
+  不包含 Funding、隔离抵押、15m 执行或强平，因此不改变 `RESEARCH_ONLY` 状态。同步修复冻结
+  forward ledger 将每个日线信号误记为目标变更的问题，现在只记录实际暴露切换。
+- 2026-09-03：对冻结 SMA11 严格路径新增尾部集中度审计。移除最强 5/10 个策略相对 B&H 日后仍
+  超过 B&H，移除 20 个后落后 `-19894.72pp`；剔除任意一个完整年份仍保持超额。这排除单日或
+  单一年份完全驱动的简单解释，但确认收益仍依赖少量危机防守和趋势爆发事件，不降低 `-75.62%`
+  历史 DD 或长期前向观察门槛。
+- 2026-09-03：新增预先定义的 30 成员 SMA 邻域等权组合（fast 8–12、入熊确认 1–3 日、active
+  1.25/1.5X），不按历史或 OOS 选择成员。组合 OOS 超额 `+32.78pp`、峰值有效杠杆 `2.152X`，
+  但 Validation 落后 B&H `-6.22pp`，7/30/90 日 Bootstrap 年化超额 P05 为
+  `-6.28/-4.37/-1.37%`；故参数平均化未优于冻结中心，保持研究状态。
+- 2026-09-03：单独测试 `SMA11/40-enter2-active2.0X` 并将 futures 开仓控制放宽到 3X。OOS
+  超额 `+46.69pp`、Full CAGR `81.33%`，但盘中有效杠杆达到 `3.31–5.72X`，违反 3X 硬约束；
+  该结果仅证明额外杠杆放大历史收益，不能作为策略候选或实盘配置。
+- 2026-09-03：对固定 SMA11/40 以 `0.01X` 步长完成严格 3X 主动暴露边界审计，且统一使用
+  `2.5X` futures 开仓控制。`1.53X` 的历史峰值有效杠杆为 `2.969X`，`1.54X` 为 `3.008X`
+  并失败；因此测试粒度内的最大可行值为 `1.53X`。这是同一样本上的风险边界，不用于回改
+  已冻结的 `1.5X` 候选，也不能与其 `2X` 开仓控制下的收益直接比较。
+- 2026-09-03：强化冻结 SMA11 的 forward ledger：每次数据刷新以 `period_end` 幂等追加累计
+  快照（收益、B&H、费用、Funding、最大有效杠杆、目标与切换计数），并且只在完整 UTC 日结束后
+  追加配对日收益。目标切换同时记录模型下一根 15m 开盘执行价。冻结后尚不足一个完整 UTC 日，
+  因此前向日度文件仍为空，不能将当前累计快照视为日度样本。
+- 2026-09-03：对冻结 SMA11 单独提高每边总执行成本（费用加滑点）、保留 Funding 和所有执行逻辑。
+  在每边 `60 bps` 下 Research/Validation/OOS 超额仍为 `+143.96/+20.13/+22.01pp`；Validation
+  首次于 `75 bps` 转负 `-10.20pp`。这支持历史超额并非仅由默认 15bps 成本假设产生，但不能替代
+  前向实际费率、滑点和 Funding 的验证。
+- 2026-09-03：新增冻结 SMA11 与持续 `1.5X` BTC 的风险匹配基准审计，双方使用相同抵押、Funding、
+  费用和盘中 3X 保护。策略在 spot、Research、OOS 和全样本领先，但 2023–2024 Validation 落后
+  `39.56pp`；因此其对原始 1X B&H 的超额并非每个分段都能超过相同主动暴露 BTC，保持
+  `RESEARCH_ONLY`，不应把全样本结果解释为稳定纯择时 Alpha。
+- 2026-09-03：预先定义的 `active1.5X` SMA 家族（fast 8–12、入熊确认 1–3 日）以持续 1.5X
+  BTC 为同风险基准进行开发期筛选。15/15 成员在 Research 领先但 Validation 全部落后，最佳为
+  `SMA11-enter2` 的 `-39.56pp`，开发期合格 `0/15`；OOS 未读取。该结果拒绝这一日线 SMA
+  空仓家族已提供跨阶段、等风险纯 Alpha 的假设。
+- 2026-09-03：独立的日线 Donchian 突破家族（20/10、55/20、100/50，long-only、突破离场
+  空仓、active 1.5X）同样以持续 1.5X BTC 作风险匹配基准。Research 均为正，但 Validation
+  分别落后 `-437.81/-535.60/-524.63pp`，开发期合格 `0/3`；OOS 未读取。低频突破机制没有
+  提供跨阶段等风险超额证据。
+- 2026-09-03：预先定义的日线均值回归家族（Bollinger 20/50 × 1.5/2.0σ 与 RSI 14/21 ×
+  30/35，long-only、回到中心空仓、active 1.5X）同样以持续 1.5X BTC 为风险匹配基准。开发期
+  合格 `0/8`，Validation 超额范围 `-459%` 至 `-624%`；OOS 未读取。简单日线反转不具备
+  跨阶段等风险超额。
+- 2026-09-03：用最新完整 BTCUSDT 15m 数据（截至 `2026-09-03T01:14:59.999Z`）重跑严格日线 SMA10/40 迟滞候选（连续 2 日 bearish 降至 0X、1 日恢复至 1.25X，下一根 15m 开盘执行）。Full CAGR `64.35%`、B&H 约 `42.8%`、OOS 超额 `+35.54pp`，峰值盘中有效杠杆 `1.804X`；2024 年落后 B&H，7/30/90 日 Bootstrap 年化超额 P05 为 `-10.62%/-9.13%/-7.08%`，继续保持 `RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED`。
+- 2026-09-03：最新拼接日线 SMA 网格仍选择 `daily-sma12-40-bear-flat`；2025 至最新 OOS 超额 `+42.21pp`、Full 超额 `+9629.29pp`、峰值盘中有效杠杆 `2.488X`。该结果仅作跨数据源路径检查，不能替代严格 15m 执行，也未改变冻结候选。
+- 2026-09-03：为网格中开发期压力最稳的 `SMA10/40-enter3-exit1-active1.5X` 建立独立严格 15m 审计（`scripts/research/audit_btc_sma10_enter3_active150.py`）。在下一根 15m 开盘执行下，Research/Validation/OOS 超额为 `+109.19/+122.00/+23.26pp`，Full CAGR `61.73%`、最大回撤 `-75.72%`、峰值有效杠杆 `2.996X`；但 2022 年落后 `2.21pp`，90 日 Bootstrap 超额 P05 `-8.96%`，仍为 `RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED`。
+- 2026-09-03：新增 BTC B&H 候选汇总 [`reports/experiments/btc_bh_challenger_selection/2026-09-03/README.md`](reports/experiments/btc_bh_challenger_selection/2026-09-03/README.md)，明确区分历史/留出超额与统计稳健性；当前没有候选通过 Bootstrap 正超额下界和长期前向观察门槛。
+- 2026-09-03：扩展拼接日线 SMA10/40 迟滞候选的区块 Bootstrap 到 180/365/730 日。90/180/365/730 日年化超额 P05 为 `+2.33/+7.05/+8.84/+9.29%`，但 7/30 日仍为 `-2.41/-0.64%`。这只是中周期日线机制证据；聚合日线的 Funding 时点与盘中风险审计弱于严格 15m，因此不升级实盘状态。
+- 2026-09-03：新增跨现货日线与永续 15m 的连续 SMA 审计（`scripts/research/audit_btc_stitched_strict15m_sma10.py`）和 30 点邻域网格（`scripts/research/research_btc_stitched_strict15m_sma_grid.py`）。`SMA11/40-enter2-exit1-active1.5X` 在默认及 20+10 bps 下 Research/Validation/OOS 均超过 B&H，Full CAGR `74.59%`、峰值有效杠杆 `2.602X`，30 日以上 Bootstrap 年化超额 P05 为正；但 50+25 bps Validation 超额 `-10.20pp`、7 日 P05 `-2.47%`、Full DD `-75.62%`，继续保持研究状态。
+- 2026-09-03：冻结 `SMA11/40-enter2-exit1-active1.5X` 为新独立 shadow/forward candidate，边界为 `2026-09-03T01:14:59.999Z`；规则与不调参协议见 `reports/experiments/btc_sma11_enter2_active150_hybrid/2026-09-03/freeze-candidate.md`。冻结不是实盘批准。
+- 2026-09-03：新增严格混合执行的年度 walk-forward（`scripts/research/audit_btc_stitched_strict15m_walk_forward.py`）。每年只用前序数据从 SMA9–12/40、1–3 日确认的预设网格选择下一年；2020–2026 年度结果 5/7 跑赢 B&H，连续收益 `+3029.13%` 对 `+976.30%`，峰值有效杠杆 `2.162X`，但 2022/2024 超额 `-3.72/-43.90pp`、最大回撤 `-76.52%`，不改变研究状态。
+- 2026-09-03：新增严格混合执行的 SMA11 回撤保护网格（`scripts/research/research_btc_stitched_strict15m_drawdown_guard.py`）。风险候选 `look180-dd20%-guard0.75X` 只按 Research/Validation 默认及 20+10 bps 成本筛选，默认 OOS 超额 `+33.97pp`、Full DD `-66.19%`（相对基线改善约 9.4pp），90 日 Bootstrap P05 `+2.30%`；但 7/30 日 P05 为负且 50+25 bps Validation 超额 `-73.38pp`，仅作为独立风险 challenger。
+- 2026-09-03：完成回撤保护家族的年度 walk-forward（`scripts/research/audit_btc_stitched_strict15m_guard_walk_forward.py`）。逐年只用此前数据选择保护参数后，连续收益 `+1623.38%` 对 B&H `+976.30%`、DD `-68.96%`，但仅 4/7 年跑赢 B&H；低回撤静态候选不升级为冻结版本。
+- 2026-09-03：为冻结的 `SMA11/40-enter2-exit1-active1.5X` 新增独立前向 ledger（`scripts/research/audit_btc_sma11_hybrid_forward.py`），起点严格设为选择数据终点后的 `2026-09-03T01:15:00Z`。当前正确状态为 `AWAITING_FORWARD_DATA`，不把用于选参的最后一根 15m K 线记为前向观察。
+- 2026-09-03：刷新实际研究输入目录 `data/history_btc` 的 BTCUSDT 已完成 15m 数据至 `2026-09-03T04:44:59.999Z`，并运行冻结 ledger。冻结后仅 14 根 K 线：默认成本策略 `-0.18%`、B&H `+0.18%`、超额 `-0.36pp`；中度成本 `-0.63%`。窗口约 3.5 小时且包含初始建仓成本，不用于调参或判断策略失效。
+
+- 2026-09-03：新增 BTC Funding 确认迟滞网格（`scripts/research/research_btc_funding_hysteresis_strict.py`）。按连续 Funding 事件确认降/升杠杆，显著减少调仓，但 50+25 bps 压力下 Validation 全部落后 B&H；保持 `RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED`，不替换 SMA10/40 基线。
+- 2026-09-03：新增 SMA10/40、SMA12/40 主动暴露与确认周期网格（`scripts/research/research_btc_hysteresis_exposure_cost_grid.py`）。在 0.75X–1.5X、1–3 日入熊确认、1–2 日恢复的 48 个组合中，没有配置同时通过压力成本 Validation、OOS 正超额及 3X 硬上限；最佳 `SMA10/40-enter3-exit1-active1.5X` 压力 Validation 超额为 -1.34%，保持研究状态。
+- 2026-09-03：对 `SMA10/40-enter3-exit1-active1.55X` 进行独立严格审计。默认成本 Full CAGR `61.77%`；50+25 bps 压力下 Research/Validation/OOS 超额 `+18.10%/+17.47%/+0.27%`，峰值有效杠杆 `2.784X`。但 75+40 bps Validation 超额 `-50.18%`、90 日 Bootstrap 超额 P05 `-9.60%`，只能作为新冻结前 Challenger。
+- 2026-09-03：新增 100% 现货/现金 SMA 迟滞对照（`scripts/research/research_btc_spot_timing_baseline.py`）。最佳 SMA10/40-enter3/exit1 在 Research 超额 `+188.66%`，但 Validation 默认/压力超额 `-112.46%/-161.88%`；说明主动杠杆和熊市退出的组合贡献了大部分历史超额，信号本身没有跨阶段稳定击败 B&H。
+- 2026-09-03：完成 54 点 1.55X 邻域审计并选出开发期中心 `SMA11/40-enter2-exit1-active1.60X`。6/54 配置同时通过 Research/Validation 默认与 50+25 bps 压力；中心 Full CAGR `78.21%`、OOS 压力超额 `+14.87%`、峰值有效杠杆 `2.783X`，90 日 Bootstrap 超额 P05 `-0.13%`，建立独立严格审计但保持 `RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED`。
+- 2026-09-03：测试 SMA11/40 三状态主动暴露（熊市 0X、普通 1.0–1.4X、明确多头 1.5–1.6X）。50+25 bps 下 Validation 全部落后 B&H，未改善固定 1.60X 候选，不建立冻结版本。
+- 2026-09-03：记录 SMA11/40 小空头敏感性：熊市 `-0.1X`/`-0.25X`/`-0.5X` 配合 active `1.6X` 时，50+25 bps Validation 超额为 `+23.53%/-5.39%/-51.09%`，均未同时改善纯多头 1.60X 的收益与回撤；不晋级。
+- 2026-09-03：测试 SMA11/40 active `1.70X` 边界。50+25 bps 下四区间超额 `+108.27%/+84.99%/+13.68%/+1045.60%`，但 Full DD 增至 `-80.4%`、OOS 低于 1.60X；1.80X 超出 2.5X 开仓控制，淘汰。杠杆仅放大结果，不改善 Edge。
+- 2026-09-03：新增 ETH/BTC 日线相对强弱过滤实验（`scripts/research/research_btc_eth_ratio_filter_strict.py`）。过滤降低了回撤和有效杠杆，但全部组合 Full 落后 B&H，最佳 `SMA30/90-reduce1X` Full 超额 `-307.91%`、Validation 压力超额 `-378.52%`；同时记录再入场价格缓冲快速检查失败，不纳入候选。
+- 2026-09-03：按“杠杆不超过 3X”要求完成固定 SMA7/35、SMA8/40、SMA12/40 等权组合的主动暴露敏感性审计（`scripts/research/audit_btc_sma_ensemble_exposure.py`）。预先声明的 `1.5/1.6/1.7/1.75/1.8X` 网格均历史上超过 1X B&H，但只有 `1.5X` 在 Research、Validation、OOS 和 Full 的盘中峰值有效杠杆均不超过 3X（最高 `2.996X`）；`1.6X` 起分别达到 `3.132X` 以上。`1.5X` Full CAGR `66.10%`、最大回撤 `-75.30%`，90 日 bootstrap 年化超额 P05 `-7.31%`，因此仍为研究证据而非实盘批准。报告见 `reports/experiments/btc_sma_ensemble_exposure/2026-09-03/README.md`。
+- 2026-09-03：新增预先固定的 BTC 三机制组合审计（`scripts/research/research_btc_composite_controls.py`），将既有 SMA10/40 两日迟滞、日线回撤降仓和 `0.01%` Funding 限制组合。`look90-dd15-guard1-funding01` 在所有历史分段超过 1X B&H，Full CAGR `84.32%`、最大回撤 `-67.75%`、峰值有效杠杆 `2.258X`；90 日 bootstrap 年化超额 P05 `+7.82%`。但与相同抵押、成本、Funding 和执行控制的连续 1.5X BTC 基准相比，2023–2024 Validation 落后 `128.13pp`，所以组合主要体现熊市风险降低而非已证实的独立 Alpha，继续保持 `RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED`。报告见 `reports/experiments/btc_composite_controls/2026-09-03/README.md`。
+
+## 2026-09-02
+
+### BTC B&H 超额研究扩展
+
+- 将日线 `SMA12/40 bear-flat` 候选统一到 50% 现货、50% 隔离 USD-M 抵押、2.5X
+  合约开盘缓冲及盘中有效杠杆 3X 硬上限。2020 至最新压力收益为 `+3,085.68%`，
+  B&H 为 `+972.87%`，CAGR `67.99%` 对 `42.71%`，最大回撤 `-74.73%`，最高盘中
+  有效杠杆 `2.694X`。此前组合账户口径的 `+4,328%` 不再作为权威结果。
+- 冻结后前向观察新增独立追加式 ledger。截至 2026-09-03 00:14:59 UTC 共 65 根完整
+  15 分钟 K 线，策略 `-1.06%`、B&H `-0.40%`、超额 `-0.66pp`；样本不用于调参。
+- 日线波动率高分位降仓初测没有改善该候选最大回撤，未纳入冻结版本；默认成本提高到每边
+  50 bps 手续费加 25 bps 滑点时仍超过 B&H，更高压力下优势消失。
+- 新增完成日线相对过去高点的回撤保护网格。仅用 2020–2024 最小化最坏回撤选出的
+  `90日高点/回撤15%/降至0.75X` Challenger，全样本 CAGR `58.04%`、最大回撤
+  `-62.97%`、2025 至最新超额 `+37.17pp`；但 90 日 Bootstrap 年化超额 P05
+  恶化到 `-9.78%`，因此不替换无保护层 SMA12/40 基线。
+- 新增日线 SMA12/40 三状态网格。只用 2020–2024 选择的收益候选为熊市 `0X`、中性
+  `1.25X`、明确牛市 `1.5X`；全样本 CAGR `70.15%`、最大回撤 `-71.73%`、2025
+  至最新超额 `+35.51pp`，最高盘中有效杠杆 `2.621X`。90 日 Bootstrap 年化超额
+  P05 改善到 `-3.72%`，但仍为负；候选从 2026-09-03 01:00 UTC 单独冻结观察。
+- 三状态机制归因确认恒定 1.25X/1.5X 在历史下跌中会升至 `3.100X/3.605X` 盘中有效
+  杠杆并违反硬上限，且 CAGR 仅约 `31%`；超额主要来自 SMA12/40 熊市退出。
+  “熊市 0X、其余 1X”虽然实现 `54.17%` CAGR 和 `-59.32%` 回撤，但一年窗口跑赢率
+  仅 `47.14%`、90 日 Bootstrap P05 为 `-12.20%`，因此只保留为低风险对照。
+- 三状态 SMA 5×5 邻域审计中，25/25 个组合在 2025 至最新及全样本跑赢 B&H，OOS
+  超额中位数 `+28.44pp`、最差 `+9.46pp`，且全部满足 3X；但只有 9/25 同时通过
+  Research 与 Validation，开发通过率 `36%` 未达到预设 `60%` 平台门槛。中心 12/40
+  保持冻结，不根据邻域结果回改。
+- 三状态候选逐年跑赢 B&H 为 6/7，精确单侧符号检验 `p=0.0625`；剔除任意一个年度后
+  剩余年化超额仍为 `+13.34%` 至 `+25.27%`。同步移除最佳 5 个相对收益日后仍有
+  `+1.42%` 年化超额，移除 10 日后转为 `-13.34%`。前 10 个最大相对收益日均为事前
+  `0X` 防守，仓位至少提前 24 小时建立且当天无调仓，未发现信号回填。
+- 三状态候选在 2026-09-03 01:00 UTC 后的第一根完整 15 分钟前向 K 线中收益
+  `+0.24%`，B&H `+0.46%`，超额 `-0.22pp`；单根样本主要受初始建仓成本影响，
+  不用于修改参数或判断策略有效性。
+- 固定等权组合全部 25 个三状态 SMA 邻域成员后，全样本收益 `+3,257.15%`、OOS 收益
+  `+10.76%`、最大回撤 `-71.97%`、最高盘中有效杠杆 `2.528X`。其收益、90 日
+  Bootstrap P05 和尾部集中度均未优于冻结的 SMA12/40 中心候选，因此不建立新的前向
+  冻结版本，仅保留为未晋级的稳健性对照。
+- 将既有的日线 `SMA10/40`、连续 2 个熊市日进入空仓、1 个非熊市日恢复的迟滞规则，
+  迁移到严格下一根 15m 开盘和隔离钱包回放。2020 至最新全样本收益 `+3,523.997%`、
+  CAGR `71.27%`、最大回撤 `-70.93%`，B&H CAGR 约 `42.76%`；2025 至最新 OOS
+  超额 `+36.92pp`，最高盘中有效杠杆 `2.694X`，无强平。相较冻结 SMA12/40，收益和
+  尾部移除 5 日后的年化超额略有改善，但 90 日 Bootstrap 超额 P05 仍为 `-4.40%`，
+  因此仅建立 Challenger 报告，不替换冻结基线或直接进入实盘。
+- 补齐 Binance BTCUSDT 现货 2017-08 至 2019-12 的 867 根日线，并验证无重复、无缺口；与
+  USD-M 2020-01 至最新的 2,436 根日线拼接，Funding 仅在永续区间计入。
+- 固定 `daily-sma8-40-bear-flat`（牛市 1.5X、熊市 0X、50% 现货、2X 下单缓冲）在
+  2017-10 至 2026-09 的压力收益为 `+10,258.39%`，B&H 为 `+1,667.73%`，超额
+  `+8,590.66pp`；最大回撤 `-80.21%`，最高盘中有效杠杆 `2.488X`。
+- 1/2/3 年滚动窗口超过 B&H 比例为 `77.32% / 77.65% / 90.41%`，90 日区块 Bootstrap
+  超过 B&H 概率 `93.26%`；但年化超额 P05 仍为 `-1.79%`，因此状态保持
+  `RESEARCH_ONLY / FORWARD_OBSERVATION_REQUIRED`。
+- 修复拼接完整区间误排除 2020 年后 Funding 的报告 bug；新增报告见
+  `reports/experiments/btc_stitched_3x/` 与 `reports/experiments/btc_stitched_3x_audit/`。
+
 ## 2026-08-17
 
 ### Research-only 目录重构

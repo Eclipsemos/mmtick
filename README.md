@@ -94,7 +94,7 @@ ATR 盈利保护和延续重入实现仍保留在代码中，但当前配置均�
 首次安装依赖并构建前端：
 
 ```bash
-cd /home/spaceaic/mmtick
+cd /path/to/mmtick
 python3 -m venv .venv
 .venv/bin/pip install -e '.[dev]'
 
@@ -107,7 +107,7 @@ cd ..
 之后在项目根目录使用一键脚本后台启动回测平台：
 
 ```bash
-cd /home/spaceaic/mmtick
+cd /path/to/mmtick
 ./scripts/run.sh --host 0.0.0.0 --port 8100
 ```
 
@@ -133,7 +133,7 @@ tail -f data/run/research.log
 修改前端源码后，先重新构建再启动：
 
 ```bash
-cd /home/spaceaic/mmtick/frontend
+cd /path/to/mmtick/frontend
 npm run build
 cd ..
 ./scripts/run.sh --host 0.0.0.0 --port 8100

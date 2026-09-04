@@ -1,0 +1,661 @@
+{
+  "generated_at": "2026-09-02T21:27:19.322931+00:00",
+  "status": "RESEARCH_ONLY",
+  "frozen_candidate": {
+    "symbol": "BTCUSDT",
+    "timeframe": "daily signal, 15m execution",
+    "sma_fast": 8,
+    "sma_slow": 40,
+    "bear_exposure": "-0.1",
+    "bull_exposure": "1.5",
+    "spot_cap": "0.5"
+  },
+  "protocol": {
+    "signal": "completed UTC daily close; next 15m open",
+    "costs": "10 bps fee + 5 bps slippage on changed notional",
+    "funding": "historical funding charged on actual futures notional",
+    "leverage": "active 15m-open control to <=3x futures-wallet equity",
+    "intrabar_audit": "15m OHLC low used to measure effective leverage excursions",
+    "selection": "parameters frozen before forward observation; OOS not used for selection"
+  },
+  "data": {
+    "bars": 244909,
+    "daily_bars": 2550,
+    "last": "2026-09-02T20:59:59.999000+00:00"
+  },
+  "benchmarks": {
+    "research": {
+      "net_return": 1.3002658068859423,
+      "max_drawdown": -0.7755528264455603
+    },
+    "validation": {
+      "net_return": 4.656773998488284,
+      "max_drawdown": -0.3365730267702175
+    },
+    "oos": {
+      "net_return": -0.17300489156461654,
+      "max_drawdown": -0.5415474735288048
+    },
+    "full": {
+      "net_return": 9.76085308571055,
+      "max_drawdown": -0.7755528264455603
+    }
+  },
+  "frozen_metrics": {
+    "research": {
+      "net_return": 3.564044420683736,
+      "max_drawdown": -0.7238996927021165,
+      "excess": 2.2637786137977933,
+      "fees": 50368.115611084366,
+      "funding": -257422.26863282803,
+      "rebalances": 51,
+      "liquidated": false,
+      "maximum_open_leverage": 2.792626041657937,
+      "maximum_intrabar_leverage": 2.861801614385107
+    },
+    "validation": {
+      "net_return": 4.7159698889343105,
+      "max_drawdown": -0.5352923995168293,
+      "excess": 0.059195890446026134,
+      "fees": 13366.709629477138,
+      "funding": -60054.398910006326,
+      "rebalances": 29,
+      "liquidated": false,
+      "maximum_open_leverage": 2.9000387214649996,
+      "maximum_intrabar_leverage": 2.9959174072981005
+    },
+    "oos": {
+      "net_return": 0.20179272466701317,
+      "max_drawdown": -0.4022441765928174,
+      "excess": 0.3747976162316297,
+      "fees": 5283.269147174564,
+      "funding": -4236.8167619691585,
+      "rebalances": 32,
+      "liquidated": false,
+      "maximum_open_leverage": 2.2035734596751357,
+      "maximum_intrabar_leverage": 2.300911932854474
+    },
+    "full": {
+      "net_return": 30.375016244314182,
+      "max_drawdown": -0.7238996927021165,
+      "excess": 20.61416315860363,
+      "fees": 248708.54676924995,
+      "funding": -642211.4412030638,
+      "rebalances": 110,
+      "liquidated": false,
+      "maximum_open_leverage": 2.9000387214649996,
+      "maximum_intrabar_leverage": 2.9959174072981005
+    }
+  },
+  "cap_sensitivity": [
+    {
+      "leverage_cap": "2",
+      "metrics": {
+        "research": {
+          "net_return": 3.5089521527447736,
+          "max_drawdown": -0.707046413487829,
+          "excess": 2.2086863458588315,
+          "fees": 49070.82425943082,
+          "funding": -246802.5721764162,
+          "rebalances": 169,
+          "liquidated": false,
+          "maximum_open_leverage": 2.0,
+          "maximum_intrabar_leverage": 2.0907548602382846
+        },
+        "validation": {
+          "net_return": 4.668542335678666,
+          "max_drawdown": -0.5257571779936925,
+          "excess": 0.011768337190381395,
+          "fees": 13254.737511228279,
+          "funding": -58161.75962046192,
+          "rebalances": 79,
+          "liquidated": false,
+          "maximum_open_leverage": 2.0,
+          "maximum_intrabar_leverage": 2.161728042945372
+        },
+        "oos": {
+          "net_return": 0.20042669709982672,
+          "max_drawdown": -0.39815777166180955,
+          "excess": 0.37343158866444326,
+          "fees": 5278.542707386858,
+          "funding": -4132.857343523097,
+          "rebalances": 82,
+          "liquidated": false,
+          "maximum_open_leverage": 2.0,
+          "maximum_intrabar_leverage": 2.2063016104176376
+        },
+        "full": {
+          "net_return": 29.70416282874454,
+          "max_drawdown": -0.707046413487829,
+          "excess": 19.94330974303399,
+          "fees": 243264.82507289242,
+          "funding": -614844.8069244771,
+          "rebalances": 328,
+          "liquidated": false,
+          "maximum_open_leverage": 2.0,
+          "maximum_intrabar_leverage": 2.2063016104176376
+        }
+      }
+    },
+    {
+      "leverage_cap": "2.25",
+      "metrics": {
+        "research": {
+          "net_return": 3.4932931434095136,
+          "max_drawdown": -0.7196829475820246,
+          "excess": 2.1930273365235715,
+          "fees": 50057.87639450843,
+          "funding": -256389.32663435637,
+          "rebalances": 69,
+          "liquidated": false,
+          "maximum_open_leverage": 2.249981341763344,
+          "maximum_intrabar_leverage": 2.374914367305313
+        },
+        "validation": {
+          "net_return": 4.7134620360489965,
+          "max_drawdown": -0.5354962876266941,
+          "excess": 0.05668803756071217,
+          "fees": 13364.950822264658,
+          "funding": -60037.93914461518,
+          "rebalances": 37,
+          "liquidated": false,
+          "maximum_open_leverage": 2.2493658829511887,
+          "maximum_intrabar_leverage": 2.453689495542252
+        },
+        "oos": {
+          "net_return": 0.20179272466701317,
+          "max_drawdown": -0.4022441765928174,
+          "excess": 0.3747976162316297,
+          "fees": 5283.269147174564,
+          "funding": -4236.8167619691585,
+          "rebalances": 32,
+          "liquidated": false,
+          "maximum_open_leverage": 2.2035734596751357,
+          "maximum_intrabar_leverage": 2.300911932854474
+        },
+        "full": {
+          "net_return": 29.87509221353433,
+          "max_drawdown": -0.7196829475820246,
+          "excess": 20.11423912782378,
+          "fees": 245256.4002966301,
+          "funding": -635091.7823641839,
+          "rebalances": 136,
+          "liquidated": false,
+          "maximum_open_leverage": 2.249981341763344,
+          "maximum_intrabar_leverage": 2.453689495542252
+        }
+      }
+    },
+    {
+      "leverage_cap": "2.5",
+      "metrics": {
+        "research": {
+          "net_return": 3.52147757028334,
+          "max_drawdown": -0.7224406764240303,
+          "excess": 2.221211763397398,
+          "fees": 50333.61799614591,
+          "funding": -257551.16481198714,
+          "rebalances": 56,
+          "liquidated": false,
+          "maximum_open_leverage": 2.4993842865358995,
+          "maximum_intrabar_leverage": 2.5986651369421034
+        },
+        "validation": {
+          "net_return": 4.682716168191313,
+          "max_drawdown": -0.537995922641318,
+          "excess": 0.025942169703029094,
+          "fees": 13343.517274501892,
+          "funding": -59965.09355051792,
+          "rebalances": 34,
+          "liquidated": false,
+          "maximum_open_leverage": 2.497603341096896,
+          "maximum_intrabar_leverage": 2.693926372476331
+        },
+        "oos": {
+          "net_return": 0.20179272466701317,
+          "max_drawdown": -0.4022441765928174,
+          "excess": 0.3747976162316297,
+          "fees": 5283.269147174564,
+          "funding": -4236.8167619691585,
+          "rebalances": 32,
+          "liquidated": false,
+          "maximum_open_leverage": 2.2035734596751357,
+          "maximum_intrabar_leverage": 2.300911932854474
+        },
+        "full": {
+          "net_return": 29.901567530882176,
+          "max_drawdown": -0.7224406764240303,
+          "excess": 20.140714445171625,
+          "fees": 245927.3833647032,
+          "funding": -637710.1373993525,
+          "rebalances": 120,
+          "liquidated": false,
+          "maximum_open_leverage": 2.4993842865358995,
+          "maximum_intrabar_leverage": 2.693926372476331
+        }
+      }
+    },
+    {
+      "leverage_cap": "2.75",
+      "metrics": {
+        "research": {
+          "net_return": 3.5507991079153878,
+          "max_drawdown": -0.7238141577298426,
+          "excess": 2.2505333010294457,
+          "fees": 50357.37142903061,
+          "funding": -257452.65850420287,
+          "rebalances": 53,
+          "liquidated": false,
+          "maximum_open_leverage": 2.7421886010975802,
+          "maximum_intrabar_leverage": 2.818172741566124
+        },
+        "validation": {
+          "net_return": 4.687063797146698,
+          "max_drawdown": -0.5376424609788346,
+          "excess": 0.030289798658413858,
+          "fees": 13346.551833136558,
+          "funding": -59979.129875501,
+          "rebalances": 31,
+          "liquidated": false,
+          "maximum_open_leverage": 2.74449046285896,
+          "maximum_intrabar_leverage": 2.9959174072981005
+        },
+        "oos": {
+          "net_return": 0.20179272466701317,
+          "max_drawdown": -0.4022441765928174,
+          "excess": 0.3747976162316297,
+          "fees": 5283.269147174564,
+          "funding": -4236.8167619691585,
+          "rebalances": 32,
+          "liquidated": false,
+          "maximum_open_leverage": 2.2035734596751357,
+          "maximum_intrabar_leverage": 2.300911932854474
+        },
+        "full": {
+          "net_return": 30.125757448774955,
+          "max_drawdown": -0.7238141577298426,
+          "excess": 20.364904363064404,
+          "fees": 247337.57564804092,
+          "funding": -640224.728541425,
+          "rebalances": 114,
+          "liquidated": false,
+          "maximum_open_leverage": 2.74449046285896,
+          "maximum_intrabar_leverage": 2.9959174072981005
+        }
+      }
+    },
+    {
+      "leverage_cap": "3",
+      "metrics": {
+        "research": {
+          "net_return": 3.564044420683736,
+          "max_drawdown": -0.7238996927021165,
+          "excess": 2.2637786137977933,
+          "fees": 50368.115611084366,
+          "funding": -257422.26863282803,
+          "rebalances": 51,
+          "liquidated": false,
+          "maximum_open_leverage": 2.792626041657937,
+          "maximum_intrabar_leverage": 2.861801614385107
+        },
+        "validation": {
+          "net_return": 4.7159698889343105,
+          "max_drawdown": -0.5352923995168293,
+          "excess": 0.059195890446026134,
+          "fees": 13366.709629477138,
+          "funding": -60054.398910006326,
+          "rebalances": 29,
+          "liquidated": false,
+          "maximum_open_leverage": 2.9000387214649996,
+          "maximum_intrabar_leverage": 2.9959174072981005
+        },
+        "oos": {
+          "net_return": 0.20179272466701317,
+          "max_drawdown": -0.4022441765928174,
+          "excess": 0.3747976162316297,
+          "fees": 5283.269147174564,
+          "funding": -4236.8167619691585,
+          "rebalances": 32,
+          "liquidated": false,
+          "maximum_open_leverage": 2.2035734596751357,
+          "maximum_intrabar_leverage": 2.300911932854474
+        },
+        "full": {
+          "net_return": 30.375016244314182,
+          "max_drawdown": -0.7238996927021165,
+          "excess": 20.61416315860363,
+          "fees": 248708.54676924995,
+          "funding": -642211.4412030638,
+          "rebalances": 110,
+          "liquidated": false,
+          "maximum_open_leverage": 2.9000387214649996,
+          "maximum_intrabar_leverage": 2.9959174072981005
+        }
+      }
+    }
+  ],
+  "neighbors": [
+    {
+      "sma": [
+        7,
+        35
+      ],
+      "metrics": {
+        "research": {
+          "net_return": 1.591618104571602,
+          "max_drawdown": -0.8336788724162251,
+          "excess": 0.29135229768565973,
+          "fees": 55414.39682670154,
+          "funding": -268645.9195859325,
+          "rebalances": 75,
+          "liquidated": false,
+          "maximum_open_leverage": 2.674901861751853,
+          "maximum_intrabar_leverage": 2.7367094205181464
+        },
+        "validation": {
+          "net_return": 4.948766467691728,
+          "max_drawdown": -0.520467128606986,
+          "excess": 0.2919924692034437,
+          "fees": 13695.057553934375,
+          "funding": -60264.13805208712,
+          "rebalances": 29,
+          "liquidated": false,
+          "maximum_open_leverage": 2.9000387214649996,
+          "maximum_intrabar_leverage": 2.9959174072981005
+        },
+        "oos": {
+          "net_return": 0.25352548185142365,
+          "max_drawdown": -0.3459818041680099,
+          "excess": 0.42653037341604016,
+          "fees": 5310.920944768078,
+          "funding": -3935.470537064765,
+          "rebalances": 34,
+          "liquidated": false,
+          "maximum_open_leverage": 2.2035734596751357,
+          "maximum_intrabar_leverage": 2.300911932854474
+        },
+        "full": {
+          "net_return": 18.340001562249515,
+          "max_drawdown": -0.8336788724162251,
+          "excess": 8.579148476538965,
+          "fees": 172497.23556779858,
+          "funding": -485600.4969659549,
+          "rebalances": 136,
+          "liquidated": false,
+          "maximum_open_leverage": 2.9000387214649996,
+          "maximum_intrabar_leverage": 2.9959174072981005
+        }
+      }
+    },
+    {
+      "sma": [
+        8,
+        40
+      ],
+      "metrics": {
+        "research": {
+          "net_return": 3.564044420683736,
+          "max_drawdown": -0.7238996927021165,
+          "excess": 2.2637786137977933,
+          "fees": 50368.115611084366,
+          "funding": -257422.26863282803,
+          "rebalances": 51,
+          "liquidated": false,
+          "maximum_open_leverage": 2.792626041657937,
+          "maximum_intrabar_leverage": 2.861801614385107
+        },
+        "validation": {
+          "net_return": 4.7159698889343105,
+          "max_drawdown": -0.5352923995168293,
+          "excess": 0.059195890446026134,
+          "fees": 13366.709629477138,
+          "funding": -60054.398910006326,
+          "rebalances": 29,
+          "liquidated": false,
+          "maximum_open_leverage": 2.9000387214649996,
+          "maximum_intrabar_leverage": 2.9959174072981005
+        },
+        "oos": {
+          "net_return": 0.20179272466701317,
+          "max_drawdown": -0.4022441765928174,
+          "excess": 0.3747976162316297,
+          "fees": 5283.269147174564,
+          "funding": -4236.8167619691585,
+          "rebalances": 32,
+          "liquidated": false,
+          "maximum_open_leverage": 2.2035734596751357,
+          "maximum_intrabar_leverage": 2.300911932854474
+        },
+        "full": {
+          "net_return": 30.375016244314182,
+          "max_drawdown": -0.7238996927021165,
+          "excess": 20.61416315860363,
+          "fees": 248708.54676924995,
+          "funding": -642211.4412030638,
+          "rebalances": 110,
+          "liquidated": false,
+          "maximum_open_leverage": 2.9000387214649996,
+          "maximum_intrabar_leverage": 2.9959174072981005
+        }
+      }
+    },
+    {
+      "sma": [
+        9,
+        45
+      ],
+      "metrics": {
+        "research": {
+          "net_return": 4.078519195592478,
+          "max_drawdown": -0.7400667252238632,
+          "excess": 2.7782533887065357,
+          "fees": 43760.39543849149,
+          "funding": -258985.39479548138,
+          "rebalances": 47,
+          "liquidated": false,
+          "maximum_open_leverage": 2.792626041657937,
+          "maximum_intrabar_leverage": 2.861801614385107
+        },
+        "validation": {
+          "net_return": 4.2397693684960185,
+          "max_drawdown": -0.5194947319215931,
+          "excess": -0.41700462999226584,
+          "fees": 12753.915187257842,
+          "funding": -55889.46706990152,
+          "rebalances": 31,
+          "liquidated": false,
+          "maximum_open_leverage": 2.9000387214649996,
+          "maximum_intrabar_leverage": 2.9959174072981005
+        },
+        "oos": {
+          "net_return": 0.2328012940327217,
+          "max_drawdown": -0.389250150527041,
+          "excess": 0.4058061855973383,
+          "fees": 4840.890863208819,
+          "funding": -4155.620217901029,
+          "rebalances": 30,
+          "liquidated": false,
+          "maximum_open_leverage": 2.2035734596751357,
+          "maximum_intrabar_leverage": 2.300911932854474
+        },
+        "full": {
+          "net_return": 31.826851835307785,
+          "max_drawdown": -0.7400667252238632,
+          "excess": 22.065998749597235,
+          "fees": 236820.45797232195,
+          "funding": -653569.3891659271,
+          "rebalances": 106,
+          "liquidated": false,
+          "maximum_open_leverage": 2.9000387214649996,
+          "maximum_intrabar_leverage": 2.9959174072981005
+        }
+      }
+    },
+    {
+      "sma": [
+        10,
+        50
+      ],
+      "metrics": {
+        "research": {
+          "net_return": 2.4533804955522416,
+          "max_drawdown": -0.7702640904249387,
+          "excess": 1.1531146886662993,
+          "fees": 38635.81330864159,
+          "funding": -262972.1222462285,
+          "rebalances": 43,
+          "liquidated": false,
+          "maximum_open_leverage": 2.792626041657937,
+          "maximum_intrabar_leverage": 2.861801614385107
+        },
+        "validation": {
+          "net_return": 3.8164380696376417,
+          "max_drawdown": -0.5414989580015963,
+          "excess": -0.8403359288506427,
+          "fees": 11885.303892142436,
+          "funding": -54780.50358972079,
+          "rebalances": 29,
+          "liquidated": false,
+          "maximum_open_leverage": 2.9000387214649996,
+          "maximum_intrabar_leverage": 2.9959174072981005
+        },
+        "oos": {
+          "net_return": 0.2627631729862704,
+          "max_drawdown": -0.3981842081475785,
+          "excess": 0.4357680645508869,
+          "fees": 4518.216594868326,
+          "funding": -4374.333862389433,
+          "rebalances": 28,
+          "liquidated": false,
+          "maximum_open_leverage": 2.245839399041515,
+          "maximum_intrabar_leverage": 2.300911932854474
+        },
+        "full": {
+          "net_return": 20.015845388343863,
+          "max_drawdown": -0.7702640904249387,
+          "excess": 10.254992302633312,
+          "fees": 154487.10789622218,
+          "funding": -525010.7223354545,
+          "rebalances": 98,
+          "liquidated": false,
+          "maximum_open_leverage": 2.9000387214649996,
+          "maximum_intrabar_leverage": 2.9959174072981005
+        }
+      }
+    }
+  ],
+  "bootstrap": {
+    "7d": {
+      "samples": 10000,
+      "block_days": 7,
+      "probability_beats_bh_return": 0.8084,
+      "probability_drawdown_no_worse_than_bh": 0.6948,
+      "probability_beats_return_and_drawdown": 0.6273,
+      "probability_cagr_above_20pct": 0.9292,
+      "probability_drawdown_at_least_70pct": 0.23,
+      "strategy_cagr": {
+        "p05": 0.15357827474139968,
+        "median": 0.6739849261792101,
+        "p95": 1.469960663818658
+      },
+      "annualized_excess_vs_bh": {
+        "p05": -0.12461816895345648,
+        "median": 0.1739291530246423,
+        "p95": 0.6026704550482505
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8111986008055552,
+        "median": -0.6062853519307648,
+        "p95": -0.44000983762178925
+      }
+    },
+    "30d": {
+      "samples": 10000,
+      "block_days": 30,
+      "probability_beats_bh_return": 0.8186,
+      "probability_drawdown_no_worse_than_bh": 0.6677,
+      "probability_beats_return_and_drawdown": 0.62,
+      "probability_cagr_above_20pct": 0.908,
+      "probability_drawdown_at_least_70pct": 0.2881,
+      "strategy_cagr": {
+        "p05": 0.10804304506142945,
+        "median": 0.6688865604964832,
+        "p95": 1.5692679264161487
+      },
+      "annualized_excess_vs_bh": {
+        "p05": -0.11578007790380115,
+        "median": 0.1709037706729819,
+        "p95": 0.5663928394700475
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.8393113758084628,
+        "median": -0.6295862339610837,
+        "p95": -0.45835431571412694
+      }
+    },
+    "90d": {
+      "samples": 10000,
+      "block_days": 90,
+      "probability_beats_bh_return": 0.8552,
+      "probability_drawdown_no_worse_than_bh": 0.7143,
+      "probability_beats_return_and_drawdown": 0.6787,
+      "probability_cagr_above_20pct": 0.8936,
+      "probability_drawdown_at_least_70pct": 0.309,
+      "strategy_cagr": {
+        "p05": 0.08445859005059154,
+        "median": 0.6649609181595392,
+        "p95": 1.6342521404457073
+      },
+      "annualized_excess_vs_bh": {
+        "p05": -0.08330029228189371,
+        "median": 0.17175247355522216,
+        "p95": 0.5121409497629262
+      },
+      "strategy_max_drawdown": {
+        "p05": -0.841123223823015,
+        "median": -0.6364829495309331,
+        "p95": -0.4587716691901138
+      }
+    }
+  },
+  "tail_audit": [
+    {
+      "removed_best_relative_days": 0,
+      "strategy_cagr": 0.676095481707387,
+      "benchmark_cagr": 0.4277323735987528,
+      "annualized_excess": 0.24836310810863416
+    },
+    {
+      "removed_best_relative_days": 1,
+      "strategy_cagr": 0.6676881157062258,
+      "benchmark_cagr": 0.5415271250098888,
+      "annualized_excess": 0.12616099069633702
+    },
+    {
+      "removed_best_relative_days": 5,
+      "strategy_cagr": 0.6579301306478593,
+      "benchmark_cagr": 0.6902848242148645,
+      "annualized_excess": -0.032354693567005155
+    },
+    {
+      "removed_best_relative_days": 10,
+      "strategy_cagr": 0.6501286688231687,
+      "benchmark_cagr": 0.8397884429654261,
+      "annualized_excess": -0.18965977414225743
+    },
+    {
+      "removed_best_relative_days": 20,
+      "strategy_cagr": 0.6368796867278235,
+      "benchmark_cagr": 1.0983992388235047,
+      "annualized_excess": -0.4615195520956812
+    }
+  ],
+  "evaluation_years": 6.6719371376234315,
+  "full_cagr": 0.6761398858880665,
+  "benchmark_full_cagr": 0.42775845219562236,
+  "limitations": [
+    "The historical OOS period was visible during prior exploration; it is not a fresh holdout.",
+    "This candidate has not demonstrated cross-asset robustness on ETH.",
+    "A 3x opening cap does not guarantee no intrabar leverage excursion after a gap or loss."
+  ]
+}

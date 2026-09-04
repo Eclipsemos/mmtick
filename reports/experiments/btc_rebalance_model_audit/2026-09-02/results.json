@@ -1,0 +1,262 @@
+{
+  "generated_at": "2026-09-02T11:51:05.139876+00:00",
+  "finding": "legacy replay implicitly restored target leverage every 15m bar without charging the required rebalance; fixed replay holds quantities until a sparse target change",
+  "deterministic_example": {
+    "path": "inherited 2x exposure; price 100 -> 110 -> 121",
+    "legacy_return": 0.44,
+    "fixed_quantity_return": 0.42
+  },
+  "results": {
+    "primary": {
+      "full": {
+        "base": {
+          "fixed_quantity": {
+            "net_return": 21.664935467564618,
+            "max_drawdown": -0.6500041112746243,
+            "completed_trades": 559,
+            "total_fees": 211948.809019057,
+            "total_funding": -58145.40965912545,
+            "bankrupt": false
+          },
+          "legacy_constant_exposure": {
+            "net_return": 22.116048961099843,
+            "max_drawdown": -0.6491194231227012,
+            "completed_trades": 559,
+            "total_fees": 216234.48759548718,
+            "total_funding": -60503.549135866684,
+            "bankrupt": false
+          },
+          "legacy_minus_fixed_return": 0.45111349353522456
+        },
+        "stress": {
+          "fixed_quantity": {
+            "net_return": 15.285833465080087,
+            "max_drawdown": -0.6702056207413704,
+            "completed_trades": 559,
+            "total_fees": 341487.3592112947,
+            "total_funding": -47037.85042182723,
+            "bankrupt": false
+          },
+          "legacy_constant_exposure": {
+            "net_return": 15.633699264774968,
+            "max_drawdown": -0.6693087563307905,
+            "completed_trades": 559,
+            "total_fees": 348722.12061004154,
+            "total_funding": -48979.50941239482,
+            "bankrupt": false
+          },
+          "legacy_minus_fixed_return": 0.3478657996948815
+        }
+      },
+      "oos": {
+        "base": {
+          "fixed_quantity": {
+            "net_return": 0.0942544841790946,
+            "max_drawdown": -0.34815682004032766,
+            "completed_trades": 103,
+            "total_fees": 4110.626025209068,
+            "total_funding": -754.8629239680092,
+            "bankrupt": false
+          },
+          "legacy_constant_exposure": {
+            "net_return": 0.08273964519752038,
+            "max_drawdown": -0.3509155918085636,
+            "completed_trades": 103,
+            "total_fees": 4072.0074269525853,
+            "total_funding": -763.1241072581486,
+            "bankrupt": false
+          },
+          "legacy_minus_fixed_return": -0.011514838981574224
+        },
+        "stress": {
+          "fixed_quantity": {
+            "net_return": 0.022904486604652816,
+            "max_drawdown": -0.3644744446817,
+            "completed_trades": 103,
+            "total_fees": 7953.210951043369,
+            "total_funding": -730.7139304230457,
+            "bankrupt": false
+          },
+          "legacy_constant_exposure": {
+            "net_return": 0.012304432060833566,
+            "max_drawdown": -0.3670836145566354,
+            "completed_trades": 103,
+            "total_fees": 7881.3405357674665,
+            "total_funding": -738.6786785286164,
+            "bankrupt": false
+          },
+          "legacy_minus_fixed_return": -0.01060005454381925
+        }
+      }
+    },
+    "partial_bear_challenger": {
+      "full": {
+        "base": {
+          "fixed_quantity": {
+            "net_return": 28.13898830129411,
+            "max_drawdown": -0.7348380985499949,
+            "completed_trades": 579,
+            "total_fees": 251216.89007226072,
+            "total_funding": -113839.23737616879,
+            "bankrupt": false
+          },
+          "legacy_constant_exposure": {
+            "net_return": 31.653977161334087,
+            "max_drawdown": -0.7332686613252863,
+            "completed_trades": 579,
+            "total_fees": 279566.21844162885,
+            "total_funding": -130567.20056119443,
+            "bankrupt": false
+          },
+          "legacy_minus_fixed_return": 3.5149888600399777
+        },
+        "stress": {
+          "fixed_quantity": {
+            "net_return": 20.68192657515497,
+            "max_drawdown": -0.744554742668236,
+            "completed_trades": 579,
+            "total_fees": 410992.5102874542,
+            "total_funding": -93335.79697317666,
+            "bankrupt": false
+          },
+          "legacy_constant_exposure": {
+            "net_return": 23.35055214173018,
+            "max_drawdown": -0.742912101795726,
+            "completed_trades": 579,
+            "total_fees": 457526.4186125792,
+            "total_funding": -107088.79243262936,
+            "bankrupt": false
+          },
+          "legacy_minus_fixed_return": 2.6686255665752086
+        }
+      },
+      "oos": {
+        "base": {
+          "fixed_quantity": {
+            "net_return": 0.0035788006483689857,
+            "max_drawdown": -0.45797151455130625,
+            "completed_trades": 110,
+            "total_fees": 3361.934279562635,
+            "total_funding": -1173.6181363378969,
+            "bankrupt": false
+          },
+          "legacy_constant_exposure": {
+            "net_return": -0.010506831155192502,
+            "max_drawdown": -0.4664655693770296,
+            "completed_trades": 110,
+            "total_fees": 3321.690377215209,
+            "total_funding": -1198.3952376018037,
+            "bankrupt": false
+          },
+          "legacy_minus_fixed_return": -0.014085631803561488
+        },
+        "stress": {
+          "fixed_quantity": {
+            "net_return": -0.04797224033193891,
+            "max_drawdown": -0.4726411908051785,
+            "completed_trades": 110,
+            "total_fees": 6557.375508964832,
+            "total_funding": -1146.7899659036104,
+            "bankrupt": false
+          },
+          "legacy_constant_exposure": {
+            "net_return": -0.061054623950173983,
+            "max_drawdown": -0.4796475460521725,
+            "completed_trades": 110,
+            "total_fees": 6480.684063516681,
+            "total_funding": -1171.018033979777,
+            "bankrupt": false
+          },
+          "legacy_minus_fixed_return": -0.01308238361823507
+        }
+      }
+    },
+    "equal_weight_ensemble": {
+      "full": {
+        "base": {
+          "fixed_quantity": {
+            "net_return": 25.229120052910986,
+            "max_drawdown": -0.6922418957521167,
+            "completed_trades": 800,
+            "total_fees": 232964.15872604083,
+            "total_funding": -84123.6207045363,
+            "bankrupt": false
+          },
+          "legacy_constant_exposure": {
+            "net_return": 27.83074235600732,
+            "max_drawdown": -0.6897937310982436,
+            "completed_trades": 800,
+            "total_fees": 253632.24560289315,
+            "total_funding": -93886.43681810735,
+            "bankrupt": false
+          },
+          "legacy_minus_fixed_return": 2.6016223030963346
+        },
+        "stress": {
+          "fixed_quantity": {
+            "net_return": 18.19239283118744,
+            "max_drawdown": -0.7066632926122954,
+            "completed_trades": 800,
+            "total_fees": 378223.322742243,
+            "total_funding": -68498.44303262279,
+            "bankrupt": false
+          },
+          "legacy_constant_exposure": {
+            "net_return": 20.137531429737532,
+            "max_drawdown": -0.7042224813699602,
+            "completed_trades": 800,
+            "total_fees": 411864.94453740737,
+            "total_funding": -76460.74936833707,
+            "bankrupt": false
+          },
+          "legacy_minus_fixed_return": 1.9451385985500913
+        }
+      },
+      "oos": {
+        "base": {
+          "fixed_quantity": {
+            "net_return": 0.053729949695726295,
+            "max_drawdown": -0.3966444253195323,
+            "completed_trades": 166,
+            "total_fees": 3705.974649101285,
+            "total_funding": -963.0279380684605,
+            "bankrupt": false
+          },
+          "legacy_constant_exposure": {
+            "net_return": 0.042908183392202454,
+            "max_drawdown": -0.40007132276832147,
+            "completed_trades": 166,
+            "total_fees": 3669.307183203149,
+            "total_funding": -979.3865834453852,
+            "bankrupt": false
+          },
+          "legacy_minus_fixed_return": -0.010821766303523842
+        },
+        "stress": {
+          "fixed_quantity": {
+            "net_return": -0.00735103267639934,
+            "max_drawdown": -0.4096661321267695,
+            "completed_trades": 166,
+            "total_fees": 7200.54364838587,
+            "total_funding": -936.8748850836382,
+            "bankrupt": false
+          },
+          "legacy_constant_exposure": {
+            "net_return": -0.017271386778332936,
+            "max_drawdown": -0.41457494025462216,
+            "completed_trades": 166,
+            "total_fees": 7131.1256297101145,
+            "total_funding": -952.7801847580363,
+            "bankrupt": false
+          },
+          "legacy_minus_fixed_return": -0.009920354101933596
+        }
+      }
+    }
+  },
+  "decision": {
+    "legacy_candidate_approval_allowed": false,
+    "authoritative_engine": "fixed_quantity",
+    "reports_recomputed": true
+  }
+}
