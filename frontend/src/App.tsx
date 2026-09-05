@@ -334,7 +334,7 @@ function App() {
     placeholderData: mode === 'paper'
       ? () => readLatestDailySnapshot<ReturnSummary>(returnsSnapshotScope(accountId))
       : undefined,
-    enabled: view === 'returns',
+    enabled: view === 'monitor' || view === 'returns',
     staleTime: Infinity,
   })
   const warehouse = useQuery({
@@ -646,6 +646,7 @@ function App() {
             allowStrategyParameters={mode === 'live'}
             fillsExportUrl={mode === 'live' ? '/api/live/fills.csv' : `/api/fills.csv?account_id=${account?.id ?? ''}`}
             equity={equityHistory.rows}
+            returnSummary={returns.data}
             fills={fills.data ?? []}
             funding={funding.data ?? []}
             bars={ohlcvHistory.rows}
@@ -883,6 +884,7 @@ function Monitor({
   allowStrategyParameters,
   fillsExportUrl,
   equity,
+  returnSummary,
   fills,
   funding,
   bars,
@@ -899,6 +901,7 @@ function Monitor({
   allowStrategyParameters: boolean
   fillsExportUrl: string
   equity: EquityPoint[]
+  returnSummary?: ReturnSummary
   fills: Fill[]
   funding: FundingPayment[]
   bars: OhlcvBar[]
@@ -922,8 +925,14 @@ function Monitor({
   const [showStrategyParameters, setShowStrategyParameters] = useState(false)
   useEffect(() => setShowStrategyParameters(false), [account?.id])
   const equityChart = useMemo(
-    () => equity.map((point) => ({ timestamp: point.timestamp_ms, equity: Number(point.equity) })),
-    [equity],
+    () => returnSummary?.daily.flatMap((period) => {
+      if (period.equity === null || !Number.isFinite(Number(period.equity))) return []
+      return [{
+        timestamp: Math.min(period.end_ms - 1, returnSummary.as_of_ms),
+        equity: Number(period.equity),
+      }]
+    }) ?? [],
+    [returnSummary],
   )
   if (!account) return <div className="loading"><Activity size={20} />正在初始化账户</div>
   const runtime = account.runtime
@@ -1120,7 +1129,7 @@ function Monitor({
           <CompletedTradeTable rows={[...completedTrades].reverse().slice(0, 8)} currency={account.currency} />
         </div>
         <div className="panel compact-equity-panel">
-          <div className="panel-head"><div><span>ACCOUNT EQUITY</span><h3>净值曲线</h3></div><strong>{money(account.equity, account.currency)}</strong></div>
+          <div className="panel-head"><div><span>ACCOUNT EQUITY · 30D</span><h3>最近 30 天账户净值</h3></div><strong>{money(account.equity, account.currency)}</strong></div>
           <div className="compact-chart-wrap">
             {equityChart.length > 1 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -1128,11 +1137,11 @@ function Monitor({
                   <CartesianGrid stroke={CHART_COLORS.grid} vertical={false} />
                   <XAxis dataKey="timestamp" hide />
                   <YAxis domain={['auto', 'auto']} hide />
-                  <Tooltip labelFormatter={(value) => time(Number(value))} formatter={(value) => money(Number(value), account.currency)} />
+                  <Tooltip labelFormatter={(value) => returnDate(Number(value))} formatter={(value) => money(Number(value), account.currency)} />
                   <Line dataKey="equity" type="monotone" stroke={CHART_COLORS.profit} strokeWidth={2} dot={false} isAnimationActive={false} />
                 </LineChart>
               </ResponsiveContainer>
-            ) : <div className="empty-chart">等待净值快照</div>}
+            ) : <div className="empty-chart">等待最近 30 天净值数据</div>}
           </div>
         </div>
       </section>

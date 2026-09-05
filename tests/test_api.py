@@ -37,10 +37,7 @@ def test_health_and_empty_overview(tmp_path) -> None:
     assert health.status_code == 200
     assert health.json()["service"] == "mastermind-tick"
     assert overview.status_code == 200
-    assert [item["id"] for item in overview.json()["accounts"]] == [
-        "soxl_perp_long",
-        "soxl_perp_long_session_reentry",
-    ]
+    assert [item["id"] for item in overview.json()["accounts"]] == ["soxl_perp_long"]
     assert overview.json()["instruments"] == []
     assert overview.json()["environment"] == "paper"
     assert overview.json()["accounts"][0]["sharpe_ratio"] is None
@@ -85,6 +82,7 @@ def test_active_strategy_uses_recommended_atr_parameters() -> None:
     session_reentry = next(
         item for item in settings.instruments if item.id == "soxl_perp_long_session_reentry"
     )
+    assert not session_reentry.paper_enabled
     assert session_reentry.market_id == perp.id
     assert not session_reentry.short_enabled
     assert session_reentry.session_reentry_threshold_atr == 0.5
@@ -100,7 +98,7 @@ def test_active_strategy_uses_recommended_atr_parameters() -> None:
         "btc_perp",
         "eth_perp",
     }
-    assert settings.portfolio_paper.enabled
+    assert not settings.portfolio_paper.enabled
     assert settings.live_spot.enabled is False
     assert settings.live_futures.strategy_name == "soxl_long_atr32x3_v1"
     assert settings.live_futures.allow_short is False
@@ -112,10 +110,12 @@ def test_active_strategy_uses_recommended_atr_parameters() -> None:
 
 
 def test_portfolio_ledger_exposes_base_and_stress_books(tmp_path) -> None:
+    base_settings = load_settings("config/settings.toml")
     settings = replace(
-        load_settings("config/settings.toml"),
+        base_settings,
         database_path=tmp_path / "paper.db",
         frontend_dist=tmp_path / "missing-frontend",
+        portfolio_paper=replace(base_settings.portfolio_paper, enabled=True),
     )
     app = create_app(settings, start_engine=False)
     portfolio = settings.portfolio_paper
@@ -167,10 +167,12 @@ def test_portfolio_ledger_exposes_base_and_stress_books(tmp_path) -> None:
 
 
 def test_portfolio_sleeve_event_endpoint_exposes_audit_records(tmp_path) -> None:
+    base_settings = load_settings("config/settings.toml")
     settings = replace(
-        load_settings("config/settings.toml"),
+        base_settings,
         database_path=tmp_path / "paper.db",
         frontend_dist=tmp_path / "missing-frontend",
+        portfolio_paper=replace(base_settings.portfolio_paper, enabled=True),
     )
     app = create_app(settings, start_engine=False)
     portfolio = settings.portfolio_paper

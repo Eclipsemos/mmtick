@@ -25,7 +25,7 @@ minimum_notional = 5.0
 warmup_bars = 200
 
 [portfolio_paper]
-enabled = true
+enabled = false
 id = "btc_eth_calendar_router"
 symbol = "BTCETH"
 display_symbol = "BTC/ETH CALENDAR ROUTER"
@@ -123,6 +123,7 @@ minimum_notional = 5.0
 market_data_id = "soxl_perp"
 allow_short = false
 strategy_name = "soxl_long_atr32x3_session_reentry_v1"
+paper_enabled = false
 atr_period = 32
 atr_multiplier = 3.0
 trend_efficiency_period = 8

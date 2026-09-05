@@ -14,46 +14,10 @@ test('paper console renders operational views and switches to the protected live
   await expect(page.getByRole('heading', { name: 'SOXL/USDT PERP LONG ONLY' })).toBeVisible({ timeout: 30_000 })
   await expect(page.getByText('LONG ONLY', { exact: true })).toBeVisible()
   const paperAccounts = page.locator('.account-switch button')
-  await expect(paperAccounts).toHaveCount(3)
+  await expect(paperAccounts).toHaveCount(1)
   await expect(paperAccounts.nth(0)).toHaveText('SOXL/USDT PERP LONG ONLY')
-  await expect(paperAccounts.nth(1)).toHaveText('SOXL/USDT PERP LONG ONLY + SESSION REENTRY')
-  await expect(paperAccounts.nth(2)).toHaveText('BTC/ETH CALENDAR ROUTER')
-  await page.getByRole('button', { name: 'SOXL/USDT PERP LONG ONLY + SESSION REENTRY' }).click()
-  await expect(
-    page.getByRole('heading', { name: 'SOXL/USDT PERP LONG ONLY + SESSION REENTRY' }),
-  ).toBeVisible()
   await expect(page.getByText('LONG ONLY', { exact: true })).toBeVisible()
-  await expect(page.getByText('2x isolated')).toHaveCount(0)
-  await expect(page.getByText('当前资金费')).toBeVisible()
-  await page.getByRole('button', { name: 'BTC/ETH CALENDAR ROUTER', exact: true }).click()
-  await expect(page.getByText('PORTFOLIO', { exact: true })).toBeVisible()
-  await expect(page.getByText(/等待首个日线收盘|组合日线运行中|月度利润锁定|月度亏损锁定/)).toBeVisible()
-  await expect(page.getByRole('heading', { name: '官方 日线 K线' })).toBeVisible()
-  await expect(page.getByTestId('official-kline-chart')).toBeVisible()
-  await expect(page.getByText('月历组合状态')).toBeVisible()
-  await expect(page.getByText('压力账本')).toBeVisible()
-  const attribution = page.getByRole('region', { name: '组合持仓与收益归因' })
-  await expect(attribution.getByRole('heading', { name: '组合持仓与收益归因' })).toBeVisible()
-  await expect(attribution.getByLabel('下一个 UTC 收盘倒计时')).toContainText(/\d{2}:\d{2}:\d{2}/)
-  await expect(attribution.getByText('状态袖套贡献')).toBeVisible()
-  await expect(attribution.getByText('趋势袖套贡献')).toBeVisible()
-  await expect(attribution.getByText('账户贡献', { exact: true })).toBeVisible()
-  await expect(attribution.getByText('BTC→BTC 15日延续')).toBeVisible()
-  await expect(attribution.getByText('组合基准权重', { exact: true })).toBeVisible()
-  await expect(attribution.getByText('20.00%', { exact: true })).toBeVisible()
-  await expect(attribution.getByText(/^当前有效外层/)).toBeVisible()
-  await expect(attribution.getByText('SHADOW ONLY', { exact: true })).toBeVisible()
-  await page.getByRole('button', { name: /订单/ }).click({ force: true })
-  const portfolioOrders = page.getByRole('region', { name: '袖套成交订单' })
-  await expect(portfolioOrders.getByRole('heading', { name: '袖套成交订单' })).toBeVisible()
-  await expect(portfolioOrders.getByText('不含压力账本')).toBeVisible()
-  await expect(portfolioOrders.getByText('BTC→BTC 15日延续').first()).toBeVisible()
-  await expect(portfolioOrders.getByText('暂无袖套成交')).toHaveCount(0)
-  await expect(page.getByRole('region', { name: '组合账本事件' }).getByText('外层组合平仓')).toBeVisible()
-  await page.getByRole('button', { name: /监控/ }).click({ force: true })
-  await page.getByRole('button', { name: 'SOXL/USDT PERP LONG ONLY', exact: true }).click()
-  await expect(page.getByText('LONG ONLY', { exact: true })).toBeVisible()
-  await expect(page.getByText('账户净值')).toBeVisible()
+  await expect(page.getByText('账户净值', { exact: true })).toBeVisible()
   await expect(page.getByText('夏普率')).toBeVisible()
   await expect(page.getByText('轮次胜率')).toBeVisible()
   await expect(page.getByText('交易决策状态')).toBeVisible()
@@ -123,7 +87,7 @@ test('paper console renders operational views and switches to the protected live
   await page.getByRole('button', { name: '隐藏策略参数' }).click()
   await page.getByRole('button', { name: 'PAPER', exact: true }).click()
   await expect(page.getByRole('heading', { name: '模拟交易' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'BTC/ETH CALENDAR ROUTER', exact: true })).toBeVisible()
+  await expect(page.locator('.account-switch button')).toHaveCount(1)
 
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
@@ -137,6 +101,7 @@ test('returns and warehouse reuse one browser snapshot per UTC day', async ({ pa
   let returnsCalls = 0
   let warehouseCalls = 0
   const now = Date.now()
+  const dayMs = 86_400_000
   await page.route('**/api/accounts/soxl_perp_long/returns?*', async (route) => {
     returnsCalls += 1
     await route.fulfill({
@@ -154,7 +119,11 @@ test('returns and warehouse reuse one browser snapshot per UTC day', async ({ pa
         return_30d: 0.01,
         current_week_return: 0.002,
         current_month_return: 0.01,
-        daily: [],
+        daily: [
+          { key: 'day-1', label: 'day-1', start_ms: now - 3 * dayMs, end_ms: now - 2 * dayMs, equity: '100000', return: 0 },
+          { key: 'day-2', label: 'day-2', start_ms: now - 2 * dayMs, end_ms: now - dayMs, equity: '100500', return: 0.005 },
+          { key: 'day-3', label: 'day-3', start_ms: now - dayMs, end_ms: now + 1, equity: '101000', return: 0.004975 },
+        ],
         weekly: [],
         monthly: [],
       }),
@@ -182,6 +151,9 @@ test('returns and warehouse reuse one browser snapshot per UTC day', async ({ pa
 
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'SOXL/USDT PERP LONG ONLY' })).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('heading', { name: '最近 30 天账户净值' })).toBeVisible()
+  await expect(page.locator('.compact-equity-panel .recharts-line-curve')).toHaveCount(1)
+  await expect.poll(() => returnsCalls).toBe(1)
   await page.getByRole('button', { name: /收益明细/ }).click()
   await expect(page.getByText('近 30 日收益')).toBeVisible()
   await expect.poll(() => returnsCalls).toBe(1)
